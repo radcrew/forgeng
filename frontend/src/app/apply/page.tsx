@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@components/ui/button";
+import { Card, CardContent, CardFooter } from "@components/ui/card";
 import {
   Form,
   FormControl,
@@ -17,10 +17,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
+} from "@components/ui/form";
+import { Input } from "@components/ui/input";
+import { Progress } from "@components/ui/progress";
+import { Textarea } from "@components/ui/textarea";
 
 const APPLICATION_SCHEMA = z.object({
   firstName: z.string().min(2, "First name is required"),

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { BookOpen, ClipboardList, FileText, Users } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { mockAdminDashboard } from "@/lib/mock-data";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { mockAdminDashboard } from "@lib/mock-data";
 
 export default function AdminDashboardPage() {
   const dashboard = mockAdminDashboard;

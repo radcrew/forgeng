@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { Skeleton } from "@/components/ui/skeleton";
-import type { UserRole } from "@/lib/types";
+import { Skeleton } from "@components/ui/skeleton";
+import type { UserRole } from "@lib/types";
 
 import { homeForRole, useCurrentUser } from "./current-user-context";
 

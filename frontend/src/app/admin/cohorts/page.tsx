@@ -5,33 +5,33 @@ import { format } from "date-fns";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@components/ui/badge";
+import { Button } from "@components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@components/ui/dialog";
+import { Input } from "@components/ui/input";
+import { Label } from "@components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+} from "@components/ui/select";
+import { Separator } from "@components/ui/separator";
+import { Textarea } from "@components/ui/textarea";
 import {
   mockCohorts,
   mockEnrollments,
   mockUsers,
-} from "@/lib/mock-data";
-import type { Cohort, CohortStatus } from "@/lib/types";
+} from "@lib/mock-data";
+import type { Cohort, CohortStatus } from "@lib/types";
 
 const STATUS_VARIANT: Record<CohortStatus, "default" | "secondary" | "outline"> =
   {

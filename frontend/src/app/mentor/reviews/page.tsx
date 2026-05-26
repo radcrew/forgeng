@@ -10,21 +10,21 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@components/ui/badge";
+import { Button } from "@components/ui/button";
+import { Card, CardContent } from "@components/ui/card";
+import { Label } from "@components/ui/label";
+import { Separator } from "@components/ui/separator";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { mockFeedback, mockSubmissions } from "@/lib/mock-data";
-import type { FeedbackVerdict, SubmissionStatus } from "@/lib/types";
+} from "@components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
+import { Textarea } from "@components/ui/textarea";
+import { mockFeedback, mockSubmissions } from "@lib/mock-data";
+import type { FeedbackVerdict, SubmissionStatus } from "@lib/types";
 
 type StatusFilter = SubmissionStatus | "all";
 

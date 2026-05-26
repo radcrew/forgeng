@@ -4,17 +4,17 @@ import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
-import { Card } from "@/components/ui/card";
+import { Card } from "@components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockUsers } from "@/lib/mock-data";
-import type { UserProfile, UserRole } from "@/lib/types";
+} from "@components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
+import { mockUsers } from "@lib/mock-data";
+import type { UserProfile, UserRole } from "@lib/types";
 
 type RoleFilter = UserRole | "all";
 

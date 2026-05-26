@@ -6,7 +6,7 @@ import type {
   Submission,
   Task,
   UserProfile,
-} from "@/lib/types";
+} from "@lib/types";
 
 const today = new Date();
 const daysFromNow = (days: number) =>

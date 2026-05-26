@@ -1,10 +1,10 @@
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle2, Clock, Code2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { mockStudentDashboard } from "@/lib/mock-data";
+import { Badge } from "@components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { Progress } from "@components/ui/progress";
+import { mockStudentDashboard } from "@lib/mock-data";
 
 export default function StudentDashboardPage() {
   const { cohort, taskStats, recentSubmissions, nextDeadline } =

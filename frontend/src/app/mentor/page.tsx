@@ -2,8 +2,8 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ClipboardList, FileText, Users } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { mockMentorDashboard } from "@/lib/mock-data";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { mockMentorDashboard } from "@lib/mock-data";
 
 export default function MentorDashboardPage() {
   const dashboard = mockMentorDashboard;

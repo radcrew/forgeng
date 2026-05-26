@@ -8,8 +8,8 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { mockUsers } from "@/lib/mock-data";
-import type { UserProfile, UserRole } from "@/lib/types";
+import { mockUsers } from "@lib/mock-data";
+import type { UserProfile, UserRole } from "@lib/types";
 
 const STORAGE_KEY = "forgeng.activeUserId";
 const CHANGE_EVENT = "forgeng:current-user-change";

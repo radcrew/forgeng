@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -23,9 +23,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from "@/components/ui/sidebar";
-import { useCurrentUser } from "@/lib/auth";
-import type { UserRole } from "@/lib/types";
+} from "@components/ui/sidebar";
+import { useCurrentUser } from "@lib/auth";
+import type { UserRole } from "@lib/types";
 
 interface NavItem {
   title: string;

@@ -10,18 +10,18 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@components/ui/badge";
+import { Button } from "@components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { Separator } from "@components/ui/separator";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { useCurrentUser } from "@/lib/auth";
-import { mockFeedback, mockSubmissions } from "@/lib/mock-data";
+} from "@components/ui/sheet";
+import { useCurrentUser } from "@lib/auth";
+import { mockFeedback, mockSubmissions } from "@lib/mock-data";
 
 function SubmissionDetail({
   submissionId,

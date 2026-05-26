@@ -4,28 +4,28 @@ import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@components/ui/badge";
+import { Button } from "@components/ui/button";
+import { Card, CardContent } from "@components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+} from "@components/ui/dialog";
+import { Label } from "@components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { mockApplications, mockCohorts } from "@/lib/mock-data";
-import type { Application, ApplicationStatus } from "@/lib/types";
+} from "@components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
+import { Textarea } from "@components/ui/textarea";
+import { mockApplications, mockCohorts } from "@lib/mock-data";
+import type { Application, ApplicationStatus } from "@lib/types";
 
 type StatusFilter = ApplicationStatus | "all";
 

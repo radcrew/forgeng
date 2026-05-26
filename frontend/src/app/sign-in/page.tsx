@@ -5,19 +5,19 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Code2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { homeForRole, useCurrentUser } from "@/lib/auth";
-import type { UserRole } from "@/lib/types";
+} from "@components/ui/card";
+import { Input } from "@components/ui/input";
+import { Label } from "@components/ui/label";
+import { Separator } from "@components/ui/separator";
+import { homeForRole, useCurrentUser } from "@lib/auth";
+import type { UserRole } from "@lib/types";
 
 const DEMO_ROLES: { role: UserRole; label: string }[] = [
   { role: "student", label: "Student" },

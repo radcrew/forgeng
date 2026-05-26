@@ -15,9 +15,9 @@ import {
   Zap,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@components/ui/badge";
+import { Button } from "@components/ui/button";
+import { Card, CardContent } from "@components/ui/card";
 
 // Stock photography for the marketing visuals. Hosted on Unsplash so no asset
 // pipeline is required for the UI-only milestone.
