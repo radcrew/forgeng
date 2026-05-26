@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { Logo } from "@components/brand/logo";
 import { Button } from "@components/ui/button";
 import {
   Sidebar,
@@ -77,8 +78,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       <div className="flex h-screen overflow-hidden w-full bg-background">
         <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
           <SidebarHeader className="p-4 border-b border-sidebar-border">
-            <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
-            <p className="text-sm text-sidebar-foreground/70 capitalize">
+            <div className="flex items-center gap-2">
+              <Logo size={28} priority />
+              <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
+            </div>
+            <p className="text-sm text-sidebar-foreground/70 capitalize mt-2">
               {role} Portal
             </p>
           </SidebarHeader>

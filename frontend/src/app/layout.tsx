@@ -17,10 +17,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Forgeng",
   description:
     "A rigorous, mentor-led apprenticeship for aspiring software engineers — apply, join a cohort, complete real projects, and grow.",
+  openGraph: {
+    title: "Forgeng",
+    description:
+      "A rigorous, mentor-led apprenticeship for aspiring software engineers.",
+    images: ["/logo.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Forgeng",
+    description:
+      "A rigorous, mentor-led apprenticeship for aspiring software engineers.",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({

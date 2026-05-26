@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Code2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
+import { Logo } from "@components/brand/logo";
 import { Button } from "@components/ui/button";
 import {
   Card,
@@ -44,9 +45,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-              <Code2 className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <Logo size={28} priority />
             <span className="font-bold text-lg tracking-tight">Forgeng</span>
           </div>
           <div>

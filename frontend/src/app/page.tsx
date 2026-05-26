@@ -18,6 +18,7 @@ import {
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
+import { Logo } from "@components/brand/logo";
 
 // Stock photography for the marketing visuals. Hosted on Unsplash so no asset
 // pipeline is required for the UI-only milestone.
@@ -176,12 +177,8 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background flex flex-col text-foreground">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-            <Code2 className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-lg tracking-tight">
-            Forgeng
-          </span>
+          <Logo size={28} priority />
+          <span className="font-bold text-lg tracking-tight">Forgeng</span>
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
           <a
@@ -770,12 +767,8 @@ export default function LandingPage() {
       <footer className="border-t border-border px-6 py-8">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-              <Code2 className="h-3.5 w-3.5 text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-sm">
-              Forgeng
-            </span>
+            <Logo size={24} />
+            <span className="font-semibold text-sm">Forgeng</span>
           </div>
           <p className="text-xs text-muted-foreground">
             Built for engineers who are serious about getting better.
