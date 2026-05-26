@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   CheckSquare,
   ClipboardList,
@@ -24,7 +24,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { currentMockUser } from "@/lib/mock-data";
+import { useCurrentUser } from "@/lib/auth";
 import type { UserRole } from "@/lib/types";
 
 interface NavItem {
@@ -54,14 +54,23 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
 };
 
 interface SidebarLayoutProps {
-  role: UserRole;
   children: React.ReactNode;
 }
 
-export function SidebarLayout({ role, children }: SidebarLayoutProps) {
+export function SidebarLayout({ children }: SidebarLayoutProps) {
   const pathname = usePathname() ?? "";
-  const user = currentMockUser[role];
+  const router = useRouter();
+  const { user, signOut } = useCurrentUser();
+
+  // The role guard above us has already short-circuited if `user` is null.
+  // This fallback keeps types honest for the rare race during navigation.
+  const role: UserRole = user?.role ?? "applicant";
   const navItems = NAV_ITEMS_BY_ROLE[role];
+
+  const handleSignOut = () => {
+    signOut();
+    router.push("/");
+  };
 
   return (
     <SidebarProvider>
@@ -107,14 +116,13 @@ export function SidebarLayout({ role, children }: SidebarLayoutProps) {
               </div>
             </div>
             <Button
-              asChild
+              type="button"
               variant="outline"
+              onClick={handleSignOut}
               className="w-full justify-start gap-2 bg-transparent text-sidebar-foreground border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             >
-              <Link href="/">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Link>
+              <LogOut className="h-4 w-4" />
+              Sign Out
             </Button>
           </SidebarFooter>
         </Sidebar>

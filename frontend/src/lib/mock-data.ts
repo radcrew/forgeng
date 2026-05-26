@@ -6,7 +6,6 @@ import type {
   Submission,
   Task,
   UserProfile,
-  UserRole,
 } from "@/lib/types";
 
 const today = new Date();
@@ -346,11 +345,4 @@ export const mockAdminDashboard: AdminDashboard = {
   recentApplications: [...mockApplications]
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
     .slice(0, 4),
-};
-
-export const currentMockUser: Record<UserRole, UserProfile> = {
-  applicant: mockUsers.find((u) => u.role === "applicant")!,
-  student: mockUsers.find((u) => u.role === "student")!,
-  mentor: mockUsers.find((u) => u.role === "mentor")!,
-  admin: mockUsers.find((u) => u.role === "admin")!,
 };

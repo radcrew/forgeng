@@ -20,7 +20,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { currentMockUser, mockFeedback, mockSubmissions } from "@/lib/mock-data";
+import { useCurrentUser } from "@/lib/auth";
+import { mockFeedback, mockSubmissions } from "@/lib/mock-data";
 
 function SubmissionDetail({
   submissionId,
@@ -161,9 +162,13 @@ function SubmissionDetail({
 
 export default function StudentSubmissionsPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const currentUserId = currentMockUser.student.id;
+  const { user } = useCurrentUser();
+  const currentUserId = user?.id;
   const submissions = useMemo(
-    () => mockSubmissions.filter((s) => s.user?.id === currentUserId),
+    () =>
+      currentUserId == null
+        ? []
+        : mockSubmissions.filter((s) => s.user?.id === currentUserId),
     [currentUserId],
   );
 

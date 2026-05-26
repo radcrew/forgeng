@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CurrentUserProvider } from "@/lib/auth";
 
 import "./globals.css";
 
@@ -33,7 +34,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <TooltipProvider>{children}</TooltipProvider>
+        <CurrentUserProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </CurrentUserProvider>
         <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
