@@ -1,0 +1,15 @@
+packages:
+  - "frontend"
+  - "backend"
+  - "packages/*"
+
+# pnpm 10 blocks lifecycle scripts of dependencies unless explicitly allowed.
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - prisma
+  - "@prisma/engines"
+  - esbuild
+  - "@nestjs/core"
+  - "@tailwindcss/oxide"
+  - sharp
+  - unrs-resolver
