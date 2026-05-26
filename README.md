@@ -16,7 +16,7 @@ A TypeScript monorepo:
 
 ```
 forgeng/
-├── backend/                 # NestJS backend (@forgeng/api)
+├── backend/                 # NestJS backend (@forgeng/backend)
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   └── seed.ts
@@ -25,7 +25,7 @@ forgeng/
 │   │   ├── app.module.ts
 │   │   └── main.ts
 │   └── .env                 # DATABASE_URL, PORT, CORS_ORIGIN
-├── frontend/                # Next.js frontend (@forgeng/web)
+├── frontend/                # Next.js frontend (@forgeng/frontend)
 │   └── .env.local           # NEXT_PUBLIC_API_URL
 ├── package.json             # root scripts (turbo)
 ├── pnpm-workspace.yaml
@@ -60,7 +60,7 @@ CORS_ORIGIN="http://localhost:3000"
 
 ```bash
 pnpm prisma:migrate     # creates the schema + generates the client
-pnpm --filter @forgeng/api db:seed   # optional: insert sample data
+pnpm --filter @forgeng/backend db:seed   # optional: insert sample data
 ```
 
 ## Development
@@ -74,8 +74,8 @@ pnpm dev
 Or run apps individually:
 
 ```bash
-pnpm dev:web   # Next.js  -> http://localhost:3000
-pnpm dev:api   # NestJS   -> http://localhost:3001
+pnpm dev:fe    # Next.js  -> http://localhost:3000
+pnpm dev:be    # NestJS   -> http://localhost:3001
 ```
 
 Verify the API and its database connection:

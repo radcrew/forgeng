@@ -1,4 +1,4 @@
-# `@forgeng/api`
+# `@forgeng/backend`
 
 NestJS 11 + Prisma 6 + PostgreSQL backend for the forgeng apprenticeship
 platform. Implements the full REST surface that powers the Next.js frontend in

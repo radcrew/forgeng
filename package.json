@@ -13,11 +13,11 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "dev:web": "pnpm --filter @forgeng/web dev",
-    "dev:api": "pnpm --filter @forgeng/api dev",
-    "prisma:generate": "pnpm --filter @forgeng/api prisma:generate",
-    "prisma:migrate": "pnpm --filter @forgeng/api prisma:migrate",
-    "prisma:studio": "pnpm --filter @forgeng/api prisma:studio"
+    "dev:fe": "pnpm --filter @forgeng/frontend dev",
+    "dev:be": "pnpm --filter @forgeng/backend dev",
+    "prisma:generate": "pnpm --filter @forgeng/backend prisma:generate",
+    "prisma:migrate": "pnpm --filter @forgeng/backend prisma:migrate",
+    "prisma:studio": "pnpm --filter @forgeng/backend prisma:studio"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
