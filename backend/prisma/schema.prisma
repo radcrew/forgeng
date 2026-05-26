@@ -1,4 +1,4 @@
-// Prisma schema for forgeng
+// Prisma schema for forgeng apprenticeship platform.
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -10,12 +10,171 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum Role {
+  applicant
+  student
+  mentor
+  admin
+}
+
+enum ApplicationStatus {
+  pending
+  reviewing
+  accepted
+  rejected
+}
+
+enum CohortStatus {
+  draft
+  active
+  completed
+}
+
+enum TaskType {
+  coding
+  reading
+  project
+  quiz
+}
+
+enum TaskStatus {
+  draft
+  published
+}
+
+enum SubmissionStatus {
+  submitted
+  approved
+  needs_work
+}
+
+enum Verdict {
+  approved
+  needs_work
+}
+
+// -----------------------------------------------------------------------------
+// Models
+// -----------------------------------------------------------------------------
+
 model User {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
+  // Optional external identity (e.g. Clerk). Nullable so we can run without
+  // an auth provider in dev — see common/auth/dev-auth.guard.ts.
+  clerkId   String?  @unique @map("clerk_id")
   email     String   @unique
   name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role     @default(applicant)
+  bio       String?
+  githubUrl String?  @map("github_url")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  enrollments Enrollment[]
+  submissions Submission[]
+  feedback    Feedback[]
 
   @@map("users")
+}
+
+model Application {
+  id           Int               @id @default(autoincrement())
+  email        String
+  firstName    String            @map("first_name")
+  lastName     String            @map("last_name")
+  status       ApplicationStatus @default(pending)
+  motivation   String?
+  background   String?
+  experience   String?
+  reviewerNote String?           @map("reviewer_note")
+  cohortId     Int?              @map("cohort_id")
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  cohort Cohort? @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+
+  @@map("applications")
+}
+
+model Cohort {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String?
+  status      CohortStatus @default(draft)
+  capacity    Int          @default(20)
+  startDate   DateTime?    @map("start_date") @db.Timestamptz
+  endDate     DateTime?    @map("end_date") @db.Timestamptz
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  applications Application[]
+  enrollments  Enrollment[]
+  tasks        Task[]
+
+  @@map("cohorts")
+}
+
+model Enrollment {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  cohortId   Int      @map("cohort_id")
+  enrolledAt DateTime @default(now()) @map("enrolled_at") @db.Timestamptz
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cohortId])
+  @@map("enrollments")
+}
+
+model Task {
+  id          Int        @id @default(autoincrement())
+  cohortId    Int        @map("cohort_id")
+  title       String
+  description String?
+  type        TaskType   @default(coding)
+  status      TaskStatus @default(draft)
+  dueDate     DateTime?  @map("due_date") @db.Timestamptz
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  cohort      Cohort       @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@map("tasks")
+}
+
+model Submission {
+  id        Int              @id @default(autoincrement())
+  taskId    Int              @map("task_id")
+  userId    Int              @map("user_id")
+  content   String?
+  repoUrl   String?          @map("repo_url")
+  status    SubmissionStatus @default(submitted)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  task     Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback Feedback[]
+
+  @@map("submissions")
+}
+
+model Feedback {
+  id           Int      @id @default(autoincrement())
+  submissionId Int      @map("submission_id")
+  mentorId     Int      @map("mentor_id")
+  content      String
+  verdict      Verdict
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  mentor     User       @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@map("feedback")
 }

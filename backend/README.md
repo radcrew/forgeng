@@ -1,98 +1,139 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# `@forgeng/api`
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS 11 + Prisma 6 + PostgreSQL backend for the forgeng apprenticeship
+platform. Implements the full REST surface that powers the Next.js frontend in
+`../frontend`.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- **NestJS 11** — modular HTTP layer with global validation pipe and a
+  Prisma-aware exception filter.
+- **Prisma 6** — typed PostgreSQL client (`prisma generate` produces the
+  client in the shared `node_modules`).
+- **PostgreSQL** — schema lives in `prisma/schema.prisma`.
+- **class-validator / class-transformer** — request DTO validation.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Auth is currently behind a swappable **dev header guard**
+(`x-user-id` / `x-user-email` / `x-user-role`) — the real Clerk integration
+plugs in by replacing `src/common/auth/dev-auth.guard.ts`.
 
-## Project setup
+## Endpoints
 
-```bash
-$ pnpm install
+All routes are mounted under `/api`:
+
+| Method | Path                                | Role(s)        |
+|-------:|-------------------------------------|----------------|
+| GET    | `/healthz`                          | public         |
+| GET    | `/auth/me`                          | any            |
+| PATCH  | `/auth/profile`                     | any            |
+| GET    | `/applications`                     | admin          |
+| GET    | `/applications/stats`               | admin          |
+| POST   | `/applications`                     | public         |
+| GET    | `/applications/:id`                 | admin          |
+| PATCH  | `/applications/:id/status`          | admin          |
+| GET    | `/cohorts`                          | any            |
+| POST   | `/cohorts`                          | admin          |
+| GET    | `/cohorts/:id`                      | any            |
+| PATCH  | `/cohorts/:id`                      | admin          |
+| DELETE | `/cohorts/:id`                      | admin          |
+| GET    | `/cohorts/:id/enrollments`          | admin, mentor  |
+| POST   | `/cohorts/:id/enroll`               | admin          |
+| GET    | `/tasks`                            | any            |
+| POST   | `/tasks`                            | admin          |
+| GET    | `/tasks/:id`                        | any            |
+| PATCH  | `/tasks/:id`                        | admin          |
+| DELETE | `/tasks/:id`                        | admin          |
+| GET    | `/submissions`                      | any            |
+| POST   | `/submissions`                      | any            |
+| GET    | `/submissions/:id`                  | any            |
+| GET    | `/submissions/:id/feedback`         | any            |
+| POST   | `/submissions/:id/feedback`         | mentor, admin  |
+| GET    | `/users`                            | admin          |
+| PATCH  | `/users/:id/role`                   | admin          |
+| GET    | `/dashboard/student`                | student        |
+| GET    | `/dashboard/mentor`                 | mentor         |
+| GET    | `/dashboard/admin`                  | admin          |
+
+Students see only their own submissions; mentors and admins see everything,
+optionally filtered by `taskId`, `status`, or `cohortId`.
+
+## Project layout
+
+```
+src/
+├── app.module.ts            # composition root
+├── main.ts                  # bootstrap (global prefix, validation, filter)
+├── prisma/                  # PrismaService + PrismaModule (global)
+├── common/
+│   ├── auth/                # dev guard, roles guard, decorators, types
+│   ├── prisma-exception.filter.ts
+│   └── serializers.ts       # Prisma row → API DTO mappers
+├── health/                  # /healthz
+├── auth/                    # /auth/me, /auth/profile
+├── applications/            # apprenticeship applications
+├── cohorts/                 # cohort CRUD + enrollments
+├── tasks/                   # task authoring + student listing
+├── submissions/             # student submissions
+├── feedback/                # mentor feedback on submissions
+├── users/                   # admin user list + role changes
+└── dashboard/               # role-specific dashboard summaries
 ```
 
-## Compile and run the project
+Each feature module follows the same shape: `*.controller.ts`, `*.service.ts`,
+`*.module.ts`, and one DTO per request body / query.
+
+## Environment
+
+Copy `.env.example` to `.env` and adjust:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/forgeng?schema=public"
+PORT=3001
+CORS_ORIGIN="http://localhost:3000"
 ```
 
-## Run tests
+## Database
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm prisma:migrate     # create + run a migration
+pnpm prisma:generate    # regenerate the Prisma client
+pnpm db:seed            # populate sample users / cohorts / tasks / submissions
+pnpm prisma:studio      # open Prisma Studio
 ```
 
-## Deployment
+The seed script in `prisma/seed.ts` mirrors the frontend's mock data so the
+UI lights up against real records immediately after `db:seed`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Development
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm dev          # nest start --watch
+pnpm build        # nest build
+pnpm lint         # eslint --fix
+pnpm test         # jest
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Talking to the API from the frontend
 
-## Resources
+In dev, the frontend should send headers identifying the active user:
 
-Check out a few resources that may come in handy when working with NestJS:
+```http
+GET /api/auth/me
+x-user-id: 1                   # or
+x-user-email: avery@example.com
+x-user-role: student
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Use seeded IDs from `prisma/seed.ts`:
 
-## Support
+| Role      | Email                  | Seeded id |
+|-----------|------------------------|-----------|
+| admin     | `riley@example.com`    | 5         |
+| mentor    | `sarah@example.com`    | 3         |
+| mentor    | `james@example.com`    | 4         |
+| student   | `avery@example.com`    | 1         |
+| student   | `jordan@example.com`   | 2         |
+| applicant | `sam@example.com`      | 6         |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Replace `DevAuthGuard` with a Clerk / OIDC guard when ready — controllers
+only depend on `request.user`, so no controller code needs to change.

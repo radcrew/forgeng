@@ -1,0 +1,33 @@
+import { Controller, Get } from '@nestjs/common';
+import { CurrentUser } from '../common/auth/current-user.decorator';
+import { Roles } from '../common/auth/roles.decorator';
+import type { AuthUser } from '../common/auth/auth.types';
+import {
+  DashboardService,
+  type AdminDashboard,
+  type MentorDashboard,
+  type StudentDashboard,
+} from './dashboard.service';
+
+@Controller('dashboard')
+export class DashboardController {
+  constructor(private readonly service: DashboardService) {}
+
+  @Roles('student')
+  @Get('student')
+  student(@CurrentUser() user: AuthUser): Promise<StudentDashboard> {
+    return this.service.student(user);
+  }
+
+  @Roles('mentor')
+  @Get('mentor')
+  mentor(): Promise<MentorDashboard> {
+    return this.service.mentor();
+  }
+
+  @Roles('admin')
+  @Get('admin')
+  admin(): Promise<AdminDashboard> {
+    return this.service.admin();
+  }
+}
