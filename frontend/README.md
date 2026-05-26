@@ -1,4 +1,4 @@
-# @forgeng/web
+# @forgeng/frontend
 
 Frontend for the **Apprenticeship Platform** — a mentor-led, cohort-based
 program for aspiring software engineers.
@@ -19,9 +19,9 @@ hot-reloadable without a running API.
 ## Develop
 
 ```bash
-pnpm --filter @forgeng/web dev      # http://localhost:3000
-pnpm --filter @forgeng/web build    # production build
-pnpm --filter @forgeng/web lint     # ESLint
+pnpm --filter @forgeng/frontend dev      # http://localhost:3000
+pnpm --filter @forgeng/frontend build    # production build
+pnpm --filter @forgeng/frontend lint     # ESLint
 ```
 
 ## Routes
