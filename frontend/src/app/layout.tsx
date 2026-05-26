@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Apprenticeship Platform",
+  title: "Forgeng",
   description:
     "A rigorous, mentor-led apprenticeship for aspiring software engineers — apply, join a cohort, complete real projects, and grow.",
 };

@@ -180,7 +180,7 @@ export default function LandingPage() {
             <Code2 className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="font-bold text-lg tracking-tight">
-            Apprenticeship
+            Forgeng
           </span>
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
@@ -409,7 +409,7 @@ export default function LandingPage() {
                 Process
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                How the Apprenticeship Works
+                How Forgeng Works
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
                 A structured, repeatable path from applicant to skilled engineer
@@ -774,7 +774,7 @@ export default function LandingPage() {
               <Code2 className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
             <span className="font-semibold text-sm">
-              Apprenticeship Platform
+              Forgeng
             </span>
           </div>
           <p className="text-xs text-muted-foreground">

@@ -68,7 +68,7 @@ export function SidebarLayout({ role, children }: SidebarLayoutProps) {
       <div className="flex h-screen overflow-hidden w-full bg-background">
         <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
           <SidebarHeader className="p-4 border-b border-sidebar-border">
-            <h2 className="font-bold text-lg tracking-tight">Apprenticeship</h2>
+            <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
             <p className="text-sm text-sidebar-foreground/70 capitalize">
               {role} Portal
             </p>

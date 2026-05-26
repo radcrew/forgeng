@@ -1,4 +1,4 @@
-// Prisma schema for forgeng apprenticeship platform.
+// Prisma schema for Forgeng — a mentor-led apprenticeship platform.
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {

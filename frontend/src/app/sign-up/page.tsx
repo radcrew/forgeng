@@ -22,7 +22,7 @@ export default function SignUpPage() {
               <Code2 className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-bold text-lg tracking-tight">
-              Apprenticeship
+              Forgeng
             </span>
           </div>
           <div>

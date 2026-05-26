@@ -1,6 +1,6 @@
 # @forgeng/frontend
 
-Frontend for the **Apprenticeship Platform** — a mentor-led, cohort-based
+Frontend for **Forgeng** — a mentor-led, cohort-based apprenticeship
 program for aspiring software engineers.
 
 This package contains the Next.js 16 (App Router) + Tailwind 4 + shadcn/ui

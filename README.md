@@ -1,6 +1,6 @@
-# forgeng
+# Forgeng
 
-A TypeScript monorepo:
+A TypeScript monorepo for the Forgeng apprenticeship platform:
 
 - **`frontend`** — Next.js 16 frontend (React 19, Tailwind CSS 4, App Router)
 - **`backend`** — NestJS 11 backend with Prisma 6 + PostgreSQL

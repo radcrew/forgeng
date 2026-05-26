@@ -122,7 +122,7 @@ export default function ApplyPage() {
             ← Back to Home
           </Link>
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold">Apply for Apprenticeship</h1>
+            <h1 className="text-3xl font-bold">Apply to Forgeng</h1>
             <span className="text-sm font-medium text-muted-foreground">
               Step {step} of {TOTAL_STEPS}
             </span>
