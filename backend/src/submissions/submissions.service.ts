@@ -58,6 +58,24 @@ export class SubmissionsService {
     });
     if (!task) throw new NotFoundException('Task not found.');
 
+    // Students may only submit to published tasks in cohorts they're
+    // enrolled in. Mentors / admins are unrestricted (e.g. to seed demo data).
+    if (user.role === 'student') {
+      if (task.status !== 'published') {
+        throw new ForbiddenException('Task is not published.');
+      }
+      const enrollment = await this.prisma.enrollment.findUnique({
+        where: {
+          userId_cohortId: { userId: user.id, cohortId: task.cohortId },
+        },
+      });
+      if (!enrollment) {
+        throw new ForbiddenException(
+          'You are not enrolled in the cohort for this task.',
+        );
+      }
+    }
+
     const created = await this.prisma.submission.create({
       data: {
         taskId: dto.taskId,
