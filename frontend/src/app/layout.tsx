@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   title: "Forgeng",
   description:
     "A rigorous, mentor-led apprenticeship for aspiring software engineers — apply, join a cohort, complete real projects, and grow.",
+  icons: {
+    icon: [{ url: "/icon.png", sizes: "256x256", type: "image/png" }],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "Forgeng",
     description:

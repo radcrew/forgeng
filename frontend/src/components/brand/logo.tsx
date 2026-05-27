@@ -12,7 +12,7 @@ interface LogoProps {
 
 /**
  * The Forgeng brand mark. Reads from `public/logo.png` so the same asset
- * powers the favicon (`app/icon.png`) and the OG image without duplication.
+ * powers favicons in `public/` and the OG image without duplication.
  */
 export function Logo({ size = 28, className, priority = false }: LogoProps) {
   return (
