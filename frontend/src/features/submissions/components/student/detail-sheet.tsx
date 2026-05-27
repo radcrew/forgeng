@@ -59,18 +59,18 @@ export const DetailSheet = ({
       <div>
         <SectionTitle className="mb-3 flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
-          Mentor Feedback ({feedback.length})
+          Feedback ({feedback.length})
         </SectionTitle>
         {feedback.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No feedback yet. Check back after a mentor reviews your submission.
+            No feedback yet. Check back after your submission is reviewed.
           </p>
         ) : (
           <div className="space-y-4">
             {feedback.map((fb) => (
               <FeedbackCard
                 key={fb.id}
-                authorName={fb.mentor?.name ?? "Mentor"}
+                authorName={fb.reviewer?.name ?? "Reviewer"}
                 verdict={fb.verdict}
                 content={fb.content}
                 createdAt={fb.createdAt}

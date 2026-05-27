@@ -25,22 +25,13 @@ export interface StudentDashboard {
   nextDeadline: string | null;
 }
 
-export interface MentorDashboard {
-  pendingReviews: number;
-  recentActivity: SubmissionDto[];
-  cohortBreakdown: {
-    cohortId: number;
-    cohortName: string;
-    pendingCount: number;
-  }[];
-}
-
 export interface AdminDashboard {
   applicationStats: ApplicationStats;
   activeCohorts: number;
   totalStudents: number;
-  totalMentors: number;
+  pendingReviews: number;
   recentApplications: ApplicationDto[];
+  recentSubmissions: SubmissionDto[];
 }
 
 @Injectable()
@@ -112,69 +103,44 @@ export class DashboardService {
     };
   }
 
-  async mentor(): Promise<MentorDashboard> {
-    const pending = await this.prisma.submission.findMany({
-      where: { status: 'submitted' },
-      orderBy: { createdAt: 'desc' },
-      include: { task: { include: { cohort: true } }, user: true },
-    });
-
-    const cohortPending = new Map<number, { name: string; count: number }>();
-    for (const sub of pending) {
-      const cohort = sub.task.cohort;
-      const current = cohortPending.get(cohort.id);
-      if (current) {
-        current.count += 1;
-      } else {
-        cohortPending.set(cohort.id, { name: cohort.name, count: 1 });
-      }
-    }
-
-    const cohortBreakdown = [...cohortPending.entries()].map(
-      ([cohortId, { name, count }]) => ({
-        cohortId,
-        cohortName: name,
-        pendingCount: count,
-      }),
-    );
-
-    const recentActivity = await Promise.all(
-      pending
-        .slice(0, 10)
-        .map((s) => this.serializeSubmission(s, s.task, s.user)),
-    );
-
-    return {
-      pendingReviews: pending.length,
-      recentActivity,
-      cohortBreakdown,
-    };
-  }
-
   async admin(): Promise<AdminDashboard> {
     const [
       applicationStats,
       activeCohorts,
       totalStudents,
-      totalMentors,
-      recent,
+      pendingReviews,
+      recentApplications,
+      pendingSubmissions,
     ] = await Promise.all([
       this.applications.stats(),
       this.prisma.cohort.count({ where: { status: 'active' } }),
       this.prisma.user.count({ where: { role: 'student' } }),
-      this.prisma.user.count({ where: { role: 'mentor' } }),
+      this.prisma.submission.count({ where: { status: 'submitted' } }),
       this.prisma.application.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5,
       }),
+      this.prisma.submission.findMany({
+        where: { status: 'submitted' },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        include: { task: true, user: true },
+      }),
     ]);
+
+    const recentSubmissions = await Promise.all(
+      pendingSubmissions.map((s) =>
+        this.serializeSubmission(s, s.task, s.user),
+      ),
+    );
 
     return {
       applicationStats,
       activeCohorts,
       totalStudents,
-      totalMentors,
-      recentApplications: recent.map(toApplicationDto),
+      pendingReviews,
+      recentApplications: recentApplications.map(toApplicationDto),
+      recentSubmissions,
     };
   }
 

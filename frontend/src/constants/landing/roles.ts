@@ -27,17 +27,17 @@ export const ROLES: RoleCard[] = [
     color: "bg-primary/10 text-primary",
     headline: "Build. Submit. Improve.",
     description:
-      "Browse your cohort's task list, submit your code with notes, and see mentor feedback land in your inbox.",
+      "Browse your cohort's task list, submit your work with notes, and read feedback on every submission.",
     cta: "Sign In",
     href: "/sign-in",
     photo: PHOTOS.coding,
   },
   {
-    role: "Mentor",
+    role: "Admin",
     color: "bg-emerald-100 text-emerald-700",
-    headline: "Shape the next generation.",
+    headline: "Run the program.",
     description:
-      "Review queued submissions from your cohort, leave structured feedback, and mark work approved or needing revision.",
+      "Review applications, manage cohorts and tasks, and leave structured feedback on student submissions.",
     cta: "Sign In",
     href: "/sign-in",
     photo: PHOTOS.mentoring,

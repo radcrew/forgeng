@@ -155,21 +155,21 @@ export function toSubmissionDto(
 export interface FeedbackDto {
   id: number;
   submissionId: number;
-  mentorId: number;
+  reviewerId: number;
   content: string;
   verdict: Feedback['verdict'];
-  mentor: UserDto | null;
+  reviewer: UserDto | null;
   createdAt: string;
 }
 
-export function toFeedbackDto(fb: Feedback, mentor: User | null): FeedbackDto {
+export function toFeedbackDto(fb: Feedback, reviewer: User | null): FeedbackDto {
   return {
     id: fb.id,
     submissionId: fb.submissionId,
-    mentorId: fb.mentorId,
+    reviewerId: fb.reviewerId,
     content: fb.content,
     verdict: fb.verdict,
-    mentor: mentor ? toUserDto(mentor) : null,
+    reviewer: reviewer ? toUserDto(reviewer) : null,
     createdAt: fb.createdAt.toISOString(),
   };
 }

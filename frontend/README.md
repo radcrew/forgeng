@@ -1,6 +1,6 @@
 # @forgeng/frontend
 
-Frontend for **Forgeng** — a mentor-led, cohort-based apprenticeship
+Frontend for **Forgeng** — a cohort-based apprenticeship
 program for aspiring software engineers.
 
 Next.js 16 (App Router) + Tailwind 4 + shadcn/ui, backed by the NestJS API in
@@ -47,10 +47,9 @@ Sign in at `/sign-in` with an email that exists in the database (run
 | `/sign-in`, `/sign-up`    | Email sign-in (dev header auth → `/auth/me`)  |
 | `/student`                | Student dashboard                             |
 | `/student/tasks`          | Task list + submit dialog                     |
-| `/student/submissions`    | Submission history + mentor feedback drawer   |
-| `/mentor`                 | Mentor dashboard                              |
-| `/mentor/reviews`         | Review queue with approve / needs-work flow   |
+| `/student/submissions`    | Submission history + feedback drawer          |
 | `/admin`                  | Admin dashboard                               |
+| `/admin/reviews`          | Submission review queue                       |
 | `/admin/applications`     | Application pipeline (status tabs + dialog)   |
 | `/admin/cohorts`          | Cohort CRUD + enrollment dialog               |
 | `/admin/tasks`            | Task authoring                                |

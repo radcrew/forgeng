@@ -1,5 +1,1 @@
-export type {
-  AdminDashboard,
-  MentorDashboard,
-  StudentDashboard,
-} from "@types";
+export type { AdminDashboard, StudentDashboard } from "@types";

@@ -10,7 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import type { AuthenticatedRequest, AuthUser } from './auth.types';
 import { IS_PUBLIC_KEY } from './public.decorator';
 
-const VALID_ROLES: Role[] = ['applicant', 'student', 'mentor', 'admin'];
+const VALID_ROLES: Role[] = ['applicant', 'student', 'admin'];
 
 function asRole(value: unknown): Role | undefined {
   return typeof value === 'string' && (VALID_ROLES as string[]).includes(value)

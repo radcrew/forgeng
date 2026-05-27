@@ -20,7 +20,8 @@ export interface Submission {
 export interface Feedback {
   id: number;
   submissionId: number;
-  mentor?: Pick<UserProfile, "id" | "name" | "email">;
+  reviewerId: number;
+  reviewer?: Pick<UserProfile, "id" | "name" | "email">;
   content: string;
   verdict: FeedbackVerdict;
   createdAt: string;

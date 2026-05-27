@@ -17,5 +17,5 @@ export type { StatusBadgeProps } from "./components/status-badge";
 
 export { DetailSheet } from "./components/student/detail-sheet";
 export type { DetailSheetProps } from "./components/student/detail-sheet";
-export { ReviewSheet } from "./components/mentor/review-sheet";
-export type { ReviewSheetProps } from "./components/mentor/review-sheet";
+export { ReviewSheet } from "./components/review-sheet";
+export type { ReviewSheetProps } from "./components/review-sheet";

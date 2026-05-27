@@ -54,7 +54,7 @@ export class CohortsController {
     return this.service.remove(id);
   }
 
-  @Roles('admin', 'mentor')
+  @Roles('admin')
   @Get(':id/enrollments')
   enrollments(@Param('id', ParseIntPipe) id: number): Promise<EnrollmentDto[]> {
     return this.service.enrollments(id);
