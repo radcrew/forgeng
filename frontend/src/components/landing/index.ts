@@ -1,0 +1,13 @@
+export { LandingHeader } from "./landing-header";
+export { LandingFooter } from "./landing-footer";
+export { HeroSection } from "./hero-section";
+export { StatsSection } from "./stats-section";
+export { WhoWeAreSection } from "./who-we-are-section";
+export { GallerySection } from "./gallery-section";
+export { HowItWorksSection } from "./how-it-works-section";
+export { TaskTypesSection } from "./task-types-section";
+export { FeaturesSection } from "./features-section";
+export { MentorFeedbackSection } from "./mentor-feedback-section";
+export { RolesSection } from "./roles-section";
+export { FaqSection } from "./faq-section";
+export { CtaBannerSection } from "./cta-banner-section";
