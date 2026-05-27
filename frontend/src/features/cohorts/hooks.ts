@@ -2,7 +2,7 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { listCohorts, listEnrollments } from "@features/cohorts/api";
+import { listCohorts, listEnrollments } from "./api";
 
 export const useCohorts = () => useAsyncResource(() => listCohorts(), []);
 

@@ -2,7 +2,7 @@
 
 import { PageContainer, PageHeader } from "@components/shared";
 import { StudentDashboardView } from "@features/dashboard";
-import { useStudentDashboard } from "@hooks";
+import { useStudentDashboard } from "@features/dashboard";
 
 const StudentDashboardPage = () => {
   const { data: dashboard, isLoading } = useStudentDashboard();

@@ -2,8 +2,8 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { listUsers } from "@features/users/api";
-import type { UserRole } from "@types";
+import { listUsers } from "./api";
+import type { UserRole } from "./types";
 
 export type UserRoleFilter = UserRole | "all";
 

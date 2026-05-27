@@ -15,7 +15,7 @@ import {
 import {
   useSubmissions,
   type SubmissionStatusFilter,
-} from "@hooks";
+} from "@features/submissions";
 
 const MentorReviewsPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);

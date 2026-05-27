@@ -7,7 +7,7 @@ import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { PageContainer, PageHeader } from "@components/shared";
 import { AdminTaskRow, TaskFormDialog } from "@features/tasks";
-import { useTasks } from "@hooks";
+import { useTasks } from "@features/tasks";
 import type { Task } from "@types";
 
 const AdminTasksPage = () => {

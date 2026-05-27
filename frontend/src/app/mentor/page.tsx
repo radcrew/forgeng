@@ -2,7 +2,7 @@
 
 import { PageContainer, PageHeader } from "@components/shared";
 import { MentorDashboardView } from "@features/dashboard";
-import { useMentorDashboard } from "@hooks";
+import { useMentorDashboard } from "@features/dashboard";
 
 const MentorDashboardPage = () => {
   const { data: dashboard, isLoading } = useMentorDashboard();

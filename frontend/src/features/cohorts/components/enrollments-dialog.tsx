@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Separator } from "@components/ui/separator";
-import { useEnrollments, useUsers } from "@hooks";
+import { useUsers } from "@features/users";
+import { useEnrollments } from "../hooks";
 import type { Cohort } from "@types";
 
 export type EnrollmentsDialogProps = {

@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
-import { useCohorts } from "@hooks";
+import { useCohorts } from "@features/cohorts";
 import type { Task, TaskStatus, TaskType } from "@types";
 
 export type TaskFormDialogProps = {

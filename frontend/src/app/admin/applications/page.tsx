@@ -11,7 +11,7 @@ import {
   type Application,
   type ApplicationStatusFilter,
 } from "@features/applications";
-import { useApplications } from "@hooks";
+import { useApplications } from "@features/applications";
 
 const AdminApplicationsPage = () => {
   const [filter, setFilter] = useState<ApplicationStatusFilter>("all");

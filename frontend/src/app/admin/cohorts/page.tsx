@@ -11,7 +11,7 @@ import {
   CohortFormDialog,
   EnrollmentsDialog,
 } from "@features/cohorts";
-import { useCohorts } from "@hooks";
+import { useCohorts } from "@features/cohorts";
 import type { Cohort } from "@types";
 
 const AdminCohortsPage = () => {

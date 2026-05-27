@@ -12,11 +12,9 @@ import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { SubmissionStatusBadge } from "@features/submissions";
 import { SubmitTaskDialog } from "@features/tasks";
 import { TASK_TYPE_ICON } from "@utils/task-icons";
-import {
-  useStudentDashboard,
-  useSubmissions,
-  useTasks,
-} from "@hooks";
+import { useStudentDashboard } from "@features/dashboard";
+import { useSubmissions } from "@features/submissions";
+import { useTasks } from "@features/tasks";
 import type { Task } from "@types";
 
 const StudentTasksPage = () => {

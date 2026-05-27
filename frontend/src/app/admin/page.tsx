@@ -2,7 +2,7 @@
 
 import { PageContainer, PageHeader } from "@components/shared";
 import { AdminDashboardView } from "@features/dashboard";
-import { useAdminDashboard } from "@hooks";
+import { useAdminDashboard } from "@features/dashboard";
 
 const AdminDashboardPage = () => {
   const { data: dashboard, isLoading } = useAdminDashboard();

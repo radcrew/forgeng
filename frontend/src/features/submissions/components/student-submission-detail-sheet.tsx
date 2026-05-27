@@ -13,7 +13,7 @@ import {
 import { Separator } from "@components/ui/separator";
 import type { Submission } from "@types";
 
-import { useSubmissionFeedback } from "@hooks";
+import { useSubmissionFeedback } from "../hooks";
 import { SubmissionStatusBadge } from "./submission-status-badge";
 
 export type StudentSubmissionDetailSheetProps = {

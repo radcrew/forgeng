@@ -11,7 +11,7 @@ import {
   StudentSubmissionDetailSheet,
   SubmissionStatusBadge,
 } from "@features/submissions";
-import { useSubmissions } from "@hooks";
+import { useSubmissions } from "@features/submissions";
 
 const StudentSubmissionsPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);

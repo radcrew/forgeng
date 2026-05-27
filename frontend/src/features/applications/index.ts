@@ -9,7 +9,7 @@ export {
   listApplications,
   updateApplicationStatus,
 } from "./api";
-export { useApplications, useUpdateApplicationStatus } from "@hooks";
+export { useApplications, useUpdateApplicationStatus } from "./hooks";
 
 export type { ApplicationStatusFilter } from "./components/application-status-tabs";
 export { ApplicationStatusTabs } from "./components/application-status-tabs";

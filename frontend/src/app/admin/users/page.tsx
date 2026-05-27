@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { PageContainer, PageHeader } from "@components/shared";
 import { AdminUserRow } from "@features/users";
-import { useUsers, type UserRoleFilter } from "@hooks";
+import { useUsers, type UserRoleFilter } from "@features/users";
 
 const AdminUsersPage = () => {
   const [roleFilter, setRoleFilter] = useState<UserRoleFilter>("all");

@@ -66,23 +66,18 @@ src/
 │   ├── layout/          # Role-aware sidebar layout
 │   ├── shared/          # Cross-route page chrome (PageHeader, EmptyState, …)
 │   └── ui/              # shadcn/ui primitives
-├── features/            # Domain: api, types, components (no hooks.ts per feature)
-│   ├── applications/    # e.g. ApplyWizard, pipeline dialogs & lists
+├── features/            # Domain: api, hooks, types, components
+│   ├── applications/    # hooks.ts, api.ts, ApplyWizard, pipeline dialogs
 │   ├── auth/
-│   ├── cohorts/         # e.g. CohortFormDialog, EnrollmentsDialog, AdminCohortCard
-│   ├── dashboard/       # e.g. AdminDashboardView, StudentDashboardView
-│   ├── submissions/     # e.g. detail sheets for student vs mentor
-│   ├── tasks/           # e.g. TaskFormDialog, SubmitTaskDialog, AdminTaskRow
-│   └── users/           # e.g. AdminUserRow
-├── hooks/               # All data hooks + `useAsyncResource`, `useIsMobile`
-│   ├── index.ts         # Barrel: `import { useCohorts } from "@hooks"`
+│   ├── cohorts/
+│   ├── dashboard/
+│   ├── submissions/
+│   ├── tasks/
+│   └── users/
+├── hooks/               # Global hooks only (`useAsyncResource`, `useIsMobile`)
+│   ├── index.ts
 │   ├── use-async-resource.ts
-│   ├── use-application-queries.ts
-│   ├── use-cohort-queries.ts
-│   ├── use-dashboard-queries.ts
-│   ├── use-submission-queries.ts
-│   ├── use-task-queries.ts
-│   └── use-user-queries.ts
+│   └── use-mobile.ts
 ├── contexts/            # React context definitions + hooks (`useCurrentUser`, …)
 ├── providers/           # Client providers (`AppProviders`, …)
 ├── types/               # Shared domain types (import via `@types`)
@@ -93,7 +88,6 @@ src/
 │   ├── submission.ts
 │   ├── dashboard.ts
 │   └── index.ts
-├── hooks/               # … (see above)
 ├── utils/               # Pure helpers (no React)
 │   ├── cn.ts            # className merge (Tailwind)
 │   ├── auth.ts          # homeForRole, normalizeEmail
@@ -129,22 +123,20 @@ Domain-specific behavior stays in **`@features/*`**; layout and chrome stay in *
 
 ## Data layer
 
-Pages and feature components import hooks from **`@hooks`** (e.g. `useApplications`, `useSubmissions`).
-Each feature’s `api.ts` exports **`const` arrow functions** that call the NestJS
-API through `@lib/api-client`, which targets `{NEXT_PUBLIC_API_URL}/api`. Query hooks
-live in `src/hooks/use-*-queries.ts` and call those APIs via `@features/*/api`.
-
-Feature `index.ts` files may re-export hooks from `@hooks` for backward compatibility.
+Each feature owns **`api.ts`** (fetch functions) and **`hooks.ts`** (React Query–style
+loaders built on `useAsyncResource` from `@hooks`). Pages import domain hooks from
+**`@features/*`**; only shared hooks live in **`@hooks`**.
 
 ```ts
-// src/hooks/use-application-queries.ts
-import { listApplications } from "@features/applications/api";
+// features/applications/hooks.ts
+import { useAsyncResource } from "@hooks/use-async-resource";
+import { listApplications } from "./api";
+
 export const useApplications = (filter) =>
   useAsyncResource(() => listApplications(...), [filter]);
 ```
 
 ```ts
 // app/admin/applications/page.tsx
-import { useApplications } from "@hooks";
-import { ApplicationsList } from "@features/applications";
+import { useApplications, ApplicationsList } from "@features/applications";
 ```
