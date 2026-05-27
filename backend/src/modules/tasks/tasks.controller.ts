@@ -11,6 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@core/auth/current-user.decorator';
 import { Roles } from '@core/auth/roles.decorator';
 import type { AuthUser } from '@core/auth/auth.types';
@@ -20,6 +21,7 @@ import { ListTasksQuery } from './dto/list-tasks.query';
 import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
+@ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly service: TasksService) {}

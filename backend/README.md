@@ -62,6 +62,7 @@ optionally filtered by `taskId`, `status`, or `cohortId`.
 src/
 ├── main.ts                  # bootstrap (global prefix, validation, filter)
 ├── app.middleware.ts        # Express middleware (helmet, compression)
+├── swagger.ts               # OpenAPI / Swagger UI setup
 ├── app.module.ts            # imports core + feature modules
 ├── config/                  # env loading, validation, typed ConfigService
 │   ├── configuration.ts     # maps process.env → app settings
@@ -156,6 +157,18 @@ pnpm build        # nest build
 pnpm lint         # eslint --fix
 pnpm test         # jest
 ```
+
+### OpenAPI (Swagger)
+
+With the API running in **development** or **test** (`NODE_ENV` ≠ `production`):
+
+- UI: [http://localhost:3001/api/docs](http://localhost:3001/api/docs)
+- JSON: [http://localhost:3001/api/docs-json](http://localhost:3001/api/docs-json)
+
+Use **Authorize** in Swagger UI and set dev headers (`x-user-id` or `x-user-email`).
+Public routes (`POST /applications`, `GET /healthz`) work without headers.
+
+Configuration lives in `src/swagger.ts` (disabled in production by default).
 
 ## Talking to the API from the frontend
 

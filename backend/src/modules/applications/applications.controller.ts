@@ -10,6 +10,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Public } from '@core/auth/public.decorator';
 import { Roles } from '@core/auth/roles.decorator';
 import type { ApplicationDto } from '@common/mappers';
@@ -21,6 +22,7 @@ import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 
+@ApiTags('applications')
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly service: ApplicationsService) {}

@@ -9,6 +9,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '@core/auth/current-user.decorator';
 import type { AuthUser } from '@core/auth/auth.types';
@@ -17,6 +18,7 @@ import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { SubmissionsService } from './submissions.service';
 
+@ApiTags('submissions')
 @Controller('submissions')
 export class SubmissionsController {
   constructor(private readonly service: SubmissionsService) {}

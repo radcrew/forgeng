@@ -6,6 +6,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
 import { applyAppMiddleware } from './app.middleware';
+import { setupSwagger } from './swagger';
 import { PrismaExceptionFilter } from '@common/filters/prisma-exception.filter';
 import type { AppConfiguration } from '@config';
 
@@ -35,7 +36,12 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new PrismaExceptionFilter());
 
+  setupSwagger(app);
+
   await app.listen(port);
   console.log(`🚀 forgeng API running on http://localhost:${port}/api`);
+  if (config.getOrThrow('nodeEnv', { infer: true }) !== 'production') {
+    console.log(`📖 OpenAPI docs at http://localhost:${port}/api/docs`);
+  }
 }
 void bootstrap();
