@@ -1,15 +1,27 @@
+import 'tsconfig-paths/register';
+
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+
 import { AppModule } from './app.module';
-import { PrismaExceptionFilter } from './common/prisma-exception.filter';
+import { applyAppMiddleware } from './app.middleware';
+import { setupSwagger } from './swagger';
+import { PrismaExceptionFilter } from '@common/filters/prisma-exception.filter';
+import type { AppConfiguration } from '@config';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  applyAppMiddleware(app);
+
+  const config = app.get(ConfigService<AppConfiguration, true>);
+  const port = config.getOrThrow('port', { infer: true });
+  const corsOrigin = config.getOrThrow('corsOrigin', { infer: true });
 
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? 'http://localhost:3000',
+    origin: corsOrigin,
     credentials: true,
   });
 
@@ -24,8 +36,12 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  const port = process.env.PORT ?? 3001;
+  setupSwagger(app);
+
   await app.listen(port);
   console.log(`🚀 forgeng API running on http://localhost:${port}/api`);
+  if (config.getOrThrow('nodeEnv', { infer: true }) !== 'production') {
+    console.log(`📖 OpenAPI docs at http://localhost:${port}/api/docs`);
+  }
 }
 void bootstrap();

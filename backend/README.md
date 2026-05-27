@@ -15,7 +15,7 @@ Next.js frontend in `../frontend`.
 
 Auth is currently behind a swappable **dev header guard**
 (`x-user-id` / `x-user-email` / `x-user-role`) — the real Clerk integration
-plugs in by replacing `src/common/auth/dev-auth.guard.ts`.
+plugs in by replacing `src/core/auth/dev-auth.guard.ts`.
 
 ## Endpoints
 
@@ -24,8 +24,8 @@ All routes are mounted under `/api`:
 | Method | Path                                | Role(s)        |
 |-------:|-------------------------------------|----------------|
 | GET    | `/healthz`                          | public         |
-| GET    | `/auth/me`                          | any            |
-| PATCH  | `/auth/profile`                     | any            |
+| GET    | `/account/me`                       | any            |
+| PATCH  | `/account/profile`                  | any            |
 | GET    | `/applications`                     | admin          |
 | GET    | `/applications/stats`               | admin          |
 | POST   | `/applications`                     | public         |
@@ -60,35 +60,81 @@ optionally filtered by `taskId`, `status`, or `cohortId`.
 
 ```
 src/
-├── app.module.ts            # composition root
 ├── main.ts                  # bootstrap (global prefix, validation, filter)
-├── prisma/                  # PrismaService + PrismaModule (global)
-├── common/
-│   ├── auth/                # dev guard, roles guard, decorators, types
-│   ├── prisma-exception.filter.ts
-│   └── serializers.ts       # Prisma row → API DTO mappers
-├── health/                  # /healthz
-├── auth/                    # /auth/me, /auth/profile
-├── applications/            # apprenticeship applications
-├── cohorts/                 # cohort CRUD + enrollments
-├── tasks/                   # task authoring + student listing
-├── submissions/             # student submissions
-├── feedback/                # admin feedback on submissions
-├── users/                   # admin user list + role changes
-└── dashboard/               # role-specific dashboard summaries
+├── app.middleware.ts        # Express middleware (helmet, compression)
+├── swagger.ts               # OpenAPI / Swagger UI setup
+├── app.module.ts            # imports core + feature modules
+├── config/                  # env loading, validation, typed ConfigService
+│   ├── configuration.ts     # maps process.env → app settings
+│   ├── env.validation.ts    # class-validator schema (fail fast)
+│   └── app-config.module.ts
+├── common/                  # shared, non-infrastructure utilities
+│   ├── filters/             # e.g. PrismaExceptionFilter
+│   └── mappers/             # Prisma row → API DTO (response shapes)
+├── core/                    # global singleton infrastructure
+│   ├── core.module.ts
+│   ├── database/            # PrismaService + DatabaseModule (global)
+│   └── auth/                # dev guard, roles guard, decorators
+└── modules/                 # business features
+    ├── health/
+    ├── account/             # /account/me, /account/profile
+    ├── applications/
+    ├── cohorts/
+    ├── tasks/
+    ├── submissions/
+    ├── feedback/
+    ├── users/
+    └── dashboard/
 ```
 
-Each feature module follows the same shape: `*.controller.ts`, `*.service.ts`,
-`*.module.ts`, and one DTO per request body / query.
+Each feature module follows:
+
+```
+modules/<feature>/
+├── dto/              # request validation (class-validator)
+├── entities/         # re-exports Prisma models for this domain
+├── <feature>.controller.ts
+├── <feature>.service.ts
+└── <feature>.module.ts
+```
+
+Database schema lives in `prisma/schema.prisma` (Prisma is the ORM; `entities/` points at those models).
+
+### Path aliases
+
+Configured in `tsconfig.json` (same idea as the frontend):
+
+| Alias | Maps to |
+|-------|---------|
+| `@core/*` | `src/core/*` |
+| `@common/*` | `src/common/*` |
+| `@config` | `src/config` |
+| `@modules/*` | `src/modules/*` |
+
+`pnpm build` runs `tsc-alias` so production `dist/` uses relative paths. Dev uses
+`tsconfig-paths/register` in `main.ts`.
 
 ## Environment
 
-Copy `.env.example` to `.env` and adjust:
+Copy `.env.example` to `.env` and adjust. Variables are loaded by
+`AppConfigModule` (`src/config/`) and validated on startup — a missing
+`DATABASE_URL` or invalid `PORT` stops the process with a clear error.
 
-```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/forgeng?schema=public"
-PORT=3001
-CORS_ORIGIN="http://localhost:3000"
+| Variable       | Required | Default                    |
+|----------------|----------|----------------------------|
+| `DATABASE_URL` | yes      | —                          |
+| `PORT`         | no       | `3001`                     |
+| `CORS_ORIGIN`  | no       | `http://localhost:3000`    |
+| `NODE_ENV`     | no       | `development`              |
+
+Optional `.env.local` overrides `.env` (gitignored if you add it).
+
+Inject settings elsewhere with `ConfigService`:
+
+```typescript
+constructor(private readonly config: ConfigService<AppConfiguration, true>) {}
+
+const url = this.config.getOrThrow('database.url', { infer: true });
 ```
 
 ## Database
@@ -112,12 +158,24 @@ pnpm lint         # eslint --fix
 pnpm test         # jest
 ```
 
+### OpenAPI (Swagger)
+
+With the API running in **development** or **test** (`NODE_ENV` ≠ `production`):
+
+- UI: [http://localhost:3001/api/docs](http://localhost:3001/api/docs)
+- JSON: [http://localhost:3001/api/docs-json](http://localhost:3001/api/docs-json)
+
+Use **Authorize** in Swagger UI and set dev headers (`x-user-id` or `x-user-email`).
+Public routes (`POST /applications`, `GET /healthz`) work without headers.
+
+Configuration lives in `src/swagger.ts` (disabled in production by default).
+
 ## Talking to the API from the frontend
 
 In dev, the frontend should send headers identifying the active user:
 
 ```http
-GET /api/auth/me
+GET /api/account/me
 x-user-id: 1                   # or
 x-user-email: avery@example.com
 x-user-role: student
