@@ -1,10 +1,8 @@
 "use client";
 
 import { PageContainer, PageHeader } from "@components/shared";
-import {
-  AdminDashboardView,
-  useAdminDashboard,
-} from "@features/dashboard";
+import { AdminDashboardView } from "@features/dashboard";
+import { useAdminDashboard } from "@hooks";
 
 const AdminDashboardPage = () => {
   const { data: dashboard, isLoading } = useAdminDashboard();

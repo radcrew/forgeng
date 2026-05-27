@@ -9,12 +9,13 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { useStudentDashboard } from "@features/dashboard";
+import { SubmissionStatusBadge } from "@features/submissions";
+import { SubmitTaskDialog, TASK_TYPE_ICON } from "@features/tasks";
 import {
-  SubmissionStatusBadge,
+  useStudentDashboard,
   useSubmissions,
-} from "@features/submissions";
-import { SubmitTaskDialog, TASK_TYPE_ICON, useTasks } from "@features/tasks";
+  useTasks,
+} from "@hooks";
 import type { Task } from "@types";
 
 const StudentTasksPage = () => {

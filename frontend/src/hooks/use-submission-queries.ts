@@ -2,8 +2,8 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { listFeedback, listSubmissions } from "./api";
-import type { SubmissionStatus } from "./types";
+import { listFeedback, listSubmissions } from "@features/submissions/api";
+import type { SubmissionStatus } from "@types";
 
 export type SubmissionStatusFilter = SubmissionStatus | "all";
 

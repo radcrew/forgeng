@@ -6,7 +6,7 @@ import {
   getAdminDashboard,
   getMentorDashboard,
   getStudentDashboard,
-} from "./api";
+} from "@features/dashboard/api";
 
 export const useStudentDashboard = () =>
   useAsyncResource(() => getStudentDashboard(), []);

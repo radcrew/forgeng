@@ -12,7 +12,7 @@ export {
   useAdminDashboard,
   useMentorDashboard,
   useStudentDashboard,
-} from "./hooks";
+} from "@hooks";
 
 export { AdminDashboardView } from "./components/admin-dashboard-view";
 export type { AdminDashboardViewProps } from "./components/admin-dashboard-view";

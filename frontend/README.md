@@ -66,7 +66,7 @@ src/
 │   ├── layout/          # Role-aware sidebar layout
 │   ├── shared/          # Cross-route page chrome (PageHeader, EmptyState, …)
 │   └── ui/              # shadcn/ui primitives
-├── features/            # Domain: api, hooks, types, route-level components
+├── features/            # Domain: api, types, components (no hooks.ts per feature)
 │   ├── applications/    # e.g. ApplyWizard, pipeline dialogs & lists
 │   ├── auth/
 │   ├── cohorts/         # e.g. CohortFormDialog, EnrollmentsDialog, AdminCohortCard
@@ -74,7 +74,15 @@ src/
 │   ├── submissions/     # e.g. detail sheets for student vs mentor
 │   ├── tasks/           # e.g. TaskFormDialog, SubmitTaskDialog, AdminTaskRow
 │   └── users/           # e.g. AdminUserRow
-├── hooks/               # Shared client hooks (e.g. useAsyncResource)
+├── hooks/               # All data hooks + `useAsyncResource`, `useIsMobile`
+│   ├── index.ts         # Barrel: `import { useCohorts } from "@hooks"`
+│   ├── use-async-resource.ts
+│   ├── use-application-queries.ts
+│   ├── use-cohort-queries.ts
+│   ├── use-dashboard-queries.ts
+│   ├── use-submission-queries.ts
+│   ├── use-task-queries.ts
+│   └── use-user-queries.ts
 ├── contexts/            # React context definitions + hooks (`useCurrentUser`, …)
 ├── providers/           # Client providers (`AppProviders`, …)
 ├── types/               # Shared domain types (import via `@types`)
@@ -112,17 +120,22 @@ Domain-specific behavior stays in **`@features/*`**; layout and chrome stay in *
 
 ## Data layer
 
-Pages call **`@features/*/hooks`** (e.g. `useApplications`, `useSubmissions`).
+Pages and feature components import hooks from **`@hooks`** (e.g. `useApplications`, `useSubmissions`).
 Each feature’s `api.ts` exports **`const` arrow functions** that call the NestJS
-API through `@lib/api-client`, which targets `{NEXT_PUBLIC_API_URL}/api`. Hooks
-use **named imports** from `./api` (no namespace `import *`).
+API through `@lib/api-client`, which targets `{NEXT_PUBLIC_API_URL}/api`. Query hooks
+live in `src/hooks/use-*-queries.ts` and call those APIs via `@features/*/api`.
+
+Feature `index.ts` files may re-export hooks from `@hooks` for backward compatibility.
 
 ```ts
-// features/applications/api.ts
-export const listApplications = async (status?: ApplicationStatus) => { ... };
-
-// features/applications/hooks.ts
-import { listApplications } from "./api";
+// src/hooks/use-application-queries.ts
+import { listApplications } from "@features/applications/api";
 export const useApplications = (filter) =>
   useAsyncResource(() => listApplications(...), [filter]);
+```
+
+```ts
+// app/admin/applications/page.tsx
+import { useApplications } from "@hooks";
+import { ApplicationsList } from "@features/applications";
 ```

@@ -8,10 +8,10 @@ import {
   ApplicationDetailDialog,
   ApplicationStatusTabs,
   ApplicationsList,
-  useApplications,
   type Application,
   type ApplicationStatusFilter,
 } from "@features/applications";
+import { useApplications } from "@hooks";
 
 const AdminApplicationsPage = () => {
   const [filter, setFilter] = useState<ApplicationStatusFilter>("all");

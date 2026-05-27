@@ -10,8 +10,8 @@ import {
   AdminCohortCard,
   CohortFormDialog,
   EnrollmentsDialog,
-  useCohorts,
 } from "@features/cohorts";
+import { useCohorts } from "@hooks";
 import type { Cohort } from "@types";
 
 const AdminCohortsPage = () => {

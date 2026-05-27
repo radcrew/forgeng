@@ -1,10 +1,8 @@
 "use client";
 
 import { PageContainer, PageHeader } from "@components/shared";
-import {
-  MentorDashboardView,
-  useMentorDashboard,
-} from "@features/dashboard";
+import { MentorDashboardView } from "@features/dashboard";
+import { useMentorDashboard } from "@hooks";
 
 const MentorDashboardPage = () => {
   const { data: dashboard, isLoading } = useMentorDashboard();

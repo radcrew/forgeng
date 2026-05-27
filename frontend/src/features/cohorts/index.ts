@@ -1,7 +1,7 @@
 export type { Cohort, CohortStatus, Enrollment } from "./types";
 export { COHORT_STATUS_VARIANT } from "./constants";
 export { listCohorts, listEnrollments } from "./api";
-export { useCohorts, useEnrollments } from "./hooks";
+export { useCohorts, useEnrollments } from "@hooks";
 
 export { CohortFormDialog } from "./components/cohort-form-dialog";
 export type { CohortFormDialogProps } from "./components/cohort-form-dialog";

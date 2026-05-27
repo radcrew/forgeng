@@ -10,8 +10,8 @@ import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
   StudentSubmissionDetailSheet,
   SubmissionStatusBadge,
-  useSubmissions,
 } from "@features/submissions";
+import { useSubmissions } from "@hooks";
 
 const StudentSubmissionsPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);

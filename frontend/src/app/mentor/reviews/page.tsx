@@ -11,9 +11,11 @@ import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
   MentorReviewDetailSheet,
   SubmissionStatusBadge,
+} from "@features/submissions";
+import {
   useSubmissions,
   type SubmissionStatusFilter,
-} from "@features/submissions";
+} from "@hooks";
 
 const MentorReviewsPage = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);

@@ -21,10 +21,8 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
-import { useCohorts } from "@features/cohorts";
+import { useCohorts, useUpdateApplicationStatus } from "@hooks";
 import type { Application, ApplicationStatus } from "@types";
-
-import { useUpdateApplicationStatus } from "../hooks";
 
 export type ApplicationDetailDialogProps = {
   application: Application;

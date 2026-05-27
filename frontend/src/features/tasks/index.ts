@@ -1,7 +1,7 @@
 export type { Task, TaskStatus, TaskType } from "./types";
 export { TASK_TYPE_ICON } from "./task-type-icons";
 export { listTasks } from "./api";
-export { useTasks } from "./hooks";
+export { useTasks } from "@hooks";
 
 export { TaskFormDialog } from "./components/task-form-dialog";
 export type { TaskFormDialogProps } from "./components/task-form-dialog";

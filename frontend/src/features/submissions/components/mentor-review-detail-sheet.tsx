@@ -18,7 +18,7 @@ import { Separator } from "@components/ui/separator";
 import { Textarea } from "@components/ui/textarea";
 import type { FeedbackVerdict, Submission } from "@types";
 
-import { useSubmissionFeedback } from "../hooks";
+import { useSubmissionFeedback } from "@hooks";
 import { SubmissionStatusBadge } from "./submission-status-badge";
 
 export type MentorReviewDetailSheetProps = {

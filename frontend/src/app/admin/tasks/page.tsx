@@ -6,11 +6,8 @@ import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { PageContainer, PageHeader } from "@components/shared";
-import {
-  AdminTaskRow,
-  TaskFormDialog,
-  useTasks,
-} from "@features/tasks";
+import { AdminTaskRow, TaskFormDialog } from "@features/tasks";
+import { useTasks } from "@hooks";
 import type { Task } from "@types";
 
 const AdminTasksPage = () => {

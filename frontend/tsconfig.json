@@ -22,6 +22,7 @@
       "@app/*": ["./src/app/*"],
       "@components/*": ["./src/components/*"],
       "@constants/*": ["./src/constants/*"],
+      "@hooks": ["./src/hooks/index.ts"],
       "@hooks/*": ["./src/hooks/*"],
       "@types": ["./src/types/index.ts"],
       "@types/*": ["./src/types/*"],

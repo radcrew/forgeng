@@ -1,10 +1,8 @@
 "use client";
 
 import { PageContainer, PageHeader } from "@components/shared";
-import {
-  StudentDashboardView,
-  useStudentDashboard,
-} from "@features/dashboard";
+import { StudentDashboardView } from "@features/dashboard";
+import { useStudentDashboard } from "@hooks";
 
 const StudentDashboardPage = () => {
   const { data: dashboard, isLoading } = useStudentDashboard();

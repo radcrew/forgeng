@@ -8,8 +8,8 @@ import {
   listApplications,
   updateApplicationStatus,
   type UpdateApplicationStatusInput,
-} from "./api";
-import type { ApplicationStatusFilter } from "./components/application-status-tabs";
+} from "@features/applications/api";
+import type { ApplicationStatusFilter } from "@features/applications/components/application-status-tabs";
 
 export const useApplications = (filter: ApplicationStatusFilter) =>
   useAsyncResource(
