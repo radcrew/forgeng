@@ -8,7 +8,7 @@ A TypeScript monorepo for the Forgeng apprenticeship platform:
 
 ## Prerequisites
 
-- Node.js >= 20 (tested on 24)
+- Node.js >= 24
 - pnpm 10 (`npm i -g pnpm`)
 - A local PostgreSQL 14+ server
 

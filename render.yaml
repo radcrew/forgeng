@@ -29,6 +29,7 @@ services:
   - type: web
     name: forgeng-backend
     runtime: node
+    nodeVersion: "24"
     plan: free # Upgrade to "starter" ($7/mo) for no cold-start sleep.
     numInstances: 1 # Locked to one instance — see scaling note in header.
     rootDir: .
@@ -49,8 +50,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NODE_VERSION
-        value: "20"
       # Wired to the managed Postgres above. Render fills this in.
       - key: DATABASE_URL
         fromDatabase:
