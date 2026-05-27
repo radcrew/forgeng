@@ -11,10 +11,10 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CurrentUser } from '../../core/auth/current-user.decorator';
-import { Roles } from '../../core/auth/roles.decorator';
-import type { AuthUser } from '../../core/auth/auth.types';
-import type { TaskDto } from '../../common/mappers';
+import { CurrentUser } from '@core/auth/current-user.decorator';
+import { Roles } from '@core/auth/roles.decorator';
+import type { AuthUser } from '@core/auth/auth.types';
+import type { TaskDto } from '@common/mappers';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ListTasksQuery } from './dto/list-tasks.query';
 import { TasksService } from './tasks.service';

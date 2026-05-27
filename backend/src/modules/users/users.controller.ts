@@ -8,8 +8,8 @@ import {
   Query,
 } from '@nestjs/common';
 
-import type { UserDto } from '../../common/mappers';
-import { Roles } from '../../core/auth/roles.decorator';
+import type { UserDto } from '@common/mappers';
+import { Roles } from '@core/auth/roles.decorator';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { UsersService } from './users.service';

@@ -8,10 +8,10 @@ import {
   ParseIntPipe,
   Post,
 } from '@nestjs/common';
-import { CurrentUser } from '../../core/auth/current-user.decorator';
-import type { AuthUser } from '../../core/auth/auth.types';
-import { Roles } from '../../core/auth/roles.decorator';
-import type { FeedbackDto } from '../../common/mappers';
+import { CurrentUser } from '@core/auth/current-user.decorator';
+import type { AuthUser } from '@core/auth/auth.types';
+import { Roles } from '@core/auth/roles.decorator';
+import type { FeedbackDto } from '@common/mappers';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { FeedbackService } from './feedback.service';
 

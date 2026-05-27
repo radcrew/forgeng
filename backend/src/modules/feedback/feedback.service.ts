@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { AuthUser } from '../../core/auth/auth.types';
-import { toFeedbackDto, type FeedbackDto } from '../../common/mappers';
-import { PrismaService } from '../../core/database/prisma.service';
+import type { AuthUser } from '@core/auth/auth.types';
+import { toFeedbackDto, type FeedbackDto } from '@common/mappers';
+import { PrismaService } from '@core/database/prisma.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 
 @Injectable()

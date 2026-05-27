@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
-import { CurrentUser } from '../../core/auth/current-user.decorator';
-import { Roles } from '../../core/auth/roles.decorator';
-import type { AuthUser } from '../../core/auth/auth.types';
+import { CurrentUser } from '@core/auth/current-user.decorator';
+import { Roles } from '@core/auth/roles.decorator';
+import type { AuthUser } from '@core/auth/auth.types';
 import {
   DashboardService,
   type AdminDashboard,

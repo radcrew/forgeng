@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Cohort } from '@prisma/client';
-import { PrismaService } from '../../core/database/prisma.service';
+import { PrismaService } from '@core/database/prisma.service';
 import {
   toCohortDto,
   toEnrollmentDto,
   type CohortDto,
   type EnrollmentDto,
-} from '../../common/mappers';
+} from '@common/mappers';
 import { CreateCohortDto } from './dto/create-cohort.dto';
 import { EnrollDto } from './dto/enroll.dto';
 import { UpdateCohortDto } from './dto/update-cohort.dto';

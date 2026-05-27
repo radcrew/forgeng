@@ -10,9 +10,9 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { CurrentUser } from '../../core/auth/current-user.decorator';
-import type { AuthUser } from '../../core/auth/auth.types';
-import type { SubmissionDto } from '../../common/mappers';
+import { CurrentUser } from '@core/auth/current-user.decorator';
+import type { AuthUser } from '@core/auth/auth.types';
+import type { SubmissionDto } from '@common/mappers';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { SubmissionsService } from './submissions.service';

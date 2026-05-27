@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { toUserDto, type UserDto } from '../../common/mappers';
-import { PrismaService } from '../../core/database/prisma.service';
+import { toUserDto, type UserDto } from '@common/mappers';
+import { PrismaService } from '@core/database/prisma.service';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
 

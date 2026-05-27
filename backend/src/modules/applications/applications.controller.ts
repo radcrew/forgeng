@@ -10,9 +10,9 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { Public } from '../../core/auth/public.decorator';
-import { Roles } from '../../core/auth/roles.decorator';
-import type { ApplicationDto } from '../../common/mappers';
+import { Public } from '@core/auth/public.decorator';
+import { Roles } from '@core/auth/roles.decorator';
+import type { ApplicationDto } from '@common/mappers';
 import {
   ApplicationsService,
   type ApplicationStats,

@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma, Task } from '@prisma/client';
-import type { AuthUser } from '../../core/auth/auth.types';
-import { toTaskDto, type TaskDto } from '../../common/mappers';
-import { PrismaService } from '../../core/database/prisma.service';
+import type { AuthUser } from '@core/auth/auth.types';
+import { toTaskDto, type TaskDto } from '@common/mappers';
+import { PrismaService } from '@core/database/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ListTasksQuery } from './dto/list-tasks.query';
 import { UpdateTaskDto } from './dto/update-task.dto';

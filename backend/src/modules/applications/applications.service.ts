@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ApplicationStatus } from '@prisma/client';
-import { PrismaService } from '../../core/database/prisma.service';
-import { toApplicationDto, type ApplicationDto } from '../../common/mappers';
+import { PrismaService } from '@core/database/prisma.service';
+import { toApplicationDto, type ApplicationDto } from '@common/mappers';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 

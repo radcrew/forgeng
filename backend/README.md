@@ -98,6 +98,20 @@ modules/<feature>/
 
 Database schema lives in `prisma/schema.prisma` (Prisma is the ORM; `entities/` points at those models).
 
+### Path aliases
+
+Configured in `tsconfig.json` (same idea as the frontend):
+
+| Alias | Maps to |
+|-------|---------|
+| `@core/*` | `src/core/*` |
+| `@common/*` | `src/common/*` |
+| `@config` | `src/config` |
+| `@modules/*` | `src/modules/*` |
+
+`pnpm build` runs `tsc-alias` so production `dist/` uses relative paths. Dev uses
+`tsconfig-paths/register` in `main.ts`.
+
 ## Environment
 
 Copy `.env.example` to `.env` and adjust. Variables are loaded by

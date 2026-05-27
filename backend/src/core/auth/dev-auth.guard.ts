@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Role } from '@prisma/client';
-import { PrismaService } from '../database/prisma.service';
+import { PrismaService } from '@core/database/prisma.service';
 import type { AuthenticatedRequest, AuthUser } from './auth.types';
 import { IS_PUBLIC_KEY } from './public.decorator';
 

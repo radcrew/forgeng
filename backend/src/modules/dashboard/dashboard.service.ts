@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Submission, Task, User } from '@prisma/client';
-import { ApplicationsService } from '../applications/applications.service';
-import type { AuthUser } from '../../core/auth/auth.types';
+import { ApplicationsService } from '@modules/applications/applications.service';
+import type { AuthUser } from '@core/auth/auth.types';
 import {
   toApplicationDto,
   toCohortDto,
@@ -9,9 +9,9 @@ import {
   type ApplicationDto,
   type CohortDto,
   type SubmissionDto,
-} from '../../common/mappers';
-import { PrismaService } from '../../core/database/prisma.service';
-import type { ApplicationStats } from '../applications/applications.service';
+} from '@common/mappers';
+import { PrismaService } from '@core/database/prisma.service';
+import type { ApplicationStats } from '@modules/applications/applications.service';
 
 export interface StudentDashboard {
   cohort: CohortDto | null;

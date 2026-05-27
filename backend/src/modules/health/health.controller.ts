@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { Public } from '../../core/auth/public.decorator';
-import { PrismaService } from '../../core/database/prisma.service';
+import { Public } from '@core/auth/public.decorator';
+import { PrismaService } from '@core/database/prisma.service';
 
 @Controller('healthz')
 export class HealthController {

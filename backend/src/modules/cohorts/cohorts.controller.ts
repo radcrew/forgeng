@@ -10,8 +10,8 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { Roles } from '../../core/auth/roles.decorator';
-import type { CohortDto, EnrollmentDto } from '../../common/mappers';
+import { Roles } from '@core/auth/roles.decorator';
+import type { CohortDto, EnrollmentDto } from '@common/mappers';
 import { CohortsService } from './cohorts.service';
 import { CreateCohortDto } from './dto/create-cohort.dto';
 import { EnrollDto } from './dto/enroll.dto';
