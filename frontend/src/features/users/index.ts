@@ -1,4 +1,4 @@
 export type { UserProfile, UserRole } from "./types";
-export { listUsers, getUserById } from "./api";
+export { listUsers, updateUserRole } from "./api";
 export type { UserRoleFilter } from "./hooks";
 export { useUsers } from "./hooks";

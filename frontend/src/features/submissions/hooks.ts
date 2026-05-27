@@ -9,18 +9,20 @@ export type SubmissionStatusFilter = SubmissionStatus | "all";
 
 export interface UseSubmissionsOptions {
   status?: SubmissionStatusFilter;
-  userId?: number;
+  taskId?: number;
+  cohortId?: number;
 }
 
 export function useSubmissions(options: UseSubmissionsOptions = {}) {
-  const { status = "all", userId } = options;
+  const { status = "all", taskId, cohortId } = options;
   return useAsyncResource(
     () =>
       submissionsApi.listSubmissions({
-        userId,
+        taskId,
+        cohortId,
         status: status === "all" ? undefined : status,
       }),
-    [status, userId],
+    [status, taskId, cohortId],
   );
 }
 

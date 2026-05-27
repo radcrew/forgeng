@@ -31,10 +31,17 @@ export default function StudentDashboardPage() {
       <PageHeader
         title="Student Dashboard"
         description={
-          <>
-            Welcome back. You are enrolled in{" "}
-            <span className="font-semibold text-foreground">{cohort.name}</span>.
-          </>
+          cohort ? (
+            <>
+              Welcome back. You are enrolled in{" "}
+              <span className="font-semibold text-foreground">
+                {cohort.name}
+              </span>
+              .
+            </>
+          ) : (
+            "Welcome back. You are not enrolled in a cohort yet."
+          )
         }
       />
 

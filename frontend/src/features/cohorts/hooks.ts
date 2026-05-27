@@ -10,7 +10,10 @@ export function useCohorts() {
 
 export function useEnrollments(cohortId: number | undefined) {
   return useAsyncResource(
-    () => cohortsApi.listEnrollments(cohortId),
+    () => {
+      if (cohortId == null) return Promise.resolve([]);
+      return cohortsApi.listEnrollments(cohortId);
+    },
     [cohortId],
   );
 }

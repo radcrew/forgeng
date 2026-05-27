@@ -87,12 +87,12 @@ export interface Enrollment {
 }
 
 export interface StudentDashboard {
-  cohort: Pick<Cohort, "id" | "name">;
+  cohort: Pick<Cohort, "id" | "name"> | null;
   taskStats: {
     total: number;
+    submitted: number;
     approved: number;
     pending: number;
-    needsWork: number;
   };
   nextDeadline: string | null;
   recentSubmissions: Submission[];

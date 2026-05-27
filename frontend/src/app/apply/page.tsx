@@ -21,6 +21,8 @@ import {
 import { Input } from "@components/ui/input";
 import { Progress } from "@components/ui/progress";
 import { Textarea } from "@components/ui/textarea";
+import { createApplication } from "@features/applications";
+import { ApiError } from "@lib/api-client";
 
 const APPLICATION_SCHEMA = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -88,15 +90,29 @@ export default function ApplyPage() {
 
   const onSubmit = async (data: ApplicationFormValues) => {
     setIsSubmitting(true);
-    // Frontend-only: simulate latency.
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setIsSubmitting(false);
-
-    localStorage.removeItem(STORAGE_KEY);
-    toast.success("Application submitted", {
-      description: `Thanks ${data.firstName}, we'll be in touch soon.`,
-    });
-    router.push("/");
+    try {
+      await createApplication({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        background: data.background,
+        motivation: data.motivation,
+        experience: data.experience || undefined,
+      });
+      localStorage.removeItem(STORAGE_KEY);
+      toast.success("Application submitted", {
+        description: `Thanks ${data.firstName}, we'll be in touch soon.`,
+      });
+      router.push("/");
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not submit your application. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const nextStep = async () => {

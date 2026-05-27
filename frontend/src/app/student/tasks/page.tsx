@@ -24,7 +24,6 @@ import { useStudentDashboard } from "@features/dashboard";
 import { SubmissionStatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
-import { useCurrentUser } from "@lib/auth";
 import type { Task, TaskType } from "@lib/types";
 
 const TASK_TYPE_ICON: Record<TaskType, LucideIcon> = {
@@ -101,11 +100,10 @@ function SubmitDialog({
 
 export default function StudentTasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const { user } = useCurrentUser();
   const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
-  const cohortId = dashboard?.cohort.id;
+  const cohortId = dashboard?.cohort?.id;
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohortId);
-  const { data: submissions = [] } = useSubmissions({ userId: user?.id });
+  const { data: submissions = [] } = useSubmissions();
 
   const submissionByTaskId = useMemo(
     () => new Map(submissions.map((s) => [s.taskId, s])),
@@ -116,6 +114,18 @@ export default function StudentTasksPage() {
     return (
       <PageContainer maxWidth="4xl">
         <PageHeader title="Tasks" description="Loading…" />
+      </PageContainer>
+    );
+  }
+
+  if (!dashboard.cohort) {
+    return (
+      <PageContainer maxWidth="4xl">
+        <PageHeader
+          title="Tasks"
+          description="Enroll in a cohort to see your assignments."
+        />
+        <EmptyState message="You are not enrolled in a cohort yet." />
       </PageContainer>
     );
   }

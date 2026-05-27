@@ -1,7 +1,14 @@
 export type { Application, ApplicationStatus } from "./types";
-export type { UpdateApplicationStatusInput } from "./api";
+export type {
+  CreateApplicationInput,
+  UpdateApplicationStatusInput,
+} from "./api";
 export { APPLICATION_STATUS_VARIANT } from "./constants";
-export { listApplications, updateApplicationStatus } from "./api";
+export {
+  createApplication,
+  listApplications,
+  updateApplicationStatus,
+} from "./api";
 export { useApplications, useUpdateApplicationStatus } from "./hooks";
 
 export type { ApplicationStatusFilter } from "./components/application-status-tabs";

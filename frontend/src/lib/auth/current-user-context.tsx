@@ -8,80 +8,40 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { mockUsers } from "@lib/mock-data";
+import { getMe, signInWithDevRole } from "@features/auth";
+import { readSession, subscribeSession, writeSession } from "@lib/session";
 import type { UserProfile, UserRole } from "@lib/types";
 
-const STORAGE_KEY = "forgeng.activeUserId";
-const CHANGE_EVENT = "forgeng:current-user-change";
-
 /**
- * Active-user state is persisted in `localStorage` so the role survives a
- * reload, and shared via `useSyncExternalStore` so the hook tree stays in
- * sync across multiple tabs as well.
- *
- * When real auth (Auth.js / Clerk) is wired in, only this provider needs to
- * change — `useCurrentUser`, `RoleGuard`, and every consumer keep working.
+ * Active-user state is persisted in `localStorage` and sent to the API via
+ * dev auth headers. Replace with Clerk / Auth.js when production auth lands.
  */
 export interface CurrentUserContextValue {
   user: UserProfile | null;
   /** False during SSR + the first client render, true once mounted. */
   isHydrated: boolean;
-  signInAs: (role: UserRole) => UserProfile | null;
+  signInAs: (role: UserRole) => Promise<UserProfile | null>;
   signInAsUser: (user: UserProfile) => void;
   signOut: () => void;
+  refreshUser: () => Promise<UserProfile | null>;
 }
 
 const CurrentUserContext = createContext<CurrentUserContextValue | null>(null);
 
-function readStoredUserId(): number | null {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) return null;
-  const id = Number.parseInt(raw, 10);
-  return Number.isFinite(id) ? id : null;
+function getUserSnapshot(): UserProfile | null {
+  return readSession();
 }
 
-function writeStoredUserId(id: number | null): void {
-  if (typeof window === "undefined") return;
-  if (id == null) {
-    window.localStorage.removeItem(STORAGE_KEY);
-  } else {
-    window.localStorage.setItem(STORAGE_KEY, String(id));
-  }
-  // `storage` only fires across tabs; emit our own event for same-tab updates.
-  window.dispatchEvent(new Event(CHANGE_EVENT));
-}
-
-function subscribe(callback: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("storage", callback);
-  window.addEventListener(CHANGE_EVENT, callback);
-  return () => {
-    window.removeEventListener("storage", callback);
-    window.removeEventListener(CHANGE_EVENT, callback);
-  };
-}
-
-function getUserIdSnapshot(): number | null {
-  return readStoredUserId();
-}
-function getUserIdServerSnapshot(): null {
+function getUserServerSnapshot(): null {
   return null;
 }
 
 function getHydratedSnapshot(): boolean {
   return true;
 }
+
 function getHydratedServerSnapshot(): boolean {
   return false;
-}
-
-function findUserById(id: number): UserProfile | null {
-  return mockUsers.find((u) => u.id === id) ?? null;
-}
-
-function findUserByRole(role: UserRole): UserProfile | null {
-  return mockUsers.find((u) => u.role === role) ?? null;
 }
 
 export function CurrentUserProvider({
@@ -89,39 +49,46 @@ export function CurrentUserProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const userId = useSyncExternalStore(
-    subscribe,
-    getUserIdSnapshot,
-    getUserIdServerSnapshot,
+  const user = useSyncExternalStore(
+    subscribeSession,
+    getUserSnapshot,
+    getUserServerSnapshot,
   );
   const isHydrated = useSyncExternalStore(
-    subscribe,
+    subscribeSession,
     getHydratedSnapshot,
     getHydratedServerSnapshot,
   );
 
-  const user = useMemo(
-    () => (userId != null ? findUserById(userId) : null),
-    [userId],
+  const signInAsUser = useCallback((next: UserProfile) => {
+    writeSession(next);
+  }, []);
+
+  const signInAs = useCallback(
+    (role: UserRole) => signInWithDevRole(role),
+    [],
   );
 
-  const signInAsUser = useCallback((next: UserProfile) => {
-    writeStoredUserId(next.id);
-  }, []);
-
-  const signInAs = useCallback((role: UserRole): UserProfile | null => {
-    const found = findUserByRole(role);
-    if (found) writeStoredUserId(found.id);
-    return found;
-  }, []);
-
   const signOut = useCallback(() => {
-    writeStoredUserId(null);
+    writeSession(null);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    const session = readSession();
+    if (!session) return null;
+    try {
+      const me = await getMe();
+      writeSession(me);
+      return me;
+    } catch {
+      writeSession(null);
+      return null;
+    }
   }, []);
 
   const value = useMemo<CurrentUserContextValue>(
-    () => ({ user, isHydrated, signInAs, signInAsUser, signOut }),
-    [user, isHydrated, signInAs, signInAsUser, signOut],
+    () => ({ user, isHydrated, signInAs, signInAsUser, signOut, refreshUser }),
+    [user, isHydrated, signInAs, signInAsUser, signOut, refreshUser],
   );
 
   return (

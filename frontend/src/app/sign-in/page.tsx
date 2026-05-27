@@ -30,14 +30,18 @@ export default function SignInPage() {
   const router = useRouter();
   const { signInAs } = useCurrentUser();
 
-  const handleDemoSignIn = (role: UserRole) => {
-    const next = signInAs(role);
-    if (!next) {
-      toast.error(`No demo ${role} account is seeded.`);
-      return;
+  const handleDemoSignIn = async (role: UserRole) => {
+    try {
+      const next = await signInAs(role);
+      if (!next) {
+        toast.error(`No demo ${role} account is seeded.`);
+        return;
+      }
+      toast.success(`Signed in as ${next.name ?? next.email}.`);
+      router.push(homeForRole(role));
+    } catch {
+      toast.error("Could not reach the API. Is the backend running?");
     }
-    toast.success(`Signed in as ${next.name ?? next.email}.`);
-    router.push(homeForRole(role));
   };
 
   return (

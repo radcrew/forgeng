@@ -21,8 +21,6 @@ import {
   useSubmissions,
   type Submission,
 } from "@features/submissions";
-import { useCurrentUser } from "@lib/auth";
-
 function SubmissionDetail({
   submission,
   open,
@@ -145,10 +143,7 @@ function SubmissionDetail({
 
 export default function StudentSubmissionsPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const { user } = useCurrentUser();
-  const { data: submissions = [], isLoading } = useSubmissions({
-    userId: user?.id,
-  });
+  const { data: submissions = [], isLoading } = useSubmissions();
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (

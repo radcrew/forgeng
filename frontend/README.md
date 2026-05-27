@@ -3,10 +3,8 @@
 Frontend for **Forgeng** — a mentor-led, cohort-based apprenticeship
 program for aspiring software engineers.
 
-This package contains the Next.js 16 (App Router) + Tailwind 4 + shadcn/ui
-implementation. Backend integration is intentionally deferred — every page
-currently renders from `src/lib/mock-data.ts`, so the entire UI is static and
-hot-reloadable without a running API.
+Next.js 16 (App Router) + Tailwind 4 + shadcn/ui, backed by the NestJS API in
+`../backend`.
 
 ## Stack
 
@@ -19,32 +17,33 @@ hot-reloadable without a running API.
 ## Develop
 
 ```bash
-pnpm --filter @forgeng/frontend dev               # http://localhost:3000
-pnpm --filter @forgeng/frontend build             # production build
-pnpm --filter @forgeng/frontend lint              # ESLint
-pnpm --filter @forgeng/frontend icons:generate    # rebuild favicon + app icons
+# Terminal 1 — API (from repo root)
+pnpm --filter @forgeng/backend dev
+
+# Terminal 2 — UI
+pnpm --filter @forgeng/frontend dev    # http://localhost:3000
 ```
 
-## Branding
+```bash
+pnpm --filter @forgeng/frontend build
+pnpm --filter @forgeng/frontend lint
+pnpm --filter @forgeng/frontend icons:generate
+```
 
-The brand mark lives at `public/logo.png` and is rendered everywhere via
-`src/components/brand/logo.tsx`. Whenever the logo changes, run
-`icons:generate` — it resizes the source PNG into:
+Copy `frontend/.env.example` to `frontend/.env.local` and set
+`NEXT_PUBLIC_API_URL` to your API origin (default `http://localhost:3001`).
 
-- `src/app/favicon.ico` (multi-resolution 16/32/48 — served at `/favicon.ico`)
-- `src/app/icon.png` (256×256, used by modern browsers)
-- `src/app/apple-icon.png` (180×180 for iOS home-screen)
-
-These three files follow the [Next.js metadata file convention](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/app-icons),
-so the appropriate `<link>` tags are injected automatically.
+Sign in at `/sign-in` with a demo role (seeded users from `backend/prisma/seed.ts`).
+The client stores your profile in `localStorage` and sends dev auth headers on
+each request.
 
 ## Routes
 
 | Route                     | Purpose                                       |
 | ------------------------- | --------------------------------------------- |
 | `/`                       | Marketing landing page                        |
-| `/apply`                  | 3-step application form (localStorage draft)  |
-| `/sign-in`, `/sign-up`    | Auth placeholders                             |
+| `/apply`                  | 3-step application form → `POST /api/applications` |
+| `/sign-in`, `/sign-up`    | Dev sign-in (header-based auth)               |
 | `/student`                | Student dashboard                             |
 | `/student/tasks`          | Task list + submit dialog                     |
 | `/student/submissions`    | Submission history + mentor feedback drawer   |
@@ -67,6 +66,7 @@ src/
 │   └── ui/              # shadcn/ui primitives
 ├── features/            # Domain modules: api, hooks, components
 │   ├── applications/
+│   ├── auth/
 │   ├── cohorts/
 │   ├── dashboard/
 │   ├── submissions/
@@ -74,9 +74,10 @@ src/
 │   └── users/
 ├── hooks/               # Shared client hooks (e.g. useAsyncResource)
 └── lib/
-    ├── api-client.ts    # Fetch + dev auth headers
-    ├── config.ts        # API_URL, USE_MOCK_DATA
-    ├── mock-data.ts     # Sample data (used when mocks are on)
+    ├── api-client.ts    # Fetch → /api/* + dev auth headers
+    ├── config.ts        # API_URL, API_BASE
+    ├── dev-accounts.ts  # Seeded emails for demo sign-in
+    ├── session.ts       # Persisted user profile (localStorage)
     ├── types.ts         # Domain types
     └── utils.ts         # cn() helper
 ```
@@ -84,15 +85,5 @@ src/
 ## Data layer
 
 Pages call **`@features/*/hooks`** (e.g. `useApplications`, `useSubmissions`).
-Each feature’s `api.ts` reads mock data when `NEXT_PUBLIC_USE_MOCK_DATA` is
-`true` (default), or calls the NestJS API via `@lib/api-client` when set to
-`false`.
-
-```bash
-# .env.local — talk to a running backend
-NEXT_PUBLIC_API_URL="http://localhost:3001"
-NEXT_PUBLIC_USE_MOCK_DATA="false"
-```
-
-Sign in via `/sign-in` so `localStorage` has an active user; the API client
-sends `x-user-id`, `x-user-email`, and `x-user-role` for dev auth.
+Each feature’s `api.ts` calls the NestJS API through `@lib/api-client`, which
+targets `{NEXT_PUBLIC_API_URL}/api`.
