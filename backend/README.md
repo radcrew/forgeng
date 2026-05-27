@@ -24,8 +24,8 @@ All routes are mounted under `/api`:
 | Method | Path                                | Role(s)        |
 |-------:|-------------------------------------|----------------|
 | GET    | `/healthz`                          | public         |
-| GET    | `/auth/me`                          | any            |
-| PATCH  | `/auth/profile`                     | any            |
+| GET    | `/account/me`                       | any            |
+| PATCH  | `/account/profile`                  | any            |
 | GET    | `/applications`                     | admin          |
 | GET    | `/applications/stats`               | admin          |
 | POST   | `/applications`                     | public         |
@@ -75,7 +75,7 @@ src/
 │   └── auth/                # dev guard, roles guard, decorators
 └── modules/                 # business features
     ├── health/
-    ├── auth/                # /auth/me, /auth/profile
+    ├── account/             # /account/me, /account/profile
     ├── applications/
     ├── cohorts/
     ├── tasks/
@@ -147,7 +147,7 @@ pnpm test         # jest
 In dev, the frontend should send headers identifying the active user:
 
 ```http
-GET /api/auth/me
+GET /api/account/me
 x-user-id: 1                   # or
 x-user-email: avery@example.com
 x-user-role: student

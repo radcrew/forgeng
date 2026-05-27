@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { AppConfigModule } from './config';
 import { CoreModule } from './core/core.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
-import { AuthModule } from './modules/auth/auth.module';
+import { AccountModule } from './modules/account/account.module';
 import { CohortsModule } from './modules/cohorts/cohorts.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
@@ -17,7 +17,7 @@ import { UsersModule } from './modules/users/users.module';
     AppConfigModule,
     CoreModule,
     HealthModule,
-    AuthModule,
+    AccountModule,
     ApplicationsModule,
     CohortsModule,
     TasksModule,

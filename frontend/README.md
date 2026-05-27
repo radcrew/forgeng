@@ -44,7 +44,7 @@ Sign in at `/sign-in` with an email that exists in the database (run
 | ------------------------- | --------------------------------------------- |
 | `/`                       | Marketing landing page                        |
 | `/apply`                  | 3-step application form → `POST /api/applications` |
-| `/sign-in`, `/sign-up`    | Email sign-in (dev header auth → `/auth/me`)  |
+| `/sign-in`, `/sign-up`    | Email sign-in (dev header auth → `/account/me`) |
 | `/student`                | Student dashboard                             |
 | `/student/tasks`          | Task list + submit dialog                     |
 | `/student/submissions`    | Submission history + feedback drawer          |
