@@ -250,12 +250,6 @@ export default function LandingPage() {
             About
           </a>
           <a
-            href="#life-in-program"
-            className="hover:text-foreground transition-colors"
-          >
-            Gallery
-          </a>
-          <a
             href="#how-it-works"
             className="hover:text-foreground transition-colors"
           >
