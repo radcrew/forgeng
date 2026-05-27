@@ -3,7 +3,7 @@ export type {
   CreateApplicationInput,
   UpdateApplicationStatusInput,
 } from "./api";
-export { APPLICATION_STATUS_VARIANT } from "./constants";
+export { APPLICATION_STATUS_VARIANT } from "@utils/status-variants";
 export {
   createApplication,
   listApplications,

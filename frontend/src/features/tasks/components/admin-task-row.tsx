@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import { TASK_TYPE_ICON } from "@features/tasks/task-type-icons";
+import { TASK_TYPE_ICON } from "@utils/task-icons";
 import type { Task } from "@types";
 
 export type AdminTaskRowProps = {

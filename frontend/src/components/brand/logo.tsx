@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { cn } from "@lib/utils";
+import { cn } from "@utils";
 
 interface LogoProps {
   /** Rendered size in px. Defaults to 28 (matches the landing header). */

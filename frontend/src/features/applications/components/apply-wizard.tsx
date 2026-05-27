@@ -21,6 +21,11 @@ import {
 import { Input } from "@components/ui/input";
 import { Progress } from "@components/ui/progress";
 import { Textarea } from "@components/ui/textarea";
+import {
+  readStorageJson,
+  removeStorageItem,
+  writeStorageJson,
+} from "@utils/storage";
 import { createApplication } from "../api";
 import { ApiError } from "@lib/api-client";
 
@@ -59,21 +64,16 @@ export const ApplyWizard = () => {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved) as Partial<ApplicationFormValues>;
-      (Object.keys(parsed) as Array<keyof ApplicationFormValues>).forEach(
-        (key) => {
-          const value = parsed[key];
-          if (typeof value === "string") {
-            form.setValue(key, value);
-          }
-        },
-      );
-    } catch {
-      // Ignore malformed drafts; the user starts from scratch.
-    }
+    const parsed = readStorageJson<Partial<ApplicationFormValues>>(STORAGE_KEY);
+    if (!parsed) return;
+    (Object.keys(parsed) as Array<keyof ApplicationFormValues>).forEach(
+      (key) => {
+        const value = parsed[key];
+        if (typeof value === "string") {
+          form.setValue(key, value);
+        }
+      },
+    );
   }, [form]);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ export const ApplyWizard = () => {
     // subscriber only writes to localStorage so it's safe to opt out here.
     // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = form.watch((value) => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+      writeStorageJson(STORAGE_KEY, value);
     });
     return () => subscription.unsubscribe();
   }, [form]);
@@ -97,7 +97,7 @@ export const ApplyWizard = () => {
         motivation: data.motivation,
         experience: data.experience || undefined,
       });
-      localStorage.removeItem(STORAGE_KEY);
+      removeStorageItem(STORAGE_KEY);
       toast.success("Application submitted", {
         description: `Thanks ${data.firstName}, we'll be in touch soon.`,
       });

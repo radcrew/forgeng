@@ -1,5 +1,6 @@
 import { Badge } from "@components/ui/badge";
-import { cn } from "@lib/utils";
+import { cn } from "@utils/cn";
+import { formatStatusLabel } from "@utils/string";
 import type { VariantProps } from "class-variance-authority";
 import type { badgeVariants } from "@components/ui/badge";
 
@@ -22,6 +23,6 @@ export const StatusBadge = <T extends string>({
 }: StatusBadgeProps<T>) => (
   <Badge variant={variantMap[status]} className={cn("capitalize", className)}>
     {leadingIcon}
-    {label ?? String(status).replace(/_/g, " ")}
+    {label ?? formatStatusLabel(String(status))}
   </Badge>
 );

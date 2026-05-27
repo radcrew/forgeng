@@ -1,5 +1,5 @@
 export type { Cohort, CohortStatus, Enrollment } from "./types";
-export { COHORT_STATUS_VARIANT } from "./constants";
+export { COHORT_STATUS_VARIANT } from "@utils/status-variants";
 export { listCohorts, listEnrollments } from "./api";
 export { useCohorts, useEnrollments } from "@hooks";
 

@@ -18,7 +18,7 @@ import {
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { useCurrentUser } from "@contexts";
-import { homeForRole } from "@lib/auth";
+import { homeForRole } from "@utils/auth";
 import { ApiError } from "@lib/api-client";
 
 const SignInPage = () => {

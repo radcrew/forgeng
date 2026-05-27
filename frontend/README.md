@@ -93,11 +93,20 @@ src/
 │   ├── submission.ts
 │   ├── dashboard.ts
 │   └── index.ts
+├── hooks/               # … (see above)
+├── utils/               # Pure helpers (no React)
+│   ├── cn.ts            # className merge (Tailwind)
+│   ├── auth.ts          # homeForRole, normalizeEmail
+│   ├── api.ts           # buildApiBase, getDevAuthHeaders
+│   ├── storage.ts       # localStorage JSON helpers
+│   ├── status-variants.ts
+│   ├── task-icons.ts
+│   └── user.ts          # mapUserDto
 └── lib/
     ├── api-client.ts    # Fetch → /api/* + dev auth headers
     ├── config.ts        # API_URL, API_BASE
     ├── session.ts       # Persisted user profile (localStorage)
-    └── utils.ts         # cn() helper
+    └── utils.ts         # Re-exports cn (prefer `@utils`)
 ```
 
 ## Shared UI (`@components/common`)

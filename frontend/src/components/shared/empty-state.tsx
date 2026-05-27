@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@components/ui/card";
-import { cn } from "@lib/utils";
+import { cn } from "@utils";
 
 interface EmptyStateProps {
   /** Simple centered message. Ignored when `children` is provided. */

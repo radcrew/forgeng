@@ -1,7 +1,7 @@
 "use client";
 
 import { Label } from "@components/ui/label";
-import { cn } from "@lib/utils";
+import { cn } from "@utils";
 
 export type FormFieldProps = {
   label: string;

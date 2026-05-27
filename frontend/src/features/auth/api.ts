@@ -1,26 +1,9 @@
 import { apiClient } from "@lib/api-client";
 import { writeSession } from "@lib/session";
-import type { UserProfile, UserRole } from "@types";
+import { mapUserDto, type UserDto } from "@utils/user";
+import { normalizeEmail } from "@utils/auth";
 
-interface UserDto {
-  id: number;
-  email: string;
-  name: string | null;
-  role: UserRole;
-  githubUrl: string | null;
-  createdAt: string;
-}
-
-const mapUserDto = (dto: UserDto): UserProfile => ({
-  id: dto.id,
-  email: dto.email,
-  name: dto.name,
-  role: dto.role,
-  githubUrl: dto.githubUrl,
-  createdAt: dto.createdAt,
-});
-
-export const getMe = async (): Promise<UserProfile> => {
+export const getMe = async () => {
   const dto = await apiClient.get<UserDto>("/auth/me");
   return mapUserDto(dto);
 };
@@ -29,8 +12,8 @@ export const getMe = async (): Promise<UserProfile> => {
  * Dev header auth: identify by email, then load the canonical user from the API.
  * Role and profile come from the database via `/auth/me`.
  */
-export const signInWithEmail = async (email: string): Promise<UserProfile> => {
-  const normalized = email.trim().toLowerCase();
+export const signInWithEmail = async (email: string) => {
+  const normalized = normalizeEmail(email);
   if (!normalized) {
     throw new Error("Email is required");
   }

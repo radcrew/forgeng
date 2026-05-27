@@ -10,7 +10,8 @@ import { Card } from "@components/ui/card";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { SubmissionStatusBadge } from "@features/submissions";
-import { SubmitTaskDialog, TASK_TYPE_ICON } from "@features/tasks";
+import { SubmitTaskDialog } from "@features/tasks";
+import { TASK_TYPE_ICON } from "@utils/task-icons";
 import {
   useStudentDashboard,
   useSubmissions,

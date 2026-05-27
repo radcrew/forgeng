@@ -8,7 +8,7 @@ import { Skeleton } from "@components/ui/skeleton";
 import { useCurrentUser } from "@contexts";
 import type { UserRole } from "@types";
 
-import { homeForRole } from "./home";
+import { homeForRole } from "@utils/auth";
 
 interface RoleGuardProps {
   allowedRoles: UserRole[];

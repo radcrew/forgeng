@@ -1,4 +1,4 @@
-import { cn } from "@lib/utils";
+import { cn } from "@utils";
 
 const MAX_WIDTH = {
   "4xl": "max-w-4xl",

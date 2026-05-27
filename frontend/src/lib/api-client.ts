@@ -1,5 +1,5 @@
 import { API_BASE } from "@lib/config";
-import { readSession } from "@lib/session";
+import { getDevAuthHeaders } from "@utils/api";
 
 export class ApiError extends Error {
   constructor(
@@ -10,18 +10,6 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 }
-
-/** Dev auth headers matching the NestJS `DevAuthGuard` contract. */
-const getDevAuthHeaders = (): Record<string, string> => {
-  const session = readSession();
-  if (!session) return {};
-
-  return {
-    "x-user-email": session.email,
-    "x-user-role": session.role,
-    ...(session.id > 0 && { "x-user-id": String(session.id) }),
-  };
-};
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const headers = new Headers(init?.headers);

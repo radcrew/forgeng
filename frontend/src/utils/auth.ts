@@ -14,3 +14,5 @@ export const homeForRole = (role: UserProfile["role"]): string => {
       return "/apply";
   }
 };
+
+export const normalizeEmail = (email: string): string => email.trim().toLowerCase();
