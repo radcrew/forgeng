@@ -29,7 +29,6 @@ services:
   - type: web
     name: forgeng-backend
     runtime: node
-    nodeVersion: "24"
     plan: free # Upgrade to "starter" ($7/mo) for no cold-start sleep.
     numInstances: 1 # Locked to one instance — see scaling note in header.
     rootDir: .
@@ -50,6 +49,10 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Node runtime version (Blueprint has no `nodeVersion` field).
+      # See https://render.com/docs/node-version
+      - key: NODE_VERSION
+        value: "24"
       # Wired to the managed Postgres above. Render fills this in.
       - key: DATABASE_URL
         fromDatabase:
