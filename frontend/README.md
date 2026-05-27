@@ -33,9 +33,9 @@ pnpm --filter @forgeng/frontend icons:generate
 Copy `frontend/.env.example` to `frontend/.env.local` and set
 `NEXT_PUBLIC_API_URL` to your API origin (default `http://localhost:3001`).
 
-Sign in at `/sign-in` with a demo role (seeded users from `backend/prisma/seed.ts`).
-The client stores your profile in `localStorage` and sends dev auth headers on
-each request.
+Sign in at `/sign-in` with an email that exists in the database (run
+`backend/prisma/seed.ts` for sample users). The client stores your profile in
+`localStorage` and sends dev auth headers on each request.
 
 ## Routes
 
@@ -43,7 +43,7 @@ each request.
 | ------------------------- | --------------------------------------------- |
 | `/`                       | Marketing landing page                        |
 | `/apply`                  | 3-step application form → `POST /api/applications` |
-| `/sign-in`, `/sign-up`    | Dev sign-in (header-based auth)               |
+| `/sign-in`, `/sign-up`    | Email sign-in (dev header auth → `/auth/me`)  |
 | `/student`                | Student dashboard                             |
 | `/student/tasks`          | Task list + submit dialog                     |
 | `/student/submissions`    | Submission history + mentor feedback drawer   |
@@ -76,7 +76,6 @@ src/
 └── lib/
     ├── api-client.ts    # Fetch → /api/* + dev auth headers
     ├── config.ts        # API_URL, API_BASE
-    ├── dev-accounts.ts  # Seeded emails for demo sign-in
     ├── session.ts       # Persisted user profile (localStorage)
     ├── types.ts         # Domain types
     └── utils.ts         # cn() helper

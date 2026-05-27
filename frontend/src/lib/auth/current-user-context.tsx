@@ -8,9 +8,9 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { getMe, signInWithDevRole } from "@features/auth";
+import { getMe, signInWithEmail } from "@features/auth";
 import { readSession, subscribeSession, writeSession } from "@lib/session";
-import type { UserProfile, UserRole } from "@lib/types";
+import type { UserProfile } from "@lib/types";
 
 /**
  * Active-user state is persisted in `localStorage` and sent to the API via
@@ -20,7 +20,7 @@ export interface CurrentUserContextValue {
   user: UserProfile | null;
   /** False during SSR + the first client render, true once mounted. */
   isHydrated: boolean;
-  signInAs: (role: UserRole) => Promise<UserProfile | null>;
+  signInWithEmail: (email: string) => Promise<UserProfile>;
   signInAsUser: (user: UserProfile) => void;
   signOut: () => void;
   refreshUser: () => Promise<UserProfile | null>;
@@ -64,11 +64,6 @@ export function CurrentUserProvider({
     writeSession(next);
   }, []);
 
-  const signInAs = useCallback(
-    (role: UserRole) => signInWithDevRole(role),
-    [],
-  );
-
   const signOut = useCallback(() => {
     writeSession(null);
   }, []);
@@ -87,8 +82,15 @@ export function CurrentUserProvider({
   }, []);
 
   const value = useMemo<CurrentUserContextValue>(
-    () => ({ user, isHydrated, signInAs, signInAsUser, signOut, refreshUser }),
-    [user, isHydrated, signInAs, signInAsUser, signOut, refreshUser],
+    () => ({
+      user,
+      isHydrated,
+      signInWithEmail,
+      signInAsUser,
+      signOut,
+      refreshUser,
+    }),
+    [user, isHydrated, signInAsUser, signOut, refreshUser],
   );
 
   return (
@@ -109,7 +111,7 @@ export function useCurrentUser(): CurrentUserContextValue {
 }
 
 /** Default landing page for a given role (used by the role guard + sign-in). */
-export function homeForRole(role: UserRole): string {
+export function homeForRole(role: UserProfile["role"]): string {
   switch (role) {
     case "student":
       return "/student";

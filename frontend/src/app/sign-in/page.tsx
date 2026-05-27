@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,31 +17,38 @@ import {
 } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
-import { Separator } from "@components/ui/separator";
 import { homeForRole, useCurrentUser } from "@lib/auth";
-import type { UserRole } from "@lib/types";
-
-const DEMO_ROLES: { role: UserRole; label: string }[] = [
-  { role: "student", label: "Student" },
-  { role: "mentor", label: "Mentor" },
-  { role: "admin", label: "Admin" },
-];
+import { ApiError } from "@lib/api-client";
 
 export default function SignInPage() {
   const router = useRouter();
-  const { signInAs } = useCurrentUser();
+  const { signInWithEmail } = useCurrentUser();
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleDemoSignIn = async (role: UserRole) => {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed) {
+      toast.error("Enter your email address.");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      const next = await signInAs(role);
-      if (!next) {
-        toast.error(`No demo ${role} account is seeded.`);
-        return;
-      }
-      toast.success(`Signed in as ${next.name ?? next.email}.`);
-      router.push(homeForRole(role));
-    } catch {
-      toast.error("Could not reach the API. Is the backend running?");
+      const user = await signInWithEmail(trimmed);
+      toast.success(`Signed in as ${user.name ?? user.email}.`);
+      router.push(homeForRole(user.role));
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? "Could not sign in. Check your email or try again."
+          : err instanceof Error
+            ? err.message
+            : "Could not reach the API. Is the backend running?";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -55,52 +63,41 @@ export default function SignInPage() {
           <div>
             <CardTitle className="text-2xl">Welcome back</CardTitle>
             <CardDescription>
-              Sign in to continue to your dashboard.
+              Sign in with the email on your account. Your role is loaded from
+              the platform after you continue.
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="••••••••" />
-          </div>
-          <Button className="w-full" type="button" disabled>
-            Sign In <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Signing in…" : "Sign In"}
+              {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
+            </Button>
 
-          <Separator />
-
-          <p className="text-center text-xs text-muted-foreground">
-            Real auth isn&apos;t wired yet. Use a demo account to explore each
-            role:
-          </p>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            {DEMO_ROLES.map(({ role, label }) => (
-              <Button
-                key={role}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleDemoSignIn(role)}
+            <p className="text-center text-sm text-muted-foreground">
+              New here?{" "}
+              <Link
+                href="/sign-up"
+                className="text-primary font-medium hover:underline"
               >
-                {label}
-              </Button>
-            ))}
-          </div>
-
-          <p className="text-center text-sm text-muted-foreground">
-            New here?{" "}
-            <Link
-              href="/sign-up"
-              className="text-primary font-medium hover:underline"
-            >
-              Create an account
-            </Link>
-          </p>
+                Create an account
+              </Link>
+            </p>
+          </form>
         </CardContent>
       </Card>
     </div>

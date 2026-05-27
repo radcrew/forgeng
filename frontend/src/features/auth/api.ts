@@ -1,5 +1,4 @@
 import { apiClient } from "@lib/api-client";
-import { DEV_SIGN_IN_ACCOUNTS } from "@lib/dev-accounts";
 import { writeSession } from "@lib/session";
 import type { UserProfile, UserRole } from "@lib/types";
 
@@ -28,18 +27,21 @@ export async function getMe(): Promise<UserProfile> {
   return mapUserDto(dto);
 }
 
-/** Dev sign-in: set headers from a seeded account, then resolve the real user via `/auth/me`. */
-export async function signInWithDevRole(
-  role: UserRole,
-): Promise<UserProfile | null> {
-  const account = DEV_SIGN_IN_ACCOUNTS[role];
-  if (!account) return null;
+/**
+ * Dev header auth: identify by email, then load the canonical user from the API.
+ * Role and profile come from the database via `/auth/me`.
+ */
+export async function signInWithEmail(email: string): Promise<UserProfile> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) {
+    throw new Error("Email is required");
+  }
 
   writeSession({
     id: 0,
-    email: account.email,
-    name: account.name,
-    role,
+    email: normalized,
+    name: null,
+    role: "applicant",
     githubUrl: null,
     createdAt: new Date().toISOString(),
   });
