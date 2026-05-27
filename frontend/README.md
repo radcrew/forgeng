@@ -66,8 +66,15 @@ src/
 │   ├── layout/          # Role-aware sidebar layout
 │   ├── shared/          # Cross-route page chrome (PageHeader, EmptyState, …)
 │   └── ui/              # shadcn/ui primitives
+├── constants/           # Static config per area (like `landing/`)
+│   ├── landing/         # Marketing page copy & assets metadata
+│   ├── applications/    # Status variants, filter tabs, apply form schema
+│   ├── cohorts/
+│   ├── submissions/
+│   ├── tasks/
+│   └── users/
 ├── features/            # Domain: api, hooks, types, components
-│   ├── applications/    # hooks.ts, api.ts, ApplyWizard, pipeline dialogs
+│   ├── applications/
 │   ├── auth/
 │   ├── cohorts/
 │   ├── dashboard/
@@ -93,8 +100,6 @@ src/
 │   ├── auth.ts          # homeForRole, normalizeEmail
 │   ├── api.ts           # buildApiBase, getDevAuthHeaders
 │   ├── storage.ts       # localStorage JSON helpers
-│   ├── status-variants.ts
-│   ├── task-icons.ts
 │   └── user.ts          # mapUserDto
 └── lib/
     ├── api-client.ts    # Fetch → /api/* + dev auth headers

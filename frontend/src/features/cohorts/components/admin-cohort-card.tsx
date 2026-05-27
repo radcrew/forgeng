@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
-import { COHORT_STATUS_VARIANT } from "@utils/status-variants";
+import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import type { Cohort } from "@types";
 
 export type AdminCohortCardProps = {

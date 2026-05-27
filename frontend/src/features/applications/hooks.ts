@@ -9,7 +9,7 @@ import {
   updateApplicationStatus,
   type UpdateApplicationStatusInput,
 } from "./api";
-import type { ApplicationStatusFilter } from "./components/application-status-tabs";
+import type { ApplicationStatusFilter } from "@types";
 
 export const useApplications = (filter: ApplicationStatusFilter) =>
   useAsyncResource(

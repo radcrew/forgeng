@@ -9,6 +9,7 @@ import {
   FormField,
   FormGrid,
 } from "@components/common";
+import { TASK_STATUS_OPTIONS, TASK_TYPE_OPTIONS } from "@constants/tasks";
 import { Input } from "@components/ui/input";
 import {
   Select,
@@ -89,10 +90,11 @@ export const TaskFormDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="coding">Coding</SelectItem>
-                <SelectItem value="reading">Reading</SelectItem>
-                <SelectItem value="project">Project</SelectItem>
-                <SelectItem value="quiz">Quiz</SelectItem>
+                {TASK_TYPE_OPTIONS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </FormField>
@@ -105,8 +107,11 @@ export const TaskFormDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
+                {TASK_STATUS_OPTIONS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </FormField>

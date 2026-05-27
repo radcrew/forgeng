@@ -6,8 +6,14 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { z } from "zod";
 
+import {
+  APPLICATION_DRAFT_STORAGE_KEY,
+  APPLICATION_FORM_FIELDS_BY_STEP,
+  APPLICATION_FORM_SCHEMA,
+  APPLICATION_FORM_TOTAL_STEPS,
+  type ApplicationFormValues,
+} from "@constants/applications";
 import { Button } from "@components/ui/button";
 import { Card, CardContent, CardFooter } from "@components/ui/card";
 import {
@@ -29,30 +35,13 @@ import {
 import { createApplication } from "../api";
 import { ApiError } from "@lib/api-client";
 
-const APPLICATION_SCHEMA = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  email: z.string().email("Valid email is required"),
-  background: z
-    .string()
-    .min(50, "Please provide more detail about your background"),
-  experience: z.string().optional(),
-  motivation: z.string().min(50, "Please tell us why you want to join"),
-});
-
-type ApplicationFormValues = z.infer<typeof APPLICATION_SCHEMA>;
-
-const STORAGE_KEY = "apprenticeship_application_draft";
-
-const TOTAL_STEPS = 3;
-
 export const ApplyWizard = () => {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(APPLICATION_SCHEMA),
+    resolver: zodResolver(APPLICATION_FORM_SCHEMA),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -64,7 +53,9 @@ export const ApplyWizard = () => {
   });
 
   useEffect(() => {
-    const parsed = readStorageJson<Partial<ApplicationFormValues>>(STORAGE_KEY);
+    const parsed = readStorageJson<Partial<ApplicationFormValues>>(
+      APPLICATION_DRAFT_STORAGE_KEY,
+    );
     if (!parsed) return;
     (Object.keys(parsed) as Array<keyof ApplicationFormValues>).forEach(
       (key) => {
@@ -81,7 +72,7 @@ export const ApplyWizard = () => {
     // subscriber only writes to localStorage so it's safe to opt out here.
     // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = form.watch((value) => {
-      writeStorageJson(STORAGE_KEY, value);
+      writeStorageJson(APPLICATION_DRAFT_STORAGE_KEY, value);
     });
     return () => subscription.unsubscribe();
   }, [form]);
@@ -97,7 +88,7 @@ export const ApplyWizard = () => {
         motivation: data.motivation,
         experience: data.experience || undefined,
       });
-      removeStorageItem(STORAGE_KEY);
+      removeStorageItem(APPLICATION_DRAFT_STORAGE_KEY);
       toast.success("Application submitted", {
         description: `Thanks ${data.firstName}, we'll be in touch soon.`,
       });
@@ -114,13 +105,9 @@ export const ApplyWizard = () => {
   };
 
   const nextStep = async () => {
-    const fieldsByStep: Record<number, Array<keyof ApplicationFormValues>> = {
-      1: ["firstName", "lastName", "email"],
-      2: ["background", "experience"],
-    };
-    const fields = fieldsByStep[step] ?? [];
+    const fields = APPLICATION_FORM_FIELDS_BY_STEP[step] ?? [];
     const valid = await form.trigger(fields);
-    if (valid) setStep((s) => Math.min(s + 1, TOTAL_STEPS));
+    if (valid) setStep((s) => Math.min(s + 1, APPLICATION_FORM_TOTAL_STEPS));
   };
 
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
@@ -138,10 +125,10 @@ export const ApplyWizard = () => {
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold">Apply to Forgeng</h1>
             <span className="text-sm font-medium text-muted-foreground">
-              Step {step} of {TOTAL_STEPS}
+              Step {step} of {APPLICATION_FORM_TOTAL_STEPS}
             </span>
           </div>
-          <Progress value={(step / TOTAL_STEPS) * 100} className="h-2" />
+          <Progress value={(step / APPLICATION_FORM_TOTAL_STEPS) * 100} className="h-2" />
         </div>
 
         <Card className="border-border bg-card">
@@ -278,7 +265,7 @@ export const ApplyWizard = () => {
                   Back
                 </Button>
 
-                {step < TOTAL_STEPS ? (
+                {step < APPLICATION_FORM_TOTAL_STEPS ? (
                   <Button type="button" onClick={nextStep}>
                     Next Step
                   </Button>

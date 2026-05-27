@@ -1,30 +1,28 @@
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
+import { APPLICATION_STATUS_FILTER_TABS } from "@constants/applications";
+import type { ApplicationStatusFilter } from "@types";
 
-import type { ApplicationStatus } from "@types";
-
-export type ApplicationStatusFilter = ApplicationStatus | "all";
+export type { ApplicationStatusFilter };
 
 interface ApplicationStatusTabsProps {
   value: ApplicationStatusFilter;
   onChange: (value: ApplicationStatusFilter) => void;
 }
 
-export function ApplicationStatusTabs({
+export const ApplicationStatusTabs = ({
   value,
   onChange,
-}: ApplicationStatusTabsProps) {
-  return (
-    <Tabs
-      value={value}
-      onValueChange={(v) => onChange(v as ApplicationStatusFilter)}
-    >
-      <TabsList>
-        <TabsTrigger value="pending">Pending</TabsTrigger>
-        <TabsTrigger value="reviewing">Reviewing</TabsTrigger>
-        <TabsTrigger value="accepted">Accepted</TabsTrigger>
-        <TabsTrigger value="rejected">Rejected</TabsTrigger>
-        <TabsTrigger value="all">All</TabsTrigger>
-      </TabsList>
-    </Tabs>
-  );
-}
+}: ApplicationStatusTabsProps) => (
+  <Tabs
+    value={value}
+    onValueChange={(v) => onChange(v as ApplicationStatusFilter)}
+  >
+    <TabsList>
+      {APPLICATION_STATUS_FILTER_TABS.map(({ value: tabValue, label }) => (
+        <TabsTrigger key={tabValue} value={tabValue}>
+          {label}
+        </TabsTrigger>
+      ))}
+    </TabsList>
+  </Tabs>
+);

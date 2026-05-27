@@ -9,6 +9,7 @@ import {
   FormField,
   FormGrid,
 } from "@components/common";
+import { COHORT_STATUS_OPTIONS } from "@constants/cohorts";
 import { Input } from "@components/ui/input";
 import {
   Select,
@@ -96,9 +97,11 @@ export const CohortFormDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                {COHORT_STATUS_OPTIONS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </FormField>

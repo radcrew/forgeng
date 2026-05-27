@@ -5,7 +5,10 @@ export type {
   SubmissionStatus,
 } from "./types";
 export type { ListSubmissionsOptions } from "./api";
-export { SUBMISSION_STATUS_VARIANT } from "@utils/status-variants";
+export {
+  SUBMISSION_STATUS_FILTER_TABS,
+  SUBMISSION_STATUS_VARIANT,
+} from "@constants/submissions";
 export { listSubmissions, listFeedback } from "./api";
 export type { SubmissionStatusFilter, UseSubmissionsOptions } from "./hooks";
 export { useSubmissions, useSubmissionFeedback } from "./hooks";

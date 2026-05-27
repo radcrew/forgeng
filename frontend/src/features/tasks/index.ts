@@ -1,5 +1,9 @@
 export type { Task, TaskStatus, TaskType } from "./types";
-export { TASK_TYPE_ICON } from "@utils/task-icons";
+export {
+  TASK_STATUS_OPTIONS,
+  TASK_TYPE_ICON,
+  TASK_TYPE_OPTIONS,
+} from "@constants/tasks";
 export { listTasks } from "./api";
 export { useTasks } from "./hooks";
 

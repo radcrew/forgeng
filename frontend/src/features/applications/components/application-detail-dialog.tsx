@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
+import { APPLICATION_STATUS_OPTIONS } from "@constants/applications";
 import { useCohorts } from "@features/cohorts";
 import { useUpdateApplicationStatus } from "../hooks";
 import type { Application, ApplicationStatus } from "@types";
@@ -115,10 +116,11 @@ export const ApplicationDetailDialog = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="reviewing">Reviewing</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              {APPLICATION_STATUS_OPTIONS.map(({ value, label }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </FormField>

@@ -8,11 +8,10 @@ import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { SUBMISSION_STATUS_FILTER_TABS } from "@constants/submissions";
 import {
   MentorReviewDetailSheet,
   SubmissionStatusBadge,
-} from "@features/submissions";
-import {
   useSubmissions,
   type SubmissionStatusFilter,
 } from "@features/submissions";
@@ -38,10 +37,11 @@ const MentorReviewsPage = () => {
         onValueChange={(v) => setStatusFilter(v as SubmissionStatusFilter)}
       >
         <TabsList>
-          <TabsTrigger value="submitted">Pending</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
-          <TabsTrigger value="needs_work">Needs Work</TabsTrigger>
-          <TabsTrigger value="all">All</TabsTrigger>
+          {SUBMISSION_STATUS_FILTER_TABS.map(({ value, label }) => (
+            <TabsTrigger key={value} value={value}>
+              {label}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 

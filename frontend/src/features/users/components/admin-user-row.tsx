@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { toast } from "sonner";
 
+import { USER_ROLE_OPTIONS } from "@constants/users";
 import { Card } from "@components/ui/card";
 import {
   Select,
@@ -44,10 +45,11 @@ export const AdminUserRow = ({ user }: AdminUserRowProps) => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="applicant">Applicant</SelectItem>
-              <SelectItem value="student">Student</SelectItem>
-              <SelectItem value="mentor">Mentor</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
+              {USER_ROLE_OPTIONS.map(({ value, label }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
