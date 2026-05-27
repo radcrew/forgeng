@@ -60,19 +60,19 @@ Sign in at `/sign-in` with an email that exists in the database (run
 
 ```
 src/
-├── app/                 # Routing + thin pages (compose features)
+├── app/                 # Routes: thin pages (`const X = () => …`, default export)
 ├── components/
 │   ├── layout/          # Role-aware sidebar layout
 │   ├── shared/          # Cross-route UI (PageHeader, EmptyState, …)
 │   └── ui/              # shadcn/ui primitives
-├── features/            # Domain modules: api, hooks, components
-│   ├── applications/
+├── features/            # Domain: api, hooks, types, route-level components
+│   ├── applications/    # e.g. ApplyWizard, pipeline dialogs & lists
 │   ├── auth/
-│   ├── cohorts/
-│   ├── dashboard/
-│   ├── submissions/
-│   ├── tasks/
-│   └── users/
+│   ├── cohorts/         # e.g. CohortFormDialog, EnrollmentsDialog, AdminCohortCard
+│   ├── dashboard/       # e.g. AdminDashboardView, StudentDashboardView
+│   ├── submissions/     # e.g. detail sheets for student vs mentor
+│   ├── tasks/           # e.g. TaskFormDialog, SubmitTaskDialog, AdminTaskRow
+│   └── users/           # e.g. AdminUserRow
 ├── hooks/               # Shared client hooks (e.g. useAsyncResource)
 ├── contexts/            # React context definitions + hooks (`useCurrentUser`, …)
 ├── providers/           # Client providers (`AppProviders`, …)

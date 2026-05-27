@@ -44,20 +44,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full">
-        <AppProviders>{children}</AppProviders>
-        <Toaster position="top-right" richColors closeButton />
-      </body>
-    </html>
-  );
-}
+}>) => (
+  <html
+    lang="en"
+    className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+  >
+    <body className="min-h-full">
+      <AppProviders>{children}</AppProviders>
+      <Toaster position="top-right" richColors closeButton />
+    </body>
+  </html>
+);
+
+export default RootLayout;

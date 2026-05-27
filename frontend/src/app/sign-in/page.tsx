@@ -21,7 +21,7 @@ import { useCurrentUser } from "@contexts";
 import { homeForRole } from "@lib/auth";
 import { ApiError } from "@lib/api-client";
 
-export default function SignInPage() {
+const SignInPage = () => {
   const router = useRouter();
   const { signInWithEmail } = useCurrentUser();
   const [email, setEmail] = useState("");
@@ -103,4 +103,6 @@ export default function SignInPage() {
       </Card>
     </div>
   );
-}
+};
+
+export default SignInPage;
