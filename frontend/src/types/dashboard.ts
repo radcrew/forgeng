@@ -14,16 +14,6 @@ export interface StudentDashboard {
   recentSubmissions: Submission[];
 }
 
-export interface MentorDashboard {
-  pendingReviews: number;
-  cohortBreakdown: {
-    cohortId: number;
-    cohortName: string;
-    pendingCount: number;
-  }[];
-  recentActivity: Submission[];
-}
-
 export interface AdminDashboard {
   applicationStats: {
     total: number;
@@ -34,6 +24,7 @@ export interface AdminDashboard {
   };
   activeCohorts: number;
   totalStudents: number;
-  totalMentors: number;
+  pendingReviews: number;
   recentApplications: Application[];
+  recentSubmissions: Submission[];
 }

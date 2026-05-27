@@ -18,8 +18,8 @@ import { Separator } from "@components/ui/separator";
 import { Textarea } from "@components/ui/textarea";
 import type { FeedbackVerdict, Submission } from "@types";
 
-import { useSubmissionFeedback } from "../../hooks";
-import { StatusBadge } from "../status-badge";
+import { useSubmissionFeedback } from "../hooks";
+import { StatusBadge } from "./status-badge";
 
 export type ReviewSheetProps = {
   submission: Submission;
@@ -80,7 +80,7 @@ export const ReviewSheet = ({ submission, open, onClose }: ReviewSheetProps) => 
           {feedback.map((fb) => (
             <FeedbackCard
               key={fb.id}
-              authorName={fb.mentor?.name ?? "You"}
+              authorName={fb.reviewer?.name ?? "Reviewer"}
               verdict={fb.verdict}
               content={fb.content}
               createdAt={fb.createdAt}

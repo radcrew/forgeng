@@ -5,8 +5,6 @@ export const homeForRole = (role: UserProfile["role"]): string => {
   switch (role) {
     case "student":
       return "/student";
-    case "mentor":
-      return "/mentor";
     case "admin":
       return "/admin";
     case "applicant":

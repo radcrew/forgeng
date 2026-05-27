@@ -41,13 +41,10 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { title: "Tasks", href: "/student/tasks", icon: CheckSquare },
     { title: "Submissions", href: "/student/submissions", icon: FileText },
   ],
-  mentor: [
-    { title: "Dashboard", href: "/mentor", icon: LayoutDashboard },
-    { title: "Review Queue", href: "/mentor/reviews", icon: ClipboardList },
-  ],
   admin: [
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { title: "Applications", href: "/admin/applications", icon: FileText },
+    { title: "Review Queue", href: "/admin/reviews", icon: ClipboardList },
     { title: "Cohorts", href: "/admin/cohorts", icon: Users },
     { title: "Tasks", href: "/admin/tasks", icon: CheckSquare },
     { title: "Users", href: "/admin/users", icon: Settings },
@@ -68,8 +65,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const role: UserRole = user?.role ?? "applicant";
   const navItems = NAV_ITEMS_BY_ROLE[role];
 
-  // Pick the most-specific matching nav item so a parent like `/mentor`
-  // doesn't stay highlighted when the user is on a child like `/mentor/reviews`.
+  // Pick the most-specific matching nav item so a parent route
+  // doesn't stay highlighted when the user is on a child path.
   const activeHref = navItems
     .filter(
       (item) =>

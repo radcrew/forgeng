@@ -22,7 +22,7 @@ const Page = () => {
     <PageContainer maxWidth="4xl">
       <PageHeader
         title="Submissions"
-        description="Your submission history and mentor feedback."
+        description="Your submission history and feedback."
       />
 
       {isLoading ? (

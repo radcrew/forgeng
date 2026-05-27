@@ -1,4 +1,4 @@
-export type UserRole = "applicant" | "student" | "mentor" | "admin";
+export type UserRole = "applicant" | "student" | "admin";
 
 export type UserRoleFilter = UserRole | "all";
 

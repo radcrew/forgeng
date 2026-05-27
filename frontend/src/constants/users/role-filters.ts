@@ -6,13 +6,11 @@ export const USER_ROLE_FILTER_TABS: LabeledValue<UserRoleFilter>[] = [
   { value: "all", label: "All" },
   { value: "applicant", label: "Applicants" },
   { value: "student", label: "Students" },
-  { value: "mentor", label: "Mentors" },
   { value: "admin", label: "Admins" },
 ];
 
 export const USER_ROLE_OPTIONS: LabeledValue<UserRole>[] = [
   { value: "applicant", label: "Applicant" },
   { value: "student", label: "Student" },
-  { value: "mentor", label: "Mentor" },
   { value: "admin", label: "Admin" },
 ];
