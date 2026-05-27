@@ -1,9 +1,9 @@
 // Regenerate the favicon and app icons from `public/logo.png`.
 //
-// Outputs:
-//   - src/app/favicon.ico   multi-resolution (16/32/48), <15 KB
-//   - src/app/icon.png      256x256 PNG for modern browsers
-//   - src/app/apple-icon.png 180x180 PNG for iOS home screen
+// Outputs (served from /public):
+//   - public/favicon.ico      multi-resolution (16/32/48), <15 KB
+//   - public/icon.png         256x256 PNG for modern browsers
+//   - public/apple-icon.png   180x180 PNG for iOS home screen
 //
 // Run with: pnpm --filter @forgeng/frontend icons:generate
 
@@ -18,9 +18,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
 
 const SOURCE = resolve(root, "public/logo.png");
-const OUT_FAVICON = resolve(root, "src/app/favicon.ico");
-const OUT_ICON = resolve(root, "src/app/icon.png");
-const OUT_APPLE = resolve(root, "src/app/apple-icon.png");
+const OUT_FAVICON = resolve(root, "public/favicon.ico");
+const OUT_ICON = resolve(root, "public/icon.png");
+const OUT_APPLE = resolve(root, "public/apple-icon.png");
 
 const FAVICON_SIZES = [16, 32, 48];
 const ICON_SIZE = 256;

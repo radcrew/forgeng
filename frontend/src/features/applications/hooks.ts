@@ -4,27 +4,27 @@ import { useCallback, useState } from "react";
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import * as applicationsApi from "./api";
-import type { ApplicationStatusFilter } from "./components/application-status-tabs";
+import {
+  listApplications,
+  updateApplicationStatus,
+  type UpdateApplicationStatusInput,
+} from "./api";
+import type { ApplicationStatusFilter } from "@types";
 
-export function useApplications(filter: ApplicationStatusFilter) {
-  return useAsyncResource(
-    () =>
-      applicationsApi.listApplications(
-        filter === "all" ? undefined : filter,
-      ),
+export const useApplications = (filter: ApplicationStatusFilter) =>
+  useAsyncResource(
+    () => listApplications(filter === "all" ? undefined : filter),
     [filter],
   );
-}
 
-export function useUpdateApplicationStatus() {
+export const useUpdateApplicationStatus = () => {
   const [isPending, setIsPending] = useState(false);
 
   const update = useCallback(
-    async (id: number, input: applicationsApi.UpdateApplicationStatusInput) => {
+    async (id: number, input: UpdateApplicationStatusInput) => {
       setIsPending(true);
       try {
-        return await applicationsApi.updateApplicationStatus(id, input);
+        return await updateApplicationStatus(id, input);
       } finally {
         setIsPending(false);
       }
@@ -33,4 +33,4 @@ export function useUpdateApplicationStatus() {
   );
 
   return { update, isPending };
-}
+};

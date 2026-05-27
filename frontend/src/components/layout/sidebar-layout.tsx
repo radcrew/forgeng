@@ -25,8 +25,8 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@components/ui/sidebar";
-import { useCurrentUser } from "@lib/auth";
-import type { UserRole } from "@lib/types";
+import { useCurrentUser } from "@contexts";
+import type { UserRole } from "@types";
 
 interface NavItem {
   title: string;

@@ -2,15 +2,13 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import * as cohortsApi from "./api";
+import { listCohorts, listEnrollments } from "./api";
 
-export function useCohorts() {
-  return useAsyncResource(() => cohortsApi.listCohorts(), []);
-}
+export const useCohorts = () => useAsyncResource(() => listCohorts(), []);
 
-export function useEnrollments(cohortId: number | undefined) {
-  return useAsyncResource(
-    () => cohortsApi.listEnrollments(cohortId),
+export const useEnrollments = (cohortId: number | undefined) =>
+  useAsyncResource(
+    () =>
+      cohortId == null ? Promise.resolve([]) : listEnrollments(cohortId),
     [cohortId],
   );
-}

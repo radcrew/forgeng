@@ -14,26 +14,26 @@ import {
   WhoWeAre,
 } from "@components/landing";
 
-export default function LandingPage() {
-  return (
-    <div className="min-h-screen bg-background flex flex-col text-foreground">
-      <Header />
+const Page = () => (
+  <div className="min-h-screen bg-background flex flex-col text-foreground">
+    <Header />
 
-      <main className="flex-1">
-        <Hero />
-        <Stats />
-        <WhoWeAre />
-        <Gallery />
-        <HowItWorks />
-        <TaskTypes />
-        <Features />
-        <MentorFeedback />
-        <Roles />
-        <Faq />
-        <CtaBanner />
-      </main>
+    <main className="flex-1">
+      <Hero />
+      <Stats />
+      <WhoWeAre />
+      <Gallery />
+      <HowItWorks />
+      <TaskTypes />
+      <Features />
+      <MentorFeedback />
+      <Roles />
+      <Faq />
+      <CtaBanner />
+    </main>
 
-      <Footer />
-    </div>
-  );
-}
+    <Footer />
+  </div>
+);
+
+export default Page;

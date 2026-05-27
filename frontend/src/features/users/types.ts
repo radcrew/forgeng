@@ -1,1 +1,1 @@
-export type { UserProfile, UserRole } from "@lib/types";
+export type { UserProfile, UserRole } from "@types";

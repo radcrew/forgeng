@@ -1,1 +1,1 @@
-export type { Cohort, CohortStatus, Enrollment } from "@lib/types";
+export type { Cohort, CohortStatus, Enrollment } from "@types";

@@ -1,43 +1,23 @@
 import { apiClient } from "@lib/api-client";
-import { USE_MOCK_DATA } from "@lib/config";
-import { mockFeedback, mockSubmissions } from "@lib/mock-data";
 
 import type { Feedback, Submission, SubmissionStatus } from "./types";
 
-const mockDelay = (ms: number) =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms));
-
 export interface ListSubmissionsOptions {
   status?: SubmissionStatus;
-  userId?: number;
+  taskId?: number;
+  cohortId?: number;
 }
 
-export async function listSubmissions(
+export const listSubmissions = async (
   options: ListSubmissionsOptions = {},
-): Promise<Submission[]> {
-  if (USE_MOCK_DATA) {
-    await mockDelay(50);
-    let result = [...mockSubmissions];
-    if (options.status) {
-      result = result.filter((s) => s.status === options.status);
-    }
-    if (options.userId != null) {
-      result = result.filter((s) => s.user?.id === options.userId);
-    }
-    return result;
-  }
-
+): Promise<Submission[]> => {
   const params = new URLSearchParams();
   if (options.status) params.set("status", options.status);
-  if (options.userId != null) params.set("userId", String(options.userId));
+  if (options.taskId != null) params.set("taskId", String(options.taskId));
+  if (options.cohortId != null) params.set("cohortId", String(options.cohortId));
   const query = params.size > 0 ? `?${params}` : "";
   return apiClient.get<Submission[]>(`/submissions${query}`);
-}
+};
 
-export async function listFeedback(submissionId: number): Promise<Feedback[]> {
-  if (USE_MOCK_DATA) {
-    await mockDelay(50);
-    return mockFeedback.filter((f) => f.submissionId === submissionId);
-  }
-  return apiClient.get<Feedback[]>(`/submissions/${submissionId}/feedback`);
-}
+export const listFeedback = async (submissionId: number): Promise<Feedback[]> =>
+  apiClient.get<Feedback[]>(`/submissions/${submissionId}/feedback`);

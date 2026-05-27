@@ -13,10 +13,10 @@ export interface AsyncResourceState<T> {
  * Loads async data on mount and when `deps` change.
  * Swap mock `api` implementations for live fetch without touching UI hooks.
  */
-export function useAsyncResource<T>(
+export const useAsyncResource = <T>(
   fetcher: () => Promise<T>,
   deps: readonly unknown[],
-): AsyncResourceState<T> {
+): AsyncResourceState<T> => {
   const [data, setData] = useState<T | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -27,7 +27,7 @@ export function useAsyncResource<T>(
   useEffect(() => {
     let cancelled = false;
 
-    void (async () => {
+    const load = async () => {
       setIsLoading(true);
       setError(null);
       try {
@@ -40,7 +40,9 @@ export function useAsyncResource<T>(
       } finally {
         if (!cancelled) setIsLoading(false);
       }
-    })();
+    };
+
+    void load();
 
     return () => {
       cancelled = true;
@@ -49,4 +51,4 @@ export function useAsyncResource<T>(
   }, [...deps, version]);
 
   return { data, isLoading, error, refetch };
-}
+};

@@ -2,16 +2,17 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import * as dashboardApi from "./api";
+import {
+  getAdminDashboard,
+  getMentorDashboard,
+  getStudentDashboard,
+} from "./api";
 
-export function useStudentDashboard() {
-  return useAsyncResource(() => dashboardApi.getStudentDashboard(), []);
-}
+export const useStudentDashboard = () =>
+  useAsyncResource(() => getStudentDashboard(), []);
 
-export function useMentorDashboard() {
-  return useAsyncResource(() => dashboardApi.getMentorDashboard(), []);
-}
+export const useMentorDashboard = () =>
+  useAsyncResource(() => getMentorDashboard(), []);
 
-export function useAdminDashboard() {
-  return useAsyncResource(() => dashboardApi.getAdminDashboard(), []);
-}
+export const useAdminDashboard = () =>
+  useAsyncResource(() => getAdminDashboard(), []);

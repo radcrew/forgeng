@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { Toaster } from "@components/ui/sonner";
-import { TooltipProvider } from "@components/ui/tooltip";
-import { CurrentUserProvider } from "@lib/auth";
+import { AppProviders } from "@providers";
 
 import "./globals.css";
 
@@ -24,6 +23,11 @@ export const metadata: Metadata = {
   title: "Forgeng",
   description:
     "A rigorous, mentor-led apprenticeship for aspiring software engineers — apply, join a cohort, complete real projects, and grow.",
+  icons: {
+    icon: [{ url: "/icon.png", sizes: "256x256", type: "image/png" }],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "Forgeng",
     description:
@@ -40,22 +44,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full">
-        <CurrentUserProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </CurrentUserProvider>
-        <Toaster position="top-right" richColors closeButton />
-      </body>
-    </html>
-  );
-}
+}>) => (
+  <html
+    lang="en"
+    className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+  >
+    <body className="min-h-full">
+      <AppProviders>{children}</AppProviders>
+      <Toaster position="top-right" richColors closeButton />
+    </body>
+  </html>
+);
+
+export default RootLayout;

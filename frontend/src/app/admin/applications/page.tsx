@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 
+import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
-  ApplicationDetailDialog,
-  ApplicationStatusTabs,
-  ApplicationsList,
-  useApplications,
+  DetailDialog,
+  List,
+  StatusTabs,
   type Application,
   type ApplicationStatusFilter,
+  useApplications,
 } from "@features/applications";
 
-export default function AdminApplicationsPage() {
+const Page = () => {
   const [filter, setFilter] = useState<ApplicationStatusFilter>("all");
   const [selected, setSelected] = useState<Application | null>(null);
 
@@ -25,20 +26,18 @@ export default function AdminApplicationsPage() {
         description="Review and manage applicants through the pipeline."
       />
 
-      <ApplicationStatusTabs value={filter} onChange={setFilter} />
+      <StatusTabs value={filter} onChange={setFilter} />
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Loading applications…
-        </p>
+        <LoadingState message="Loading applications…" />
       ) : applications.length === 0 ? (
         <EmptyState message="No applications in this category." />
       ) : (
-        <ApplicationsList applications={applications} onSelect={setSelected} />
+        <List applications={applications} onSelect={setSelected} />
       )}
 
       {selected && (
-        <ApplicationDetailDialog
+        <DetailDialog
           application={selected}
           open={!!selected}
           onOpenChange={(open) => {
@@ -48,4 +47,6 @@ export default function AdminApplicationsPage() {
       )}
     </PageContainer>
   );
-}
+};
+
+export default Page;

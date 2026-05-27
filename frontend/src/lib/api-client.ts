@@ -1,7 +1,5 @@
-import { API_URL } from "@lib/config";
-import { mockUsers } from "@lib/mock-data";
-
-const ACTIVE_USER_STORAGE_KEY = "forgeng.activeUserId";
+import { API_BASE } from "@lib/config";
+import { getDevAuthHeaders } from "@utils/api";
 
 export class ApiError extends Error {
   constructor(
@@ -13,25 +11,7 @@ export class ApiError extends Error {
   }
 }
 
-/** Dev auth headers matching the NestJS `DevAuthGuard` contract. */
-function getDevAuthHeaders(): Record<string, string> {
-  if (typeof window === "undefined") return {};
-
-  const raw = window.localStorage.getItem(ACTIVE_USER_STORAGE_KEY);
-  const id = raw ? Number.parseInt(raw, 10) : Number.NaN;
-  if (!Number.isFinite(id)) return {};
-
-  const user = mockUsers.find((u) => u.id === id);
-  if (!user) return {};
-
-  return {
-    "x-user-id": String(user.id),
-    "x-user-email": user.email,
-    "x-user-role": user.role,
-  };
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const headers = new Headers(init?.headers);
   if (!headers.has("Content-Type") && init?.body) {
     headers.set("Content-Type", "application/json");
@@ -40,7 +20,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers.set(key, value);
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers,
   });
@@ -55,7 +35,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>;
-}
+};
 
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),

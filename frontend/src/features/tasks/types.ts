@@ -1,1 +1,1 @@
-export type { Task, TaskStatus, TaskType } from "@lib/types";
+export type { Task, TaskStatus, TaskType } from "@types";

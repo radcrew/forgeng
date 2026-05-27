@@ -1,10 +1,4 @@
 import { apiClient } from "@lib/api-client";
-import { USE_MOCK_DATA } from "@lib/config";
-import {
-  mockAdminDashboard,
-  mockMentorDashboard,
-  mockStudentDashboard,
-} from "@lib/mock-data";
 
 import type {
   AdminDashboard,
@@ -12,29 +6,11 @@ import type {
   StudentDashboard,
 } from "./types";
 
-const mockDelay = (ms: number) =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms));
+export const getStudentDashboard = async (): Promise<StudentDashboard> =>
+  apiClient.get<StudentDashboard>("/dashboard/student");
 
-export async function getStudentDashboard(): Promise<StudentDashboard> {
-  if (USE_MOCK_DATA) {
-    await mockDelay(50);
-    return mockStudentDashboard;
-  }
-  return apiClient.get<StudentDashboard>("/dashboard/student");
-}
+export const getMentorDashboard = async (): Promise<MentorDashboard> =>
+  apiClient.get<MentorDashboard>("/dashboard/mentor");
 
-export async function getMentorDashboard(): Promise<MentorDashboard> {
-  if (USE_MOCK_DATA) {
-    await mockDelay(50);
-    return mockMentorDashboard;
-  }
-  return apiClient.get<MentorDashboard>("/dashboard/mentor");
-}
-
-export async function getAdminDashboard(): Promise<AdminDashboard> {
-  if (USE_MOCK_DATA) {
-    await mockDelay(50);
-    return mockAdminDashboard;
-  }
-  return apiClient.get<AdminDashboard>("/dashboard/admin");
-}
+export const getAdminDashboard = async (): Promise<AdminDashboard> =>
+  apiClient.get<AdminDashboard>("/dashboard/admin");
