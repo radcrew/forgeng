@@ -61,6 +61,7 @@ optionally filtered by `taskId`, `status`, or `cohortId`.
 ```
 src/
 ├── main.ts                  # bootstrap (global prefix, validation, filter)
+├── app.middleware.ts        # Express middleware (helmet, compression)
 ├── app.module.ts            # imports core + feature modules
 ├── config/                  # env loading, validation, typed ConfigService
 │   ├── configuration.ts     # maps process.env → app settings

@@ -5,11 +5,14 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+import { applyAppMiddleware } from './app.middleware';
 import { PrismaExceptionFilter } from '@common/filters/prisma-exception.filter';
 import type { AppConfiguration } from '@config';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  applyAppMiddleware(app);
+
   const config = app.get(ConfigService<AppConfiguration, true>);
   const port = config.getOrThrow('port', { infer: true });
   const corsOrigin = config.getOrThrow('corsOrigin', { infer: true });
