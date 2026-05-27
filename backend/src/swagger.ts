@@ -23,7 +23,6 @@ export function setupSwagger(app: INestApplication): void {
         'In development, authenticate via `x-user-id` or `x-user-email` headers (see README).',
     )
     .setVersion('1.0')
-    .addServer('/api', 'API (global prefix)')
     .addApiKey(
       {
         type: 'apiKey',
