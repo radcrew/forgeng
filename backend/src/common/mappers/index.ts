@@ -162,7 +162,10 @@ export interface FeedbackDto {
   createdAt: string;
 }
 
-export function toFeedbackDto(fb: Feedback, reviewer: User | null): FeedbackDto {
+export function toFeedbackDto(
+  fb: Feedback,
+  reviewer: User | null,
+): FeedbackDto {
   return {
     id: fb.id,
     submissionId: fb.submissionId,

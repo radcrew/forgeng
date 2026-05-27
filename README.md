@@ -40,9 +40,13 @@ forgeng/
 pnpm install
 ```
 
-This runs `husky` via the `prepare` script and installs the **pre-commit** hook, which
-lints staged `frontend/` and `backend/` files with ESLint (`lint-staged`). To run it
-manually: `pnpm lint:staged`. Full-workspace lint: `pnpm lint`.
+This runs `husky` via the `prepare` script and installs a **pre-commit** hook that:
+
+1. `pnpm lint:fix` — ESLint `--fix` in frontend and backend  
+2. `git add -u` — re-stage auto-fixed tracked files  
+3. `pnpm lint` — block the commit if anything is still failing  
+
+Run the same flow manually: `pnpm lint:fix && pnpm lint`.
 
 ### 2. Configure PostgreSQL
 

@@ -16,9 +16,7 @@ function parseCorsOrigin(raw: string | undefined): string[] {
     .filter(Boolean);
 }
 
-function parseNodeEnv(
-  raw: string | undefined,
-): AppConfiguration['nodeEnv'] {
+function parseNodeEnv(raw: string | undefined): AppConfiguration['nodeEnv'] {
   if (raw === 'production' || raw === 'test' || raw === 'development') {
     return raw;
   }
