@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
+import { PageContainer, PageHeader } from "@components/shared";
 import { mockCohorts, mockTasks } from "@lib/mock-data";
 import type { Task, TaskStatus, TaskType } from "@lib/types";
 
@@ -181,23 +182,21 @@ export default function AdminTasksPage() {
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground mt-1">
-            Author and manage tasks across cohorts.
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            setEditTask(undefined);
-            setFormOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4 mr-2" /> New Task
-        </Button>
-      </div>
+    <PageContainer maxWidth="5xl">
+      <PageHeader
+        title="Tasks"
+        description="Author and manage tasks across cohorts."
+        actions={
+          <Button
+            onClick={() => {
+              setEditTask(undefined);
+              setFormOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" /> New Task
+          </Button>
+        }
+      />
 
       <div className="space-y-3">
         {mockTasks.map((task) => {
@@ -277,6 +276,6 @@ export default function AdminTasksPage() {
           if (!open) setEditTask(undefined);
         }}
       />
-    </div>
+    </PageContainer>
   );
 }

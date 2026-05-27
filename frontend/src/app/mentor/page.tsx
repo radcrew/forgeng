@@ -3,19 +3,18 @@ import { format } from "date-fns";
 import { ClipboardList, FileText, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { mockMentorDashboard } from "@lib/mock-data";
 
 export default function MentorDashboardPage() {
   const dashboard = mockMentorDashboard;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Mentor Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Overview of your assigned cohorts and pending reviews.
-        </p>
-      </div>
+    <PageContainer maxWidth="6xl" spacing="8">
+      <PageHeader
+        title="Mentor Dashboard"
+        description="Overview of your assigned cohorts and pending reviews."
+      />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -60,11 +59,7 @@ export default function MentorDashboardPage() {
           </div>
 
           {dashboard.cohortBreakdown.length === 0 ? (
-            <Card className="bg-muted/50 border-dashed">
-              <CardContent className="p-8 text-center text-muted-foreground">
-                No assigned cohorts yet.
-              </CardContent>
-            </Card>
+            <EmptyState message="No assigned cohorts yet." size="compact" />
           ) : (
             <div className="space-y-4">
               {dashboard.cohortBreakdown.map((cohort) => (
@@ -101,11 +96,7 @@ export default function MentorDashboardPage() {
           </div>
 
           {dashboard.recentActivity.length === 0 ? (
-            <Card className="bg-muted/50 border-dashed">
-              <CardContent className="p-8 text-center text-muted-foreground">
-                No recent submissions.
-              </CardContent>
-            </Card>
+            <EmptyState message="No recent submissions." size="compact" />
           ) : (
             <div className="space-y-4">
               {dashboard.recentActivity.map((sub) => (
@@ -133,6 +124,6 @@ export default function MentorDashboardPage() {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

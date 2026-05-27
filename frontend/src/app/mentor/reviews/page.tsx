@@ -23,6 +23,7 @@ import {
 } from "@components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { Textarea } from "@components/ui/textarea";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { mockFeedback, mockSubmissions } from "@lib/mock-data";
 import type { FeedbackVerdict, SubmissionStatus } from "@lib/types";
 
@@ -219,13 +220,11 @@ export default function MentorReviewsPage() {
   }, [statusFilter]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Review Queue</h1>
-        <p className="text-muted-foreground mt-1">
-          Review student submissions and leave feedback.
-        </p>
-      </div>
+    <PageContainer maxWidth="4xl">
+      <PageHeader
+        title="Review Queue"
+        description="Review student submissions and leave feedback."
+      />
 
       <Tabs
         value={statusFilter}
@@ -240,11 +239,7 @@ export default function MentorReviewsPage() {
       </Tabs>
 
       {submissions.length === 0 ? (
-        <Card className="bg-muted/50 border-dashed">
-          <CardContent className="p-12 text-center text-muted-foreground">
-            No submissions in this category.
-          </CardContent>
-        </Card>
+        <EmptyState message="No submissions in this category." />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (
@@ -295,6 +290,6 @@ export default function MentorReviewsPage() {
           onClose={() => setSelectedId(null)}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

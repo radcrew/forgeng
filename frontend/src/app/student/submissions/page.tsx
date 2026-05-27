@@ -20,6 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@components/ui/sheet";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { useCurrentUser } from "@lib/auth";
 import { mockFeedback, mockSubmissions } from "@lib/mock-data";
 
@@ -173,20 +174,14 @@ export default function StudentSubmissionsPage() {
   );
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Submissions</h1>
-        <p className="text-muted-foreground mt-1">
-          Your submission history and mentor feedback.
-        </p>
-      </div>
+    <PageContainer maxWidth="4xl">
+      <PageHeader
+        title="Submissions"
+        description="Your submission history and mentor feedback."
+      />
 
       {submissions.length === 0 ? (
-        <Card className="bg-muted/50 border-dashed">
-          <CardContent className="p-12 text-center text-muted-foreground">
-            No submissions yet. Head to Tasks to start submitting your work.
-          </CardContent>
-        </Card>
+        <EmptyState message="No submissions yet. Head to Tasks to start submitting your work." />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (
@@ -247,6 +242,6 @@ export default function StudentSubmissionsPage() {
           onClose={() => setSelectedId(null)}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

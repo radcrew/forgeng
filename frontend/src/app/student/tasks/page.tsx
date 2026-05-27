@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
-import { Card, CardContent } from "@components/ui/card";
+import { Card } from "@components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import {
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { Textarea } from "@components/ui/textarea";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
   mockStudentDashboard,
   mockSubmissions,
@@ -118,20 +119,14 @@ export default function StudentTasksPage() {
   );
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-        <p className="text-muted-foreground mt-1">
-          {cohort.name} — {tasks.length} tasks
-        </p>
-      </div>
+    <PageContainer maxWidth="4xl">
+      <PageHeader
+        title="Tasks"
+        description={`${cohort.name} — ${tasks.length} tasks`}
+      />
 
       {tasks.length === 0 ? (
-        <Card className="bg-muted/50 border-dashed">
-          <CardContent className="p-12 text-center text-muted-foreground">
-            No tasks have been published for your cohort yet.
-          </CardContent>
-        </Card>
+        <EmptyState message="No tasks have been published for your cohort yet." />
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => {
@@ -204,6 +199,6 @@ export default function StudentTasksPage() {
           }}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -3,19 +3,18 @@ import { format } from "date-fns";
 import { BookOpen, ClipboardList, FileText, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { mockAdminDashboard } from "@lib/mock-data";
 
 export default function AdminDashboardPage() {
   const dashboard = mockAdminDashboard;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Platform overview and recent activity.
-        </p>
-      </div>
+    <PageContainer maxWidth="6xl" spacing="8">
+      <PageHeader
+        title="Admin Dashboard"
+        description="Platform overview and recent activity."
+      />
 
       <div className="grid gap-6 md:grid-cols-4">
         <Card>
@@ -138,11 +137,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {dashboard.recentApplications.length === 0 ? (
-            <Card className="bg-muted/50 border-dashed">
-              <CardContent className="p-8 text-center text-muted-foreground">
-                No recent applications.
-              </CardContent>
-            </Card>
+            <EmptyState message="No recent applications." size="compact" />
           ) : (
             <div className="space-y-4">
               {dashboard.recentApplications.map((app) => (
@@ -171,6 +166,6 @@ export default function AdminDashboardPage() {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

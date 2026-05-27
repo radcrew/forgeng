@@ -26,6 +26,7 @@ import {
 } from "@components/ui/select";
 import { Separator } from "@components/ui/separator";
 import { Textarea } from "@components/ui/textarea";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
   mockCohorts,
   mockEnrollments,
@@ -259,30 +260,24 @@ export default function AdminCohortsPage() {
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Cohorts</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage cohorts and student enrollment.
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            setEditCohort(undefined);
-            setFormOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4 mr-2" /> New Cohort
-        </Button>
-      </div>
+    <PageContainer maxWidth="5xl">
+      <PageHeader
+        title="Cohorts"
+        description="Manage cohorts and student enrollment."
+        actions={
+          <Button
+            onClick={() => {
+              setEditCohort(undefined);
+              setFormOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" /> New Cohort
+          </Button>
+        }
+      />
 
       {mockCohorts.length === 0 ? (
-        <Card className="bg-muted/50 border-dashed">
-          <CardContent className="p-12 text-center text-muted-foreground">
-            No cohorts yet. Create your first cohort to get started.
-          </CardContent>
-        </Card>
+        <EmptyState message="No cohorts yet. Create your first cohort to get started." />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {mockCohorts.map((cohort) => (
@@ -368,6 +363,6 @@ export default function AdminCohortsPage() {
           }}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

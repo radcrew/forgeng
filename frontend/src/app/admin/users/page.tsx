@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
+import { PageContainer, PageHeader } from "@components/shared";
 import { mockUsers } from "@lib/mock-data";
 import type { UserProfile, UserRole } from "@lib/types";
 
@@ -68,13 +69,11 @@ export default function AdminUsersPage() {
   }, [roleFilter]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage platform users and their roles.
-        </p>
-      </div>
+    <PageContainer maxWidth="4xl">
+      <PageHeader
+        title="Users"
+        description="Manage platform users and their roles."
+      />
 
       <Tabs
         value={roleFilter}
@@ -96,6 +95,6 @@ export default function AdminUsersPage() {
           <UserRow key={user.id} user={user} />
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

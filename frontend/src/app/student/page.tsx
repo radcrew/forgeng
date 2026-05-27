@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2, Clock, Code2 } from "lucide-react";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { mockStudentDashboard } from "@lib/mock-data";
 
 export default function StudentDashboardPage() {
@@ -15,14 +16,16 @@ export default function StudentDashboardPage() {
       : 0;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Student Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Welcome back. You are enrolled in{" "}
-          <span className="font-semibold text-foreground">{cohort.name}</span>.
-        </p>
-      </div>
+    <PageContainer maxWidth="6xl" spacing="8">
+      <PageHeader
+        title="Student Dashboard"
+        description={
+          <>
+            Welcome back. You are enrolled in{" "}
+            <span className="font-semibold text-foreground">{cohort.name}</span>.
+          </>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
@@ -88,12 +91,10 @@ export default function StudentDashboardPage() {
       <div>
         <h2 className="text-xl font-semibold mb-4">Recent Submissions</h2>
         {recentSubmissions.length === 0 ? (
-          <Card className="bg-muted/50 border-dashed">
-            <CardContent className="flex flex-col items-center justify-center p-12">
-              <Code2 className="h-10 w-10 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No submissions yet.</p>
-            </CardContent>
-          </Card>
+          <EmptyState>
+            <Code2 className="h-10 w-10 text-muted-foreground mb-4" />
+            <p>No submissions yet.</p>
+          </EmptyState>
         ) : (
           <div className="space-y-4">
             {recentSubmissions.map((sub) => (
@@ -134,6 +135,6 @@ export default function StudentDashboardPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }
