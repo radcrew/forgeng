@@ -37,7 +37,7 @@ import { Textarea } from "@components/ui/textarea";
 import { PageContainer, PageHeader } from "@components/shared";
 import { useCohorts } from "@features/cohorts";
 import { useTasks } from "@features/tasks";
-import type { Task, TaskStatus, TaskType } from "@lib/types";
+import type { Task, TaskStatus, TaskType } from "@types";
 
 const TASK_TYPE_ICON: Record<TaskType, LucideIcon> = {
   coding: Code2,

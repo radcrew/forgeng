@@ -3,4 +3,4 @@ export type {
   FeedbackVerdict,
   Submission,
   SubmissionStatus,
-} from "@lib/types";
+} from "@types";

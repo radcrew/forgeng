@@ -73,11 +73,18 @@ src/
 │   ├── tasks/
 │   └── users/
 ├── hooks/               # Shared client hooks (e.g. useAsyncResource)
+├── types/               # Shared domain types (import via `@types`)
+│   ├── user.ts
+│   ├── application.ts
+│   ├── cohort.ts
+│   ├── task.ts
+│   ├── submission.ts
+│   ├── dashboard.ts
+│   └── index.ts
 └── lib/
     ├── api-client.ts    # Fetch → /api/* + dev auth headers
     ├── config.ts        # API_URL, API_BASE
     ├── session.ts       # Persisted user profile (localStorage)
-    ├── types.ts         # Domain types
     └── utils.ts         # cn() helper
 ```
 

@@ -1,6 +1,6 @@
 import { apiClient } from "@lib/api-client";
 import { writeSession } from "@lib/session";
-import type { UserProfile, UserRole } from "@lib/types";
+import type { UserProfile, UserRole } from "@types";
 
 interface UserDto {
   id: number;

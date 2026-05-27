@@ -1,4 +1,4 @@
-import type { UserProfile } from "@lib/types";
+import type { UserProfile } from "@types";
 
 const SESSION_KEY = "forgeng.session";
 

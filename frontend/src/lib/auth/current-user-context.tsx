@@ -10,7 +10,7 @@ import {
 
 import { getMe, signInWithEmail } from "@features/auth";
 import { readSession, subscribeSession, writeSession } from "@lib/session";
-import type { UserProfile } from "@lib/types";
+import type { UserProfile } from "@types";
 
 /**
  * Active-user state is persisted in `localStorage` and sent to the API via

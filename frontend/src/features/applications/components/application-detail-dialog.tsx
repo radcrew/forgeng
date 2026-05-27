@@ -24,7 +24,7 @@ import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
 
 import { useUpdateApplicationStatus } from "../hooks";
-import type { Application, ApplicationStatus } from "../types";
+import type { Application, ApplicationStatus } from "@types";
 
 interface ApplicationDetailDialogProps {
   application: Application;

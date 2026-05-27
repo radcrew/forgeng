@@ -26,7 +26,7 @@ import {
   type Submission,
   type SubmissionStatusFilter,
 } from "@features/submissions";
-import type { FeedbackVerdict } from "@lib/types";
+import type { FeedbackVerdict } from "@types";
 
 function ReviewDetail({
   submission,

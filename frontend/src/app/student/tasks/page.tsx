@@ -24,7 +24,7 @@ import { useStudentDashboard } from "@features/dashboard";
 import { SubmissionStatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
-import type { Task, TaskType } from "@lib/types";
+import type { Task, TaskType } from "@types";
 
 const TASK_TYPE_ICON: Record<TaskType, LucideIcon> = {
   coding: Code2,

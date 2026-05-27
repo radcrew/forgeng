@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { Badge } from "@components/ui/badge";
 
 import { SUBMISSION_STATUS_VARIANT } from "../constants";
-import type { SubmissionStatus } from "../types";
+import type { SubmissionStatus } from "@types";
 
 interface SubmissionStatusBadgeProps {
   status: SubmissionStatus;

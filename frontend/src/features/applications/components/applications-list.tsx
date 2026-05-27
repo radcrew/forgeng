@@ -1,4 +1,4 @@
-import type { Application } from "../types";
+import type { Application } from "@types";
 import { ApplicationListRow } from "./application-list-row";
 
 interface ApplicationsListProps {

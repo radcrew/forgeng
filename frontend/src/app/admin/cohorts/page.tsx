@@ -29,7 +29,7 @@ import { Textarea } from "@components/ui/textarea";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { useCohorts, useEnrollments } from "@features/cohorts";
 import { useUsers } from "@features/users";
-import type { Cohort, CohortStatus } from "@lib/types";
+import type { Cohort, CohortStatus } from "@types";
 
 const STATUS_VARIANT: Record<CohortStatus, "default" | "secondary" | "outline"> =
   {

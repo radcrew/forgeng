@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 
-import type { Application } from "../types";
+import type { Application } from "@types";
 import { ApplicationStatusBadge } from "./application-status-badge";
 
 interface ApplicationListRowProps {
