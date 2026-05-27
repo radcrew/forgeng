@@ -4,8 +4,8 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { Clock, MessageSquare } from "lucide-react";
 
+import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
-import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
   StudentSubmissionDetailSheet,
@@ -26,44 +26,39 @@ const StudentSubmissionsPage = () => {
       />
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Loading submissions…
-        </p>
+        <LoadingState message="Loading submissions…" />
       ) : submissions.length === 0 ? (
         <EmptyState message="No submissions yet. Head to Tasks to start submitting your work." />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (
-            <Card
+            <ClickableCard
               key={sub.id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => setSelectedId(sub.id)}
             >
-              <div className="flex items-center gap-4 p-5">
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">
-                    {sub.task?.title ?? "Unknown Task"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Submitted{" "}
-                    {format(new Date(sub.createdAt), "MMM d, yyyy")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  {sub.feedbackCount > 0 && (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" />
-                      {sub.feedbackCount}
-                    </span>
-                  )}
-                  <SubmissionStatusBadge status={sub.status} />
-                  <Button variant="ghost" size="sm">
-                    View
-                  </Button>
-                </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">
+                  {sub.task?.title ?? "Unknown Task"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Submitted{" "}
+                  {format(new Date(sub.createdAt), "MMM d, yyyy")}
+                </p>
               </div>
-            </Card>
+              <div className="flex items-center gap-3 shrink-0">
+                {sub.feedbackCount > 0 && (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" />
+                    {sub.feedbackCount}
+                  </span>
+                )}
+                <SubmissionStatusBadge status={sub.status} />
+                <Button variant="ghost" size="sm">
+                  View
+                </Button>
+              </div>
+            </ClickableCard>
           ))}
         </div>
       )}

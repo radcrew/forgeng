@@ -62,8 +62,9 @@ Sign in at `/sign-in` with an email that exists in the database (run
 src/
 ├── app/                 # Routes: thin pages (`const X = () => …`, default export)
 ├── components/
+│   ├── common/          # Reusable app patterns (FormDialog, DetailSheet, …)
 │   ├── layout/          # Role-aware sidebar layout
-│   ├── shared/          # Cross-route UI (PageHeader, EmptyState, …)
+│   ├── shared/          # Cross-route page chrome (PageHeader, EmptyState, …)
 │   └── ui/              # shadcn/ui primitives
 ├── features/            # Domain: api, hooks, types, route-level components
 │   ├── applications/    # e.g. ApplyWizard, pipeline dialogs & lists
@@ -90,6 +91,24 @@ src/
     ├── session.ts       # Persisted user profile (localStorage)
     └── utils.ts         # cn() helper
 ```
+
+## Shared UI (`@components/common`)
+
+Feature components compose these primitives instead of repeating dialog/sheet markup:
+
+| Component | Use for |
+| --------- | ------- |
+| `FormDialog` | Modal forms with title + cancel/submit footer |
+| `ContentDialog` | Modals without a standard footer (e.g. enrollments) |
+| `DetailSheet` | Side panels for detail views |
+| `FormField`, `FormBody`, `FormGrid` | Consistent form layout |
+| `StatusBadge` | Domain status chips (wrapped per feature) |
+| `LoadingState` | Centered loading message on list pages |
+| `ClickableCard` | Hoverable list rows |
+| `DetailField`, `ProseBlock`, `ExternalLinkField` | Read-only detail blocks |
+| `FeedbackCard`, `VerdictPicker` | Submission review UI |
+
+Domain-specific behavior stays in **`@features/*`**; layout and chrome stay in **`@components/common`** / **`@components/shared`**.
 
 ## Data layer
 

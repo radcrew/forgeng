@@ -3,16 +3,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
+  FormBody,
+  FormDialog,
+  FormField,
+  FormGrid,
+} from "@components/common";
 import { Input } from "@components/ui/input";
-import { Label } from "@components/ui/label";
 import {
   Select,
   SelectContent,
@@ -55,101 +52,89 @@ export const TaskFormDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Task" : "Create Task"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label>Title</Label>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? "Edit Task" : "Create Task"}
+      actions={{
+        onSubmit: handleSave,
+        submitLabel: isEdit ? "Save Changes" : "Create Task",
+        isLoading: isSaving,
+        submitDisabled: !title || !cohortId,
+      }}
+    >
+      <FormBody>
+        <FormField label="Title">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Task title..."
+          />
+        </FormField>
+        <FormField label="Description">
+          <Textarea
+            value={description ?? ""}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            placeholder="What should students do?"
+          />
+        </FormField>
+        <FormGrid>
+          <FormField label="Type">
+            <Select
+              value={type}
+              onValueChange={(v) => setType(v as TaskType)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="coding">Coding</SelectItem>
+                <SelectItem value="reading">Reading</SelectItem>
+                <SelectItem value="project">Project</SelectItem>
+                <SelectItem value="quiz">Quiz</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+          <FormField label="Status">
+            <Select
+              value={status}
+              onValueChange={(v) => setStatus(v as TaskStatus)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+        </FormGrid>
+        <FormGrid>
+          <FormField label="Cohort">
+            <Select value={cohortId} onValueChange={setCohortId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select cohort..." />
+              </SelectTrigger>
+              <SelectContent>
+                {cohorts.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+          <FormField label="Due Date">
             <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Task title..."
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              value={description ?? ""}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              placeholder="What should students do?"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <Select
-                value={type}
-                onValueChange={(v) => setType(v as TaskType)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="coding">Coding</SelectItem>
-                  <SelectItem value="reading">Reading</SelectItem>
-                  <SelectItem value="project">Project</SelectItem>
-                  <SelectItem value="quiz">Quiz</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={status}
-                onValueChange={(v) => setStatus(v as TaskStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Cohort</Label>
-              <Select value={cohortId} onValueChange={setCohortId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select cohort..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {cohorts.map((c) => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Due Date</Label>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!title || !cohortId || isSaving}
-          >
-            {isSaving ? "Saving..." : isEdit ? "Save Changes" : "Create Task"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </FormField>
+        </FormGrid>
+      </FormBody>
+    </FormDialog>
   );
 };

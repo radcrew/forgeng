@@ -4,8 +4,8 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { Clock } from "lucide-react";
 
+import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
-import { Card } from "@components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
@@ -44,40 +44,35 @@ const MentorReviewsPage = () => {
       </Tabs>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Loading submissions…
-        </p>
+        <LoadingState message="Loading submissions…" />
       ) : submissions.length === 0 ? (
         <EmptyState message="No submissions in this category." />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (
-            <Card
+            <ClickableCard
               key={sub.id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => setSelectedId(sub.id)}
             >
-              <div className="flex items-center gap-4 p-5">
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">
-                    {sub.task?.title ?? "Unknown Task"}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {sub.user?.name ?? sub.user?.email}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {format(new Date(sub.createdAt), "MMM d, yyyy")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <SubmissionStatusBadge status={sub.status} showIcon={false} />
-                  <Button variant="ghost" size="sm">
-                    Review
-                  </Button>
-                </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">
+                  {sub.task?.title ?? "Unknown Task"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {sub.user?.name ?? sub.user?.email}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {format(new Date(sub.createdAt), "MMM d, yyyy")}
+                </p>
               </div>
-            </Card>
+              <div className="flex items-center gap-3 shrink-0">
+                <SubmissionStatusBadge status={sub.status} showIcon={false} />
+                <Button variant="ghost" size="sm">
+                  Review
+                </Button>
+              </div>
+            </ClickableCard>
           ))}
         </div>
       )}

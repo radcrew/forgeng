@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@components/ui/button";
+import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
   AdminCohortCard,
@@ -37,9 +38,7 @@ const AdminCohortsPage = () => {
       />
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Loading cohorts…
-        </p>
+        <LoadingState message="Loading cohorts…" />
       ) : cohorts.length === 0 ? (
         <EmptyState message="No cohorts yet. Create your first cohort to get started." />
       ) : (

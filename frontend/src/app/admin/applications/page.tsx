@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
   ApplicationDetailDialog,
@@ -28,9 +29,7 @@ const AdminApplicationsPage = () => {
       <ApplicationStatusTabs value={filter} onChange={setFilter} />
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Loading applications…
-        </p>
+        <LoadingState message="Loading applications…" />
       ) : applications.length === 0 ? (
         <EmptyState message="No applications in this category." />
       ) : (

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@components/ui/button";
+import { LoadingState } from "@components/common";
 import { PageContainer, PageHeader } from "@components/shared";
 import {
   AdminTaskRow,
@@ -35,11 +36,7 @@ const AdminTasksPage = () => {
       />
 
       <div className="space-y-3">
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">
-            Loading tasks…
-          </p>
-        ) : null}
+        {isLoading ? <LoadingState message="Loading tasks…" /> : null}
         {tasks.map((task) => (
           <AdminTaskRow
             key={task.id}

@@ -3,16 +3,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
+import { FormBody, FormDialog, FormField } from "@components/common";
 import { Input } from "@components/ui/input";
-import { Label } from "@components/ui/label";
 import { Textarea } from "@components/ui/textarea";
 import type { Task } from "@types";
 
@@ -44,41 +36,37 @@ export const SubmitTaskDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
-        <DialogHeader>
-          <DialogTitle>Submit: {task.title}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="repoUrl">Repository URL (optional)</Label>
-            <Input
-              id="repoUrl"
-              placeholder="https://github.com/you/repo"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="content">Notes / Write-up (optional)</Label>
-            <Textarea
-              id="content"
-              placeholder="Describe your solution, approach, or any notes for the reviewer..."
-              rows={5}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Work"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`Submit: ${task.title}`}
+      size="lg"
+      actions={{
+        onSubmit: handleSubmit,
+        submitLabel: "Submit Work",
+        loadingLabel: "Submitting...",
+        isLoading: isSubmitting,
+      }}
+    >
+      <FormBody>
+        <FormField label="Repository URL (optional)" htmlFor="repoUrl">
+          <Input
+            id="repoUrl"
+            placeholder="https://github.com/you/repo"
+            value={repoUrl}
+            onChange={(e) => setRepoUrl(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Notes / Write-up (optional)" htmlFor="content">
+          <Textarea
+            id="content"
+            placeholder="Describe your solution, approach, or any notes for the reviewer..."
+            rows={5}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+        </FormField>
+      </FormBody>
+    </FormDialog>
   );
 };

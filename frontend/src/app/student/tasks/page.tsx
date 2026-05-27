@@ -7,6 +7,7 @@ import { Clock, Code2 } from "lucide-react";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
+import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { useStudentDashboard } from "@features/dashboard";
 import {
@@ -58,9 +59,7 @@ const StudentTasksPage = () => {
       />
 
       {tasksLoading ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Loading tasks…
-        </p>
+        <LoadingState message="Loading tasks…" />
       ) : tasks.length === 0 ? (
         <EmptyState message="No tasks have been published for your cohort yet." />
       ) : (

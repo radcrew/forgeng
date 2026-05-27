@@ -4,15 +4,15 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
-import { Button } from "@components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@components/ui/dialog";
-import { Label } from "@components/ui/label";
+  DetailField,
+  DetailGrid,
+  FormBody,
+  FormDialog,
+  FormField,
+  ProseBlock,
+  SectionTitle,
+} from "@components/common";
 import {
   Select,
   SelectContent,
@@ -22,21 +22,21 @@ import {
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
-
-import { useUpdateApplicationStatus } from "../hooks";
 import type { Application, ApplicationStatus } from "@types";
 
-interface ApplicationDetailDialogProps {
+import { useUpdateApplicationStatus } from "../hooks";
+
+export type ApplicationDetailDialogProps = {
   application: Application;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
+};
 
-export function ApplicationDetailDialog({
+export const ApplicationDetailDialog = ({
   application,
   open,
   onOpenChange,
-}: ApplicationDetailDialogProps) {
+}: ApplicationDetailDialogProps) => {
   const { data: cohorts = [] } = useCohorts();
   const { update, isPending } = useUpdateApplicationStatus();
 
@@ -54,7 +54,9 @@ export function ApplicationDetailDialog({
         status,
         reviewerNote: reviewerNote || null,
         cohortId:
-          status === "accepted" && cohortId ? Number.parseInt(cohortId, 10) : null,
+          status === "accepted" && cohortId
+            ? Number.parseInt(cohortId, 10)
+            : null,
       });
       toast.success("Application updated");
       onOpenChange(false);
@@ -64,109 +66,90 @@ export function ApplicationDetailDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
-        <DialogHeader>
-          <DialogTitle>
-            {application.firstName} {application.lastName}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-5 py-2">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Email</p>
-              <p className="font-medium">{application.email}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Applied</p>
-              <p className="font-medium">
-                {format(new Date(application.createdAt), "MMM d, yyyy")}
-              </p>
-            </div>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`${application.firstName} ${application.lastName}`}
+      size="lg"
+      actions={{
+        onSubmit: handleSave,
+        submitLabel: "Save",
+        isLoading: isPending,
+      }}
+    >
+      <FormBody className="space-y-5">
+        <DetailGrid>
+          <DetailField label="Email" value={application.email} />
+          <DetailField
+            label="Applied"
+            value={format(new Date(application.createdAt), "MMM d, yyyy")}
+          />
+        </DetailGrid>
+
+        {application.motivation && (
+          <div>
+            <SectionTitle className="mb-1">Motivation</SectionTitle>
+            <ProseBlock>{application.motivation}</ProseBlock>
           </div>
+        )}
 
-          {application.motivation && (
-            <div>
-              <p className="text-sm font-semibold mb-1">Motivation</p>
-              <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
-                {application.motivation}
-              </p>
-            </div>
-          )}
+        {application.background && (
+          <div>
+            <SectionTitle className="mb-1">Background</SectionTitle>
+            <ProseBlock>{application.background}</ProseBlock>
+          </div>
+        )}
 
-          {application.background && (
-            <div>
-              <p className="text-sm font-semibold mb-1">Background</p>
-              <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
-                {application.background}
-              </p>
-            </div>
-          )}
+        {application.experience && (
+          <div>
+            <SectionTitle className="mb-1">Experience</SectionTitle>
+            <ProseBlock>{application.experience}</ProseBlock>
+          </div>
+        )}
 
-          {application.experience && (
-            <div>
-              <p className="text-sm font-semibold mb-1">Experience</p>
-              <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
-                {application.experience}
-              </p>
-            </div>
-          )}
+        <FormField label="Status">
+          <Select
+            value={status}
+            onValueChange={(v) => setStatus(v as ApplicationStatus)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="reviewing">Reviewing</SelectItem>
+              <SelectItem value="accepted">Accepted</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
 
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <Select
-              value={status}
-              onValueChange={(v) => setStatus(v as ApplicationStatus)}
-            >
+        {status === "accepted" && cohorts.length > 0 && (
+          <FormField label="Assign to Cohort">
+            <Select value={cohortId} onValueChange={setCohortId}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select a cohort..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="reviewing">Reviewing</SelectItem>
-                <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                {cohorts.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>
+                    {c.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
+        )}
 
-          {status === "accepted" && cohorts.length > 0 && (
-            <div className="space-y-2">
-              <Label>Assign to Cohort</Label>
-              <Select value={cohortId} onValueChange={setCohortId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a cohort..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {cohorts.map((c) => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label>Reviewer Note</Label>
-            <Textarea
-              placeholder="Internal notes about this application..."
-              rows={3}
-              value={reviewerNote}
-              onChange={(e) => setReviewerNote(e.target.value)}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <FormField label="Reviewer Note">
+          <Textarea
+            placeholder="Internal notes about this application..."
+            rows={3}
+            value={reviewerNote}
+            onChange={(e) => setReviewerNote(e.target.value)}
+          />
+        </FormField>
+      </FormBody>
+    </FormDialog>
   );
-}
+};
