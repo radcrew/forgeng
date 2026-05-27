@@ -1,13 +1,23 @@
+"use client";
+
 import Link from "next/link";
 import { format } from "date-fns";
 import { ClipboardList, FileText, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { mockMentorDashboard } from "@lib/mock-data";
+import { useMentorDashboard } from "@features/dashboard";
 
 export default function MentorDashboardPage() {
-  const dashboard = mockMentorDashboard;
+  const { data: dashboard, isLoading } = useMentorDashboard();
+
+  if (isLoading || !dashboard) {
+    return (
+      <PageContainer maxWidth="6xl" spacing="8">
+        <PageHeader title="Mentor Dashboard" description="Loading…" />
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="6xl" spacing="8">

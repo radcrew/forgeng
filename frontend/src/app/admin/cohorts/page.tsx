@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -27,11 +27,8 @@ import {
 import { Separator } from "@components/ui/separator";
 import { Textarea } from "@components/ui/textarea";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import {
-  mockCohorts,
-  mockEnrollments,
-  mockUsers,
-} from "@lib/mock-data";
+import { useCohorts, useEnrollments } from "@features/cohorts";
+import { useUsers } from "@features/users";
 import type { Cohort, CohortStatus } from "@lib/types";
 
 const STATUS_VARIANT: Record<CohortStatus, "default" | "secondary" | "outline"> =
@@ -161,14 +158,10 @@ function EnrollmentsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const enrollments = useMemo(
-    () => mockEnrollments.filter((e) => e.cohortId === cohort.id),
-    [cohort.id],
-  );
+  const { data: enrollments = [] } = useEnrollments(cohort.id);
+  const { data: students = [] } = useUsers("student");
   const enrolledIds = new Set(enrollments.map((e) => e.userId));
-  const availableStudents = mockUsers.filter(
-    (u) => u.role === "student" && !enrolledIds.has(u.id),
-  );
+  const availableStudents = students.filter((u) => !enrolledIds.has(u.id));
 
   const [userId, setUserId] = useState("");
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -250,6 +243,7 @@ function EnrollmentsDialog({
 }
 
 export default function AdminCohortsPage() {
+  const { data: cohorts = [], isLoading } = useCohorts();
   const [formOpen, setFormOpen] = useState(false);
   const [editCohort, setEditCohort] = useState<Cohort | undefined>(undefined);
   const [enrollCohort, setEnrollCohort] = useState<Cohort | undefined>(undefined);
@@ -276,11 +270,15 @@ export default function AdminCohortsPage() {
         }
       />
 
-      {mockCohorts.length === 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          Loading cohorts…
+        </p>
+      ) : cohorts.length === 0 ? (
         <EmptyState message="No cohorts yet. Create your first cohort to get started." />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {mockCohorts.map((cohort) => (
+          {cohorts.map((cohort) => (
             <Card key={cohort.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">

@@ -1,15 +1,26 @@
+"use client";
+
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle2, Clock, Code2 } from "lucide-react";
 
-import { Badge } from "@components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { mockStudentDashboard } from "@lib/mock-data";
+import { useStudentDashboard } from "@features/dashboard";
+import { SubmissionStatusBadge } from "@features/submissions";
 
 export default function StudentDashboardPage() {
-  const { cohort, taskStats, recentSubmissions, nextDeadline } =
-    mockStudentDashboard;
+  const { data: dashboard, isLoading } = useStudentDashboard();
+
+  if (isLoading || !dashboard) {
+    return (
+      <PageContainer maxWidth="6xl" spacing="8">
+        <PageHeader title="Student Dashboard" description="Loading…" />
+      </PageContainer>
+    );
+  }
+
+  const { cohort, taskStats, recentSubmissions, nextDeadline } = dashboard;
   const progressPercent =
     taskStats.total > 0
       ? Math.round((taskStats.approved / taskStats.total) * 100)
@@ -118,17 +129,7 @@ export default function StudentDashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <Badge
-                    variant={
-                      sub.status === "approved"
-                        ? "default"
-                        : sub.status === "needs_work"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                  >
-                    {sub.status.replace("_", " ")}
-                  </Badge>
+                  <SubmissionStatusBadge status={sub.status} showIcon={false} />
                 </div>
               </Card>
             ))}

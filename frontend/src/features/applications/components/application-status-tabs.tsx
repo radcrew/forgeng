@@ -1,5 +1,6 @@
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
-import type { ApplicationStatus } from "@lib/types";
+
+import type { ApplicationStatus } from "../types";
 
 export type ApplicationStatusFilter = ApplicationStatus | "all";
 

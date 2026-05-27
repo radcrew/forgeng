@@ -2,14 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import {
-  BookOpen,
-  CheckCircle2,
-  Clock,
-  Code2,
-  FolderGit2,
-  HelpCircle,
-} from "lucide-react";
+import { BookOpen, Clock, Code2, FolderGit2, HelpCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,11 +20,11 @@ import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { Textarea } from "@components/ui/textarea";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import {
-  mockStudentDashboard,
-  mockSubmissions,
-  mockTasks,
-} from "@lib/mock-data";
+import { useStudentDashboard } from "@features/dashboard";
+import { SubmissionStatusBadge } from "@features/submissions";
+import { useSubmissions } from "@features/submissions";
+import { useTasks } from "@features/tasks";
+import { useCurrentUser } from "@lib/auth";
 import type { Task, TaskType } from "@lib/types";
 
 const TASK_TYPE_ICON: Record<TaskType, LucideIcon> = {
@@ -108,15 +101,26 @@ function SubmitDialog({
 
 export default function StudentTasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const cohort = mockStudentDashboard.cohort;
-  const tasks = useMemo(
-    () => mockTasks.filter((t) => t.cohortId === cohort.id),
-    [cohort.id],
-  );
+  const { user } = useCurrentUser();
+  const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
+  const cohortId = dashboard?.cohort.id;
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohortId);
+  const { data: submissions = [] } = useSubmissions({ userId: user?.id });
+
   const submissionByTaskId = useMemo(
-    () => new Map(mockSubmissions.map((s) => [s.taskId, s])),
-    [],
+    () => new Map(submissions.map((s) => [s.taskId, s])),
+    [submissions],
   );
+
+  if (dashboardLoading || !dashboard) {
+    return (
+      <PageContainer maxWidth="4xl">
+        <PageHeader title="Tasks" description="Loading…" />
+      </PageContainer>
+    );
+  }
+
+  const cohort = dashboard.cohort;
 
   return (
     <PageContainer maxWidth="4xl">
@@ -125,7 +129,11 @@ export default function StudentTasksPage() {
         description={`${cohort.name} — ${tasks.length} tasks`}
       />
 
-      {tasks.length === 0 ? (
+      {tasksLoading ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          Loading tasks…
+        </p>
+      ) : tasks.length === 0 ? (
         <EmptyState message="No tasks have been published for your cohort yet." />
       ) : (
         <div className="space-y-3">
@@ -163,20 +171,7 @@ export default function StudentTasksPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {submission ? (
-                      <Badge
-                        variant={
-                          submission.status === "approved"
-                            ? "default"
-                            : submission.status === "needs_work"
-                              ? "destructive"
-                              : "secondary"
-                        }
-                      >
-                        {submission.status === "approved" && (
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                        )}
-                        {submission.status.replace("_", " ")}
-                      </Badge>
+                      <SubmissionStatusBadge status={submission.status} />
                     ) : (
                       <Button size="sm" onClick={() => setSelectedTask(task)}>
                         Submit

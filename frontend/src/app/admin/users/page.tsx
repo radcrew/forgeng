@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -14,10 +14,11 @@ import {
 } from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { PageContainer, PageHeader } from "@components/shared";
-import { mockUsers } from "@lib/mock-data";
-import type { UserProfile, UserRole } from "@lib/types";
-
-type RoleFilter = UserRole | "all";
+import {
+  useUsers,
+  type UserProfile,
+  type UserRoleFilter,
+} from "@features/users";
 
 function UserRow({ user }: { user: UserProfile }) {
   const handleRoleChange = (newRole: string) => {
@@ -61,12 +62,8 @@ function UserRow({ user }: { user: UserProfile }) {
 }
 
 export default function AdminUsersPage() {
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
-
-  const users = useMemo(() => {
-    if (roleFilter === "all") return mockUsers;
-    return mockUsers.filter((u) => u.role === roleFilter);
-  }, [roleFilter]);
+  const [roleFilter, setRoleFilter] = useState<UserRoleFilter>("all");
+  const { data: users = [], isLoading } = useUsers(roleFilter);
 
   return (
     <PageContainer maxWidth="4xl">
@@ -77,7 +74,7 @@ export default function AdminUsersPage() {
 
       <Tabs
         value={roleFilter}
-        onValueChange={(v) => setRoleFilter(v as RoleFilter)}
+        onValueChange={(v) => setRoleFilter(v as UserRoleFilter)}
       >
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
@@ -88,7 +85,9 @@ export default function AdminUsersPage() {
         </TabsList>
       </Tabs>
 
-      <p className="text-sm text-muted-foreground">{users.length} users</p>
+      <p className="text-sm text-muted-foreground">
+        {isLoading ? "Loading…" : `${users.length} users`}
+      </p>
 
       <div className="space-y-2">
         {users.map((user) => (

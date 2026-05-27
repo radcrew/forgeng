@@ -1,14 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  MessageSquare,
-} from "lucide-react";
+import { Clock, ExternalLink, MessageSquare } from "lucide-react";
 
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
@@ -21,20 +15,26 @@ import {
   SheetTitle,
 } from "@components/ui/sheet";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  SubmissionStatusBadge,
+  useSubmissionFeedback,
+  useSubmissions,
+  type Submission,
+} from "@features/submissions";
 import { useCurrentUser } from "@lib/auth";
-import { mockFeedback, mockSubmissions } from "@lib/mock-data";
 
 function SubmissionDetail({
-  submissionId,
+  submission,
   open,
   onClose,
 }: {
-  submissionId: number;
+  submission: Submission;
   open: boolean;
   onClose: () => void;
 }) {
-  const submission = mockSubmissions.find((s) => s.id === submissionId);
-  const feedback = mockFeedback.filter((f) => f.submissionId === submissionId);
+  const { data: feedback = [] } = useSubmissionFeedback(
+    open ? submission.id : null,
+  );
 
   return (
     <Sheet
@@ -44,28 +44,11 @@ function SubmissionDetail({
       }}
     >
       <SheetContent className="sm:max-w-[540px] overflow-y-auto">
-        {!submission ? null : (
-          <>
-            <SheetHeader>
-              <SheetTitle className="text-xl">{submission.task?.title}</SheetTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge
-                  variant={
-                    submission.status === "approved"
-                      ? "default"
-                      : submission.status === "needs_work"
-                        ? "destructive"
-                        : "secondary"
-                  }
-                >
-                  {submission.status === "approved" && (
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                  )}
-                  {submission.status === "needs_work" && (
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                  )}
-                  {submission.status.replace("_", " ")}
-                </Badge>
+        <>
+          <SheetHeader>
+            <SheetTitle className="text-xl">{submission.task?.title}</SheetTitle>
+            <div className="flex items-center gap-2 mt-1">
+              <SubmissionStatusBadge status={submission.status} />
                 <span className="text-sm text-muted-foreground">
                   Submitted{" "}
                   {format(new Date(submission.createdAt), "MMM d, yyyy")}
@@ -154,8 +137,7 @@ function SubmissionDetail({
                 )}
               </div>
             </div>
-          </>
-        )}
+        </>
       </SheetContent>
     </Sheet>
   );
@@ -164,14 +146,10 @@ function SubmissionDetail({
 export default function StudentSubmissionsPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { user } = useCurrentUser();
-  const currentUserId = user?.id;
-  const submissions = useMemo(
-    () =>
-      currentUserId == null
-        ? []
-        : mockSubmissions.filter((s) => s.user?.id === currentUserId),
-    [currentUserId],
-  );
+  const { data: submissions = [], isLoading } = useSubmissions({
+    userId: user?.id,
+  });
+  const selected = submissions.find((s) => s.id === selectedId);
 
   return (
     <PageContainer maxWidth="4xl">
@@ -180,7 +158,11 @@ export default function StudentSubmissionsPage() {
         description="Your submission history and mentor feedback."
       />
 
-      {submissions.length === 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          Loading submissions…
+        </p>
+      ) : submissions.length === 0 ? (
         <EmptyState message="No submissions yet. Head to Tasks to start submitting your work." />
       ) : (
         <div className="space-y-3">
@@ -208,23 +190,7 @@ export default function StudentSubmissionsPage() {
                       {sub.feedbackCount}
                     </span>
                   )}
-                  <Badge
-                    variant={
-                      sub.status === "approved"
-                        ? "default"
-                        : sub.status === "needs_work"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                  >
-                    {sub.status === "approved" && (
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                    )}
-                    {sub.status === "needs_work" && (
-                      <AlertCircle className="h-3 w-3 mr-1" />
-                    )}
-                    {sub.status.replace("_", " ")}
-                  </Badge>
+                  <SubmissionStatusBadge status={sub.status} />
                   <Button variant="ghost" size="sm">
                     View
                   </Button>
@@ -235,9 +201,9 @@ export default function StudentSubmissionsPage() {
         </div>
       )}
 
-      {selectedId && (
+      {selected && (
         <SubmissionDetail
-          submissionId={selectedId}
+          submission={selected}
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
         />

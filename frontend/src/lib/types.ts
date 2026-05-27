@@ -85,3 +85,39 @@ export interface Enrollment {
   user?: Pick<UserProfile, "id" | "name" | "email">;
   enrolledAt: string;
 }
+
+export interface StudentDashboard {
+  cohort: Pick<Cohort, "id" | "name">;
+  taskStats: {
+    total: number;
+    approved: number;
+    pending: number;
+    needsWork: number;
+  };
+  nextDeadline: string | null;
+  recentSubmissions: Submission[];
+}
+
+export interface MentorDashboard {
+  pendingReviews: number;
+  cohortBreakdown: {
+    cohortId: number;
+    cohortName: string;
+    pendingCount: number;
+  }[];
+  recentActivity: Submission[];
+}
+
+export interface AdminDashboard {
+  applicationStats: {
+    total: number;
+    pending: number;
+    reviewing: number;
+    accepted: number;
+    rejected: number;
+  };
+  activeCohorts: number;
+  totalStudents: number;
+  totalMentors: number;
+  recentApplications: Application[];
+}

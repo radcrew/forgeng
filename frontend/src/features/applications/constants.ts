@@ -1,4 +1,4 @@
-import type { ApplicationStatus } from "@lib/types";
+import type { ApplicationStatus } from "./types";
 
 export const APPLICATION_STATUS_VARIANT: Record<
   ApplicationStatus,

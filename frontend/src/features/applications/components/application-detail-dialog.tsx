@@ -21,8 +21,10 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
-import { mockCohorts } from "@lib/mock-data";
-import type { Application, ApplicationStatus } from "@lib/types";
+import { useCohorts } from "@features/cohorts";
+
+import { useUpdateApplicationStatus } from "../hooks";
+import type { Application, ApplicationStatus } from "../types";
 
 interface ApplicationDetailDialogProps {
   application: Application;
@@ -35,6 +37,9 @@ export function ApplicationDetailDialog({
   open,
   onOpenChange,
 }: ApplicationDetailDialogProps) {
+  const { data: cohorts = [] } = useCohorts();
+  const { update, isPending } = useUpdateApplicationStatus();
+
   const [status, setStatus] = useState<ApplicationStatus>(application.status);
   const [reviewerNote, setReviewerNote] = useState(
     application.reviewerNote ?? "",
@@ -42,14 +47,20 @@ export function ApplicationDetailDialog({
   const [cohortId, setCohortId] = useState<string>(
     application.cohortId?.toString() ?? "",
   );
-  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    setIsSaving(false);
-    toast.success("Application updated");
-    onOpenChange(false);
+    try {
+      await update(application.id, {
+        status,
+        reviewerNote: reviewerNote || null,
+        cohortId:
+          status === "accepted" && cohortId ? Number.parseInt(cohortId, 10) : null,
+      });
+      toast.success("Application updated");
+      onOpenChange(false);
+    } catch {
+      toast.error("Failed to update application");
+    }
   };
 
   return (
@@ -119,7 +130,7 @@ export function ApplicationDetailDialog({
             </Select>
           </div>
 
-          {status === "accepted" && mockCohorts.length > 0 && (
+          {status === "accepted" && cohorts.length > 0 && (
             <div className="space-y-2">
               <Label>Assign to Cohort</Label>
               <Select value={cohortId} onValueChange={setCohortId}>
@@ -127,7 +138,7 @@ export function ApplicationDetailDialog({
                   <SelectValue placeholder="Select a cohort..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockCohorts.map((c) => (
+                  {cohorts.map((c) => (
                     <SelectItem key={c.id} value={c.id.toString()}>
                       {c.name}
                     </SelectItem>
@@ -151,8 +162,8 @@ export function ApplicationDetailDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save"}
+          <Button onClick={handleSave} disabled={isPending}>
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

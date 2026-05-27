@@ -1,13 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
@@ -24,22 +19,27 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { Textarea } from "@components/ui/textarea";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { mockFeedback, mockSubmissions } from "@lib/mock-data";
-import type { FeedbackVerdict, SubmissionStatus } from "@lib/types";
-
-type StatusFilter = SubmissionStatus | "all";
+import {
+  SubmissionStatusBadge,
+  useSubmissionFeedback,
+  useSubmissions,
+  type Submission,
+  type SubmissionStatusFilter,
+} from "@features/submissions";
+import type { FeedbackVerdict } from "@lib/types";
 
 function ReviewDetail({
-  submissionId,
+  submission,
   open,
   onClose,
 }: {
-  submissionId: number;
+  submission: Submission;
   open: boolean;
   onClose: () => void;
 }) {
-  const submission = mockSubmissions.find((s) => s.id === submissionId);
-  const feedback = mockFeedback.filter((f) => f.submissionId === submissionId);
+  const { data: feedback = [] } = useSubmissionFeedback(
+    open ? submission.id : null,
+  );
   const [feedbackContent, setFeedbackContent] = useState("");
   const [verdict, setVerdict] = useState<FeedbackVerdict>("approved");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,31 +61,20 @@ function ReviewDetail({
       }}
     >
       <SheetContent className="sm:max-w-[580px] overflow-y-auto">
-        {!submission ? null : (
-          <>
-            <SheetHeader>
-              <SheetTitle className="text-xl">{submission.task?.title}</SheetTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-muted-foreground">
-                  By {submission.user?.name ?? submission.user?.email}
-                </span>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-sm text-muted-foreground">
-                  {format(new Date(submission.createdAt), "MMM d, yyyy")}
-                </span>
-                <Badge
-                  variant={
-                    submission.status === "approved"
-                      ? "default"
-                      : submission.status === "needs_work"
-                        ? "destructive"
-                        : "secondary"
-                  }
-                >
-                  {submission.status.replace("_", " ")}
-                </Badge>
-              </div>
-            </SheetHeader>
+        <>
+          <SheetHeader>
+            <SheetTitle className="text-xl">{submission.task?.title}</SheetTitle>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-sm text-muted-foreground">
+                By {submission.user?.name ?? submission.user?.email}
+              </span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-sm text-muted-foreground">
+                {format(new Date(submission.createdAt), "MMM d, yyyy")}
+              </span>
+              <SubmissionStatusBadge status={submission.status} showIcon={false} />
+            </div>
+          </SheetHeader>
 
             <div className="mt-6 space-y-6">
               {submission.repoUrl && (
@@ -203,8 +192,7 @@ function ReviewDetail({
                 </div>
               )}
             </div>
-          </>
-        )}
+        </>
       </SheetContent>
     </Sheet>
   );
@@ -212,12 +200,10 @@ function ReviewDetail({
 
 export default function MentorReviewsPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("submitted");
-
-  const submissions = useMemo(() => {
-    if (statusFilter === "all") return mockSubmissions;
-    return mockSubmissions.filter((s) => s.status === statusFilter);
-  }, [statusFilter]);
+  const [statusFilter, setStatusFilter] =
+    useState<SubmissionStatusFilter>("submitted");
+  const { data: submissions = [], isLoading } = useSubmissions({ status: statusFilter });
+  const selected = submissions.find((s) => s.id === selectedId);
 
   return (
     <PageContainer maxWidth="4xl">
@@ -228,7 +214,7 @@ export default function MentorReviewsPage() {
 
       <Tabs
         value={statusFilter}
-        onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+        onValueChange={(v) => setStatusFilter(v as SubmissionStatusFilter)}
       >
         <TabsList>
           <TabsTrigger value="submitted">Pending</TabsTrigger>
@@ -238,7 +224,11 @@ export default function MentorReviewsPage() {
         </TabsList>
       </Tabs>
 
-      {submissions.length === 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          Loading submissions…
+        </p>
+      ) : submissions.length === 0 ? (
         <EmptyState message="No submissions in this category." />
       ) : (
         <div className="space-y-3">
@@ -262,17 +252,7 @@ export default function MentorReviewsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <Badge
-                    variant={
-                      sub.status === "approved"
-                        ? "default"
-                        : sub.status === "needs_work"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                  >
-                    {sub.status.replace("_", " ")}
-                  </Badge>
+                  <SubmissionStatusBadge status={sub.status} showIcon={false} />
                   <Button variant="ghost" size="sm">
                     Review
                   </Button>
@@ -283,9 +263,9 @@ export default function MentorReviewsPage() {
         </div>
       )}
 
-      {selectedId && (
+      {selected && (
         <ReviewDetail
-          submissionId={selectedId}
+          submission={selected}
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
         />

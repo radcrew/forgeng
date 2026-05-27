@@ -35,7 +35,8 @@ import {
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
 import { PageContainer, PageHeader } from "@components/shared";
-import { mockCohorts, mockTasks } from "@lib/mock-data";
+import { useCohorts } from "@features/cohorts";
+import { useTasks } from "@features/tasks";
 import type { Task, TaskStatus, TaskType } from "@lib/types";
 
 const TASK_TYPE_ICON: Record<TaskType, LucideIcon> = {
@@ -54,6 +55,7 @@ function TaskFormDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { data: cohorts = [] } = useCohorts();
   const isEdit = !!task;
   const [title, setTitle] = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
@@ -138,7 +140,7 @@ function TaskFormDialog({
                   <SelectValue placeholder="Select cohort..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockCohorts.map((c) => (
+                  {cohorts.map((c) => (
                     <SelectItem key={c.id} value={c.id.toString()}>
                       {c.name}
                     </SelectItem>
@@ -173,6 +175,7 @@ function TaskFormDialog({
 }
 
 export default function AdminTasksPage() {
+  const { data: tasks = [], isLoading } = useTasks();
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<Task | undefined>(undefined);
 
@@ -199,7 +202,12 @@ export default function AdminTasksPage() {
       />
 
       <div className="space-y-3">
-        {mockTasks.map((task) => {
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground py-8 text-center">
+            Loading tasks…
+          </p>
+        ) : null}
+        {tasks.map((task) => {
           const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
           return (
             <Card key={task.id}>

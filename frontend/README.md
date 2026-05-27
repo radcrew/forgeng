@@ -60,19 +60,39 @@ so the appropriate `<link>` tags are injected automatically.
 
 ```
 src/
-├── app/                 # Next.js App Router routes (and per-role layouts)
+├── app/                 # Routing + thin pages (compose features)
 ├── components/
 │   ├── layout/          # Role-aware sidebar layout
+│   ├── shared/          # Cross-route UI (PageHeader, EmptyState, …)
 │   └── ui/              # shadcn/ui primitives
-├── hooks/               # Shared client hooks
+├── features/            # Domain modules: api, hooks, components
+│   ├── applications/
+│   ├── cohorts/
+│   ├── dashboard/
+│   ├── submissions/
+│   ├── tasks/
+│   └── users/
+├── hooks/               # Shared client hooks (e.g. useAsyncResource)
 └── lib/
-    ├── mock-data.ts     # All sample data used by pages
-    ├── types.ts         # Domain types (User, Task, Submission, …)
+    ├── api-client.ts    # Fetch + dev auth headers
+    ├── config.ts        # API_URL, USE_MOCK_DATA
+    ├── mock-data.ts     # Sample data (used when mocks are on)
+    ├── types.ts         # Domain types
     └── utils.ts         # cn() helper
 ```
 
-## Next steps
+## Data layer
 
-When wiring the backend, replace imports of `@/lib/mock-data` with real data
-hooks (TanStack Query, Server Components, etc.) — the page components only read
-the data and don't care where it comes from.
+Pages call **`@features/*/hooks`** (e.g. `useApplications`, `useSubmissions`).
+Each feature’s `api.ts` reads mock data when `NEXT_PUBLIC_USE_MOCK_DATA` is
+`true` (default), or calls the NestJS API via `@lib/api-client` when set to
+`false`.
+
+```bash
+# .env.local — talk to a running backend
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_USE_MOCK_DATA="false"
+```
+
+Sign in via `/sign-in` so `localStorage` has an active user; the API client
+sends `x-user-id`, `x-user-email`, and `x-user-role` for dev auth.

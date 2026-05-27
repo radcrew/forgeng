@@ -1,24 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { mockApplications } from "@lib/mock-data";
-import type { Application } from "@lib/types";
-
-import { ApplicationDetailDialog } from "./_components/application-detail-dialog";
-import { ApplicationStatusTabs } from "./_components/application-status-tabs";
-import type { ApplicationStatusFilter } from "./_components/application-status-tabs";
-import { ApplicationsList } from "./_components/applications-list";
+import {
+  ApplicationDetailDialog,
+  ApplicationStatusTabs,
+  ApplicationsList,
+  useApplications,
+  type Application,
+  type ApplicationStatusFilter,
+} from "@features/applications";
 
 export default function AdminApplicationsPage() {
   const [filter, setFilter] = useState<ApplicationStatusFilter>("all");
   const [selected, setSelected] = useState<Application | null>(null);
 
-  const applications = useMemo(() => {
-    if (filter === "all") return mockApplications;
-    return mockApplications.filter((a) => a.status === filter);
-  }, [filter]);
+  const { data: applications = [], isLoading } = useApplications(filter);
 
   return (
     <PageContainer maxWidth="5xl">
@@ -29,7 +27,11 @@ export default function AdminApplicationsPage() {
 
       <ApplicationStatusTabs value={filter} onChange={setFilter} />
 
-      {applications.length === 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          Loading applications…
+        </p>
+      ) : applications.length === 0 ? (
         <EmptyState message="No applications in this category." />
       ) : (
         <ApplicationsList applications={applications} onSelect={setSelected} />
