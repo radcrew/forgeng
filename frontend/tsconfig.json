@@ -25,6 +25,10 @@
       "@hooks/*": ["./src/hooks/*"],
       "@types": ["./src/types/index.ts"],
       "@types/*": ["./src/types/*"],
+      "@contexts": ["./src/contexts/index.ts"],
+      "@contexts/*": ["./src/contexts/*"],
+      "@providers": ["./src/providers/index.ts"],
+      "@providers/*": ["./src/providers/*"],
       "@features/*": ["./src/features/*"],
       "@lib/*": ["./src/lib/*"]
     }

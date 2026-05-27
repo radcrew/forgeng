@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Skeleton } from "@components/ui/skeleton";
+import { useCurrentUser } from "@contexts";
 import type { UserRole } from "@types";
 
-import { homeForRole, useCurrentUser } from "./current-user-context";
+import { homeForRole } from "./home";
 
 interface RoleGuardProps {
   allowedRoles: UserRole[];

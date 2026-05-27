@@ -1,32 +1,12 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useSyncExternalStore,
-} from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
+import { CurrentUserContext } from "@contexts/auth/current-user-context";
+import type { CurrentUserContextValue } from "@contexts/auth/current-user-context";
 import { getMe, signInWithEmail } from "@features/auth";
 import { readSession, subscribeSession, writeSession } from "@lib/session";
 import type { UserProfile } from "@types";
-
-/**
- * Active-user state is persisted in `localStorage` and sent to the API via
- * dev auth headers. Replace with Clerk / Auth.js when production auth lands.
- */
-export interface CurrentUserContextValue {
-  user: UserProfile | null;
-  /** False during SSR + the first client render, true once mounted. */
-  isHydrated: boolean;
-  signInWithEmail: (email: string) => Promise<UserProfile>;
-  signInAsUser: (user: UserProfile) => void;
-  signOut: () => void;
-  refreshUser: () => Promise<UserProfile | null>;
-}
-
-const CurrentUserContext = createContext<CurrentUserContextValue | null>(null);
 
 function getUserSnapshot(): UserProfile | null {
   return readSession();
@@ -98,29 +78,4 @@ export function CurrentUserProvider({
       {children}
     </CurrentUserContext.Provider>
   );
-}
-
-export function useCurrentUser(): CurrentUserContextValue {
-  const ctx = useContext(CurrentUserContext);
-  if (!ctx) {
-    throw new Error(
-      "useCurrentUser must be used inside <CurrentUserProvider />.",
-    );
-  }
-  return ctx;
-}
-
-/** Default landing page for a given role (used by the role guard + sign-in). */
-export function homeForRole(role: UserProfile["role"]): string {
-  switch (role) {
-    case "student":
-      return "/student";
-    case "mentor":
-      return "/mentor";
-    case "admin":
-      return "/admin";
-    case "applicant":
-    default:
-      return "/apply";
-  }
 }

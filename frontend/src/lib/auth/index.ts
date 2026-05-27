@@ -1,7 +1,2 @@
-export {
-  CurrentUserProvider,
-  homeForRole,
-  useCurrentUser,
-  type CurrentUserContextValue,
-} from "./current-user-context";
+export { homeForRole } from "./home";
 export { RoleGuard } from "./role-guard";

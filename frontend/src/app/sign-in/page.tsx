@@ -17,7 +17,8 @@ import {
 } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
-import { homeForRole, useCurrentUser } from "@lib/auth";
+import { useCurrentUser } from "@contexts";
+import { homeForRole } from "@lib/auth";
 import { ApiError } from "@lib/api-client";
 
 export default function SignInPage() {

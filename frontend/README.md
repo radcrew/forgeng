@@ -73,6 +73,8 @@ src/
 │   ├── tasks/
 │   └── users/
 ├── hooks/               # Shared client hooks (e.g. useAsyncResource)
+├── contexts/            # React context definitions + hooks (`useCurrentUser`, …)
+├── providers/           # Client providers (`AppProviders`, …)
 ├── types/               # Shared domain types (import via `@types`)
 │   ├── user.ts
 │   ├── application.ts
