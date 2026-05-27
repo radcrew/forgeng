@@ -8,12 +8,12 @@ import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
-  StudentSubmissionDetailSheet,
-  SubmissionStatusBadge,
+  DetailSheet,
+  StatusBadge,
+  useSubmissions,
 } from "@features/submissions";
-import { useSubmissions } from "@features/submissions";
 
-const StudentSubmissionsPage = () => {
+const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { data: submissions = [], isLoading } = useSubmissions();
   const selected = submissions.find((s) => s.id === selectedId);
@@ -53,7 +53,7 @@ const StudentSubmissionsPage = () => {
                     {sub.feedbackCount}
                   </span>
                 )}
-                <SubmissionStatusBadge status={sub.status} />
+                <StatusBadge status={sub.status} />
                 <Button variant="ghost" size="sm">
                   View
                 </Button>
@@ -64,7 +64,7 @@ const StudentSubmissionsPage = () => {
       )}
 
       {selected && (
-        <StudentSubmissionDetailSheet
+        <DetailSheet
           submission={selected}
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
@@ -74,4 +74,4 @@ const StudentSubmissionsPage = () => {
   );
 };
 
-export default StudentSubmissionsPage;
+export default Page;

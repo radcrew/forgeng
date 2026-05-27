@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { EmptyState } from "@components/shared";
 import type { AdminDashboard } from "../types";
 
-export type AdminDashboardViewProps = { dashboard: AdminDashboard };
+export type AdminViewProps = { dashboard: AdminDashboard };
 
-export const AdminDashboardView = ({ dashboard }: AdminDashboardViewProps) => (
+export const AdminView = ({ dashboard }: AdminViewProps) => (
   <>
     <div className="grid gap-6 md:grid-cols-4">
       <Card>

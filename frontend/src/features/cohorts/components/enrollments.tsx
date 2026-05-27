@@ -23,17 +23,13 @@ import { useUsers } from "@features/users";
 import { useEnrollments } from "../hooks";
 import type { Cohort } from "@types";
 
-export type EnrollmentsDialogProps = {
+export type EnrollmentsProps = {
   cohort: Cohort;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export const EnrollmentsDialog = ({
-  cohort,
-  open,
-  onOpenChange,
-}: EnrollmentsDialogProps) => {
+export const Enrollments = ({ cohort, open, onOpenChange }: EnrollmentsProps) => {
   const { data: enrollments = [] } = useEnrollments(cohort.id);
   const { data: students = [] } = useUsers("student");
   const enrolledIds = new Set(enrollments.map((e) => e.userId));

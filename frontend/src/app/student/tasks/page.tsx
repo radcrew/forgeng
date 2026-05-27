@@ -9,15 +9,15 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { SubmissionStatusBadge } from "@features/submissions";
-import { SubmitTaskDialog } from "@features/tasks";
+import { StatusBadge } from "@features/submissions";
+import { SubmitDialog } from "@features/tasks";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
 import type { Task } from "@types";
 
-const StudentTasksPage = () => {
+const Page = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
   const cohortId = dashboard?.cohort?.id;
@@ -97,7 +97,7 @@ const StudentTasksPage = () => {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {submission ? (
-                      <SubmissionStatusBadge status={submission.status} />
+                      <StatusBadge status={submission.status} />
                     ) : (
                       <Button size="sm" onClick={() => setSelectedTask(task)}>
                         Submit
@@ -112,7 +112,7 @@ const StudentTasksPage = () => {
       )}
 
       {selectedTask && (
-        <SubmitTaskDialog
+        <SubmitDialog
           task={selectedTask}
           open={!!selectedTask}
           onOpenChange={(open) => {
@@ -124,4 +124,4 @@ const StudentTasksPage = () => {
   );
 };
 
-export default StudentTasksPage;
+export default Page;

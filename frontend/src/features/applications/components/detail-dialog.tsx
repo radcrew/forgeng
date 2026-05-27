@@ -26,17 +26,17 @@ import { useCohorts } from "@features/cohorts";
 import { useUpdateApplicationStatus } from "../hooks";
 import type { Application, ApplicationStatus } from "@types";
 
-export type ApplicationDetailDialogProps = {
+export type DetailDialogProps = {
   application: Application;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export const ApplicationDetailDialog = ({
+export const DetailDialog = ({
   application,
   open,
   onOpenChange,
-}: ApplicationDetailDialogProps) => {
+}: DetailDialogProps) => {
   const { data: cohorts = [] } = useCohorts();
   const { update, isPending } = useUpdateApplicationStatus();
 

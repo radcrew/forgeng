@@ -8,11 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { EmptyState } from "@components/shared";
 import type { MentorDashboard } from "../types";
 
-export type MentorDashboardViewProps = { dashboard: MentorDashboard };
+export type MentorViewProps = { dashboard: MentorDashboard };
 
-export const MentorDashboardView = ({
-  dashboard,
-}: MentorDashboardViewProps) => (
+export const MentorView = ({ dashboard }: MentorViewProps) => (
   <>
     <div className="grid gap-6 md:grid-cols-2">
       <Card>

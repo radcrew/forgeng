@@ -7,14 +7,14 @@ import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
-  AdminCohortCard,
-  CohortFormDialog,
-  EnrollmentsDialog,
+  Card,
+  Enrollments,
+  FormDialog,
+  useCohorts,
 } from "@features/cohorts";
-import { useCohorts } from "@features/cohorts";
 import type { Cohort } from "@types";
 
-const AdminCohortsPage = () => {
+const Page = () => {
   const { data: cohorts = [], isLoading } = useCohorts();
   const [formOpen, setFormOpen] = useState(false);
   const [editCohort, setEditCohort] = useState<Cohort | undefined>(undefined);
@@ -44,7 +44,7 @@ const AdminCohortsPage = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {cohorts.map((cohort) => (
-            <AdminCohortCard
+            <Card
               key={cohort.id}
               cohort={cohort}
               onEnrollments={setEnrollCohort}
@@ -57,7 +57,7 @@ const AdminCohortsPage = () => {
         </div>
       )}
 
-      <CohortFormDialog
+      <FormDialog
         cohort={editCohort}
         open={formOpen}
         onOpenChange={(open) => {
@@ -67,7 +67,7 @@ const AdminCohortsPage = () => {
       />
 
       {enrollCohort && (
-        <EnrollmentsDialog
+        <Enrollments
           cohort={enrollCohort}
           open={!!enrollCohort}
           onOpenChange={(open) => {
@@ -79,4 +79,4 @@ const AdminCohortsPage = () => {
   );
 };
 
-export default AdminCohortsPage;
+export default Page;

@@ -5,15 +5,15 @@ import { useState } from "react";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
-  ApplicationDetailDialog,
-  ApplicationStatusTabs,
-  ApplicationsList,
+  DetailDialog,
+  List,
+  StatusTabs,
   type Application,
   type ApplicationStatusFilter,
+  useApplications,
 } from "@features/applications";
-import { useApplications } from "@features/applications";
 
-const AdminApplicationsPage = () => {
+const Page = () => {
   const [filter, setFilter] = useState<ApplicationStatusFilter>("all");
   const [selected, setSelected] = useState<Application | null>(null);
 
@@ -26,18 +26,18 @@ const AdminApplicationsPage = () => {
         description="Review and manage applicants through the pipeline."
       />
 
-      <ApplicationStatusTabs value={filter} onChange={setFilter} />
+      <StatusTabs value={filter} onChange={setFilter} />
 
       {isLoading ? (
         <LoadingState message="Loading applications…" />
       ) : applications.length === 0 ? (
         <EmptyState message="No applications in this category." />
       ) : (
-        <ApplicationsList applications={applications} onSelect={setSelected} />
+        <List applications={applications} onSelect={setSelected} />
       )}
 
       {selected && (
-        <ApplicationDetailDialog
+        <DetailDialog
           application={selected}
           open={!!selected}
           onOpenChange={(open) => {
@@ -49,4 +49,4 @@ const AdminApplicationsPage = () => {
   );
 };
 
-export default AdminApplicationsPage;
+export default Page;

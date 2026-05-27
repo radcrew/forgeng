@@ -14,7 +14,7 @@ import {
   WhoWeAre,
 } from "@components/landing";
 
-const LandingPage = () => (
+const Page = () => (
   <div className="min-h-screen bg-background flex flex-col text-foreground">
     <Header />
 
@@ -36,4 +36,4 @@ const LandingPage = () => (
   </div>
 );
 
-export default LandingPage;
+export default Page;

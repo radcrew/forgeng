@@ -4,17 +4,14 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 
 import type { Application } from "@types";
-import { ApplicationStatusBadge } from "./application-status-badge";
+import { StatusBadge } from "./status-badge";
 
-interface ApplicationListRowProps {
+export type RowProps = {
   application: Application;
   onSelect: () => void;
-}
+};
 
-export function ApplicationListRow({
-  application,
-  onSelect,
-}: ApplicationListRowProps) {
+export const Row = ({ application, onSelect }: RowProps) => {
   return (
     <Card
       className="hover:shadow-md transition-shadow cursor-pointer"
@@ -31,7 +28,7 @@ export function ApplicationListRow({
           <span className="text-sm text-muted-foreground">
             {format(new Date(application.createdAt), "MMM d, yyyy")}
           </span>
-          <ApplicationStatusBadge status={application.status} />
+          <StatusBadge status={application.status} />
           <Button variant="ghost" size="sm">
             Review
           </Button>
@@ -39,4 +36,4 @@ export function ApplicationListRow({
       </div>
     </Card>
   );
-}
+};

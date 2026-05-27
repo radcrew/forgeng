@@ -7,13 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
 import { EmptyState } from "@components/shared";
 import type { StudentDashboard } from "../types";
-import { SubmissionStatusBadge } from "@features/submissions";
+import { StatusBadge } from "@features/submissions";
 
-export type StudentDashboardViewProps = { dashboard: StudentDashboard };
+export type StudentViewProps = { dashboard: StudentDashboard };
 
-export const StudentDashboardView = ({
-  dashboard,
-}: StudentDashboardViewProps) => {
+export const StudentView = ({ dashboard }: StudentViewProps) => {
   const { taskStats, recentSubmissions, nextDeadline } = dashboard;
   const progressPercent =
     taskStats.total > 0
@@ -113,7 +111,7 @@ export const StudentDashboardView = ({
                       </p>
                     </div>
                   </div>
-                  <SubmissionStatusBadge status={sub.status} showIcon={false} />
+                  <StatusBadge status={sub.status} showIcon={false} />
                 </div>
               </Card>
             ))}

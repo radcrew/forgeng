@@ -1,7 +1,7 @@
 "use client";
 
-import { ApplyWizard } from "@features/applications";
+import { Wizard } from "@features/applications";
 
-const ApplyPage = () => <ApplyWizard />;
+const Page = () => <Wizard />;
 
-export default ApplyPage;
+export default Page;

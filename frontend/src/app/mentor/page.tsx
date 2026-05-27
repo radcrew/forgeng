@@ -1,10 +1,9 @@
 "use client";
 
 import { PageContainer, PageHeader } from "@components/shared";
-import { MentorDashboardView } from "@features/dashboard";
-import { useMentorDashboard } from "@features/dashboard";
+import { MentorView, useMentorDashboard } from "@features/dashboard";
 
-const MentorDashboardPage = () => {
+const Page = () => {
   const { data: dashboard, isLoading } = useMentorDashboard();
 
   if (isLoading || !dashboard) {
@@ -21,9 +20,9 @@ const MentorDashboardPage = () => {
         title="Mentor Dashboard"
         description="Overview of your assigned cohorts and pending reviews."
       />
-      <MentorDashboardView dashboard={dashboard} />
+      <MentorView dashboard={dashboard} />
     </PageContainer>
   );
 };
 
-export default MentorDashboardPage;
+export default Page;

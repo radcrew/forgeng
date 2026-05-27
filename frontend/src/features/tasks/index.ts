@@ -7,9 +7,9 @@ export {
 export { listTasks } from "./api";
 export { useTasks } from "./hooks";
 
-export { TaskFormDialog } from "./components/task-form-dialog";
-export type { TaskFormDialogProps } from "./components/task-form-dialog";
-export { AdminTaskRow } from "./components/admin-task-row";
-export type { AdminTaskRowProps } from "./components/admin-task-row";
-export { SubmitTaskDialog } from "./components/submit-task-dialog";
-export type { SubmitTaskDialogProps } from "./components/submit-task-dialog";
+export { FormDialog } from "./components/form-dialog";
+export type { FormDialogProps } from "./components/form-dialog";
+export { Row } from "./components/row";
+export type { RowProps } from "./components/row";
+export { SubmitDialog } from "./components/submit-dialog";
+export type { SubmitDialogProps } from "./components/submit-dialog";

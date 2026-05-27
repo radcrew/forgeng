@@ -1,10 +1,9 @@
 "use client";
 
 import { PageContainer, PageHeader } from "@components/shared";
-import { StudentDashboardView } from "@features/dashboard";
-import { useStudentDashboard } from "@features/dashboard";
+import { StudentView, useStudentDashboard } from "@features/dashboard";
 
-const StudentDashboardPage = () => {
+const Page = () => {
   const { data: dashboard, isLoading } = useStudentDashboard();
 
   if (isLoading || !dashboard) {
@@ -35,9 +34,9 @@ const StudentDashboardPage = () => {
           )
         }
       />
-      <StudentDashboardView dashboard={dashboard} />
+      <StudentView dashboard={dashboard} />
     </PageContainer>
   );
 };
 
-export default StudentDashboardPage;
+export default Page;

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import {
   FormBody,
-  FormDialog,
+  FormDialog as BaseFormDialog,
   FormField,
   FormGrid,
 } from "@components/common";
@@ -21,17 +21,13 @@ import {
 import { Textarea } from "@components/ui/textarea";
 import type { Cohort, CohortStatus } from "@types";
 
-export type CohortFormDialogProps = {
+export type FormDialogProps = {
   cohort?: Cohort;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export const CohortFormDialog = ({
-  cohort,
-  open,
-  onOpenChange,
-}: CohortFormDialogProps) => {
+export const FormDialog = ({ cohort, open, onOpenChange }: FormDialogProps) => {
   const isEdit = !!cohort;
   const [name, setName] = useState(cohort?.name ?? "");
   const [description, setDescription] = useState(cohort?.description ?? "");
@@ -53,7 +49,7 @@ export const CohortFormDialog = ({
   };
 
   return (
-    <FormDialog
+    <BaseFormDialog
       open={open}
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit Cohort" : "Create Cohort"}
@@ -123,6 +119,6 @@ export const CohortFormDialog = ({
           </FormField>
         </FormGrid>
       </FormBody>
-    </FormDialog>
+    </BaseFormDialog>
   );
 };

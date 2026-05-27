@@ -8,17 +8,13 @@ import { Input } from "@components/ui/input";
 import { Textarea } from "@components/ui/textarea";
 import type { Task } from "@types";
 
-export type SubmitTaskDialogProps = {
+export type SubmitDialogProps = {
   task: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export const SubmitTaskDialog = ({
-  task,
-  open,
-  onOpenChange,
-}: SubmitTaskDialogProps) => {
+export const SubmitDialog = ({ task, open, onOpenChange }: SubmitDialogProps) => {
   const [content, setContent] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

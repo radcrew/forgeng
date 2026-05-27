@@ -6,28 +6,29 @@ import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import {
+  Card as UiCard,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@components/ui/card";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import type { Cohort } from "@types";
 
-export type AdminCohortCardProps = {
+export type CardProps = {
   cohort: Cohort;
   onEnrollments: (cohort: Cohort) => void;
   onEdit: (cohort: Cohort) => void;
 };
 
-export const AdminCohortCard = ({
-  cohort,
-  onEnrollments,
-  onEdit,
-}: AdminCohortCardProps) => {
+export const Card = ({ cohort, onEnrollments, onEdit }: CardProps) => {
   const handleDelete = () => {
     if (!confirm(`Delete "${cohort.name}"? This cannot be undone.`)) return;
     toast.success("Cohort deleted");
   };
 
   return (
-    <Card>
+    <UiCard>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">{cohort.name}</CardTitle>
@@ -77,6 +78,6 @@ export const AdminCohortCard = ({
           </Button>
         </div>
       </CardContent>
-    </Card>
+    </UiCard>
   );
 };

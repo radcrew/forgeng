@@ -1,10 +1,9 @@
 "use client";
 
 import { PageContainer, PageHeader } from "@components/shared";
-import { AdminDashboardView } from "@features/dashboard";
-import { useAdminDashboard } from "@features/dashboard";
+import { AdminView, useAdminDashboard } from "@features/dashboard";
 
-const AdminDashboardPage = () => {
+const Page = () => {
   const { data: dashboard, isLoading } = useAdminDashboard();
 
   if (isLoading || !dashboard) {
@@ -25,9 +24,9 @@ const AdminDashboardPage = () => {
         title="Admin Dashboard"
         description="Platform overview and recent activity."
       />
-      <AdminDashboardView dashboard={dashboard} />
+      <AdminView dashboard={dashboard} />
     </PageContainer>
   );
 };
 
-export default AdminDashboardPage;
+export default Page;

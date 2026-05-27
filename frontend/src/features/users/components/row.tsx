@@ -14,9 +14,9 @@ import {
 } from "@components/ui/select";
 import type { UserProfile } from "@types";
 
-export type AdminUserRowProps = { user: UserProfile };
+export type RowProps = { user: UserProfile };
 
-export const AdminUserRow = ({ user }: AdminUserRowProps) => {
+export const Row = ({ user }: RowProps) => {
   const handleRoleChange = (newRole: string) => {
     toast.success(`Role updated to ${newRole}`);
   };

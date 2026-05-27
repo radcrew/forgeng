@@ -35,7 +35,7 @@ import {
 import { createApplication } from "../api";
 import { ApiError } from "@lib/api-client";
 
-export const ApplyWizard = () => {
+export const Wizard = () => {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);

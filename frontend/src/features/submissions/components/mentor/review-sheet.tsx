@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 import {
-  DetailSheet,
+  DetailSheet as BaseDetailSheet,
   ExternalLinkField,
   FeedbackCard,
   FormField,
@@ -18,20 +18,16 @@ import { Separator } from "@components/ui/separator";
 import { Textarea } from "@components/ui/textarea";
 import type { FeedbackVerdict, Submission } from "@types";
 
-import { useSubmissionFeedback } from "../hooks";
-import { SubmissionStatusBadge } from "./submission-status-badge";
+import { useSubmissionFeedback } from "../../hooks";
+import { StatusBadge } from "../status-badge";
 
-export type MentorReviewDetailSheetProps = {
+export type ReviewSheetProps = {
   submission: Submission;
   open: boolean;
   onClose: () => void;
 };
 
-export const MentorReviewDetailSheet = ({
-  submission,
-  open,
-  onClose,
-}: MentorReviewDetailSheetProps) => {
+export const ReviewSheet = ({ submission, open, onClose }: ReviewSheetProps) => {
   const { data: feedback = [] } = useSubmissionFeedback(
     open ? submission.id : null,
   );
@@ -49,7 +45,7 @@ export const MentorReviewDetailSheet = ({
   };
 
   return (
-    <DetailSheet
+    <BaseDetailSheet
       open={open}
       onClose={onClose}
       title={submission.task?.title ?? "Review"}
@@ -63,7 +59,7 @@ export const MentorReviewDetailSheet = ({
           <span className="text-sm text-muted-foreground">
             {format(new Date(submission.createdAt), "MMM d, yyyy")}
           </span>
-          <SubmissionStatusBadge status={submission.status} showIcon={false} />
+          <StatusBadge status={submission.status} showIcon={false} />
         </div>
       }
     >
@@ -118,6 +114,6 @@ export const MentorReviewDetailSheet = ({
           </Button>
         </div>
       )}
-    </DetailSheet>
+    </BaseDetailSheet>
   );
 };

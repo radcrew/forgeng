@@ -13,7 +13,7 @@ import {
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 
-const SignUpPage = () => (
+const Page = () => (
   <div className="min-h-screen bg-background flex items-center justify-center p-4">
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-4">
@@ -65,4 +65,4 @@ const SignUpPage = () => (
   </div>
 );
 
-export default SignUpPage;
+export default Page;

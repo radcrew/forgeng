@@ -126,6 +126,19 @@ Feature components compose these primitives instead of repeating dialog/sheet ma
 
 Domain-specific behavior stays in **`@features/*`**; layout and chrome stay in **`@components/common`** / **`@components/shared`**.
 
+## Naming
+
+Paths carry context — avoid repeating the domain in file or export names.
+
+| Location | File | Export |
+| -------- | ---- | ------ |
+| `features/applications/components/` | `detail-dialog.tsx` | `DetailDialog` |
+| `features/submissions/components/student/` | `detail-sheet.tsx` | `DetailSheet` |
+| `features/dashboard/components/` | `admin-view.tsx` | `AdminView` |
+| `app/admin/applications/` | `page.tsx` | `Page` (default) |
+
+Import from the feature barrel (`@features/applications`) so call sites stay readable: `List`, `StatusTabs`, `DetailDialog`.
+
 ## Data layer
 
 Each feature owns **`api.ts`** (fetch functions) and **`hooks.ts`** (React Query–style
@@ -143,5 +156,5 @@ export const useApplications = (filter) =>
 
 ```ts
 // app/admin/applications/page.tsx
-import { useApplications, ApplicationsList } from "@features/applications";
+import { useApplications, List } from "@features/applications";
 ```

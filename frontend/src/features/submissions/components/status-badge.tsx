@@ -1,18 +1,15 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
-import { StatusBadge } from "@components/common";
+import { StatusBadge as BaseStatusBadge } from "@components/common";
 import { SUBMISSION_STATUS_VARIANT } from "@constants/submissions";
 import type { SubmissionStatus } from "@types";
 
-export type SubmissionStatusBadgeProps = {
+export type StatusBadgeProps = {
   status: SubmissionStatus;
   showIcon?: boolean;
 };
 
-export const SubmissionStatusBadge = ({
-  status,
-  showIcon = true,
-}: SubmissionStatusBadgeProps) => {
+export const StatusBadge = ({ status, showIcon = true }: StatusBadgeProps) => {
   const leadingIcon =
     showIcon && status === "approved" ? (
       <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -21,7 +18,7 @@ export const SubmissionStatusBadge = ({
     ) : undefined;
 
   return (
-    <StatusBadge
+    <BaseStatusBadge
       status={status}
       variantMap={SUBMISSION_STATUS_VARIANT}
       leadingIcon={leadingIcon}

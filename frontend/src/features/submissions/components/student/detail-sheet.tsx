@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { MessageSquare } from "lucide-react";
 
 import {
-  DetailSheet,
+  DetailSheet as BaseDetailSheet,
   ExternalLinkField,
   FeedbackCard,
   ProseBlock,
@@ -13,32 +13,32 @@ import {
 import { Separator } from "@components/ui/separator";
 import type { Submission } from "@types";
 
-import { useSubmissionFeedback } from "../hooks";
-import { SubmissionStatusBadge } from "./submission-status-badge";
+import { useSubmissionFeedback } from "../../hooks";
+import { StatusBadge } from "../status-badge";
 
-export type StudentSubmissionDetailSheetProps = {
+export type DetailSheetProps = {
   submission: Submission;
   open: boolean;
   onClose: () => void;
 };
 
-export const StudentSubmissionDetailSheet = ({
+export const DetailSheet = ({
   submission,
   open,
   onClose,
-}: StudentSubmissionDetailSheetProps) => {
+}: DetailSheetProps) => {
   const { data: feedback = [] } = useSubmissionFeedback(
     open ? submission.id : null,
   );
 
   return (
-    <DetailSheet
+    <BaseDetailSheet
       open={open}
       onClose={onClose}
       title={submission.task?.title ?? "Submission"}
       subtitle={
         <div className="flex items-center gap-2">
-          <SubmissionStatusBadge status={submission.status} />
+          <StatusBadge status={submission.status} />
           <span className="text-sm text-muted-foreground">
             Submitted {format(new Date(submission.createdAt), "MMM d, yyyy")}
           </span>
@@ -79,6 +79,6 @@ export const StudentSubmissionDetailSheet = ({
           </div>
         )}
       </div>
-    </DetailSheet>
+    </BaseDetailSheet>
   );
 };

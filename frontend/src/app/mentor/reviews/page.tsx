@@ -10,13 +10,13 @@ import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { SUBMISSION_STATUS_FILTER_TABS } from "@constants/submissions";
 import {
-  MentorReviewDetailSheet,
-  SubmissionStatusBadge,
+  ReviewSheet,
+  StatusBadge,
   useSubmissions,
   type SubmissionStatusFilter,
 } from "@features/submissions";
 
-const MentorReviewsPage = () => {
+const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] =
     useState<SubmissionStatusFilter>("submitted");
@@ -69,7 +69,7 @@ const MentorReviewsPage = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
-                <SubmissionStatusBadge status={sub.status} showIcon={false} />
+                <StatusBadge status={sub.status} showIcon={false} />
                 <Button variant="ghost" size="sm">
                   Review
                 </Button>
@@ -80,7 +80,7 @@ const MentorReviewsPage = () => {
       )}
 
       {selected && (
-        <MentorReviewDetailSheet
+        <ReviewSheet
           submission={selected}
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
@@ -90,4 +90,4 @@ const MentorReviewsPage = () => {
   );
 };
 
-export default MentorReviewsPage;
+export default Page;

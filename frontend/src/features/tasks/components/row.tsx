@@ -10,12 +10,12 @@ import { Card } from "@components/ui/card";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import type { Task } from "@types";
 
-export type AdminTaskRowProps = {
+export type RowProps = {
   task: Task;
   onEdit: (task: Task) => void;
 };
 
-export const AdminTaskRow = ({ task, onEdit }: AdminTaskRowProps) => {
+export const Row = ({ task, onEdit }: RowProps) => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
 
   const handleDelete = () => {

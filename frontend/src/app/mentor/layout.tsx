@@ -1,10 +1,10 @@
 import { SidebarLayout } from "@components/layout/sidebar-layout";
 import { RoleGuard } from "@lib/auth";
 
-const MentorLayout = ({ children }: { children: React.ReactNode }) => (
+const Layout = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowedRoles={["mentor"]}>
     <SidebarLayout>{children}</SidebarLayout>
   </RoleGuard>
 );
 
-export default MentorLayout;
+export default Layout;

@@ -5,13 +5,9 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { PageContainer, PageHeader } from "@components/shared";
 import { USER_ROLE_FILTER_TABS } from "@constants/users";
-import {
-  AdminUserRow,
-  useUsers,
-  type UserRoleFilter,
-} from "@features/users";
+import { Row, useUsers, type UserRoleFilter } from "@features/users";
 
-const AdminUsersPage = () => {
+const Page = () => {
   const [roleFilter, setRoleFilter] = useState<UserRoleFilter>("all");
   const { data: users = [], isLoading } = useUsers(roleFilter);
 
@@ -41,11 +37,11 @@ const AdminUsersPage = () => {
 
       <div className="space-y-2">
         {users.map((user) => (
-          <AdminUserRow key={user.id} user={user} />
+          <Row key={user.id} user={user} />
         ))}
       </div>
     </PageContainer>
   );
 };
 
-export default AdminUsersPage;
+export default Page;

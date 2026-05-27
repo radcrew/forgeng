@@ -14,9 +14,9 @@ export {
   useStudentDashboard,
 } from "./hooks";
 
-export { AdminDashboardView } from "./components/admin-dashboard-view";
-export type { AdminDashboardViewProps } from "./components/admin-dashboard-view";
-export { StudentDashboardView } from "./components/student-dashboard-view";
-export type { StudentDashboardViewProps } from "./components/student-dashboard-view";
-export { MentorDashboardView } from "./components/mentor-dashboard-view";
-export type { MentorDashboardViewProps } from "./components/mentor-dashboard-view";
+export { AdminView } from "./components/admin-view";
+export type { AdminViewProps } from "./components/admin-view";
+export { StudentView } from "./components/student-view";
+export type { StudentViewProps } from "./components/student-view";
+export { MentorView } from "./components/mentor-view";
+export type { MentorViewProps } from "./components/mentor-view";

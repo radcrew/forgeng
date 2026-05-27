@@ -12,9 +12,10 @@ export {
 export { listSubmissions, listFeedback } from "./api";
 export type { SubmissionStatusFilter, UseSubmissionsOptions } from "./hooks";
 export { useSubmissions, useSubmissionFeedback } from "./hooks";
-export { SubmissionStatusBadge } from "./components/submission-status-badge";
+export { StatusBadge } from "./components/status-badge";
+export type { StatusBadgeProps } from "./components/status-badge";
 
-export { StudentSubmissionDetailSheet } from "./components/student-submission-detail-sheet";
-export type { StudentSubmissionDetailSheetProps } from "./components/student-submission-detail-sheet";
-export { MentorReviewDetailSheet } from "./components/mentor-review-detail-sheet";
-export type { MentorReviewDetailSheetProps } from "./components/mentor-review-detail-sheet";
+export { DetailSheet } from "./components/student/detail-sheet";
+export type { DetailSheetProps } from "./components/student/detail-sheet";
+export { ReviewSheet } from "./components/mentor/review-sheet";
+export type { ReviewSheetProps } from "./components/mentor/review-sheet";

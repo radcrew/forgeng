@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import {
   FormBody,
-  FormDialog,
+  FormDialog as BaseFormDialog,
   FormField,
   FormGrid,
 } from "@components/common";
@@ -22,17 +22,13 @@ import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
 import type { Task, TaskStatus, TaskType } from "@types";
 
-export type TaskFormDialogProps = {
+export type FormDialogProps = {
   task?: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export const TaskFormDialog = ({
-  task,
-  open,
-  onOpenChange,
-}: TaskFormDialogProps) => {
+export const FormDialog = ({ task, open, onOpenChange }: FormDialogProps) => {
   const { data: cohorts = [] } = useCohorts();
   const isEdit = !!task;
   const [title, setTitle] = useState(task?.title ?? "");
@@ -53,7 +49,7 @@ export const TaskFormDialog = ({
   };
 
   return (
-    <FormDialog
+    <BaseFormDialog
       open={open}
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit Task" : "Create Task"}
@@ -140,6 +136,6 @@ export const TaskFormDialog = ({
           </FormField>
         </FormGrid>
       </FormBody>
-    </FormDialog>
+    </BaseFormDialog>
   );
 };
