@@ -34,7 +34,7 @@ async function main(): Promise<void> {
       create: {
         email: 'sarah@example.com',
         name: 'Sarah Patel',
-        role: 'mentor',
+        role: 'admin',
         githubUrl: 'https://github.com/sarahp',
       },
     }),
@@ -44,7 +44,7 @@ async function main(): Promise<void> {
       create: {
         email: 'james@example.com',
         name: 'James Okafor',
-        role: 'mentor',
+        role: 'admin',
       },
     }),
     prisma.user.upsert({
@@ -245,7 +245,7 @@ async function main(): Promise<void> {
     create: {
       id: 201,
       submissionId: sub101.id,
-      mentorId: sarah.id,
+      reviewerId: sarah.id,
       verdict: 'approved',
       content:
         "Great job handling the edge case in your sort function. Extracting the comparison logic into its own function would make this easier to unit-test. Really clean solution overall!",
@@ -257,7 +257,7 @@ async function main(): Promise<void> {
     create: {
       id: 202,
       submissionId: sub103.id,
-      mentorId: james.id,
+      reviewerId: james.id,
       verdict: 'needs_work',
       content:
         'The core logic is right but error handling is missing. What happens on a 500? Add a try/catch and surface a user-friendly message.',

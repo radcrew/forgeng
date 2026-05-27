@@ -5,7 +5,6 @@ import type { AuthUser } from '../common/auth/auth.types';
 import {
   DashboardService,
   type AdminDashboard,
-  type MentorDashboard,
   type StudentDashboard,
 } from './dashboard.service';
 
@@ -17,12 +16,6 @@ export class DashboardController {
   @Get('student')
   student(@CurrentUser() user: AuthUser): Promise<StudentDashboard> {
     return this.service.student(user);
-  }
-
-  @Roles('mentor')
-  @Get('mentor')
-  mentor(): Promise<MentorDashboard> {
-    return this.service.mentor();
   }
 
   @Roles('admin')

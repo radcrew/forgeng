@@ -24,14 +24,14 @@ export class FeedbackController {
     return this.service.list(id);
   }
 
-  @Roles('mentor', 'admin')
+  @Roles('admin')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() mentor: AuthUser,
+    @CurrentUser() reviewer: AuthUser,
     @Body() dto: CreateFeedbackDto,
   ): Promise<FeedbackDto> {
-    return this.service.create(id, mentor, dto);
+    return this.service.create(id, reviewer, dto);
   }
 }

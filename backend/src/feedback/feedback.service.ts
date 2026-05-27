@@ -11,15 +11,15 @@ export class FeedbackService {
   async list(submissionId: number): Promise<FeedbackDto[]> {
     const items = await this.prisma.feedback.findMany({
       where: { submissionId },
-      include: { mentor: true },
+      include: { reviewer: true },
       orderBy: { createdAt: 'desc' },
     });
-    return items.map((f) => toFeedbackDto(f, f.mentor));
+    return items.map((f) => toFeedbackDto(f, f.reviewer));
   }
 
   async create(
     submissionId: number,
-    mentor: AuthUser,
+    reviewer: AuthUser,
     dto: CreateFeedbackDto,
   ): Promise<FeedbackDto> {
     const submission = await this.prisma.submission.findUnique({
@@ -27,7 +27,6 @@ export class FeedbackService {
     });
     if (!submission) throw new NotFoundException('Submission not found.');
 
-    // Atomically write the feedback and reflect the verdict on the submission.
     const [, created] = await this.prisma.$transaction([
       this.prisma.submission.update({
         where: { id: submissionId },
@@ -38,13 +37,13 @@ export class FeedbackService {
       this.prisma.feedback.create({
         data: {
           submissionId,
-          mentorId: mentor.id,
+          reviewerId: reviewer.id,
           content: dto.content,
           verdict: dto.verdict,
         },
       }),
     ]);
 
-    return toFeedbackDto(created, mentor);
+    return toFeedbackDto(created, reviewer);
   }
 }

@@ -1,6 +1,6 @@
 # `@forgeng/backend`
 
-NestJS 11 + Prisma 6 + PostgreSQL backend for **Forgeng**, a mentor-led
+NestJS 11 + Prisma 6 + PostgreSQL backend for **Forgeng**, a cohort-based
 apprenticeship platform. Implements the full REST surface that powers the
 Next.js frontend in `../frontend`.
 
@@ -36,7 +36,7 @@ All routes are mounted under `/api`:
 | GET    | `/cohorts/:id`                      | any            |
 | PATCH  | `/cohorts/:id`                      | admin          |
 | DELETE | `/cohorts/:id`                      | admin          |
-| GET    | `/cohorts/:id/enrollments`          | admin, mentor  |
+| GET    | `/cohorts/:id/enrollments`          | admin          |
 | POST   | `/cohorts/:id/enroll`               | admin          |
 | GET    | `/tasks`                            | any            |
 | POST   | `/tasks`                            | admin          |
@@ -47,14 +47,13 @@ All routes are mounted under `/api`:
 | POST   | `/submissions`                      | any            |
 | GET    | `/submissions/:id`                  | any            |
 | GET    | `/submissions/:id/feedback`         | any            |
-| POST   | `/submissions/:id/feedback`         | mentor, admin  |
+| POST   | `/submissions/:id/feedback`         | admin          |
 | GET    | `/users`                            | admin          |
 | PATCH  | `/users/:id/role`                   | admin          |
 | GET    | `/dashboard/student`                | student        |
-| GET    | `/dashboard/mentor`                 | mentor         |
 | GET    | `/dashboard/admin`                  | admin          |
 
-Students see only their own submissions; mentors and admins see everything,
+Students see only their own submissions; admins see everything,
 optionally filtered by `taskId`, `status`, or `cohortId`.
 
 ## Project layout
@@ -74,7 +73,7 @@ src/
 ├── cohorts/                 # cohort CRUD + enrollments
 ├── tasks/                   # task authoring + student listing
 ├── submissions/             # student submissions
-├── feedback/                # mentor feedback on submissions
+├── feedback/                # admin feedback on submissions
 ├── users/                   # admin user list + role changes
 └── dashboard/               # role-specific dashboard summaries
 ```
@@ -129,8 +128,8 @@ Use seeded IDs from `prisma/seed.ts`:
 | Role      | Email                  | Seeded id |
 |-----------|------------------------|-----------|
 | admin     | `riley@example.com`    | 5         |
-| mentor    | `sarah@example.com`    | 3         |
-| mentor    | `james@example.com`    | 4         |
+| admin     | `sarah@example.com`    | 3         |
+| admin     | `james@example.com`    | 4         |
 | student   | `avery@example.com`    | 1         |
 | student   | `jordan@example.com`   | 2         |
 | applicant | `sam@example.com`      | 6         |

@@ -1,4 +1,4 @@
-// Prisma schema for Forgeng — a mentor-led apprenticeship platform.
+// Prisma schema for Forgeng — cohort-based apprenticeship platform.
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -17,7 +17,6 @@ datasource db {
 enum Role {
   applicant
   student
-  mentor
   admin
 }
 
@@ -168,13 +167,13 @@ model Submission {
 model Feedback {
   id           Int      @id @default(autoincrement())
   submissionId Int      @map("submission_id")
-  mentorId     Int      @map("mentor_id")
+  reviewerId   Int      @map("reviewer_id")
   content      String
   verdict      Verdict
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  mentor     User       @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  reviewer   User       @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
 
   @@map("feedback")
 }

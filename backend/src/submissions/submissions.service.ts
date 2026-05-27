@@ -59,7 +59,7 @@ export class SubmissionsService {
     if (!task) throw new NotFoundException('Task not found.');
 
     // Students may only submit to published tasks in cohorts they're
-    // enrolled in. Mentors / admins are unrestricted (e.g. to seed demo data).
+    // enrolled in. Admins are unrestricted (e.g. to seed demo data).
     if (user.role === 'student') {
       if (task.status !== 'published') {
         throw new ForbiddenException('Task is not published.');
