@@ -5,7 +5,7 @@ import { Logo } from "@components/brand/logo";
 import { Button } from "@components/ui/button";
 import { NAV_LINKS } from "@constants/landing";
 
-export function LandingHeader() {
+export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-2">

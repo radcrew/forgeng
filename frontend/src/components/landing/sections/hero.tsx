@@ -5,7 +5,7 @@ import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { PHOTOS } from "@constants/landing";
 
-export function HeroSection() {
+export function Hero() {
   return (
     <section className="relative overflow-hidden px-6 py-16 md:py-24">
       <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-br from-primary/5 via-background to-background" />

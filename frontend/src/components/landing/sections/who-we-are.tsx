@@ -1,7 +1,7 @@
 import { Badge } from "@components/ui/badge";
 import { PHOTOS, VALUES } from "@constants/landing";
 
-export function WhoWeAreSection() {
+export function WhoWeAre() {
   return (
     <section id="who-we-are" className="px-6 py-24">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">

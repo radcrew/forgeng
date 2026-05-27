@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@components/ui/card";
 import { TASK_TYPES } from "@constants/landing";
 
-export function TaskTypesSection() {
+export function TaskTypes() {
   return (
     <section className="border-y border-border bg-muted/30 px-6 py-16">
       <div className="max-w-5xl mx-auto">

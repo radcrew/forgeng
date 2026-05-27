@@ -6,7 +6,7 @@ import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
 import { ROLES } from "@constants/landing";
 
-export function RolesSection() {
+export function Roles() {
   return (
     <section id="roles" className="px-6 py-24 max-w-5xl mx-auto">
       <div className="text-center mb-16 space-y-3">

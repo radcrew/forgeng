@@ -1,6 +1,6 @@
 import { STATS } from "@constants/landing";
 
-export function StatsSection() {
+export function Stats() {
   return (
     <section className="border-y border-border bg-muted/30">
       <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">

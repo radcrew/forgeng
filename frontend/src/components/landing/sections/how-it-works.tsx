@@ -1,7 +1,7 @@
 import { Badge } from "@components/ui/badge";
 import { STEPS } from "@constants/landing";
 
-export function HowItWorksSection() {
+export function HowItWorks() {
   return (
     <section
       id="how-it-works"

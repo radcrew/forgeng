@@ -2,7 +2,7 @@ import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { FEATURES } from "@constants/landing";
 
-export function FeaturesSection() {
+export function Features() {
   return (
     <section id="features" className="px-6 py-24 max-w-6xl mx-auto">
       <div className="text-center mb-16 space-y-3">

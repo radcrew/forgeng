@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { PHOTOS } from "@constants/landing";
 
-export function CtaBannerSection() {
+export function CtaBanner() {
   return (
     <section className="relative overflow-hidden px-6 py-20 bg-primary text-primary-foreground text-center">
       <div className="absolute inset-0">

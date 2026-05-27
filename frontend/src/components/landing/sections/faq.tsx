@@ -10,7 +10,7 @@ import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { FAQS } from "@constants/landing";
 
-export function FaqSection() {
+export function Faq() {
   return (
     <section
       id="faq"

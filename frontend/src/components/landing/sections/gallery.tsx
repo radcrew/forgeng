@@ -1,7 +1,7 @@
 import { Badge } from "@components/ui/badge";
 import { GALLERY_FEATURED, GALLERY_PHOTOS } from "@constants/landing";
 
-export function GallerySection() {
+export function Gallery() {
   return (
     <section
       id="life-in-program"

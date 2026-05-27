@@ -1,0 +1,11 @@
+export { Hero } from "./hero";
+export { Stats } from "./stats";
+export { WhoWeAre } from "./who-we-are";
+export { Gallery } from "./gallery";
+export { HowItWorks } from "./how-it-works";
+export { TaskTypes } from "./task-types";
+export { Features } from "./features";
+export { MentorFeedback } from "./mentor-feedback";
+export { Roles } from "./roles";
+export { Faq } from "./faq";
+export { CtaBanner } from "./cta-banner";

@@ -9,7 +9,7 @@ import {
   SAMPLE_FEEDBACK,
 } from "@constants/landing";
 
-export function MentorFeedbackSection() {
+export function MentorFeedback() {
   return (
     <section className="border-y border-border bg-muted/30 px-6 py-20">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
