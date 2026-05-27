@@ -11,15 +11,19 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "lint:staged": "lint-staged",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "dev:fe": "pnpm --filter @forgeng/frontend dev",
     "dev:be": "pnpm --filter @forgeng/backend dev",
     "prisma:generate": "pnpm --filter @forgeng/backend prisma:generate",
     "prisma:migrate": "pnpm --filter @forgeng/backend prisma:migrate",
-    "prisma:studio": "pnpm --filter @forgeng/backend prisma:studio"
+    "prisma:studio": "pnpm --filter @forgeng/backend prisma:studio",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
     "prettier": "^3.4.2",
     "turbo": "^2.5.0"
   }

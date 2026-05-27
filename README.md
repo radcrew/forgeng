@@ -40,6 +40,10 @@ forgeng/
 pnpm install
 ```
 
+This runs `husky` via the `prepare` script and installs the **pre-commit** hook, which
+lints staged `frontend/` and `backend/` files with ESLint (`lint-staged`). To run it
+manually: `pnpm lint:staged`. Full-workspace lint: `pnpm lint`.
+
 ### 2. Configure PostgreSQL
 
 Create the database in your local Postgres instance:
