@@ -62,6 +62,10 @@ optionally filtered by `taskId`, `status`, or `cohortId`.
 src/
 ├── main.ts                  # bootstrap (global prefix, validation, filter)
 ├── app.module.ts            # imports core + feature modules
+├── config/                  # env loading, validation, typed ConfigService
+│   ├── configuration.ts     # maps process.env → app settings
+│   ├── env.validation.ts    # class-validator schema (fail fast)
+│   └── app-config.module.ts
 ├── common/                  # shared, non-infrastructure utilities
 │   ├── filters/             # e.g. PrismaExceptionFilter
 │   └── mappers/             # Prisma row → API DTO (response shapes)
@@ -96,12 +100,25 @@ Database schema lives in `prisma/schema.prisma` (Prisma is the ORM; `entities/` 
 
 ## Environment
 
-Copy `.env.example` to `.env` and adjust:
+Copy `.env.example` to `.env` and adjust. Variables are loaded by
+`AppConfigModule` (`src/config/`) and validated on startup — a missing
+`DATABASE_URL` or invalid `PORT` stops the process with a clear error.
 
-```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/forgeng?schema=public"
-PORT=3001
-CORS_ORIGIN="http://localhost:3000"
+| Variable       | Required | Default                    |
+|----------------|----------|----------------------------|
+| `DATABASE_URL` | yes      | —                          |
+| `PORT`         | no       | `3001`                     |
+| `CORS_ORIGIN`  | no       | `http://localhost:3000`    |
+| `NODE_ENV`     | no       | `development`              |
+
+Optional `.env.local` overrides `.env` (gitignored if you add it).
+
+Inject settings elsewhere with `ConfigService`:
+
+```typescript
+constructor(private readonly config: ConfigService<AppConfiguration, true>) {}
+
+const url = this.config.getOrThrow('database.url', { infer: true });
 ```
 
 ## Database

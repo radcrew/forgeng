@@ -1,16 +1,21 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+import type { AppConfiguration } from './config';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService<AppConfiguration, true>);
+  const port = config.getOrThrow('port', { infer: true });
+  const corsOrigin = config.getOrThrow('corsOrigin', { infer: true });
 
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? 'http://localhost:3000',
+    origin: corsOrigin,
     credentials: true,
   });
 
@@ -25,7 +30,6 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  const port = process.env.PORT ?? 3001;
   await app.listen(port);
   console.log(`🚀 forgeng API running on http://localhost:${port}/api`);
 }
