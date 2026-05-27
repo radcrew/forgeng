@@ -19,10 +19,24 @@ hot-reloadable without a running API.
 ## Develop
 
 ```bash
-pnpm --filter @forgeng/frontend dev      # http://localhost:3000
-pnpm --filter @forgeng/frontend build    # production build
-pnpm --filter @forgeng/frontend lint     # ESLint
+pnpm --filter @forgeng/frontend dev               # http://localhost:3000
+pnpm --filter @forgeng/frontend build             # production build
+pnpm --filter @forgeng/frontend lint              # ESLint
+pnpm --filter @forgeng/frontend icons:generate    # rebuild favicon + app icons
 ```
+
+## Branding
+
+The brand mark lives at `public/logo.png` and is rendered everywhere via
+`src/components/brand/logo.tsx`. Whenever the logo changes, run
+`icons:generate` — it resizes the source PNG into:
+
+- `src/app/favicon.ico` (multi-resolution 16/32/48 — served at `/favicon.ico`)
+- `src/app/icon.png` (256×256, used by modern browsers)
+- `src/app/apple-icon.png` (180×180 for iOS home-screen)
+
+These three files follow the [Next.js metadata file convention](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/app-icons),
+so the appropriate `<link>` tags are injected automatically.
 
 ## Routes
 

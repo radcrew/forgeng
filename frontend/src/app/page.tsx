@@ -9,8 +9,10 @@ import {
   ClipboardList,
   Code2,
   FolderGit2,
+  Hammer,
   MessageSquare,
   Star,
+  Target,
   Users,
   Zap,
 } from "lucide-react";
@@ -18,6 +20,12 @@ import {
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@components/ui/accordion";
 import { Logo } from "@components/brand/logo";
 
 // Stock photography for the marketing visuals. Hosted on Unsplash so no asset
@@ -172,6 +180,60 @@ const TASK_TYPES = [
   { icon: ClipboardList, label: "Quizzes", description: "Check your understanding" },
 ];
 
+const FAQS = [
+  {
+    question: "Do I need a CS degree or prior experience?",
+    answer:
+      "No. We accept self-taught developers, career switchers, and bootcamp grads alike. The application focuses on motivation and readiness — not credentials. What matters is whether you can put in the hours and you're hungry to actually get good at the craft.",
+  },
+  {
+    question: "How much does it cost?",
+    answer:
+      "Applications are always free. Tuition for accepted apprentices varies by cohort length and stipend availability — we publish the exact terms in your offer letter. We don't believe in trapping people in long-term debt for short programs.",
+  },
+  {
+    question: "How long is the program?",
+    answer:
+      "Typical cohorts run 3 to 6 months depending on track, with weekly task deadlines and biweekly mentor reviews. The pace is built for sustainable progress, not burnout.",
+  },
+  {
+    question: "Can I do this while working a full-time job?",
+    answer:
+      "Most apprentices do. Tasks are async with flexible deadlines, and mentor feedback is asynchronous. Plan for roughly 10 to 15 hours per week to stay on pace with your cohort.",
+  },
+  {
+    question: "How is this different from a bootcamp?",
+    answer:
+      "Bootcamps front-load lectures and end with a capstone. Forgeng inverts that — from day one you're shipping real tasks reviewed by working engineers. Less classroom, more code review. We're not in the business of teaching syntax; we're in the business of building engineers.",
+  },
+  {
+    question: "Who actually reviews my submissions?",
+    answer:
+      "Working senior or staff engineers — people writing production code at real companies today. Each cohort has a dedicated lead mentor and a small bench of reviewers, so the feedback you get is consistent and personal.",
+  },
+];
+
+const VALUES = [
+  {
+    icon: Hammer,
+    title: "Real work, not theory",
+    description:
+      "We don't drill leetcode. Every task mirrors something a working engineer actually does on the job.",
+  },
+  {
+    icon: Users,
+    title: "Mentors who ship",
+    description:
+      "Reviewers are senior+ engineers writing production code today — not academics or career coaches.",
+  },
+  {
+    icon: Target,
+    title: "Outcomes over vibes",
+    description:
+      "Every submission gets an explicit verdict and concrete next steps. Progress is measurable, not vibes-based.",
+  },
+];
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col text-foreground">
@@ -181,6 +243,12 @@ export default function LandingPage() {
           <span className="font-bold text-lg tracking-tight">Forgeng</span>
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+          <a
+            href="#who-we-are"
+            className="hover:text-foreground transition-colors"
+          >
+            About
+          </a>
           <a
             href="#life-in-program"
             className="hover:text-foreground transition-colors"
@@ -204,6 +272,12 @@ export default function LandingPage() {
             className="hover:text-foreground transition-colors"
           >
             For You
+          </a>
+          <a
+            href="#faq"
+            className="hover:text-foreground transition-colors"
+          >
+            FAQ
           </a>
         </nav>
         <div className="flex items-center gap-3">
@@ -312,83 +386,153 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* PHOTO GALLERY */}
-        <section
-          id="life-in-program"
-          className="px-6 py-24 max-w-6xl mx-auto"
-        >
-          <div className="text-center mb-12 space-y-3">
-            <Badge
-              variant="outline"
-              className="text-xs font-semibold tracking-wide"
-            >
-              Life in the Program
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              What the Day-to-Day Looks Like
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Mentoring sessions, code reviews, cohort syncs, pair programming —
-              this is what real learning looks like.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[480px]">
-            <div className="relative rounded-2xl overflow-hidden col-span-2 row-span-2 group">
+        {/* WHO WE ARE */}
+        <section id="who-we-are" className="px-6 py-24">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+            <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/5] order-2 md:order-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={PHOTOS.mentoring}
-                alt="A senior engineer mentoring a junior developer at a desk"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                src={PHOTOS.pairProgramming}
+                alt="Two engineers pair-programming side by side"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-              <div className="absolute bottom-4 left-4">
-                <span className="bg-white/10 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/20">
-                  1-on-1 Mentoring
-                </span>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-lg border border-border/40">
+                <p className="text-[11px] font-bold tracking-widest text-primary">
+                  OUR MISSION
+                </p>
+                <p className="text-sm mt-2 leading-relaxed">
+                  Make the path from{" "}
+                  <span className="font-semibold">learning to code</span> to{" "}
+                  <span className="font-semibold">
+                    shipping production-quality work
+                  </span>{" "}
+                  repeatable, structured, and humane.
+                </p>
               </div>
             </div>
 
-            {[
-              {
-                src: PHOTOS.codeReview,
-                alt: "Two engineers collaborating on a code review",
-                label: "Code Review",
-              },
-              {
-                src: PHOTOS.interview,
-                alt: "Technical discussion in an interview setting",
-                label: "Intake Interview",
-              },
-              {
-                src: PHOTOS.teamMeeting,
-                alt: "Cohort group meeting and discussion",
-                label: "Cohort Sync",
-              },
-              {
-                src: PHOTOS.pairProgramming,
-                alt: "Developer pair programming at a laptop",
-                label: "Pair Programming",
-              },
-            ].map((photo) => (
-              <div
-                key={photo.label}
-                className="relative rounded-2xl overflow-hidden group"
+            <div className="space-y-6 order-1 md:order-2">
+              <Badge
+                variant="outline"
+                className="text-xs font-semibold tracking-wide"
               >
+                Who We Are
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                Built by engineers, for engineers.
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Forgeng started because we saw a gap: too many programs teach
+                students to pass interviews instead of teaching them to ship.
+                We&apos;re a small team of working software engineers who
+                learned the craft the way it&apos;s actually learned — through
+                mentorship from people who&apos;d built real systems. We
+                rebuilt that experience into something anyone driven enough
+                can access.
+              </p>
+
+              <div className="space-y-5 pt-2">
+                {VALUES.map((value) => {
+                  const Icon = value.icon;
+                  return (
+                    <div key={value.title} className="flex gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-semibold">{value.title}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {value.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PHOTO GALLERY */}
+        <section
+          id="life-in-program"
+          className="border-t border-border px-6 py-24"
+        >
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12 space-y-3">
+              <Badge
+                variant="outline"
+                className="text-xs font-semibold tracking-wide"
+              >
+                Life in the Program
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                What the Day-to-Day Looks Like
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Mentoring sessions, code reviews, cohort syncs, pair
+                programming — this is what real learning looks like.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[480px]">
+              <div className="relative rounded-2xl overflow-hidden col-span-2 row-span-2 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 min-h-[180px] md:min-h-0"
+                  src={PHOTOS.mentoring}
+                  alt="A senior engineer mentoring a junior developer at a desk"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                <div className="absolute bottom-3 left-3">
-                  <span className="bg-white/10 backdrop-blur text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-white/20">
-                    {photo.label}
+                <div className="absolute bottom-4 left-4">
+                  <span className="bg-white/10 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/20">
+                    1-on-1 Mentoring
                   </span>
                 </div>
               </div>
-            ))}
+
+              {[
+                {
+                  src: PHOTOS.codeReview,
+                  alt: "Two engineers collaborating on a code review",
+                  label: "Code Review",
+                },
+                {
+                  src: PHOTOS.interview,
+                  alt: "Technical discussion in an interview setting",
+                  label: "Intake Interview",
+                },
+                {
+                  src: PHOTOS.teamMeeting,
+                  alt: "Cohort group meeting and discussion",
+                  label: "Cohort Sync",
+                },
+                {
+                  src: PHOTOS.pairProgramming,
+                  alt: "Developer pair programming at a laptop",
+                  label: "Pair Programming",
+                },
+              ].map((photo) => (
+                <div
+                  key={photo.label}
+                  className="relative rounded-2xl overflow-hidden group"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.src}
+                    alt={photo.alt}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 min-h-[180px] md:min-h-0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute bottom-3 left-3">
+                    <span className="bg-white/10 backdrop-blur text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-white/20">
+                      {photo.label}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -717,6 +861,56 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section
+          id="faq"
+          className="border-t border-border bg-muted/30 px-6 py-24"
+        >
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-12 space-y-3">
+              <Badge
+                variant="outline"
+                className="text-xs font-semibold tracking-wide"
+              >
+                FAQ
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                Questions, Answered
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                The things people most often want to know before applying. Don&apos;t
+                see your question? Reach out — we read every email.
+              </p>
+            </div>
+
+            <Card className="border-border/60">
+              <CardContent className="px-6 py-2">
+                <Accordion type="single" collapsible className="w-full">
+                  {FAQS.map((faq, i) => (
+                    <AccordionItem key={faq.question} value={`item-${i}`}>
+                      <AccordionTrigger>{faq.question}</AccordionTrigger>
+                      <AccordionContent>{faq.answer}</AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+
+            <div className="mt-10 text-center">
+              <p className="text-sm text-muted-foreground">
+                Still have questions?{" "}
+                <Link
+                  href="/apply"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Start an application
+                </Link>{" "}
+                — applying is free and we get back to every applicant.
+              </p>
+            </div>
           </div>
         </section>
 
