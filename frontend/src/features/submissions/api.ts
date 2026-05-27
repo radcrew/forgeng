@@ -8,17 +8,16 @@ export interface ListSubmissionsOptions {
   cohortId?: number;
 }
 
-export async function listSubmissions(
+export const listSubmissions = async (
   options: ListSubmissionsOptions = {},
-): Promise<Submission[]> {
+): Promise<Submission[]> => {
   const params = new URLSearchParams();
   if (options.status) params.set("status", options.status);
   if (options.taskId != null) params.set("taskId", String(options.taskId));
   if (options.cohortId != null) params.set("cohortId", String(options.cohortId));
   const query = params.size > 0 ? `?${params}` : "";
   return apiClient.get<Submission[]>(`/submissions${query}`);
-}
+};
 
-export async function listFeedback(submissionId: number): Promise<Feedback[]> {
-  return apiClient.get<Feedback[]>(`/submissions/${submissionId}/feedback`);
-}
+export const listFeedback = async (submissionId: number): Promise<Feedback[]> =>
+  apiClient.get<Feedback[]>(`/submissions/${submissionId}/feedback`);

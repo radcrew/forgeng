@@ -1,7 +1,7 @@
 import type { UserProfile } from "@types";
 
 /** Default landing page for a given role (used by the role guard + sign-in). */
-export function homeForRole(role: UserProfile["role"]): string {
+export const homeForRole = (role: UserProfile["role"]): string => {
   switch (role) {
     case "student":
       return "/student";
@@ -13,4 +13,4 @@ export function homeForRole(role: UserProfile["role"]): string {
     default:
       return "/apply";
   }
-}
+};

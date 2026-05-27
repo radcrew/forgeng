@@ -17,29 +17,25 @@ export interface UpdateApplicationStatusInput {
   cohortId?: number | null;
 }
 
-export async function listApplications(
+export const listApplications = async (
   status?: ApplicationStatus,
-): Promise<Application[]> {
+): Promise<Application[]> => {
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
   return apiClient.get<Application[]>(`/applications${query}`);
-}
+};
 
-export async function createApplication(
+export const createApplication = async (
   input: CreateApplicationInput,
-): Promise<Application> {
-  return apiClient.post<Application>("/applications", input);
-}
+): Promise<Application> => apiClient.post<Application>("/applications", input);
 
-export async function updateApplicationStatus(
+export const updateApplicationStatus = async (
   id: number,
   input: UpdateApplicationStatusInput,
-): Promise<Application> {
-  const body: Record<string, unknown> = { status: input.status };
-  if (input.reviewerNote !== undefined) {
-    body.reviewerNote = input.reviewerNote;
-  }
-  if (input.cohortId != null) {
-    body.cohortId = input.cohortId;
-  }
-  return apiClient.patch<Application>(`/applications/${id}/status`, body);
-}
+): Promise<Application> =>
+  apiClient.patch<Application>(`/applications/${id}/status`, {
+    status: input.status,
+    ...(input.reviewerNote !== undefined && {
+      reviewerNote: input.reviewerNote,
+    }),
+    ...(input.cohortId != null && { cohortId: input.cohortId }),
+  });

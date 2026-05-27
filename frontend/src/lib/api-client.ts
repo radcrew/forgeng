@@ -12,21 +12,18 @@ export class ApiError extends Error {
 }
 
 /** Dev auth headers matching the NestJS `DevAuthGuard` contract. */
-function getDevAuthHeaders(): Record<string, string> {
+const getDevAuthHeaders = (): Record<string, string> => {
   const session = readSession();
   if (!session) return {};
 
-  const headers: Record<string, string> = {
+  return {
     "x-user-email": session.email,
     "x-user-role": session.role,
+    ...(session.id > 0 && { "x-user-id": String(session.id) }),
   };
-  if (session.id > 0) {
-    headers["x-user-id"] = String(session.id);
-  }
-  return headers;
-}
+};
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const headers = new Headers(init?.headers);
   if (!headers.has("Content-Type") && init?.body) {
     headers.set("Content-Type", "application/json");
@@ -50,7 +47,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>;
-}
+};
 
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),

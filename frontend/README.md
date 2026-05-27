@@ -8,6 +8,7 @@ Next.js 16 (App Router) + Tailwind 4 + shadcn/ui, backed by the NestJS API in
 
 ## Stack
 
+- **ES modules** (`import` / `export`) with **TypeScript `ES2022`** compile target
 - **Next.js 16** (App Router, Turbopack) + **React 19**
 - **Tailwind CSS 4** with `tw-animate-css`
 - **shadcn/ui** primitives (Radix UI under the hood)
@@ -93,5 +94,16 @@ src/
 ## Data layer
 
 Pages call **`@features/*/hooks`** (e.g. `useApplications`, `useSubmissions`).
-Each feature’s `api.ts` calls the NestJS API through `@lib/api-client`, which
-targets `{NEXT_PUBLIC_API_URL}/api`.
+Each feature’s `api.ts` exports **`const` arrow functions** that call the NestJS
+API through `@lib/api-client`, which targets `{NEXT_PUBLIC_API_URL}/api`. Hooks
+use **named imports** from `./api` (no namespace `import *`).
+
+```ts
+// features/applications/api.ts
+export const listApplications = async (status?: ApplicationStatus) => { ... };
+
+// features/applications/hooks.ts
+import { listApplications } from "./api";
+export const useApplications = (filter) =>
+  useAsyncResource(() => listApplications(...), [filter]);
+```

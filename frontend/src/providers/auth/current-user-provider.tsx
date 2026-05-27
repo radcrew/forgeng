@@ -8,27 +8,19 @@ import { getMe, signInWithEmail } from "@features/auth";
 import { readSession, subscribeSession, writeSession } from "@lib/session";
 import type { UserProfile } from "@types";
 
-function getUserSnapshot(): UserProfile | null {
-  return readSession();
-}
+const getUserSnapshot = (): UserProfile | null => readSession();
 
-function getUserServerSnapshot(): null {
-  return null;
-}
+const getUserServerSnapshot = (): null => null;
 
-function getHydratedSnapshot(): boolean {
-  return true;
-}
+const getHydratedSnapshot = (): boolean => true;
 
-function getHydratedServerSnapshot(): boolean {
-  return false;
-}
+const getHydratedServerSnapshot = (): boolean => false;
 
-export function CurrentUserProvider({
+export const CurrentUserProvider = ({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}) => {
   const user = useSyncExternalStore(
     subscribeSession,
     getUserSnapshot,
@@ -78,4 +70,4 @@ export function CurrentUserProvider({
       {children}
     </CurrentUserContext.Provider>
   );
-}
+};

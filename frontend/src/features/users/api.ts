@@ -2,14 +2,12 @@ import { apiClient } from "@lib/api-client";
 
 import type { UserProfile, UserRole } from "./types";
 
-export async function listUsers(role?: UserRole): Promise<UserProfile[]> {
+export const listUsers = async (role?: UserRole): Promise<UserProfile[]> => {
   const query = role ? `?role=${encodeURIComponent(role)}` : "";
   return apiClient.get<UserProfile[]>(`/users${query}`);
-}
+};
 
-export async function updateUserRole(
+export const updateUserRole = async (
   id: number,
   role: UserRole,
-): Promise<UserProfile> {
-  return apiClient.patch<UserProfile>(`/users/${id}/role`, { role });
-}
+): Promise<UserProfile> => apiClient.patch<UserProfile>(`/users/${id}/role`, { role });

@@ -6,7 +6,7 @@ const SESSION_KEY = "forgeng.session";
 let cachedRaw: string | null | undefined;
 let cachedUser: UserProfile | null = null;
 
-export function readSession(): UserProfile | null {
+export const readSession = (): UserProfile | null => {
   if (typeof window === "undefined") return null;
   const raw = window.localStorage.getItem(SESSION_KEY);
   if (raw === cachedRaw) {
@@ -25,9 +25,9 @@ export function readSession(): UserProfile | null {
     cachedUser = null;
     return null;
   }
-}
+};
 
-export function writeSession(user: UserProfile | null): void {
+export const writeSession = (user: UserProfile | null): void => {
   if (typeof window === "undefined") return;
   if (user == null) {
     window.localStorage.removeItem(SESSION_KEY);
@@ -42,9 +42,9 @@ export function writeSession(user: UserProfile | null): void {
     cachedUser = user;
   }
   window.dispatchEvent(new Event("forgeng:session-change"));
-}
+};
 
-export function subscribeSession(callback: () => void): () => void {
+export const subscribeSession = (callback: () => void): (() => void) => {
   if (typeof window === "undefined") return () => {};
   window.addEventListener("storage", callback);
   window.addEventListener("forgeng:session-change", callback);
@@ -52,4 +52,4 @@ export function subscribeSession(callback: () => void): () => void {
     window.removeEventListener("storage", callback);
     window.removeEventListener("forgeng:session-change", callback);
   };
-}
+};

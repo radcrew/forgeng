@@ -6,14 +6,11 @@ import type {
   StudentDashboard,
 } from "./types";
 
-export async function getStudentDashboard(): Promise<StudentDashboard> {
-  return apiClient.get<StudentDashboard>("/dashboard/student");
-}
+export const getStudentDashboard = async (): Promise<StudentDashboard> =>
+  apiClient.get<StudentDashboard>("/dashboard/student");
 
-export async function getMentorDashboard(): Promise<MentorDashboard> {
-  return apiClient.get<MentorDashboard>("/dashboard/mentor");
-}
+export const getMentorDashboard = async (): Promise<MentorDashboard> =>
+  apiClient.get<MentorDashboard>("/dashboard/mentor");
 
-export async function getAdminDashboard(): Promise<AdminDashboard> {
-  return apiClient.get<AdminDashboard>("/dashboard/admin");
-}
+export const getAdminDashboard = async (): Promise<AdminDashboard> =>
+  apiClient.get<AdminDashboard>("/dashboard/admin");

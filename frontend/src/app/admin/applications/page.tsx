@@ -12,7 +12,7 @@ import {
   type ApplicationStatusFilter,
 } from "@features/applications";
 
-export default function AdminApplicationsPage() {
+const AdminApplicationsPage = () => {
   const [filter, setFilter] = useState<ApplicationStatusFilter>("all");
   const [selected, setSelected] = useState<Application | null>(null);
 
@@ -48,4 +48,6 @@ export default function AdminApplicationsPage() {
       )}
     </PageContainer>
   );
-}
+};
+
+export default AdminApplicationsPage;

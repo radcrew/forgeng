@@ -7,7 +7,7 @@ import {
   type CurrentUserContextValue,
 } from "./current-user-context";
 
-export function useCurrentUser(): CurrentUserContextValue {
+export const useCurrentUser = (): CurrentUserContextValue => {
   const ctx = useContext(CurrentUserContext);
   if (!ctx) {
     throw new Error(
@@ -15,6 +15,6 @@ export function useCurrentUser(): CurrentUserContextValue {
     );
   }
   return ctx;
-}
+};
 
 export type { CurrentUserContextValue } from "./current-user-context";
