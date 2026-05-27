@@ -68,6 +68,15 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const role: UserRole = user?.role ?? "applicant";
   const navItems = NAV_ITEMS_BY_ROLE[role];
 
+  // Pick the most-specific matching nav item so a parent like `/mentor`
+  // doesn't stay highlighted when the user is on a child like `/mentor/reviews`.
+  const activeHref = navItems
+    .filter(
+      (item) =>
+        pathname === item.href || pathname.startsWith(`${item.href}/`),
+    )
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
   const handleSignOut = () => {
     signOut();
     router.push("/");
@@ -90,9 +99,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           <SidebarContent className="p-4">
             <SidebarMenu>
               {navItems.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+                const isActive = item.href === activeHref;
                 const Icon = item.icon;
                 return (
                   <SidebarMenuItem key={item.href}>
