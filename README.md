@@ -97,6 +97,15 @@ curl http://localhost:3001/health
 | `pnpm prisma:migrate`   | Create/apply a dev migration                 |
 | `pnpm prisma:studio`    | Open Prisma Studio (DB browser)              |
 
+## Deployment
+
+Frontend deploys to **Vercel**, backend (with managed Postgres) deploys to
+**Render** — both via native GitHub integrations, no GitHub Actions needed.
+The repo includes a [`render.yaml`](./render.yaml) blueprint so Render
+provisions the backend and the database in one click.
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the step-by-step guide.
+
 ## Notes
 
 - The API runs on **port 3001** to avoid colliding with the Next.js dev server on 3000.

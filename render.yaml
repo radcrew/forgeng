@@ -1,0 +1,63 @@
+# Render Blueprint — provisions the Forgeng backend service and its database.
+# Render reads this file when you connect a repo via "New > Blueprint" and
+# creates everything in a single click.
+#
+# Required name & location: must be `render.yaml` at the repo root.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Environment variables the backend reads at runtime:
+#   - DATABASE_URL    auto-wired below from the `forgeng-db` database
+#   - PORT            auto-set by Render (NestJS listens on process.env.PORT)
+#   - NODE_ENV        set below to "production"
+#   - CORS_ORIGIN     MUST be set manually in the Render dashboard, e.g.
+#                     "https://forgeng.vercel.app" (comma-separated for many)
+#
+# Scaling assumption:
+#   This blueprint runs ONE backend instance. The startCommand applies Prisma
+#   migrations on every boot, which is safe with a single instance but RACES
+#   if you scale to numInstances > 1. To scale safely, upgrade to Starter+
+#   and move `prisma migrate deploy` into a preDeployCommand instead.
+
+databases:
+  - name: forgeng-db
+    plan: free # Upgrade to "starter" ($7/mo) for production — free tier
+    # destroys the database after 30 days.
+    databaseName: forgeng
+    user: forgeng
+
+services:
+  - type: web
+    name: forgeng-backend
+    runtime: node
+    plan: free # Upgrade to "starter" ($7/mo) for no cold-start sleep.
+    numInstances: 1 # Locked to one instance — see scaling note in header.
+    rootDir: .
+    # Install workspace deps, generate the Prisma client, then compile NestJS.
+    # `--ignore-scripts=false` is the default; keep it explicit so prisma's
+    # postinstall hook still runs.
+    buildCommand: |
+      corepack enable && \
+      pnpm install --frozen-lockfile --filter @forgeng/backend... && \
+      pnpm --filter @forgeng/backend prisma:generate && \
+      pnpm --filter @forgeng/backend build
+    # Apply pending migrations on every boot (idempotent), then start the API.
+    startCommand: |
+      pnpm --filter @forgeng/backend prisma:deploy && \
+      pnpm --filter @forgeng/backend start:prod
+    healthCheckPath: /api/healthz
+    autoDeploy: true # Redeploys on every push to the connected branch.
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      # Wired to the managed Postgres above. Render fills this in.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: forgeng-db
+          property: connectionString
+      # Set this in the Render dashboard once you know your Vercel URL.
+      # Comma-separated list, e.g.
+      #   https://forgeng.vercel.app,https://forgeng-staging.vercel.app
+      - key: CORS_ORIGIN
+        sync: false
