@@ -63,7 +63,7 @@ enum Verdict {
 model User {
   id        Int      @id @default(autoincrement())
   // Optional external identity (e.g. Clerk). Nullable so we can run without
-  // an auth provider in dev — see common/auth/dev-auth.guard.ts.
+  // an auth provider in dev — see core/auth/dev-auth.guard.ts.
   clerkId   String?  @unique @map("clerk_id")
   email     String   @unique
   name      String?

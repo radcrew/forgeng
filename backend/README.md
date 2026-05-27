@@ -15,7 +15,7 @@ Next.js frontend in `../frontend`.
 
 Auth is currently behind a swappable **dev header guard**
 (`x-user-id` / `x-user-email` / `x-user-role`) — the real Clerk integration
-plugs in by replacing `src/common/auth/dev-auth.guard.ts`.
+plugs in by replacing `src/core/auth/dev-auth.guard.ts`.
 
 ## Endpoints
 
@@ -60,26 +60,39 @@ optionally filtered by `taskId`, `status`, or `cohortId`.
 
 ```
 src/
-├── app.module.ts            # composition root
 ├── main.ts                  # bootstrap (global prefix, validation, filter)
-├── prisma/                  # PrismaService + PrismaModule (global)
-├── common/
-│   ├── auth/                # dev guard, roles guard, decorators, types
-│   ├── prisma-exception.filter.ts
-│   └── serializers.ts       # Prisma row → API DTO mappers
-├── health/                  # /healthz
-├── auth/                    # /auth/me, /auth/profile
-├── applications/            # apprenticeship applications
-├── cohorts/                 # cohort CRUD + enrollments
-├── tasks/                   # task authoring + student listing
-├── submissions/             # student submissions
-├── feedback/                # admin feedback on submissions
-├── users/                   # admin user list + role changes
-└── dashboard/               # role-specific dashboard summaries
+├── app.module.ts            # imports core + feature modules
+├── common/                  # shared, non-infrastructure utilities
+│   ├── filters/             # e.g. PrismaExceptionFilter
+│   └── mappers/             # Prisma row → API DTO (response shapes)
+├── core/                    # global singleton infrastructure
+│   ├── core.module.ts
+│   ├── database/            # PrismaService + DatabaseModule (global)
+│   └── auth/                # dev guard, roles guard, decorators
+└── modules/                 # business features
+    ├── health/
+    ├── auth/                # /auth/me, /auth/profile
+    ├── applications/
+    ├── cohorts/
+    ├── tasks/
+    ├── submissions/
+    ├── feedback/
+    ├── users/
+    └── dashboard/
 ```
 
-Each feature module follows the same shape: `*.controller.ts`, `*.service.ts`,
-`*.module.ts`, and one DTO per request body / query.
+Each feature module follows:
+
+```
+modules/<feature>/
+├── dto/              # request validation (class-validator)
+├── entities/         # re-exports Prisma models for this domain
+├── <feature>.controller.ts
+├── <feature>.service.ts
+└── <feature>.module.ts
+```
+
+Database schema lives in `prisma/schema.prisma` (Prisma is the ORM; `entities/` points at those models).
 
 ## Environment
 
