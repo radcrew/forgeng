@@ -4,9 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import type { AppConfiguration } from '@config';
 
-const DEV_USER_ID = 'dev-user-id';
-const DEV_USER_EMAIL = 'dev-user-email';
-const DEV_USER_ROLE = 'dev-user-role';
+const BEARER_AUTH = 'bearer';
 
 export function setupSwagger(app: INestApplication): void {
   const config = app.get(ConfigService<AppConfiguration, true>);
@@ -20,38 +18,20 @@ export function setupSwagger(app: INestApplication): void {
     .setTitle('Forgeng API')
     .setDescription(
       'Cohort-based apprenticeship platform REST API. ' +
-        'In development, authenticate via `x-user-id` or `x-user-email` headers (see README).',
+        'Authenticate via POST /auth/login to obtain a JWT access token, ' +
+        'then send it as `Authorization: Bearer <token>`.',
     )
     .setVersion('1.0')
-    .addApiKey(
+    .addBearerAuth(
       {
-        type: 'apiKey',
-        name: 'x-user-id',
-        in: 'header',
-        description: 'Dev auth: seeded user id (e.g. 1)',
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT access token from POST /auth/login',
       },
-      DEV_USER_ID,
+      BEARER_AUTH,
     )
-    .addApiKey(
-      {
-        type: 'apiKey',
-        name: 'x-user-email',
-        in: 'header',
-        description: 'Dev auth: user email (e.g. avery@example.com)',
-      },
-      DEV_USER_EMAIL,
-    )
-    .addApiKey(
-      {
-        type: 'apiKey',
-        name: 'x-user-role',
-        in: 'header',
-        description: 'Optional role hint: applicant | student | admin',
-      },
-      DEV_USER_ROLE,
-    )
-    .addSecurityRequirements(DEV_USER_ID)
-    .addSecurityRequirements(DEV_USER_EMAIL)
+    .addSecurityRequirements(BEARER_AUTH)
     .build();
 
   const document = SwaggerModule.createDocument(app, documentConfig);

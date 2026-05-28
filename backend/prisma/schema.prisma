@@ -56,28 +56,94 @@ enum Verdict {
   needs_work
 }
 
+enum AuthProvider {
+  google
+  github
+}
+
+enum VerificationTokenType {
+  email_verify
+  password_reset
+}
+
 // -----------------------------------------------------------------------------
 // Models
 // -----------------------------------------------------------------------------
 
 model User {
-  id        Int      @id @default(autoincrement())
-  // Optional external identity (e.g. Clerk). Nullable so we can run without
-  // an auth provider in dev — see core/auth/dev-auth.guard.ts.
-  clerkId   String?  @unique @map("clerk_id")
-  email     String   @unique
-  name      String?
-  role      Role     @default(applicant)
-  bio       String?
-  githubUrl String?  @map("github_url")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id            Int      @id @default(autoincrement())
+  // Optional external identity (e.g. Clerk). Nullable because users can sign up
+  // with email/password or OAuth (see AuthIdentity).
+  clerkId       String?  @unique @map("clerk_id")
+  email         String   @unique
+  // Null for OAuth-only users who never set a password.
+  passwordHash  String?  @map("password_hash")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  name          String?
+  role          Role     @default(applicant)
+  bio           String?
+  githubUrl     String?  @map("github_url")
+  avatarUrl     String?  @map("avatar_url")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  enrollments Enrollment[]
-  submissions Submission[]
-  feedback    Feedback[]
+  enrollments    Enrollment[]
+  submissions    Submission[]
+  feedback       Feedback[]
+  identities     AuthIdentity[]
+  refreshTokens  RefreshToken[]
+  verifyTokens   VerificationToken[]
 
   @@map("users")
+}
+
+model AuthIdentity {
+  id                Int          @id @default(autoincrement())
+  userId            Int          @map("user_id")
+  provider          AuthProvider
+  providerAccountId String       @map("provider_account_id")
+  email             String?
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("auth_identities")
+}
+
+model VerificationToken {
+  id        Int                   @id @default(autoincrement())
+  userId    Int                   @map("user_id")
+  tokenHash String                @unique @map("token_hash")
+  type      VerificationTokenType
+  expiresAt DateTime              @map("expires_at") @db.Timestamptz
+  usedAt    DateTime?             @map("used_at") @db.Timestamptz
+  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("verification_tokens")
+}
+
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  // Hash of the token that replaced this one during rotation. Lets us detect
+  // refresh-token reuse and revoke the whole family.
+  replacedByHash String? @map("replaced_by_hash")
+  userAgent String?   @map("user_agent")
+  ip        String?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model Application {
