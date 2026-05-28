@@ -102,12 +102,14 @@ export class TokenService {
       email: user.email,
       role: user.role,
     };
-    const expiresIn = this.config.getOrThrow('auth.accessTtl', { infer: true });
+    const expiresIn = parseDurationSeconds(
+      this.config.getOrThrow('auth.accessTtl', { infer: true }),
+    );
     const token = await this.jwt.signAsync(payload, {
       secret: this.config.getOrThrow('auth.accessSecret', { infer: true }),
       expiresIn,
     });
-    return { token, expiresIn: parseDurationSeconds(expiresIn) };
+    return { token, expiresIn };
   }
 
   private async createRefreshToken(
