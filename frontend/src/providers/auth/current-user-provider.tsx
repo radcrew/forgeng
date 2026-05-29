@@ -1,11 +1,24 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 
 import { CurrentUserContext } from "@contexts/auth/current-user-context";
 import type { CurrentUserContextValue } from "@contexts/auth/current-user-context";
-import { getMe, signInWithEmail } from "@features/auth";
-import { readSession, subscribeSession, writeSession } from "@lib/session";
+import {
+  getMe,
+  login as loginRequest,
+  logout as logoutRequest,
+  oauthStartUrl,
+  refresh as refreshSession,
+  register as registerRequest,
+  type OAuthProvider,
+} from "@features/auth";
+import { ApiError } from "@lib/api-client";
+import {
+  readAccessToken,
+  readSession,
+  subscribeSession,
+} from "@lib/session";
 import type { UserProfile } from "@types";
 
 const getUserSnapshot = (): UserProfile | null => readSession();
@@ -32,37 +45,78 @@ export const CurrentUserProvider = ({
     getHydratedServerSnapshot,
   );
 
-  const signInAsUser = useCallback((next: UserProfile) => {
-    writeSession(next);
-  }, []);
+  const login = useCallback(
+    (email: string, password: string) => loginRequest(email, password),
+    [],
+  );
 
-  const signOut = useCallback(() => {
-    writeSession(null);
+  const register = useCallback(
+    async (input: { email: string; password: string; name?: string }) => {
+      await registerRequest(input.email, input.password, input.name);
+    },
+    [],
+  );
+
+  const logout = useCallback(async () => {
+    await logoutRequest();
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const session = readSession();
-    if (!session) return null;
     try {
-      const me = await getMe();
-      writeSession(me);
-      return me;
-    } catch {
-      writeSession(null);
-      return null;
+      return await getMe();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        return null;
+      }
+      throw err;
     }
+  }, []);
+
+  const startOAuth = useCallback((provider: OAuthProvider) => {
+    if (typeof window === "undefined") return;
+    window.location.assign(oauthStartUrl(provider));
+  }, []);
+
+  // First-mount rehydrate: if we have an access token in localStorage, confirm
+  // it's still valid by calling /auth/me. The api-client transparently rotates
+  // via /auth/refresh on a 401, so a successful response also means the
+  // refresh cookie is still good.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hasToken = readAccessToken() !== null;
+    const hasUser = readSession() !== null;
+    if (!hasToken && !hasUser) return;
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        await getMe();
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 401) {
+          // api-client already cleared on hard refresh failure; nothing else to do.
+          return;
+        }
+        // Network blip: try a one-shot explicit refresh as a fallback.
+        await refreshSession();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const value = useMemo<CurrentUserContextValue>(
     () => ({
       user,
       isHydrated,
-      signInWithEmail,
-      signInAsUser,
-      signOut,
+      login,
+      register,
+      logout,
       refreshUser,
+      startOAuth,
     }),
-    [user, isHydrated, signInAsUser, signOut, refreshUser],
+    [user, isHydrated, login, register, logout, refreshUser, startOAuth],
   );
 
   return (

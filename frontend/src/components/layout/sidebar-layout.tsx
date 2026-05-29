@@ -58,7 +58,7 @@ interface SidebarLayoutProps {
 export function SidebarLayout({ children }: SidebarLayoutProps) {
   const pathname = usePathname() ?? "";
   const router = useRouter();
-  const { user, signOut } = useCurrentUser();
+  const { user, logout } = useCurrentUser();
 
   // The role guard above us has already short-circuited if `user` is null.
   // This fallback keeps types honest for the rare race during navigation.
@@ -74,8 +74,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     )
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    await logout();
     router.push("/");
   };
 

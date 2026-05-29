@@ -17,10 +17,12 @@ export interface UserDto {
   id: number;
   clerkId: string | null;
   email: string;
+  emailVerified: boolean;
   name: string | null;
   role: User['role'];
   bio: string | null;
   githubUrl: string | null;
+  avatarUrl: string | null;
   createdAt: string;
 }
 
@@ -29,10 +31,12 @@ export function toUserDto(user: User): UserDto {
     id: user.id,
     clerkId: user.clerkId,
     email: user.email,
+    emailVerified: user.emailVerified,
     name: user.name,
     role: user.role,
     bio: user.bio,
     githubUrl: user.githubUrl,
+    avatarUrl: user.avatarUrl,
     createdAt: user.createdAt.toISOString(),
   };
 }

@@ -1,4 +1,4 @@
-export { buildApiBase, getDevAuthHeaders } from "./api";
+export { buildApiBase } from "./api";
 export { homeForRole, normalizeEmail } from "./auth";
 export { cn } from "./cn";
 export {
