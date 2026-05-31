@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
 import { USER_ROLE_OPTIONS } from "@constants/users";
+import { updateUserRole } from "@features/users";
+import { ApiError } from "@lib/api-client";
 import { Card } from "@components/ui/card";
 import {
   Select,
@@ -12,13 +15,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@components/ui/select";
-import type { UserProfile } from "@types";
+import type { UserProfile, UserRole } from "@types";
 
 export type RowProps = { user: UserProfile };
 
 export const Row = ({ user }: RowProps) => {
-  const handleRoleChange = (newRole: string) => {
-    toast.success(`Role updated to ${newRole}`);
+  const [role, setRole] = useState<UserRole>(user.role);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleRoleChange = async (next: string) => {
+    const newRole = next as UserRole;
+    if (newRole === role) return;
+
+    const previous = role;
+    setRole(newRole); // optimistic
+    setIsSaving(true);
+    try {
+      await updateUserRole(user.id, newRole);
+      toast.success(`Role updated to ${newRole}`);
+    } catch (err) {
+      setRole(previous); // revert on failure
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not update role. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -40,7 +64,11 @@ export const Row = ({ user }: RowProps) => {
           <span className="text-xs text-muted-foreground hidden sm:block">
             {format(new Date(user.createdAt), "MMM d, yyyy")}
           </span>
-          <Select defaultValue={user.role} onValueChange={handleRoleChange}>
+          <Select
+            value={role}
+            onValueChange={handleRoleChange}
+            disabled={isSaving}
+          >
             <SelectTrigger className="w-[130px]">
               <SelectValue />
             </SelectTrigger>
