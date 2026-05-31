@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ApplicationStatus } from '@prisma/client';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ApplicationStatus, Role, type User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { toApplicationDto, type ApplicationDto } from '@common/mappers';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -25,11 +29,37 @@ export class ApplicationsService {
     return rows.map(toApplicationDto);
   }
 
-  async create(dto: CreateApplicationDto): Promise<ApplicationDto> {
+  async create(user: User, dto: CreateApplicationDto): Promise<ApplicationDto> {
+    const existing = await this.prisma.application.findUnique({
+      where: { userId: user.id },
+    });
+    if (existing) {
+      throw new ConflictException('You have already submitted an application.');
+    }
+
+    const { firstName, lastName } = splitName(user.name, user.email);
     const created = await this.prisma.application.create({
-      data: { ...dto, status: 'pending' },
+      data: {
+        userId: user.id,
+        // Denormalized snapshot of the applicant's identity at submit time.
+        email: user.email,
+        firstName,
+        lastName,
+        motivation: dto.motivation,
+        background: dto.background,
+        experience: dto.experience,
+        status: 'pending',
+      },
     });
     return toApplicationDto(created);
+  }
+
+  /** The current user's own application, or null if they haven't applied. */
+  async findMine(userId: number): Promise<ApplicationDto | null> {
+    const app = await this.prisma.application.findUnique({
+      where: { userId },
+    });
+    return app ? toApplicationDto(app) : null;
   }
 
   async findOne(id: number): Promise<ApplicationDto> {
@@ -45,14 +75,38 @@ export class ApplicationsService {
     const exists = await this.prisma.application.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Application not found.');
 
-    const updated = await this.prisma.application.update({
-      where: { id },
-      data: {
-        status: dto.status,
-        reviewerNote: dto.reviewerNote,
-        cohortId: dto.cohortId,
-      },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const app = await tx.application.update({
+        where: { id },
+        data: {
+          status: dto.status,
+          reviewerNote: dto.reviewerNote,
+          cohortId: dto.cohortId,
+        },
+      });
+
+      // Accepting an application turns the applicant into a student and, if a
+      // cohort was chosen, enrolls them. Legacy anonymous rows (no userId) just
+      // change status — there is no account to promote.
+      if (app.status === ApplicationStatus.accepted && app.userId) {
+        await tx.user.updateMany({
+          where: { id: app.userId, role: Role.applicant },
+          data: { role: Role.student },
+        });
+        if (app.cohortId) {
+          await tx.enrollment.upsert({
+            where: {
+              userId_cohortId: { userId: app.userId, cohortId: app.cohortId },
+            },
+            create: { userId: app.userId, cohortId: app.cohortId },
+            update: {},
+          });
+        }
+      }
+
+      return app;
     });
+
     return toApplicationDto(updated);
   }
 
@@ -74,4 +128,17 @@ export class ApplicationsService {
     }
     return stats;
   }
+}
+
+/** Split a display name into first / last, falling back to the email handle. */
+function splitName(
+  name: string | null,
+  email: string,
+): { firstName: string; lastName: string } {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return { firstName: email.split('@')[0] || email, lastName: '' };
+  }
+  const [firstName, ...rest] = parts;
+  return { firstName, lastName: rest.join(' ') };
 }

@@ -93,6 +93,7 @@ model User {
   identities     AuthIdentity[]
   refreshTokens  RefreshToken[]
   verifyTokens   VerificationToken[]
+  application    Application?
 
   @@map("users")
 }
@@ -148,6 +149,10 @@ model RefreshToken {
 
 model Application {
   id           Int               @id @default(autoincrement())
+  // The account that submitted this application. Nullable to preserve any
+  // legacy anonymous rows; new applications are always tied to a user, and the
+  // unique constraint enforces one application per account.
+  userId       Int?              @unique @map("user_id")
   email        String
   firstName    String            @map("first_name")
   lastName     String            @map("last_name")
@@ -160,6 +165,7 @@ model Application {
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz
   updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz
 
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   cohort Cohort? @relation(fields: [cohortId], references: [id], onDelete: SetNull)
 
   @@map("applications")

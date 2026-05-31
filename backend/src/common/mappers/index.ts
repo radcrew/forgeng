@@ -43,6 +43,7 @@ export function toUserDto(user: User): UserDto {
 
 export interface ApplicationDto {
   id: number;
+  userId: number | null;
   email: string;
   firstName: string;
   lastName: string;
@@ -58,6 +59,7 @@ export interface ApplicationDto {
 export function toApplicationDto(app: Application): ApplicationDto {
   return {
     id: app.id,
+    userId: app.userId,
     email: app.email,
     firstName: app.firstName,
     lastName: app.lastName,
