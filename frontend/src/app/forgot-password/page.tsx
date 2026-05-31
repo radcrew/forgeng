@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,45 +26,32 @@ import {
   FormMessage,
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
-import { useCurrentUser } from "@contexts";
-import { AuthDivider, OAuthButtons } from "@features/auth";
+import { forgotPassword } from "@features/auth";
 import { ApiError } from "@lib/api-client";
-import { homeForRole } from "@utils/auth";
 
 const schema = z.object({
   email: z.email("Enter a valid email."),
-  password: z.string().min(1, "Enter your password."),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 const Page = () => {
-  const router = useRouter();
-  const { login } = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "" },
   });
 
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      const user = await login(values.email, values.password);
-      toast.success(`Signed in as ${user.name ?? user.email}.`);
-      router.push(homeForRole(user.role));
+      await forgotPassword(values.email);
+      setSubmittedEmail(values.email);
     } catch (err) {
       if (err instanceof ApiError) {
-        if (err.status === 403) {
-          toast.error(
-            "Please verify your email first. Check your inbox for the confirmation link.",
-          );
-        } else if (err.status === 401) {
-          toast.error("Invalid email or password.");
-        } else {
-          toast.error(err.message || "Could not sign in. Please try again.");
-        }
+        toast.error(err.message || "Could not send the reset link.");
       } else {
         toast.error("Could not reach the API. Is the backend running?");
       }
@@ -73,6 +59,42 @@ const Page = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (submittedEmail) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <Logo size={28} priority />
+              <span className="font-bold text-lg tracking-tight">Forgeng</span>
+            </div>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Mail className="h-6 w-6" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Check your email</CardTitle>
+              <CardDescription>
+                If an account exists for {submittedEmail}, we sent a link to
+                reset your password. The link expires soon.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Remembered it?{" "}
+              <Link
+                href="/sign-in"
+                className="text-primary font-medium hover:underline"
+              >
+                Back to sign in
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -83,15 +105,13 @@ const Page = () => {
             <span className="font-bold text-lg tracking-tight">Forgeng</span>
           </div>
           <div>
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
+            <CardTitle className="text-2xl">Forgot your password?</CardTitle>
             <CardDescription>
-              Sign in to continue to your portal.
+              Enter your email and we&apos;ll send you a link to reset it.
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <OAuthButtons disabled={isSubmitting} label="Sign in" />
-          <AuthDivider />
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
@@ -117,45 +137,18 @@ const Page = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
-                      <Link
-                        href="/forgot-password"
-                        className="text-sm text-primary font-medium hover:underline"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        autoComplete="current-password"
-                        placeholder="••••••••"
-                        disabled={isSubmitting}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <Button className="w-full" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Signing in…" : "Sign In"}
+                {isSubmitting ? "Sending…" : "Send reset link"}
                 {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
-                New here?{" "}
+                Remembered it?{" "}
                 <Link
-                  href="/sign-up"
+                  href="/sign-in"
                   className="text-primary font-medium hover:underline"
                 >
-                  Create an account
+                  Back to sign in
                 </Link>
               </p>
             </form>

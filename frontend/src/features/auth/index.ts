@@ -1,4 +1,5 @@
 export {
+  forgotPassword,
   getMe,
   login,
   logout,
@@ -6,6 +7,7 @@ export {
   refresh,
   register,
   resendVerification,
+  resetPassword,
   verifyEmail,
   type OAuthProvider,
 } from "./api";

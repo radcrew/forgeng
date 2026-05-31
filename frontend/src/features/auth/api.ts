@@ -77,6 +77,25 @@ export const resendVerification = async (email: string): Promise<void> => {
   );
 };
 
+export const forgotPassword = async (email: string): Promise<void> => {
+  await apiClient.post<void>(
+    "/auth/forgot-password",
+    { email: normalizeEmail(email) },
+    { skipAuthRetry: true },
+  );
+};
+
+export const resetPassword = async (
+  token: string,
+  password: string,
+): Promise<void> => {
+  await apiClient.post<void>(
+    "/auth/reset-password",
+    { token, password },
+    { skipAuthRetry: true },
+  );
+};
+
 export const refresh = async (): Promise<UserProfile | null> => {
   try {
     const response = await apiClient.post<AuthSessionResponse>(
