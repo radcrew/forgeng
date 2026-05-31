@@ -11,6 +11,7 @@ const DEFAULT_ACCESS_TTL = '15m';
 const DEFAULT_REFRESH_TTL = '7d';
 const DEFAULT_REFRESH_COOKIE = 'forgeng_refresh';
 const DEFAULT_VERIFY_TTL_MINUTES = 60 * 24; // 24h
+const DEFAULT_PASSWORD_RESET_TTL_MINUTES = 60; // 1h — reset links are short-lived
 const DEFAULT_EMAIL_FROM = 'no-reply@forgeng.local';
 
 function parsePort(raw: string | undefined, fallback: number): number {
@@ -92,6 +93,10 @@ export default (): AppConfiguration => {
         process.env.EMAIL_VERIFY_TTL_MINUTES,
         DEFAULT_VERIFY_TTL_MINUTES,
       ),
+      passwordResetTtlMinutes: parsePort(
+        process.env.PASSWORD_RESET_TTL_MINUTES,
+        DEFAULT_PASSWORD_RESET_TTL_MINUTES,
+      ),
       oauthSuccessRedirect:
         process.env.OAUTH_SUCCESS_REDIRECT ??
         `${DEFAULT_FRONTEND}/auth/callback`,
@@ -101,6 +106,9 @@ export default (): AppConfiguration => {
       emailVerifyRedirect:
         process.env.EMAIL_VERIFY_REDIRECT ??
         `${DEFAULT_FRONTEND}/auth/verify-email`,
+      passwordResetRedirect:
+        process.env.PASSWORD_RESET_REDIRECT ??
+        `${DEFAULT_FRONTEND}/auth/reset-password`,
       google: parseOAuth(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,

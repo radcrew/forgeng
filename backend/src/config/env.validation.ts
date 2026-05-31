@@ -62,6 +62,10 @@ class EnvironmentVariables {
   EMAIL_VERIFY_TTL_MINUTES?: number;
 
   @IsOptional()
+  @IsInt()
+  PASSWORD_RESET_TTL_MINUTES?: number;
+
+  @IsOptional()
   @IsString()
   OAUTH_SUCCESS_REDIRECT?: string;
 
@@ -72,6 +76,10 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   EMAIL_VERIFY_REDIRECT?: string;
+
+  @IsOptional()
+  @IsString()
+  PASSWORD_RESET_REDIRECT?: string;
 
   @IsOptional() @IsString() GOOGLE_CLIENT_ID?: string;
   @IsOptional() @IsString() GOOGLE_CLIENT_SECRET?: string;

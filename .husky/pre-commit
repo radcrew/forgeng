@@ -1,3 +1,2 @@
 pnpm lint:fix
-git add -u
 pnpm lint

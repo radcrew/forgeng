@@ -14,9 +14,11 @@ export interface AppConfiguration {
     refreshCookieName: string;
     refreshCookieDomain: string | undefined;
     verifyTokenTtlMinutes: number;
+    passwordResetTtlMinutes: number;
     oauthSuccessRedirect: string;
     oauthFailureRedirect: string;
     emailVerifyRedirect: string;
+    passwordResetRedirect: string;
     google: OAuthProviderConfig | null;
     github: OAuthProviderConfig | null;
   };

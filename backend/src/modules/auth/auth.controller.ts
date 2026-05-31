@@ -24,6 +24,8 @@ import { AuthService, type AuthResult } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailQuery } from './dto/verify-email.query';
 import { GitHubAuthGuard } from './guards/github-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
@@ -104,6 +106,20 @@ export class AuthController {
   @HttpCode(HttpStatus.ACCEPTED)
   async resendVerification(@Body() dto: ResendVerificationDto): Promise<void> {
     await this.service.resendVerification(dto.email);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
+    await this.service.requestPasswordReset(dto.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
+    await this.service.resetPassword(dto.token, dto.password);
   }
 
   @Get('me')

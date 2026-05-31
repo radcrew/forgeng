@@ -64,6 +64,15 @@ export class EmailService implements OnModuleDestroy {
     });
   }
 
+  async sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
+    await this.send({
+      to,
+      subject: 'Reset your forgeng password',
+      text: `We received a request to reset your forgeng password. Reset it here: ${resetUrl}\n\nThis link expires soon. If you did not request this, ignore this message and your password will stay the same.`,
+      html: `<p>We received a request to reset your forgeng password.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This link expires soon. If you did not request this, ignore this message and your password will stay the same.</p>`,
+    });
+  }
+
   onModuleDestroy(): void {
     this.transporter?.close();
   }
