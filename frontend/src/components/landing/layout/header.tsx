@@ -32,7 +32,7 @@ export function Header() {
         </Link>
         <Button asChild size="sm" className="font-semibold">
           <Link href="/sign-up">
-            Apply Now <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            Get started <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
           </Link>
         </Button>
       </div>
