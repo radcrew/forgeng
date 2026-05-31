@@ -25,32 +25,49 @@ import {
   FormMessage,
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
+import { Label } from "@components/ui/label";
 import { Progress } from "@components/ui/progress";
 import { Textarea } from "@components/ui/textarea";
+import { useCurrentUser } from "@contexts";
 import {
   readStorageJson,
   removeStorageItem,
   writeStorageJson,
 } from "@utils/storage";
-import { createApplication } from "../api";
+import { createApplication, getMyApplication } from "../api";
 import { ApiError } from "@lib/api-client";
 
 export const Wizard = () => {
   const router = useRouter();
+  const { user } = useCurrentUser();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(APPLICATION_FORM_SCHEMA),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
       background: "",
       experience: "",
       motivation: "",
     },
   });
+
+  // If the user already applied, there is nothing to fill in — send them to
+  // their application status instead of showing a blank form.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const existing = await getMyApplication();
+        if (!cancelled && existing) router.replace("/apply/status");
+      } catch {
+        // Non-fatal: fall through and let them try to apply.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   useEffect(() => {
     const parsed = readStorageJson<Partial<ApplicationFormValues>>(
@@ -81,19 +98,22 @@ export const Wizard = () => {
     setIsSubmitting(true);
     try {
       await createApplication({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
         background: data.background,
         motivation: data.motivation,
         experience: data.experience || undefined,
       });
       removeStorageItem(APPLICATION_DRAFT_STORAGE_KEY);
       toast.success("Application submitted", {
-        description: `Thanks ${data.firstName}, we'll be in touch soon.`,
+        description: "Thanks — we'll be in touch soon.",
       });
-      router.push("/");
+      router.push("/apply/status");
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        // Already applied (e.g. submitted in another tab) — show their status.
+        toast.info("You've already submitted an application.");
+        router.replace("/apply/status");
+        return;
+      }
       const message =
         err instanceof ApiError
           ? err.message
@@ -140,51 +160,21 @@ export const Wizard = () => {
                     <h2 className="text-xl font-semibold">
                       Basic Information
                     </h2>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="firstName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>First Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Jane" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Last Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Doe" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <p className="text-sm text-muted-foreground">
+                      You&apos;re applying with your Forgeng account. We&apos;ll
+                      use these details — update them in your profile if they
+                      need to change.
+                    </p>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input value={user?.name ?? "—"} disabled readOnly />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input value={user?.email ?? "—"} disabled readOnly />
+                      </div>
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="jane@example.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
                 )}
 

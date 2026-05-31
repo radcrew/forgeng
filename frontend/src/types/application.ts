@@ -2,6 +2,7 @@ export type ApplicationStatus = "pending" | "reviewing" | "accepted" | "rejected
 
 export interface Application {
   id: number;
+  userId: number | null;
   firstName: string;
   lastName: string;
   email: string;
