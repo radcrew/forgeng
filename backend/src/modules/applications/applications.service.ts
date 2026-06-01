@@ -6,6 +6,7 @@ import {
 import { ApplicationStatus, Role, type User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { toApplicationDto, type ApplicationDto } from '@common/mappers';
+import { splitName } from '@common/string';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 
@@ -128,17 +129,4 @@ export class ApplicationsService {
     }
     return stats;
   }
-}
-
-/** Split a display name into first / last, falling back to the email handle. */
-function splitName(
-  name: string | null,
-  email: string,
-): { firstName: string; lastName: string } {
-  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) {
-    return { firstName: email.split('@')[0] || email, lastName: '' };
-  }
-  const [firstName, ...rest] = parts;
-  return { firstName, lastName: rest.join(' ') };
 }
