@@ -4,7 +4,11 @@ export type {
   Submission,
   SubmissionStatus,
 } from "./types";
-export type { ListSubmissionsOptions, SubmissionInput } from "./api";
+export type {
+  ListSubmissionsOptions,
+  SubmissionInput,
+  FeedbackInput,
+} from "./api";
 export {
   SUBMISSION_STATUS_FILTER_TABS,
   SUBMISSION_STATUS_VARIANT,
@@ -14,6 +18,7 @@ export {
   listFeedback,
   createSubmission,
   resubmitSubmission,
+  createFeedback,
 } from "./api";
 export type { SubmissionStatusFilter, UseSubmissionsOptions } from "./hooks";
 export { useSubmissions, useSubmissionFeedback } from "./hooks";

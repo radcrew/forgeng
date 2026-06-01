@@ -1,6 +1,11 @@
 import { apiClient } from "@lib/api-client";
 
-import type { Feedback, Submission, SubmissionStatus } from "./types";
+import type {
+  Feedback,
+  FeedbackVerdict,
+  Submission,
+  SubmissionStatus,
+} from "./types";
 
 export interface ListSubmissionsOptions {
   status?: SubmissionStatus;
@@ -39,3 +44,18 @@ export const resubmitSubmission = async (
   input: SubmissionInput,
 ): Promise<Submission> =>
   apiClient.patch<Submission>(`/submissions/${id}`, input);
+
+export interface FeedbackInput {
+  content: string;
+  verdict: FeedbackVerdict;
+}
+
+/**
+ * Leave reviewer feedback on a submission (admin only). The backend also moves
+ * the submission to `approved` or `needs_work` based on the verdict.
+ */
+export const createFeedback = async (
+  submissionId: number,
+  input: FeedbackInput,
+): Promise<Feedback> =>
+  apiClient.post<Feedback>(`/submissions/${submissionId}/feedback`, input);
