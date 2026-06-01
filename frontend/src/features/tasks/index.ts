@@ -4,8 +4,8 @@ export {
   TASK_TYPE_ICON,
   TASK_TYPE_OPTIONS,
 } from "@constants/tasks";
-export { listTasks } from "./api";
-export { useTasks } from "./hooks";
+export { listTasks, getTask } from "./api";
+export { useTasks, useTask } from "./hooks";
 
 export { FormDialog } from "./components/form-dialog";
 export type { FormDialogProps } from "./components/form-dialog";

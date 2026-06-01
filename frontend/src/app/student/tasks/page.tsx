@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { Clock, Code2 } from "lucide-react";
 
@@ -75,7 +76,12 @@ const Page = () => {
                     <Icon className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{task.title}</p>
+                    <Link
+                      href={`/student/tasks/${task.id}`}
+                      className="block font-semibold truncate hover:underline"
+                    >
+                      {task.title}
+                    </Link>
                     {task.description && (
                       <p className="text-sm text-muted-foreground truncate mt-0.5">
                         {task.description}
