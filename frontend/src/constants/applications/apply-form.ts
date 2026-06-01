@@ -1,9 +1,8 @@
 import { z } from "zod";
 
+// Identity (name + email) comes from the signed-in account, so it is not part
+// of the form schema — only the application content is collected here.
 export const APPLICATION_FORM_SCHEMA = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  email: z.string().email("Valid email is required"),
   background: z
     .string()
     .min(50, "Please provide more detail about your background"),
@@ -21,6 +20,7 @@ export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
   number,
   Array<keyof ApplicationFormValues>
 > = {
-  1: ["firstName", "lastName", "email"],
+  // Step 1 confirms identity (read-only, no validated fields).
+  1: [],
   2: ["background", "experience"],
 };

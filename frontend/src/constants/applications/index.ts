@@ -8,3 +8,4 @@ export {
   APPLICATION_FORM_TOTAL_STEPS,
   type ApplicationFormValues,
 } from "./apply-form";
+export { APPLICATION_WIZARD_COPY } from "./wizard";

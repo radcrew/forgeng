@@ -31,8 +31,8 @@ export function Header() {
           Sign In
         </Link>
         <Button asChild size="sm" className="font-semibold">
-          <Link href="/apply">
-            Apply Now <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+          <Link href="/sign-up">
+            Get started <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
           </Link>
         </Button>
       </div>

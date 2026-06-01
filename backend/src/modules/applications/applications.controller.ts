@@ -11,8 +11,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Public } from '@core/auth/public.decorator';
 import { Roles } from '@core/auth/roles.decorator';
+import { CurrentUser } from '@core/auth/current-user.decorator';
+import type { AuthUser } from '@core/auth/auth.types';
 import type { ApplicationDto } from '@common/mappers';
 import {
   ApplicationsService,
@@ -39,11 +40,18 @@ export class ApplicationsController {
     return this.service.list(query.status);
   }
 
-  @Public()
+  @Get('me')
+  findMine(@CurrentUser() user: AuthUser): Promise<ApplicationDto | null> {
+    return this.service.findMine(user.id);
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateApplicationDto): Promise<ApplicationDto> {
-    return this.service.create(dto);
+  create(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateApplicationDto,
+  ): Promise<ApplicationDto> {
+    return this.service.create(user, dto);
   }
 
   @Roles('admin')

@@ -4,6 +4,7 @@ import { AppConfigModule } from '@config';
 import { CoreModule } from '@core/core.module';
 import { AccountModule } from '@modules/account/account.module';
 import { ApplicationsModule } from '@modules/applications/applications.module';
+import { AuthModule } from '@modules/auth/auth.module';
 import { CohortsModule } from '@modules/cohorts/cohorts.module';
 import { DashboardModule } from '@modules/dashboard/dashboard.module';
 import { FeedbackModule } from '@modules/feedback/feedback.module';
@@ -16,6 +17,7 @@ import { UsersModule } from '@modules/users/users.module';
   imports: [
     AppConfigModule,
     CoreModule,
+    AuthModule,
     HealthModule,
     AccountModule,
     ApplicationsModule,

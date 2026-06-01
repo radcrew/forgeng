@@ -32,7 +32,7 @@ export function Hero() {
               size="lg"
               className="h-12 px-8 text-base font-semibold w-full sm:w-auto"
             >
-              <Link href="/apply">
+              <Link href="/sign-up">
                 Start Your Journey <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
