@@ -1,4 +1,4 @@
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -11,6 +11,7 @@ import { AuthProvider, type User, VerificationTokenType } from '@prisma/client';
 
 import type { AppConfiguration } from '@config';
 import { PrismaService } from '@core/database/prisma.service';
+import { hashToken } from '@common/crypto';
 import { toUserDto, type UserDto } from '@common/mappers';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
@@ -311,8 +312,4 @@ export class AuthService {
     const resetUrl = `${base}?token=${encodeURIComponent(rawToken)}`;
     await this.email.sendPasswordResetEmail(user.email, resetUrl);
   }
-}
-
-function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
 }

@@ -1,4 +1,4 @@
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -6,6 +6,7 @@ import type { User } from '@prisma/client';
 
 import type { AppConfiguration } from '@config';
 import { PrismaService } from '@core/database/prisma.service';
+import { hashToken } from '@common/crypto';
 import type { IssuedTokens, JwtPayload } from '../types/jwt-payload.types';
 
 interface RefreshContext {
@@ -132,10 +133,6 @@ export class TokenService {
     });
     return { token, expiresAt };
   }
-}
-
-function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
 }
 
 /** Parse simple duration strings like "15m", "7d", "3600". Returns seconds. */
