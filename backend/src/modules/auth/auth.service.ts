@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -11,13 +10,13 @@ import { AuthProvider, type User, VerificationTokenType } from '@prisma/client';
 
 import type { AppConfiguration } from '@config';
 import { PrismaService } from '@core/database/prisma.service';
-import { hashToken } from '@common/crypto';
 import { toUserDto, type UserDto } from '@common/mappers';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 import { EmailService } from './services/email.service';
 import { PasswordService } from './services/password.service';
 import { TokenService } from './services/token.service';
+import { VerificationService } from './services/verification.service';
 import type { IssuedTokens } from './types/jwt-payload.types';
 import type { OAuthProfileDto } from './strategies/google.strategy';
 
@@ -37,6 +36,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly password: PasswordService,
     private readonly tokens: TokenService,
+    private readonly verification: VerificationService,
     private readonly email: EmailService,
     private readonly config: ConfigService<AppConfiguration, true>,
   ) {}
@@ -98,31 +98,15 @@ export class AuthService {
   }
 
   async verifyEmail(rawToken: string): Promise<UserDto> {
-    const tokenHash = hashToken(rawToken);
-    const record = await this.prisma.verificationToken.findUnique({
-      where: { tokenHash },
-    });
-    if (
-      !record ||
-      record.type !== VerificationTokenType.email_verify ||
-      record.usedAt
-    ) {
-      throw new BadRequestException('Verification link is invalid or used.');
-    }
-    if (record.expiresAt.getTime() <= Date.now()) {
-      throw new BadRequestException('Verification link expired.');
-    }
-
-    const [user] = await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: record.userId },
-        data: { emailVerified: true },
-      }),
-      this.prisma.verificationToken.update({
-        where: { id: record.id },
-        data: { usedAt: new Date() },
-      }),
-    ]);
+    const user = await this.verification.consume(
+      rawToken,
+      VerificationTokenType.email_verify,
+      (tx, userId) =>
+        tx.user.update({
+          where: { id: userId },
+          data: { emailVerified: true },
+        }),
+    );
     return toUserDto(user);
   }
 
@@ -147,38 +131,24 @@ export class AuthService {
   }
 
   async resetPassword(rawToken: string, newPassword: string): Promise<void> {
-    const tokenHash = hashToken(rawToken);
-    const record = await this.prisma.verificationToken.findUnique({
-      where: { tokenHash },
-    });
-    if (
-      !record ||
-      record.type !== VerificationTokenType.password_reset ||
-      record.usedAt
-    ) {
-      throw new BadRequestException('Reset link is invalid or already used.');
-    }
-    if (record.expiresAt.getTime() <= Date.now()) {
-      throw new BadRequestException('Reset link expired.');
-    }
-
     const passwordHash = await this.password.hash(newPassword);
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: record.userId },
-        // Completing a reset proves the user controls the inbox, so confirm
-        // the email too (covers OAuth-only users adding a password).
-        data: { passwordHash, emailVerified: true },
-      }),
-      this.prisma.verificationToken.update({
-        where: { id: record.id },
-        data: { usedAt: new Date() },
-      }),
-    ]);
+    const userId = await this.verification.consume(
+      rawToken,
+      VerificationTokenType.password_reset,
+      async (tx, userId) => {
+        await tx.user.update({
+          where: { id: userId },
+          // Completing a reset proves the user controls the inbox, so confirm
+          // the email too (covers OAuth-only users adding a password).
+          data: { passwordHash, emailVerified: true },
+        });
+        return userId;
+      },
+    );
 
     // Invalidate every active session — a password change should sign out
     // anyone holding old refresh tokens.
-    await this.tokens.revokeAllForUser(record.userId);
+    await this.tokens.revokeAllForUser(userId);
   }
 
   async signInWithOAuth(
@@ -246,32 +216,10 @@ export class AuthService {
   }
 
   private async sendVerificationEmail(user: User): Promise<void> {
-    const rawToken = randomBytes(32).toString('base64url');
-    const ttlMinutes = this.config.getOrThrow('auth.verifyTokenTtlMinutes', {
-      infer: true,
-    });
-    const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
-
-    // Invalidate any previous email_verify tokens for this user.
-    await this.prisma.$transaction([
-      this.prisma.verificationToken.updateMany({
-        where: {
-          userId: user.id,
-          type: VerificationTokenType.email_verify,
-          usedAt: null,
-        },
-        data: { usedAt: new Date() },
-      }),
-      this.prisma.verificationToken.create({
-        data: {
-          userId: user.id,
-          tokenHash: hashToken(rawToken),
-          type: VerificationTokenType.email_verify,
-          expiresAt,
-        },
-      }),
-    ]);
-
+    const rawToken = await this.verification.issue(
+      user.id,
+      VerificationTokenType.email_verify,
+    );
     const base = this.config.getOrThrow('auth.emailVerifyRedirect', {
       infer: true,
     });
@@ -280,32 +228,10 @@ export class AuthService {
   }
 
   private async sendPasswordResetEmail(user: User): Promise<void> {
-    const rawToken = randomBytes(32).toString('base64url');
-    const ttlMinutes = this.config.getOrThrow('auth.passwordResetTtlMinutes', {
-      infer: true,
-    });
-    const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
-
-    // Invalidate any previous password_reset tokens for this user.
-    await this.prisma.$transaction([
-      this.prisma.verificationToken.updateMany({
-        where: {
-          userId: user.id,
-          type: VerificationTokenType.password_reset,
-          usedAt: null,
-        },
-        data: { usedAt: new Date() },
-      }),
-      this.prisma.verificationToken.create({
-        data: {
-          userId: user.id,
-          tokenHash: hashToken(rawToken),
-          type: VerificationTokenType.password_reset,
-          expiresAt,
-        },
-      }),
-    ]);
-
+    const rawToken = await this.verification.issue(
+      user.id,
+      VerificationTokenType.password_reset,
+    );
     const base = this.config.getOrThrow('auth.passwordResetRedirect', {
       infer: true,
     });

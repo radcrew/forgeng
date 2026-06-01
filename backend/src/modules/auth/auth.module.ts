@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { EmailService } from './services/email.service';
 import { PasswordService } from './services/password.service';
 import { TokenService } from './services/token.service';
+import { VerificationService } from './services/verification.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GitHubStrategy } from './strategies/github.strategy';
@@ -30,6 +31,7 @@ import { GitHubStrategy } from './strategies/github.strategy';
     AuthService,
     PasswordService,
     TokenService,
+    VerificationService,
     EmailService,
     JwtStrategy,
     GoogleStrategy,
