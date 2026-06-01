@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
 
 import type { AppConfiguration } from '@config';
-import { passwordResetEmail, verificationEmail } from './email.templates';
+import { passwordResetEmail, verificationEmail } from '../templates';
 
 interface SendOptions {
   to: string;

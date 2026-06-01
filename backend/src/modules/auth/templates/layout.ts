@@ -1,5 +1,5 @@
 /**
- * Email markup helpers. Templates are intentionally table-based with inline
+ * Shared email shell. Templates are intentionally table-based with inline
  * styles — that is the only thing email clients (Outlook, Gmail, Apple Mail)
  * render reliably. Keep new markup in the same defensive style.
  */
@@ -41,7 +41,7 @@ const paragraph = (text: string, color: string, size = 16): string =>
   `<p style="margin:0 0 16px;color:${color};font-size:${size}px;line-height:1.6;">${text}</p>`;
 
 /** Wraps content in the shared branded shell. */
-const layout = (options: LayoutOptions): string => {
+export const layout = (options: LayoutOptions): string => {
   const intro = options.intro
     .map((line) => paragraph(escapeHtml(line), TEXT))
     .join('');
@@ -106,53 +106,3 @@ const layout = (options: LayoutOptions): string => {
   </body>
 </html>`;
 };
-
-export const verificationEmail = (verifyUrl: string): RenderedEmail => ({
-  subject: 'Verify your Forgeng email',
-  text: [
-    'Welcome to Forgeng!',
-    '',
-    'Confirm your email address to activate your account:',
-    verifyUrl,
-    '',
-    'This link expires soon. If you did not sign up, you can safely ignore this message.',
-  ].join('\n'),
-  html: layout({
-    preheader: 'Confirm your email to activate your Forgeng account.',
-    heading: 'Welcome to Forgeng 👋',
-    intro: [
-      'Thanks for signing up. Confirm your email address to activate your account and get started.',
-    ],
-    buttonLabel: 'Verify email',
-    buttonUrl: verifyUrl,
-    footnotes: [
-      'This link expires soon.',
-      'If you did not create a Forgeng account, you can safely ignore this email.',
-    ],
-  }),
-});
-
-export const passwordResetEmail = (resetUrl: string): RenderedEmail => ({
-  subject: 'Reset your Forgeng password',
-  text: [
-    'We received a request to reset your Forgeng password.',
-    '',
-    'Choose a new password here:',
-    resetUrl,
-    '',
-    'This link expires soon. If you did not request this, ignore this message and your password will stay the same.',
-  ].join('\n'),
-  html: layout({
-    preheader: 'Reset your Forgeng password.',
-    heading: 'Reset your password',
-    intro: [
-      'We received a request to reset the password for your Forgeng account. Click the button below to choose a new one.',
-    ],
-    buttonLabel: 'Reset password',
-    buttonUrl: resetUrl,
-    footnotes: [
-      'This link expires soon.',
-      'If you did not request a password reset, you can safely ignore this email — your password will stay the same.',
-    ],
-  }),
-});
