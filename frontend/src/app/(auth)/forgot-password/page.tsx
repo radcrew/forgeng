@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { Logo } from "@components/brand/logo";
 import { Button } from "@components/ui/button";
 import {
   Card,
@@ -26,7 +25,7 @@ import {
   FormMessage,
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
-import { forgotPassword } from "@features/auth";
+import { AuthBrand, forgotPassword } from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const schema = z.object({
@@ -62,26 +61,78 @@ const Page = () => {
 
   if (submittedEmail) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader className="space-y-4">
-            <div className="flex items-center justify-center gap-2">
-              <Logo size={28} priority />
-              <span className="font-bold text-lg tracking-tight">Forgeng</span>
-            </div>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Mail className="h-6 w-6" />
-            </div>
-            <div>
-              <CardTitle className="text-2xl">Check your email</CardTitle>
-              <CardDescription>
-                If an account exists for {submittedEmail}, we sent a link to
-                reset your password. The link expires soon.
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader className="space-y-4">
+          <AuthBrand centered />
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Mail className="h-6 w-6" />
+          </div>
+          <div>
+            <CardTitle className="text-2xl">Check your email</CardTitle>
+            <CardDescription>
+              If an account exists for {submittedEmail}, we sent a link to reset
+              your password. The link expires soon.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Remembered it?{" "}
+            <Link
+              href="/sign-in"
+              className="text-primary font-medium hover:underline"
+            >
+              Back to sign in
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader className="space-y-4">
+        <AuthBrand />
+        <div>
+          <CardTitle className="text-2xl">Forgot your password?</CardTitle>
+          <CardDescription>
+            Enter your email and we&apos;ll send you a link to reset it.
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+            noValidate
+          >
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      disabled={isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Sending…" : "Send reset link"}
+              {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
+            </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
               Remembered it?{" "}
               <Link
                 href="/sign-in"
@@ -90,72 +141,10 @@ const Page = () => {
                 Back to sign in
               </Link>
             </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Logo size={28} priority />
-            <span className="font-bold text-lg tracking-tight">Forgeng</span>
-          </div>
-          <div>
-            <CardTitle className="text-2xl">Forgot your password?</CardTitle>
-            <CardDescription>
-              Enter your email and we&apos;ll send you a link to reset it.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-4"
-              noValidate
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        autoComplete="email"
-                        placeholder="you@example.com"
-                        disabled={isSubmitting}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button className="w-full" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Sending…" : "Send reset link"}
-                {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
-              </Button>
-
-              <p className="text-center text-sm text-muted-foreground">
-                Remembered it?{" "}
-                <Link
-                  href="/sign-in"
-                  className="text-primary font-medium hover:underline"
-                >
-                  Back to sign in
-                </Link>
-              </p>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
 

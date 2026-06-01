@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { Logo } from "@components/brand/logo";
 import { Button } from "@components/ui/button";
 import {
   Card,
@@ -28,7 +27,7 @@ import {
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
 import { useCurrentUser } from "@contexts";
-import { AuthDivider, OAuthButtons } from "@features/auth";
+import { AuthBrand, AuthDivider, OAuthButtons } from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const schema = z.object({
@@ -82,78 +81,36 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Logo size={28} priority />
-            <span className="font-bold text-lg tracking-tight">Forgeng</span>
-          </div>
-          <div>
-            <CardTitle className="text-2xl">Create your account</CardTitle>
-            <CardDescription>
-              Already applied? Sign in to track your status.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <OAuthButtons disabled={isSubmitting} label="Sign up" />
-          <AuthDivider />
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-4"
-              noValidate
-            >
-              <div className="grid grid-cols-2 gap-3">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First name</FormLabel>
-                      <FormControl>
-                        <Input
-                          autoComplete="given-name"
-                          placeholder="Jane"
-                          disabled={isSubmitting}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last name</FormLabel>
-                      <FormControl>
-                        <Input
-                          autoComplete="family-name"
-                          placeholder="Doe"
-                          disabled={isSubmitting}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+    <Card className="w-full max-w-md">
+      <CardHeader className="space-y-4">
+        <AuthBrand />
+        <div>
+          <CardTitle className="text-2xl">Create your account</CardTitle>
+          <CardDescription>
+            Already applied? Sign in to track your status.
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <OAuthButtons disabled={isSubmitting} label="Sign up" />
+        <AuthDivider />
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+            noValidate
+          >
+            <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
-                name="email"
+                name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>First name</FormLabel>
                     <FormControl>
                       <Input
-                        type="email"
-                        autoComplete="email"
-                        placeholder="you@example.com"
+                        autoComplete="given-name"
+                        placeholder="Jane"
                         disabled={isSubmitting}
                         {...field}
                       />
@@ -164,15 +121,14 @@ const Page = () => {
               />
               <FormField
                 control={form.control}
-                name="password"
+                name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Last name</FormLabel>
                     <FormControl>
                       <Input
-                        type="password"
-                        autoComplete="new-password"
-                        placeholder="••••••••"
+                        autoComplete="family-name"
+                        placeholder="Doe"
                         disabled={isSubmitting}
                         {...field}
                       />
@@ -181,25 +137,63 @@ const Page = () => {
                   </FormItem>
                 )}
               />
-              <Button className="w-full" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating account…" : "Create Account"}
-                {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
-              </Button>
+            </div>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      disabled={isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      disabled={isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating account…" : "Create Account"}
+              {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
+            </Button>
 
-              <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <Link
-                  href="/sign-in"
-                  className="text-primary font-medium hover:underline"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+            <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                href="/sign-in"
+                className="text-primary font-medium hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
 

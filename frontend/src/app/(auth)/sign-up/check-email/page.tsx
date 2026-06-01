@@ -6,7 +6,6 @@ import { Suspense, useState } from "react";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 
-import { Logo } from "@components/brand/logo";
 import { Button } from "@components/ui/button";
 import {
   Card,
@@ -15,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@components/ui/card";
-import { resendVerification } from "@features/auth";
+import { AuthBrand, resendVerification } from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const CheckEmailInner = () => {
@@ -42,46 +41,41 @@ const CheckEmailInner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md text-center">
-        <CardHeader className="space-y-4">
-          <div className="flex items-center justify-center gap-2">
-            <Logo size={28} priority />
-            <span className="font-bold text-lg tracking-tight">Forgeng</span>
-          </div>
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <Mail className="h-6 w-6" />
-          </div>
-          <div>
-            <CardTitle className="text-2xl">Check your email</CardTitle>
-            <CardDescription>
-              {email
-                ? `We sent a verification link to ${email}. Click it to activate your account.`
-                : "We sent you a verification link. Click it to activate your account."}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleResend}
-            disabled={isSending || !email}
+    <Card className="w-full max-w-md text-center">
+      <CardHeader className="space-y-4">
+        <AuthBrand centered />
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Mail className="h-6 w-6" />
+        </div>
+        <div>
+          <CardTitle className="text-2xl">Check your email</CardTitle>
+          <CardDescription>
+            {email
+              ? `We sent a verification link to ${email}. Click it to activate your account.`
+              : "We sent you a verification link. Click it to activate your account."}
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleResend}
+          disabled={isSending || !email}
+        >
+          {isSending ? "Sending…" : "Resend verification email"}
+        </Button>
+        <p className="text-sm text-muted-foreground">
+          Already verified?{" "}
+          <Link
+            href="/sign-in"
+            className="text-primary font-medium hover:underline"
           >
-            {isSending ? "Sending…" : "Resend verification email"}
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Already verified?{" "}
-            <Link
-              href="/sign-in"
-              className="text-primary font-medium hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+            Sign in
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   );
 };
 
