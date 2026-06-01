@@ -183,6 +183,13 @@ export function toFeedbackDto(
   };
 }
 
+/** A student's own enrollment, with the cohort they joined — for the profile page. */
+export interface ProfileEnrollmentDto {
+  id: number;
+  enrolledAt: string;
+  cohort: CohortDto;
+}
+
 export interface EnrollmentDto {
   id: number;
   userId: number;
