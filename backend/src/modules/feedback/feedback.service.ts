@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { AuthUser } from '@core/auth/auth.types';
 import { toFeedbackDto, type FeedbackDto } from '@common/mappers';
 import { PrismaService } from '@core/database/prisma.service';
@@ -8,7 +12,18 @@ import { CreateFeedbackDto } from './dto/create-feedback.dto';
 export class FeedbackService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(submissionId: number): Promise<FeedbackDto[]> {
+  async list(submissionId: number, user: AuthUser): Promise<FeedbackDto[]> {
+    const submission = await this.prisma.submission.findUnique({
+      where: { id: submissionId },
+      select: { userId: true },
+    });
+    if (!submission) throw new NotFoundException('Submission not found.');
+    if (user.role === 'student' && submission.userId !== user.id) {
+      throw new ForbiddenException(
+        'Cannot view feedback on another student submission.',
+      );
+    }
+
     const items = await this.prisma.feedback.findMany({
       where: { submissionId },
       include: { reviewer: true },

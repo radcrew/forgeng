@@ -22,8 +22,11 @@ export class FeedbackController {
   constructor(private readonly service: FeedbackService) {}
 
   @Get()
-  list(@Param('id', ParseIntPipe) id: number): Promise<FeedbackDto[]> {
-    return this.service.list(id);
+  list(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ): Promise<FeedbackDto[]> {
+    return this.service.list(id, user);
   }
 
   @Roles('admin')
