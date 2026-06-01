@@ -1,24 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Mail } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Mail } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { Button } from "@components/ui/button";
-import { Card, CardContent } from "@components/ui/card";
+import { Card } from "@components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@components/ui/form";
-import { Input } from "@components/ui/input";
-import { AuthCardHeader, AuthPrompt, forgotPassword } from "@features/auth";
+  AuthCardContent,
+  AuthCardHeader,
+  forgotPassword,
+} from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const schema = z.object({
@@ -27,17 +19,16 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+const backToSignIn = {
+  text: "Remembered it?",
+  linkText: "Back to sign in",
+  href: "/sign-in",
+} as const;
+
 const Page = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { email: "" },
-  });
-
   const handleSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
     try {
       await forgotPassword(values.email);
       setSubmittedEmail(values.email);
@@ -47,8 +38,6 @@ const Page = () => {
       } else {
         toast.error("Could not reach the API. Is the backend running?");
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -60,13 +49,7 @@ const Page = () => {
           title="Check your email"
           description={`If an account exists for ${submittedEmail}, we sent a link to reset your password. The link expires soon.`}
         />
-        <CardContent>
-          <AuthPrompt
-            text="Remembered it?"
-            linkText="Back to sign in"
-            href="/sign-in"
-          />
-        </CardContent>
+        <AuthCardContent prompt={backToSignIn} />
       </Card>
     );
   }
@@ -77,45 +60,23 @@ const Page = () => {
         title="Forgot your password?"
         description="Enter your email and we'll send you a link to reset it."
       />
-      <CardContent className="space-y-4">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-            noValidate
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      autoComplete="email"
-                      placeholder="you@example.com"
-                      disabled={isSubmitting}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button className="w-full" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Sending…" : "Send reset link"}
-              {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
-            </Button>
-
-            <AuthPrompt
-              text="Remembered it?"
-              linkText="Back to sign in"
-              href="/sign-in"
-            />
-          </form>
-        </Form>
-      </CardContent>
+      <AuthCardContent<FormValues>
+        schema={schema}
+        defaultValues={{ email: "" }}
+        onSubmit={handleSubmit}
+        submitLabel="Send reset link"
+        pendingLabel="Sending…"
+        prompt={backToSignIn}
+        fields={[
+          {
+            name: "email",
+            label: "Email",
+            type: "email",
+            autoComplete: "email",
+            placeholder: "you@example.com",
+          },
+        ]}
+      />
     </Card>
   );
 };

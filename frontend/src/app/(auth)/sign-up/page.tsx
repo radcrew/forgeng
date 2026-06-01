@@ -1,31 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { Button } from "@components/ui/button";
-import { Card, CardContent } from "@components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@components/ui/form";
-import { Input } from "@components/ui/input";
+import { Card } from "@components/ui/card";
 import { useCurrentUser } from "@contexts";
-import {
-  AuthCardHeader,
-  AuthDivider,
-  AuthPrompt,
-  OAuthButtons,
-} from "@features/auth";
+import { AuthCardContent, AuthCardHeader } from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const schema = z.object({
@@ -45,15 +26,8 @@ type FormValues = z.infer<typeof schema>;
 const Page = () => {
   const router = useRouter();
   const { register } = useCurrentUser();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { firstName: "", lastName: "", email: "", password: "" },
-  });
 
   const handleSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
     try {
       const name = `${values.firstName} ${values.lastName}`.trim();
       await register({
@@ -73,8 +47,6 @@ const Page = () => {
       } else {
         toast.error("Could not reach the API. Is the backend running?");
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -84,104 +56,49 @@ const Page = () => {
         title="Create your account"
         description="Already applied? Sign in to track your status."
       />
-      <CardContent className="space-y-4">
-        <OAuthButtons disabled={isSubmitting} label="Sign up" />
-        <AuthDivider />
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-            noValidate
-          >
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First name</FormLabel>
-                    <FormControl>
-                      <Input
-                        autoComplete="given-name"
-                        placeholder="Jane"
-                        disabled={isSubmitting}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last name</FormLabel>
-                    <FormControl>
-                      <Input
-                        autoComplete="family-name"
-                        placeholder="Doe"
-                        disabled={isSubmitting}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      autoComplete="email"
-                      placeholder="you@example.com"
-                      disabled={isSubmitting}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="••••••••"
-                      disabled={isSubmitting}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button className="w-full" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating account…" : "Create Account"}
-              {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
-            </Button>
-
-            <AuthPrompt
-              text="Already have an account?"
-              linkText="Sign in"
-              href="/sign-in"
-            />
-          </form>
-        </Form>
-      </CardContent>
+      <AuthCardContent<FormValues>
+        oauthLabel="Sign up"
+        schema={schema}
+        defaultValues={{ firstName: "", lastName: "", email: "", password: "" }}
+        onSubmit={handleSubmit}
+        submitLabel="Create Account"
+        pendingLabel="Creating account…"
+        prompt={{
+          text: "Already have an account?",
+          linkText: "Sign in",
+          href: "/sign-in",
+        }}
+        fields={[
+          [
+            {
+              name: "firstName",
+              label: "First name",
+              autoComplete: "given-name",
+              placeholder: "Jane",
+            },
+            {
+              name: "lastName",
+              label: "Last name",
+              autoComplete: "family-name",
+              placeholder: "Doe",
+            },
+          ],
+          {
+            name: "email",
+            label: "Email",
+            type: "email",
+            autoComplete: "email",
+            placeholder: "you@example.com",
+          },
+          {
+            name: "password",
+            label: "Password",
+            type: "password",
+            autoComplete: "new-password",
+            placeholder: "••••••••",
+          },
+        ]}
+      />
     </Card>
   );
 };

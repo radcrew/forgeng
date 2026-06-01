@@ -12,6 +12,7 @@ export {
   type OAuthProvider,
 } from "./api";
 export { AuthBrand } from "./components/auth-brand";
+export { AuthCardContent } from "./components/auth-card-content";
 export { AuthCardHeader } from "./components/auth-card-header";
 export { AuthDivider } from "./components/auth-divider";
 export { AuthPrompt } from "./components/auth-prompt";
