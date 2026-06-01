@@ -10,13 +10,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { Button } from "@components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@components/ui/card";
+import { Card, CardContent } from "@components/ui/card";
 import {
   Form,
   FormControl,
@@ -27,7 +21,12 @@ import {
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
 import { useCurrentUser } from "@contexts";
-import { AuthBrand, AuthDivider, OAuthButtons } from "@features/auth";
+import {
+  AuthCardHeader,
+  AuthDivider,
+  AuthPrompt,
+  OAuthButtons,
+} from "@features/auth";
 import { ApiError } from "@lib/api-client";
 import { homeForRole } from "@utils/auth";
 
@@ -75,13 +74,10 @@ const Page = () => {
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader className="space-y-4">
-        <AuthBrand />
-        <div>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to continue to your portal.</CardDescription>
-        </div>
-      </CardHeader>
+      <AuthCardHeader
+        title="Welcome back"
+        description="Sign in to continue to your portal."
+      />
       <CardContent className="space-y-4">
         <OAuthButtons disabled={isSubmitting} label="Sign in" />
         <AuthDivider />
@@ -142,15 +138,11 @@ const Page = () => {
               {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
-              New here?{" "}
-              <Link
-                href="/sign-up"
-                className="text-primary font-medium hover:underline"
-              >
-                Create an account
-              </Link>
-            </p>
+            <AuthPrompt
+              text="New here?"
+              linkText="Create an account"
+              href="/sign-up"
+            />
           </form>
         </Form>
       </CardContent>

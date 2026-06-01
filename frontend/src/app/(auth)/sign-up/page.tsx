@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
@@ -10,13 +9,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { Button } from "@components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@components/ui/card";
+import { Card, CardContent } from "@components/ui/card";
 import {
   Form,
   FormControl,
@@ -27,7 +20,12 @@ import {
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
 import { useCurrentUser } from "@contexts";
-import { AuthBrand, AuthDivider, OAuthButtons } from "@features/auth";
+import {
+  AuthCardHeader,
+  AuthDivider,
+  AuthPrompt,
+  OAuthButtons,
+} from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const schema = z.object({
@@ -82,15 +80,10 @@ const Page = () => {
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader className="space-y-4">
-        <AuthBrand />
-        <div>
-          <CardTitle className="text-2xl">Create your account</CardTitle>
-          <CardDescription>
-            Already applied? Sign in to track your status.
-          </CardDescription>
-        </div>
-      </CardHeader>
+      <AuthCardHeader
+        title="Create your account"
+        description="Already applied? Sign in to track your status."
+      />
       <CardContent className="space-y-4">
         <OAuthButtons disabled={isSubmitting} label="Sign up" />
         <AuthDivider />
@@ -181,15 +174,11 @@ const Page = () => {
               {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link
-                href="/sign-in"
-                className="text-primary font-medium hover:underline"
-              >
-                Sign in
-              </Link>
-            </p>
+            <AuthPrompt
+              text="Already have an account?"
+              linkText="Sign in"
+              href="/sign-in"
+            />
           </form>
         </Form>
       </CardContent>
