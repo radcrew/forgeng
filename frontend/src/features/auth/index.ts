@@ -11,9 +11,8 @@ export {
   verifyEmail,
   type OAuthProvider,
 } from "./api";
-export { AuthBrand } from "./components/auth-brand";
-export { AuthCardContent } from "./components/auth-card-content";
-export { AuthCardHeader } from "./components/auth-card-header";
-export { AuthDivider } from "./components/auth-divider";
-export { AuthPrompt } from "./components/auth-prompt";
+export { Brand } from "./components/brand";
+export { AuthCard } from "./components/card";
+export { Divider } from "./components/divider";
 export { OAuthButtons } from "./components/oauth-buttons";
+export { Prompt } from "./components/prompt";

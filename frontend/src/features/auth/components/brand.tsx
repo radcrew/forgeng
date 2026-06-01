@@ -1,6 +1,6 @@
 import { Logo } from "@components/brand/logo";
 
-export const AuthBrand = ({ centered = false }: { centered?: boolean }) => (
+export const Brand = ({ centered = false }: { centered?: boolean }) => (
   <div
     className={`flex items-center gap-2${centered ? " justify-center" : ""}`}
   >

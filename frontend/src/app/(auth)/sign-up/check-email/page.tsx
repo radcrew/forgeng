@@ -6,12 +6,7 @@ import { Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@components/ui/button";
-import { Card } from "@components/ui/card";
-import {
-  AuthCardContent,
-  AuthCardHeader,
-  resendVerification,
-} from "@features/auth";
+import { AuthCard, resendVerification } from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const CheckEmailInner = () => {
@@ -38,8 +33,8 @@ const CheckEmailInner = () => {
   };
 
   return (
-    <Card className="w-full max-w-md text-center">
-      <AuthCardHeader
+    <AuthCard centered>
+      <AuthCard.Header
         icon={Mail}
         title="Check your email"
         description={
@@ -48,7 +43,7 @@ const CheckEmailInner = () => {
             : "We sent you a verification link. Click it to activate your account."
         }
       />
-      <AuthCardContent
+      <AuthCard.Content
         prompt={{
           text: "Already verified?",
           linkText: "Sign in",
@@ -63,8 +58,8 @@ const CheckEmailInner = () => {
         >
           {isSending ? "Sending…" : "Resend verification email"}
         </Button>
-      </AuthCardContent>
-    </Card>
+      </AuthCard.Content>
+    </AuthCard>
   );
 };
 

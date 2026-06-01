@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, type LucideIcon } from "lucide-react";
 import {
   useForm,
   type DefaultValues,
@@ -13,7 +13,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
 
 import { Button } from "@components/ui/button";
-import { CardContent } from "@components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@components/ui/card";
 import {
   Form,
   FormControl,
@@ -23,10 +29,47 @@ import {
   FormMessage,
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
+import { cn } from "@utils";
 
-import { AuthDivider } from "./auth-divider";
-import { AuthPrompt } from "./auth-prompt";
+import { Brand } from "./brand";
+import { Divider } from "./divider";
 import { OAuthButtons } from "./oauth-buttons";
+import { Prompt } from "./prompt";
+
+type AuthCardProps = {
+  /** Centers the brand/text — used by the confirmation cards. */
+  centered?: boolean;
+  className?: string;
+  children: React.ReactNode;
+};
+
+const Root = ({ centered, className, children }: AuthCardProps) => (
+  <Card className={cn("w-full max-w-md", centered && "text-center", className)}>
+    {children}
+  </Card>
+);
+
+type HeaderProps = {
+  title: React.ReactNode;
+  description: React.ReactNode;
+  /** When set, a circular badge with this icon renders under the brand. */
+  icon?: LucideIcon;
+};
+
+const Header = ({ title, description, icon: Icon }: HeaderProps) => (
+  <CardHeader className="space-y-4">
+    <Brand centered={!!Icon} />
+    {Icon && (
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Icon className="h-6 w-6" />
+      </div>
+    )}
+    <div>
+      <CardTitle className="text-2xl">{title}</CardTitle>
+      <CardDescription>{description}</CardDescription>
+    </div>
+  </CardHeader>
+);
 
 type AuthField<T extends FieldValues> = {
   name: Path<T>;
@@ -41,13 +84,13 @@ type AuthField<T extends FieldValues> = {
 /** A single field, or several fields rendered side-by-side in one row. */
 type AuthFieldRow<T extends FieldValues> = AuthField<T> | AuthField<T>[];
 
-type AuthPromptConfig = {
+type PromptConfig = {
   text: string;
   linkText: string;
   href: string;
 };
 
-type AuthCardContentProps<T extends FieldValues> = {
+type ContentProps<T extends FieldValues> = {
   /** When set, OAuth buttons + a divider render above the form. */
   oauthLabel?: string;
   /** Provide all three (schema, fields, onSubmit) to render a form. */
@@ -58,12 +101,12 @@ type AuthCardContentProps<T extends FieldValues> = {
   submitLabel?: string;
   pendingLabel?: string;
   /** Footer prompt shown under the form/children. */
-  prompt?: AuthPromptConfig;
+  prompt?: PromptConfig;
   /** Non-form body (e.g. a resend button) when no `fields` are given. */
   children?: React.ReactNode;
 };
 
-export const AuthCardContent = <T extends FieldValues>({
+const Content = <T extends FieldValues>({
   oauthLabel,
   schema,
   defaultValues,
@@ -73,7 +116,7 @@ export const AuthCardContent = <T extends FieldValues>({
   pendingLabel,
   prompt,
   children,
-}: AuthCardContentProps<T>) => {
+}: ContentProps<T>) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<T>({
@@ -131,7 +174,7 @@ export const AuthCardContent = <T extends FieldValues>({
       {oauthLabel && (
         <>
           <OAuthButtons disabled={isSubmitting} label={oauthLabel} />
-          <AuthDivider />
+          <Divider />
         </>
       )}
 
@@ -155,15 +198,26 @@ export const AuthCardContent = <T extends FieldValues>({
               {isSubmitting ? pendingLabel : submitLabel}
               {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
-            {prompt && <AuthPrompt {...prompt} />}
+            {prompt && <Prompt {...prompt} />}
           </form>
         </Form>
       ) : (
         <>
           {children}
-          {prompt && <AuthPrompt {...prompt} />}
+          {prompt && <Prompt {...prompt} />}
         </>
       )}
     </CardContent>
   );
 };
+
+type AuthCardComponent = typeof Root & {
+  Header: typeof Header;
+  Content: typeof Content;
+};
+
+const AuthCard = Root as AuthCardComponent;
+AuthCard.Header = Header;
+AuthCard.Content = Content;
+
+export { AuthCard };

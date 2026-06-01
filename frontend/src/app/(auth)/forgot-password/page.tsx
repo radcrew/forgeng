@@ -5,12 +5,7 @@ import { Mail } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { Card } from "@components/ui/card";
-import {
-  AuthCardContent,
-  AuthCardHeader,
-  forgotPassword,
-} from "@features/auth";
+import { AuthCard, forgotPassword } from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const schema = z.object({
@@ -43,24 +38,24 @@ const Page = () => {
 
   if (submittedEmail) {
     return (
-      <Card className="w-full max-w-md text-center">
-        <AuthCardHeader
+      <AuthCard centered>
+        <AuthCard.Header
           icon={Mail}
           title="Check your email"
           description={`If an account exists for ${submittedEmail}, we sent a link to reset your password. The link expires soon.`}
         />
-        <AuthCardContent prompt={backToSignIn} />
-      </Card>
+        <AuthCard.Content prompt={backToSignIn} />
+      </AuthCard>
     );
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <AuthCardHeader
+    <AuthCard>
+      <AuthCard.Header
         title="Forgot your password?"
         description="Enter your email and we'll send you a link to reset it."
       />
-      <AuthCardContent<FormValues>
+      <AuthCard.Content
         schema={schema}
         defaultValues={{ email: "" }}
         onSubmit={handleSubmit}
@@ -77,7 +72,7 @@ const Page = () => {
           },
         ]}
       />
-    </Card>
+    </AuthCard>
   );
 };
 

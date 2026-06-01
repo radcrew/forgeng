@@ -4,9 +4,8 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { Card } from "@components/ui/card";
 import { useCurrentUser } from "@contexts";
-import { AuthCardContent, AuthCardHeader } from "@features/auth";
+import { AuthCard } from "@features/auth";
 import { ApiError } from "@lib/api-client";
 
 const schema = z.object({
@@ -51,12 +50,12 @@ const Page = () => {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <AuthCardHeader
+    <AuthCard>
+      <AuthCard.Header
         title="Create your account"
         description="Already applied? Sign in to track your status."
       />
-      <AuthCardContent<FormValues>
+      <AuthCard.Content
         oauthLabel="Sign up"
         schema={schema}
         defaultValues={{ firstName: "", lastName: "", email: "", password: "" }}
@@ -99,7 +98,7 @@ const Page = () => {
           },
         ]}
       />
-    </Card>
+    </AuthCard>
   );
 };
 
