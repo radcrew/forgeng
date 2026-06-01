@@ -8,18 +8,45 @@ import { Clock, Code2 } from "lucide-react";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
+import { Input } from "@components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { StatusBadge } from "@features/submissions";
 import { SubmitDialog } from "@features/tasks";
-import { TASK_TYPE_ICON } from "@constants/tasks";
+import {
+  TASK_PROGRESS_FILTER_TABS,
+  TASK_SORT_OPTIONS,
+  TASK_TYPE_ICON,
+  TASK_TYPE_OPTIONS,
+  type TaskProgressFilter,
+  type TaskSort,
+} from "@constants/tasks";
 import { useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
-import type { Task } from "@types";
+import { cn } from "@utils";
+import type { Task, TaskType } from "@types";
+
+type TypeFilter = TaskType | "all";
 
 const Page = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [progressFilter, setProgressFilter] =
+    useState<TaskProgressFilter>("all");
+  const [sort, setSort] = useState<TaskSort>("due");
+  // Captured once at mount so overdue checks stay pure across re-renders.
+  const [now] = useState(() => Date.now());
+
   const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
   const cohortId = dashboard?.cohort?.id;
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohortId);
@@ -30,6 +57,28 @@ const Page = () => {
     () => new Map(submissions.map((s) => [s.taskId, s])),
     [submissions],
   );
+
+  const visibleTasks = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const filtered = tasks.filter((task) => {
+      if (typeFilter !== "all" && task.type !== typeFilter) return false;
+      const progress = submissionByTaskId.get(task.id)?.status ?? "todo";
+      if (progressFilter !== "all" && progress !== progressFilter) return false;
+      if (query && !task.title.toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    if (sort === "due") {
+      // Soonest due date first; tasks without a due date sink to the bottom.
+      return [...filtered].sort((a, b) => {
+        const aTime = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const bTime = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        return aTime - bTime;
+      });
+    }
+    // "recent" — the backend already returns tasks newest-first.
+    return filtered;
+  }, [tasks, submissionByTaskId, search, typeFilter, progressFilter, sort]);
 
   if (dashboardLoading || !dashboard) {
     return (
@@ -52,25 +101,99 @@ const Page = () => {
   }
 
   const cohort = dashboard.cohort;
+  const hasTasks = !tasksLoading && tasks.length > 0;
 
   return (
     <PageContainer maxWidth="4xl">
       <PageHeader
         title="Tasks"
-        description={`${cohort.name} — ${tasks.length} tasks`}
+        description={
+          hasTasks
+            ? `${cohort.name} — ${visibleTasks.length} of ${tasks.length} tasks`
+            : cohort.name
+        }
       />
+
+      {hasTasks && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Input
+              placeholder="Search tasks…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="sm:flex-1"
+            />
+            <Select
+              value={typeFilter}
+              onValueChange={(v) => setTypeFilter(v as TypeFilter)}
+            >
+              <SelectTrigger className="sm:w-44">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {TASK_TYPE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={sort}
+              onValueChange={(v) => setSort(v as TaskSort)}
+            >
+              <SelectTrigger className="sm:w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TASK_SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    Sort: {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Tabs
+            value={progressFilter}
+            onValueChange={(v) => setProgressFilter(v as TaskProgressFilter)}
+          >
+            <TabsList>
+              {TASK_PROGRESS_FILTER_TABS.map(({ value, label }) => (
+                <TabsTrigger key={value} value={value}>
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
 
       {tasksLoading ? (
         <LoadingState message="Loading tasks…" />
       ) : tasks.length === 0 ? (
         <EmptyState message="No tasks have been published for your cohort yet." />
+      ) : visibleTasks.length === 0 ? (
+        <EmptyState message="No tasks match your filters." />
       ) : (
         <div className="space-y-3">
-          {tasks.map((task) => {
+          {visibleTasks.map((task) => {
             const submission = submissionByTaskId.get(task.id);
+            const progress = submission?.status ?? "todo";
+            const isOverdue =
+              !!task.dueDate &&
+              new Date(task.dueDate).getTime() < now &&
+              (progress === "todo" || progress === "needs_work");
             const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
             return (
-              <Card key={task.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={task.id}
+                className={cn(
+                  "hover:shadow-md transition-shadow",
+                  isOverdue && "border-destructive/40",
+                )}
+              >
                 <div className="flex items-center gap-4 p-5">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     <Icon className="h-5 w-5" />
@@ -95,9 +218,17 @@ const Page = () => {
                         {task.type}
                       </Badge>
                       {task.dueDate && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span
+                          className={cn(
+                            "text-xs flex items-center gap-1",
+                            isOverdue
+                              ? "text-destructive font-medium"
+                              : "text-muted-foreground",
+                          )}
+                        >
                           <Clock className="h-3 w-3" />
-                          Due {format(new Date(task.dueDate), "MMM d, yyyy")}
+                          {isOverdue ? "Overdue · " : "Due "}
+                          {format(new Date(task.dueDate), "MMM d, yyyy")}
                         </span>
                       )}
                     </div>
