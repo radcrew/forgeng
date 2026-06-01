@@ -22,7 +22,8 @@ const Page = () => {
   const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
   const cohortId = dashboard?.cohort?.id;
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohortId);
-  const { data: submissions = [] } = useSubmissions();
+  const { data: submissions = [], refetch: refetchSubmissions } =
+    useSubmissions();
 
   const submissionByTaskId = useMemo(
     () => new Map(submissions.map((s) => [s.taskId, s])),
@@ -118,6 +119,7 @@ const Page = () => {
           onOpenChange={(open) => {
             if (!open) setSelectedTask(null);
           }}
+          onSubmitted={refetchSubmissions}
         />
       )}
     </PageContainer>

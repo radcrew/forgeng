@@ -6,29 +6,49 @@ import { toast } from "sonner";
 import { FormBody, FormDialog, FormField } from "@components/common";
 import { Input } from "@components/ui/input";
 import { Textarea } from "@components/ui/textarea";
+import { createSubmission } from "@features/submissions";
+import { ApiError } from "@lib/api-client";
 import type { Task } from "@types";
 
 export type SubmitDialogProps = {
   task: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Called after a successful submission so the caller can refetch. */
+  onSubmitted?: () => void;
 };
 
-export const SubmitDialog = ({ task, open, onOpenChange }: SubmitDialogProps) => {
+export const SubmitDialog = ({
+  task,
+  open,
+  onOpenChange,
+  onSubmitted,
+}: SubmitDialogProps) => {
   const [content, setContent] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsSubmitting(false);
-    toast.success("Submission sent!", {
-      description: "Your work has been submitted for review.",
-    });
-    onOpenChange(false);
-    setContent("");
-    setRepoUrl("");
+    try {
+      await createSubmission(task.id, {
+        content: content.trim() || undefined,
+        repoUrl: repoUrl.trim() || undefined,
+      });
+      toast.success("Submission sent!", {
+        description: "Your work has been submitted for review.",
+      });
+      onOpenChange(false);
+      setContent("");
+      setRepoUrl("");
+      onSubmitted?.();
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to submit your work.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

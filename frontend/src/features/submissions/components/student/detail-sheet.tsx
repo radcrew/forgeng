@@ -1,18 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { MessageSquare } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   DetailSheet as BaseDetailSheet,
   ExternalLinkField,
   FeedbackCard,
+  FormField,
   ProseBlock,
   SectionTitle,
 } from "@components/common";
+import { Button } from "@components/ui/button";
+import { Input } from "@components/ui/input";
 import { Separator } from "@components/ui/separator";
+import { Textarea } from "@components/ui/textarea";
+import { ApiError } from "@lib/api-client";
 import type { Submission } from "@types";
 
+import { resubmitSubmission } from "../../api";
 import { useSubmissionFeedback } from "../../hooks";
 import { StatusBadge } from "../status-badge";
 
@@ -20,16 +28,44 @@ export type DetailSheetProps = {
   submission: Submission;
   open: boolean;
   onClose: () => void;
+  /** Called after a successful resubmission so the caller can refetch. */
+  onResubmitted?: () => void;
 };
 
 export const DetailSheet = ({
   submission,
   open,
   onClose,
+  onResubmitted,
 }: DetailSheetProps) => {
   const { data: feedback = [] } = useSubmissionFeedback(
     open ? submission.id : null,
   );
+
+  const [content, setContent] = useState(submission.content ?? "");
+  const [repoUrl, setRepoUrl] = useState(submission.repoUrl ?? "");
+  const [isResubmitting, setIsResubmitting] = useState(false);
+
+  const handleResubmit = async () => {
+    setIsResubmitting(true);
+    try {
+      await resubmitSubmission(submission.id, {
+        content: content.trim() || undefined,
+        repoUrl: repoUrl.trim() || undefined,
+      });
+      toast.success("Resubmitted!", {
+        description: "Your revised work is back in the review queue.",
+      });
+      onResubmitted?.();
+      onClose();
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to resubmit your work.",
+      );
+    } finally {
+      setIsResubmitting(false);
+    }
+  };
 
   return (
     <BaseDetailSheet
@@ -79,6 +115,39 @@ export const DetailSheet = ({
           </div>
         )}
       </div>
+
+      {submission.status === "needs_work" && (
+        <>
+          <Separator />
+          <div className="space-y-4">
+            <SectionTitle>Revise & Resubmit</SectionTitle>
+            <FormField label="Repository URL (optional)" htmlFor="resubmit-repo">
+              <Input
+                id="resubmit-repo"
+                placeholder="https://github.com/you/repo"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Notes / Write-up (optional)" htmlFor="resubmit-content">
+              <Textarea
+                id="resubmit-content"
+                placeholder="Describe what you changed since the last review..."
+                rows={5}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              />
+            </FormField>
+            <Button
+              onClick={handleResubmit}
+              disabled={isResubmitting}
+              className="w-full"
+            >
+              {isResubmitting ? "Resubmitting..." : "Resubmit for Review"}
+            </Button>
+          </div>
+        </>
+      )}
     </BaseDetailSheet>
   );
 };
