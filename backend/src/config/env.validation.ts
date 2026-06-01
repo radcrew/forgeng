@@ -81,20 +81,55 @@ class EnvironmentVariables {
   @IsString()
   PASSWORD_RESET_REDIRECT?: string;
 
-  @IsOptional() @IsString() GOOGLE_CLIENT_ID?: string;
-  @IsOptional() @IsString() GOOGLE_CLIENT_SECRET?: string;
-  @IsOptional() @IsString() GOOGLE_CALLBACK_URL?: string;
+  @IsOptional()
+  @IsString()
+  GOOGLE_CLIENT_ID?: string;
 
-  @IsOptional() @IsString() GITHUB_CLIENT_ID?: string;
-  @IsOptional() @IsString() GITHUB_CLIENT_SECRET?: string;
-  @IsOptional() @IsString() GITHUB_CALLBACK_URL?: string;
+  @IsOptional()
+  @IsString()
+  GOOGLE_CLIENT_SECRET?: string;
 
-  @IsOptional() @IsString() SMTP_HOST?: string;
-  @IsOptional() @IsInt() @Min(1) @Max(65535) SMTP_PORT?: number;
-  @IsOptional() @IsString() SMTP_USER?: string;
-  @IsOptional() @IsString() SMTP_PASS?: string;
-  @IsOptional() @IsString() SMTP_SECURE?: string;
-  @IsOptional() @IsString() EMAIL_FROM?: string;
+  @IsOptional()
+  @IsString()
+  GOOGLE_CALLBACK_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  GITHUB_CLIENT_ID?: string;
+
+  @IsOptional()
+  @IsString()
+  GITHUB_CLIENT_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
+  GITHUB_CALLBACK_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  SMTP_HOST?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(65535)
+  SMTP_PORT?: number;
+
+  @IsOptional()
+  @IsString()
+  SMTP_USER?: string;
+
+  @IsOptional()
+  @IsString()
+  SMTP_PASS?: string;
+
+  @IsOptional()
+  @IsString()
+  SMTP_SECURE?: string;
+
+  @IsOptional()
+  @IsString()
+  EMAIL_FROM?: string;
 }
 
 /** Validates `process.env` at startup; fails fast on missing required vars. */
