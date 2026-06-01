@@ -1,24 +1,13 @@
-import {
-  IsEmail,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+
+import { IsPassword } from '../decorators/is-password.decorator';
 
 export class RegisterDto {
   @IsEmail()
   @MaxLength(254)
   email!: string;
 
-  @IsString()
-  @MinLength(8)
-  @MaxLength(72)
-  // At least one letter and one digit. Tweak as policy evolves.
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d).+$/, {
-    message: 'Password must contain a letter and a digit.',
-  })
+  @IsPassword()
   password!: string;
 
   @IsOptional()
