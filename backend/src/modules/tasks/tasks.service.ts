@@ -34,9 +34,26 @@ export class TasksService {
     return Promise.all(tasks.map((t) => this.serialize(t)));
   }
 
-  async findOne(id: number): Promise<TaskDto> {
+  async findOne(id: number, user: AuthUser): Promise<TaskDto> {
     const task = await this.prisma.task.findUnique({ where: { id } });
     if (!task) throw new NotFoundException('Task not found.');
+
+    if (user.role === 'student') {
+      // Students may only see published tasks in cohorts they're enrolled in.
+      // Hide everything else as 404 so task existence isn't leaked.
+      if (task.status !== 'published') {
+        throw new NotFoundException('Task not found.');
+      }
+      const enrollment = await this.prisma.enrollment.findUnique({
+        where: {
+          userId_cohortId: { userId: user.id, cohortId: task.cohortId },
+        },
+      });
+      if (!enrollment) {
+        throw new NotFoundException('Task not found.');
+      }
+    }
+
     return this.serialize(task);
   }
 
