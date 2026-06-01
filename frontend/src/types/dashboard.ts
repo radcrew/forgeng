@@ -3,7 +3,9 @@ import type { Cohort } from "./cohort";
 import type { Submission } from "./submission";
 
 export interface StudentDashboard {
-  cohort: Pick<Cohort, "id" | "name"> | null;
+  // The dashboard endpoint already serializes the full cohort; the cohort
+  // overview page relies on the description, dates, capacity, and status.
+  cohort: Cohort | null;
   taskStats: {
     total: number;
     submitted: number;

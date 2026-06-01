@@ -6,6 +6,7 @@ import {
   CheckSquare,
   ClipboardList,
   FileText,
+  GraduationCap,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -39,6 +40,7 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
   applicant: [],
   student: [
     { title: "Dashboard", href: "/student", icon: LayoutDashboard },
+    { title: "Cohort", href: "/student/cohort", icon: GraduationCap },
     { title: "Tasks", href: "/student/tasks", icon: CheckSquare },
     { title: "Submissions", href: "/student/submissions", icon: FileText },
     { title: "Profile", href: "/student/profile", icon: User },
