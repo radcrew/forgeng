@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Bell,
   CheckSquare,
   ClipboardList,
   FileText,
@@ -44,6 +45,7 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { title: "Cohort", href: "/student/cohort", icon: GraduationCap },
     { title: "Tasks", href: "/student/tasks", icon: CheckSquare },
     { title: "Submissions", href: "/student/submissions", icon: FileText },
+    { title: "Notifications", href: "/student/notifications", icon: Bell },
     { title: "Profile", href: "/student/profile", icon: User },
   ],
   admin: [

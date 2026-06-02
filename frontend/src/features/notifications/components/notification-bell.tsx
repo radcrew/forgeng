@@ -1,21 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import {
-  Bell,
-  CheckCheck,
-  ClipboardList,
-  MessageSquare,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -23,15 +19,11 @@ import {
 } from "@components/ui/sheet";
 import { Skeleton } from "@components/ui/skeleton";
 import { cn } from "@utils";
-import type { Notification, NotificationType } from "@types";
+import type { Notification } from "@types";
 
 import { markAllNotificationsRead, markNotificationRead } from "../api";
 import { useNotifications, useUnreadNotificationCount } from "../hooks";
-
-const ICONS: Record<NotificationType, LucideIcon> = {
-  feedback_received: MessageSquare,
-  task_published: ClipboardList,
-};
+import { FALLBACK_NOTIFICATION_ICON, NOTIFICATION_ICONS } from "../icons";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -174,6 +166,14 @@ function NotificationPanel({
           </ul>
         )}
       </div>
+
+      <div className="border-t p-2">
+        <SheetClose asChild>
+          <Button asChild variant="ghost" size="sm" className="w-full">
+            <Link href="/student/notifications">View all notifications</Link>
+          </Button>
+        </SheetClose>
+      </div>
     </>
   );
 }
@@ -184,7 +184,8 @@ interface NotificationRowProps {
 }
 
 function NotificationRow({ notification, onClick }: NotificationRowProps) {
-  const Icon = ICONS[notification.type] ?? Bell;
+  const Icon =
+    NOTIFICATION_ICONS[notification.type] ?? FALLBACK_NOTIFICATION_ICON;
   const unread = notification.readAt === null;
 
   return (
