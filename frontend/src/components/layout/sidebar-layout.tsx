@@ -10,6 +10,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  Menu,
   Settings,
   User,
   Users,
@@ -27,6 +28,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
+  useSidebar,
 } from "@components/ui/sidebar";
 import { useCurrentUser } from "@contexts";
 import { NotificationBell } from "@features/notifications";
@@ -145,8 +147,42 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           </SidebarFooter>
         </Sidebar>
 
-        <main className="flex-1 overflow-y-auto bg-background">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-background">
+          <MobileTopBar role={role} />
+          {children}
+        </main>
       </div>
     </SidebarProvider>
+  );
+}
+
+/**
+ * Mobile-only top bar. On desktop the sidebar is always visible; below `md`
+ * it collapses to an offcanvas sheet, so this exposes a hamburger to open it.
+ */
+function MobileTopBar({ role }: { role: UserRole }) {
+  const { toggleSidebar } = useSidebar();
+
+  return (
+    <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Open menu"
+        onClick={toggleSidebar}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+      <div className="flex items-center gap-2">
+        <Logo size={24} />
+        <span className="font-bold tracking-tight">Forgeng</span>
+      </div>
+      {role === "student" && (
+        <div className="ml-auto">
+          <NotificationBell />
+        </div>
+      )}
+    </header>
   );
 }
