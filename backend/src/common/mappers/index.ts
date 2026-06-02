@@ -3,6 +3,7 @@ import type {
   Cohort,
   Enrollment,
   Feedback,
+  Notification,
   Submission,
   Task,
   User,
@@ -180,6 +181,28 @@ export function toFeedbackDto(
     verdict: fb.verdict,
     reviewer: reviewer ? toUserDto(reviewer) : null,
     createdAt: fb.createdAt.toISOString(),
+  };
+}
+
+export interface NotificationDto {
+  id: number;
+  type: Notification['type'];
+  title: string;
+  body: string | null;
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export function toNotificationDto(notification: Notification): NotificationDto {
+  return {
+    id: notification.id,
+    type: notification.type,
+    title: notification.title,
+    body: notification.body,
+    link: notification.link,
+    readAt: notification.readAt?.toISOString() ?? null,
+    createdAt: notification.createdAt.toISOString(),
   };
 }
 

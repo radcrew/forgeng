@@ -6,11 +6,15 @@ import {
 import type { AuthUser } from '@core/auth/auth.types';
 import { toFeedbackDto, type FeedbackDto } from '@common/mappers';
 import { PrismaService } from '@core/database/prisma.service';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 
 @Injectable()
 export class FeedbackService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(submissionId: number, user: AuthUser): Promise<FeedbackDto[]> {
     const submission = await this.prisma.submission.findUnique({
@@ -58,6 +62,12 @@ export class FeedbackService {
         },
       }),
     ]);
+
+    await this.notifications.notifyFeedbackReceived({
+      userId: submission.userId,
+      submissionId,
+      verdict: dto.verdict,
+    });
 
     return toFeedbackDto(created, reviewer);
   }

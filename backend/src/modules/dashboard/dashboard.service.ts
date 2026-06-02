@@ -129,7 +129,12 @@ export class DashboardService {
       }
     }
 
-    const statusBreakdown = { todo: 0, submitted: 0, needsWork: 0, approved: 0 };
+    const statusBreakdown = {
+      todo: 0,
+      submitted: 0,
+      needsWork: 0,
+      approved: 0,
+    };
     const byType = new Map<TaskType, { total: number; approved: number }>();
     for (const t of tasks) {
       const status = latestStatusByTask.get(t.id);

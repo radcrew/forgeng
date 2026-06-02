@@ -3,13 +3,17 @@ import type { Prisma, Task } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { toTaskDto, type TaskDto } from '@common/mappers';
 import { PrismaService } from '@core/database/prisma.service';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ListTasksQuery } from './dto/list-tasks.query';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(user: AuthUser, query: ListTasksQuery): Promise<TaskDto[]> {
     const where: Prisma.TaskWhereInput = {};
@@ -68,6 +72,9 @@ export class TasksService {
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
       },
     });
+    if (created.status === 'published') {
+      await this.notifications.notifyTaskPublished(created);
+    }
     return this.serialize(created);
   }
 
@@ -85,6 +92,10 @@ export class TasksService {
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
       },
     });
+    // Notify enrolled students only on the draft -> published transition.
+    if (exists.status !== 'published' && updated.status === 'published') {
+      await this.notifications.notifyTaskPublished(updated);
+    }
     return this.serialize(updated);
   }
 

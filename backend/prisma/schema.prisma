@@ -66,6 +66,11 @@ enum VerificationTokenType {
   password_reset
 }
 
+enum NotificationType {
+  feedback_received
+  task_published
+}
+
 // -----------------------------------------------------------------------------
 // Models
 // -----------------------------------------------------------------------------
@@ -94,6 +99,7 @@ model User {
   refreshTokens  RefreshToken[]
   verifyTokens   VerificationToken[]
   application    Application?
+  notifications  Notification[]
 
   @@map("users")
 }
@@ -248,4 +254,21 @@ model Feedback {
   reviewer   User       @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
 
   @@map("feedback")
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  type      NotificationType
+  title     String
+  body      String?
+  // In-app deep link, e.g. /student/submissions or /student/tasks/:id.
+  link      String?
+  readAt    DateTime?        @map("read_at") @db.Timestamptz
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notifications")
 }

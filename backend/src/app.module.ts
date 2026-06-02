@@ -9,6 +9,7 @@ import { CohortsModule } from '@modules/cohorts/cohorts.module';
 import { DashboardModule } from '@modules/dashboard/dashboard.module';
 import { FeedbackModule } from '@modules/feedback/feedback.module';
 import { HealthModule } from '@modules/health/health.module';
+import { NotificationsModule } from '@modules/notifications/notifications.module';
 import { SubmissionsModule } from '@modules/submissions/submissions.module';
 import { TasksModule } from '@modules/tasks/tasks.module';
 import { UsersModule } from '@modules/users/users.module';
@@ -27,6 +28,7 @@ import { UsersModule } from '@modules/users/users.module';
     FeedbackModule,
     UsersModule,
     DashboardModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
