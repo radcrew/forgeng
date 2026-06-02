@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  MaxFileSizeValidator,
+  ParseFilePipe,
+  Patch,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 
 import {
@@ -10,12 +21,18 @@ import {
 import type { AuthUser } from '@core/auth/auth.types';
 import { CurrentUser } from '@core/auth/current-user.decorator';
 import { PrismaService } from '@core/database/prisma.service';
+import { AvatarService, type UploadedImage } from './avatar.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 
 @ApiTags('account')
 @Controller('account')
 export class AccountController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly avatar: AvatarService,
+  ) {}
 
   @Get('me')
   getMe(@CurrentUser() user: AuthUser): UserDto {
@@ -32,6 +49,22 @@ export class AccountController {
       data: dto,
     });
     return toUserDto(updated);
+  }
+
+  @Post('avatar')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_AVATAR_BYTES } }),
+  )
+  uploadAvatar(
+    @CurrentUser() user: AuthUser,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: MAX_AVATAR_BYTES })],
+      }),
+    )
+    file: UploadedImage,
+  ): Promise<UserDto> {
+    return this.avatar.upload(user, file);
   }
 
   @Get('enrollments')

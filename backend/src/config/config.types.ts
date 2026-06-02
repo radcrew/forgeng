@@ -5,6 +5,8 @@ export interface AppConfiguration {
   corsOrigin: string[];
   /** Public base URL of the frontend, used to build absolute links in emails. */
   frontendUrl: string;
+  /** Absolute directory where uploaded files (e.g. avatars) are written. */
+  uploadsDir: string;
   database: {
     url: string;
   };

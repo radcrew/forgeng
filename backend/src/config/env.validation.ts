@@ -34,6 +34,10 @@ class EnvironmentVariables {
   FRONTEND_URL?: string;
 
   @IsOptional()
+  @IsString()
+  UPLOADS_DIR?: string;
+
+  @IsOptional()
   @IsEnum(NodeEnvironment)
   NODE_ENV?: NodeEnvironment;
 

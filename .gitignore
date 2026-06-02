@@ -150,3 +150,6 @@ vite.config.ts.timestamp-*
 
 # NestJS build output
 backend/dist
+
+# User-uploaded files (avatars, etc.)
+backend/uploads

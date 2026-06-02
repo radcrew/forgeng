@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { FormBody, FormField } from "@components/common";
@@ -9,9 +9,10 @@ import { Card, CardContent } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Textarea } from "@components/ui/textarea";
 import { ApiError } from "@lib/api-client";
+import { resolveAssetUrl } from "@lib/config";
 import type { UserProfile } from "@types";
 
-import { updateProfile } from "../api";
+import { updateProfile, uploadAvatar } from "../api";
 import type { ProfileUpdate } from "../types";
 
 export type ProfileFormProps = {
@@ -19,6 +20,9 @@ export type ProfileFormProps = {
   /** Called after a successful save so the caller can refresh the session user. */
   onSaved?: () => void | Promise<unknown>;
 };
+
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 
 const initials = (name: string | null, email: string) =>
   (name?.trim() || email).slice(0, 2).toUpperCase();
@@ -29,13 +33,14 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
   const [githubUrl, setGithubUrl] = useState(user.githubUrl ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
     // URL fields are validated as URLs server-side, so omit them when blank
     // rather than sending an empty string that would fail validation.
     const payload: ProfileUpdate = { name: name.trim(), bio: bio.trim() };
     if (githubUrl.trim()) payload.githubUrl = githubUrl.trim();
-    if (avatarUrl.trim()) payload.avatarUrl = avatarUrl.trim();
 
     setIsSaving(true);
     try {
@@ -51,14 +56,46 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
     }
   };
 
+  const handleAvatarChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    // Reset so selecting the same file again still fires onChange.
+    e.target.value = "";
+    if (!file) return;
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error("Please choose a JPEG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      toast.error("Image is too large. The maximum size is 2 MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const updated = await uploadAvatar(file);
+      setAvatarUrl(updated.avatarUrl ?? "");
+      toast.success("Avatar updated.");
+      await onSaved?.();
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to upload your avatar.",
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <Card>
       <CardContent className="space-y-6 p-6">
         <div className="flex items-center gap-4">
           {avatarUrl.trim() ? (
-            // eslint-disable-next-line @next/next/no-img-element -- user-supplied avatar URL, not a static asset
+            // eslint-disable-next-line @next/next/no-img-element -- user avatar served by the API, not a static asset
             <img
-              src={avatarUrl}
+              src={resolveAssetUrl(avatarUrl)}
               alt=""
               className="h-16 w-16 rounded-full object-cover bg-muted"
             />
@@ -67,11 +104,38 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
               {initials(user.name, user.email)}
             </div>
           )}
-          <div className="min-w-0">
-            <p className="font-medium">{user.name ?? "Unnamed"}</p>
-            <p className="text-sm text-muted-foreground truncate">
-              {user.email}
-            </p>
+          <div className="min-w-0 space-y-2">
+            <div className="min-w-0">
+              <p className="font-medium">{user.name ?? "Unnamed"}</p>
+              <p className="text-sm text-muted-foreground truncate">
+                {user.email}
+              </p>
+            </div>
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_TYPES.join(",")}
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploading
+                  ? "Uploading…"
+                  : avatarUrl.trim()
+                    ? "Change photo"
+                    : "Upload photo"}
+              </Button>
+              <p className="mt-1 text-xs text-muted-foreground">
+                JPEG, PNG, or WebP. Max 2 MB.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -99,14 +163,6 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
               placeholder="https://github.com/you"
-            />
-          </FormField>
-          <FormField label="Avatar URL" htmlFor="profile-avatar">
-            <Input
-              id="profile-avatar"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://…/avatar.png"
             />
           </FormField>
         </FormBody>
