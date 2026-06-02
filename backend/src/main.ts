@@ -5,6 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 
+import type { Response } from 'express';
+
 import { AppModule } from './app.module';
 import { applyAppMiddleware } from './app.middleware';
 import { setupSwagger } from './swagger';
@@ -24,7 +26,14 @@ async function bootstrap(): Promise<void> {
 
   // Serve uploaded files (avatars, etc.). The global `/api` prefix only applies
   // to controller routes, so the static prefix must include it explicitly.
-  app.useStaticAssets(uploadsDir, { prefix: '/api/uploads' });
+  // Override helmet's default `Cross-Origin-Resource-Policy: same-origin` so the
+  // frontend (a different origin in dev) can embed these public images.
+  app.useStaticAssets(uploadsDir, {
+    prefix: '/api/uploads',
+    setHeaders: (res: Response) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
+  });
 
   app.enableCors({
     origin: corsOrigin,
