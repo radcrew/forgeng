@@ -28,6 +28,7 @@ import {
   SidebarProvider,
 } from "@components/ui/sidebar";
 import { useCurrentUser } from "@contexts";
+import { NotificationBell } from "@features/notifications";
 import type { UserRole } from "@types";
 
 interface NavItem {
@@ -88,9 +89,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       <div className="flex h-screen overflow-hidden w-full bg-background">
         <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
           <SidebarHeader className="p-4 border-b border-sidebar-border">
-            <div className="flex items-center gap-2">
-              <Logo size={28} priority />
-              <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Logo size={28} priority />
+                <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
+              </div>
+              {role === "student" && <NotificationBell />}
             </div>
             <p className="text-sm text-sidebar-foreground/70 capitalize mt-2">
               {role} Portal
