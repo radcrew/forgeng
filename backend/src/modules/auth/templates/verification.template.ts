@@ -1,4 +1,4 @@
-import { layout, type RenderedEmail } from './layout';
+import { layout, type RenderedEmail } from '@core/mail';
 
 export const verificationEmail = (verifyUrl: string): RenderedEmail => ({
   subject: 'Verify your Forgeng email',

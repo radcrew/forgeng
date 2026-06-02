@@ -18,4 +18,8 @@ export type {
   StudentDashboard,
   StudentAnalytics,
 } from "./dashboard";
-export type { Notification, NotificationType } from "./notification";
+export type {
+  Notification,
+  NotificationType,
+  NotificationPreferences,
+} from "./notification";

@@ -14,6 +14,7 @@ import type { Notification } from "@types";
 import {
   FALLBACK_NOTIFICATION_ICON,
   NOTIFICATION_ICONS,
+  NotificationPreferencesCard,
   markAllNotificationsRead,
   markNotificationRead,
   useNotifications,
@@ -69,6 +70,8 @@ const Page = () => {
           </Button>
         }
       />
+
+      <NotificationPreferencesCard />
 
       {isLoading ? (
         <LoadingState message="Loading notifications…" />

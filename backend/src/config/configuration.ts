@@ -78,6 +78,7 @@ export default (): AppConfiguration => {
     nodeEnv,
     port: parsePort(process.env.PORT, DEFAULT_PORT),
     corsOrigin: parseCorsOrigin(process.env.CORS_ORIGIN),
+    frontendUrl: process.env.FRONTEND_URL ?? DEFAULT_FRONTEND,
     database: {
       url: process.env.DATABASE_URL ?? '',
     },

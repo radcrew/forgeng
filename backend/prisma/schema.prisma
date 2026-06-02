@@ -100,6 +100,7 @@ model User {
   verifyTokens   VerificationToken[]
   application    Application?
   notifications  Notification[]
+  notificationPreference NotificationPreference?
 
   @@map("users")
 }
@@ -271,4 +272,19 @@ model Notification {
 
   @@index([userId, readAt])
   @@map("notifications")
+}
+
+// Per-student delivery settings, one row per user. A missing row means every
+// channel is on (see the defaults below) — rows are created lazily on first edit.
+model NotificationPreference {
+  userId        Int      @id @map("user_id")
+  feedbackInApp Boolean  @default(true) @map("feedback_in_app")
+  feedbackEmail Boolean  @default(true) @map("feedback_email")
+  taskInApp     Boolean  @default(true) @map("task_in_app")
+  taskEmail     Boolean  @default(true) @map("task_email")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }

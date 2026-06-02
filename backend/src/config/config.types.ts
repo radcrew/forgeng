@@ -3,6 +3,8 @@ export interface AppConfiguration {
   nodeEnv: 'development' | 'production' | 'test';
   port: number;
   corsOrigin: string[];
+  /** Public base URL of the frontend, used to build absolute links in emails. */
+  frontendUrl: string;
   database: {
     url: string;
   };

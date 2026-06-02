@@ -1,4 +1,4 @@
-import { layout, type RenderedEmail } from './layout';
+import { layout, type RenderedEmail } from '@core/mail';
 
 export const passwordResetEmail = (resetUrl: string): RenderedEmail => ({
   subject: 'Reset your Forgeng password',

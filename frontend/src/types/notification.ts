@@ -10,3 +10,10 @@ export interface Notification {
   readAt: string | null;
   createdAt: string;
 }
+
+export interface NotificationPreferences {
+  feedbackInApp: boolean;
+  feedbackEmail: boolean;
+  taskInApp: boolean;
+  taskEmail: boolean;
+}

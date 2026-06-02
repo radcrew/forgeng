@@ -30,6 +30,10 @@ class EnvironmentVariables {
   CORS_ORIGIN?: string;
 
   @IsOptional()
+  @IsString()
+  FRONTEND_URL?: string;
+
+  @IsOptional()
   @IsEnum(NodeEnvironment)
   NODE_ENV?: NodeEnvironment;
 

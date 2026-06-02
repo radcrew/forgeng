@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
@@ -10,8 +11,12 @@ import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@core/auth/current-user.decorator';
 import { Roles } from '@core/auth/roles.decorator';
 import type { AuthUser } from '@core/auth/auth.types';
-import type { NotificationDto } from '@common/mappers';
+import type {
+  NotificationDto,
+  NotificationPreferenceDto,
+} from '@common/mappers';
 import { ListNotificationsQuery } from './dto/list-notifications.query';
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 import { NotificationsService } from './notifications.service';
 
 @ApiTags('notifications')
@@ -31,6 +36,21 @@ export class NotificationsController {
   @Get('unread-count')
   unreadCount(@CurrentUser() user: AuthUser): Promise<{ count: number }> {
     return this.service.unreadCount(user);
+  }
+
+  @Get('preferences')
+  getPreferences(
+    @CurrentUser() user: AuthUser,
+  ): Promise<NotificationPreferenceDto> {
+    return this.service.getPreferences(user);
+  }
+
+  @Patch('preferences')
+  updatePreferences(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateNotificationPreferencesDto,
+  ): Promise<NotificationPreferenceDto> {
+    return this.service.updatePreferences(user, dto);
   }
 
   @Patch('read')

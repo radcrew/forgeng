@@ -4,11 +4,19 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { getUnreadCount, listNotifications } from "./api";
+import {
+  getNotificationPreferences,
+  getUnreadCount,
+  listNotifications,
+} from "./api";
 
 /** The student's notifications, newest first. Refetch after marking read. */
 export const useNotifications = () =>
   useAsyncResource(() => listNotifications(), []);
+
+/** The student's notification delivery preferences. */
+export const useNotificationPreferences = () =>
+  useAsyncResource(() => getNotificationPreferences(), []);
 
 /**
  * Unread badge count, polled on an interval so the bell stays live without a

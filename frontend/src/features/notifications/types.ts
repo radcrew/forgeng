@@ -1,1 +1,5 @@
-export type { Notification, NotificationType } from "@types";
+export type {
+  Notification,
+  NotificationType,
+  NotificationPreferences,
+} from "@types";

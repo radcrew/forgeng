@@ -4,6 +4,7 @@ import type {
   Enrollment,
   Feedback,
   Notification,
+  NotificationPreference,
   Submission,
   Task,
   User,
@@ -203,6 +204,25 @@ export function toNotificationDto(notification: Notification): NotificationDto {
     link: notification.link,
     readAt: notification.readAt?.toISOString() ?? null,
     createdAt: notification.createdAt.toISOString(),
+  };
+}
+
+export interface NotificationPreferenceDto {
+  feedbackInApp: boolean;
+  feedbackEmail: boolean;
+  taskInApp: boolean;
+  taskEmail: boolean;
+}
+
+/** A missing row means every channel is on, so absent fields default to `true`. */
+export function toNotificationPreferenceDto(
+  pref: NotificationPreference | null,
+): NotificationPreferenceDto {
+  return {
+    feedbackInApp: pref?.feedbackInApp ?? true,
+    feedbackEmail: pref?.feedbackEmail ?? true,
+    taskInApp: pref?.taskInApp ?? true,
+    taskEmail: pref?.taskEmail ?? true,
   };
 }
 

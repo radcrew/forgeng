@@ -1,6 +1,6 @@
 import { apiClient } from "@lib/api-client";
 
-import type { Notification } from "./types";
+import type { Notification, NotificationPreferences } from "./types";
 
 export const listNotifications = async (
   unread?: boolean,
@@ -28,3 +28,15 @@ export const markAllNotificationsRead = async (): Promise<number> => {
   );
   return count;
 };
+
+export const getNotificationPreferences =
+  async (): Promise<NotificationPreferences> =>
+    apiClient.get<NotificationPreferences>("/notifications/preferences");
+
+export const updateNotificationPreferences = async (
+  patch: Partial<NotificationPreferences>,
+): Promise<NotificationPreferences> =>
+  apiClient.patch<NotificationPreferences>(
+    "/notifications/preferences",
+    patch,
+  );
