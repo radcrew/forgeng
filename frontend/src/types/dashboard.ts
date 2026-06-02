@@ -1,6 +1,18 @@
 import type { Application } from "./application";
 import type { Cohort } from "./cohort";
 import type { Submission } from "./submission";
+import type { TaskType } from "./task";
+
+export interface StudentAnalytics {
+  statusBreakdown: {
+    todo: number;
+    submitted: number;
+    needsWork: number;
+    approved: number;
+  };
+  typeBreakdown: { type: TaskType; total: number; approved: number }[];
+  weeklyActivity: { weekStart: string; submissions: number }[];
+}
 
 export interface StudentDashboard {
   // The dashboard endpoint already serializes the full cohort; the cohort
@@ -14,6 +26,7 @@ export interface StudentDashboard {
   };
   nextDeadline: string | null;
   recentSubmissions: Submission[];
+  analytics: StudentAnalytics;
 }
 
 export interface AdminDashboard {
