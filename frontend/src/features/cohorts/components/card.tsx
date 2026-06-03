@@ -13,18 +13,36 @@ import {
   CardTitle,
 } from "@components/ui/card";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
+import { ApiError } from "@lib/api-client";
+import { deleteCohort } from "../api";
 import type { Cohort } from "@types";
 
 export type CardProps = {
   cohort: Cohort;
   onEnrollments: (cohort: Cohort) => void;
   onEdit: (cohort: Cohort) => void;
+  onDeleted?: () => void;
 };
 
-export const Card = ({ cohort, onEnrollments, onEdit }: CardProps) => {
-  const handleDelete = () => {
+export const Card = ({
+  cohort,
+  onEnrollments,
+  onEdit,
+  onDeleted,
+}: CardProps) => {
+  const handleDelete = async () => {
     if (!confirm(`Delete "${cohort.name}"? This cannot be undone.`)) return;
-    toast.success("Cohort deleted");
+    try {
+      await deleteCohort(cohort.id);
+      toast.success("Cohort deleted");
+      onDeleted?.();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not delete cohort. Please try again.";
+      toast.error(message);
+    }
   };
 
   return (

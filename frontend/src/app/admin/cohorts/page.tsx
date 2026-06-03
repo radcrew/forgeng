@@ -15,7 +15,7 @@ import {
 import type { Cohort } from "@types";
 
 const Page = () => {
-  const { data: cohorts = [], isLoading } = useCohorts();
+  const { data: cohorts = [], isLoading, refetch } = useCohorts();
   const [formOpen, setFormOpen] = useState(false);
   const [editCohort, setEditCohort] = useState<Cohort | undefined>(undefined);
   const [enrollCohort, setEnrollCohort] = useState<Cohort | undefined>(undefined);
@@ -52,18 +52,21 @@ const Page = () => {
                 setEditCohort(c);
                 setFormOpen(true);
               }}
+              onDeleted={refetch}
             />
           ))}
         </div>
       )}
 
       <FormDialog
+        key={editCohort?.id ?? "new"}
         cohort={editCohort}
         open={formOpen}
         onOpenChange={(open) => {
           setFormOpen(open);
           if (!open) setEditCohort(undefined);
         }}
+        onSaved={refetch}
       />
 
       {enrollCohort && (
@@ -73,6 +76,7 @@ const Page = () => {
           onOpenChange={(open) => {
             if (!open) setEnrollCohort(undefined);
           }}
+          onEnrolled={refetch}
         />
       )}
     </PageContainer>

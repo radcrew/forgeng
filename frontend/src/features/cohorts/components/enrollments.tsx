@@ -20,6 +20,8 @@ import {
 } from "@components/ui/select";
 import { Separator } from "@components/ui/separator";
 import { useUsers } from "@features/users";
+import { ApiError } from "@lib/api-client";
+import { enrollStudent } from "../api";
 import { useEnrollments } from "../hooks";
 import type { Cohort } from "@types";
 
@@ -27,10 +29,16 @@ export type EnrollmentsProps = {
   cohort: Cohort;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEnrolled?: () => void;
 };
 
-export const Enrollments = ({ cohort, open, onOpenChange }: EnrollmentsProps) => {
-  const { data: enrollments = [] } = useEnrollments(cohort.id);
+export const Enrollments = ({
+  cohort,
+  open,
+  onOpenChange,
+  onEnrolled,
+}: EnrollmentsProps) => {
+  const { data: enrollments = [], refetch } = useEnrollments(cohort.id);
   const { data: students = [] } = useUsers("student");
   const enrolledIds = new Set(enrollments.map((e) => e.userId));
   const availableStudents = students.filter((u) => !enrolledIds.has(u.id));
@@ -41,10 +49,21 @@ export const Enrollments = ({ cohort, open, onOpenChange }: EnrollmentsProps) =>
   const handleEnroll = async () => {
     if (!userId) return;
     setIsEnrolling(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    setIsEnrolling(false);
-    toast.success("Student enrolled!");
-    setUserId("");
+    try {
+      await enrollStudent(cohort.id, Number(userId));
+      toast.success("Student enrolled!");
+      setUserId("");
+      refetch();
+      onEnrolled?.();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not enroll student. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
   return (
