@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { CalendarDays, Code2, Users } from "lucide-react";
@@ -9,17 +9,11 @@ import { LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@components/ui/select";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { useSelectedCohort } from "@contexts";
 import { StatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
-import { useStudentDashboard } from "@features/dashboard";
+import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useTasks } from "@features/tasks";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 
@@ -31,9 +25,7 @@ const dateRange = (start: string | null, end: string | null): string | null => {
 };
 
 const Page = () => {
-  // Undefined until the student switches cohorts; the API then defaults to the
-  // most recently enrolled cohort.
-  const [selectedCohortId, setSelectedCohortId] = useState<number>();
+  const { selectedCohortId } = useSelectedCohort();
   const { data: dashboard, isLoading: dashboardLoading } =
     useStudentDashboard(selectedCohortId);
   const cohort = dashboard?.cohort ?? null;
@@ -89,24 +81,11 @@ const Page = () => {
         title={cohort.name}
         description="Your cohort overview."
         actions={
-          cohorts.length > 1 ? (
-            <Select
-              value={String(cohort.id)}
-              onValueChange={(value) => setSelectedCohortId(Number(value))}
-              disabled={dashboardLoading}
-            >
-              <SelectTrigger className="w-[220px]" aria-label="Switch cohort">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {cohorts.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : undefined
+          <CohortSwitcher
+            cohorts={cohorts}
+            activeCohortId={cohort.id}
+            disabled={dashboardLoading}
+          />
         }
       />
 
