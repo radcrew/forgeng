@@ -39,7 +39,10 @@ export const Enrollments = ({
   onEnrolled,
 }: EnrollmentsProps) => {
   const { data: enrollments = [], refetch } = useEnrollments(cohort.id);
-  const { data: students = [] } = useUsers("student");
+  // Pull a large page so the enrollment picker lists every student to choose
+  // from, not just the first page of the paginated users endpoint.
+  const { data: studentPage } = useUsers("student", 1, 100);
+  const students = studentPage?.items ?? [];
   const enrolledIds = new Set(enrollments.map((e) => e.userId));
   const availableStudents = students.filter((u) => !enrolledIds.has(u.id));
 

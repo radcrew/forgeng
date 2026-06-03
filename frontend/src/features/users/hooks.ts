@@ -7,10 +7,14 @@ import type { UserRoleFilter } from "@types";
 
 export type { UserRoleFilter };
 
-export const useUsers = (role: UserRoleFilter = "all") =>
+export const useUsers = (
+  role: UserRoleFilter = "all",
+  page = 1,
+  pageSize?: number,
+) =>
   useAsyncResource(
-    () => listUsers(role === "all" ? undefined : role),
-    [role],
+    () => listUsers({ role: role === "all" ? undefined : role, page, pageSize }),
+    [role, page, pageSize],
   );
 
 export const useUserEnrollments = (userId: number | null) =>

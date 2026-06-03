@@ -9,9 +9,24 @@ export interface UserEnrollment {
   cohort: Cohort;
 }
 
-export const listUsers = async (role?: UserRole): Promise<UserProfile[]> => {
-  const query = role ? `?role=${encodeURIComponent(role)}` : "";
-  return apiClient.get<UserProfile[]>(`/users${query}`);
+export interface PaginatedUsers {
+  items: UserProfile[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export const listUsers = async (params?: {
+  role?: UserRole;
+  page?: number;
+  pageSize?: number;
+}): Promise<PaginatedUsers> => {
+  const search = new URLSearchParams();
+  if (params?.role) search.set("role", params.role);
+  if (params?.page != null) search.set("page", String(params.page));
+  if (params?.pageSize != null) search.set("pageSize", String(params.pageSize));
+  const query = search.toString();
+  return apiClient.get<PaginatedUsers>(`/users${query ? `?${query}` : ""}`);
 };
 
 export const listUserEnrollments = async (

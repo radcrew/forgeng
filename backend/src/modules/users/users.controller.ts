@@ -13,7 +13,7 @@ import type { ProfileEnrollmentDto, UserDto } from '@common/mappers';
 import { Roles } from '@core/auth/roles.decorator';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { UsersService } from './users.service';
+import { UsersService, type PaginatedUsers } from './users.service';
 
 @ApiTags('users')
 @Roles('admin')
@@ -22,7 +22,7 @@ export class UsersController {
   constructor(private readonly service: UsersService) {}
 
   @Get()
-  list(@Query() query: ListUsersQuery): Promise<UserDto[]> {
+  list(@Query() query: ListUsersQuery): Promise<PaginatedUsers> {
     return this.service.list(query);
   }
 

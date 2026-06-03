@@ -4,6 +4,7 @@ export {
   updateUserRole,
   listUserEnrollments,
   type UserEnrollment,
+  type PaginatedUsers,
 } from "./api";
 export type { UserRoleFilter } from "@types";
 export { USER_ROLE_FILTER_TABS, USER_ROLE_OPTIONS } from "@constants/users";

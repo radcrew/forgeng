@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Settings,
   User,
   Users,
 } from "lucide-react";
@@ -54,10 +53,10 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { title: "Applications", href: "/admin/applications", icon: FileText },
     { title: "Review Queue", href: "/admin/reviews", icon: ClipboardList },
-    { title: "Cohorts", href: "/admin/cohorts", icon: Users },
+    { title: "Cohorts", href: "/admin/cohorts", icon: GraduationCap },
     { title: "Tasks", href: "/admin/tasks", icon: CheckSquare },
     { title: "Notifications", href: "/admin/notifications", icon: Bell },
-    { title: "Users", href: "/admin/users", icon: Settings },
+    { title: "Users", href: "/admin/users", icon: Users },
   ],
 };
 
