@@ -1,5 +1,5 @@
 import type { Application } from "./application";
-import type { Cohort } from "./cohort";
+import type { Cohort, CohortStatus } from "./cohort";
 import type { Submission } from "./submission";
 import type { TaskType } from "./task";
 
@@ -29,6 +29,25 @@ export interface StudentDashboard {
   analytics: StudentAnalytics;
 }
 
+export interface AdminCohortStat {
+  id: number;
+  name: string;
+  status: CohortStatus;
+  students: number;
+  tasks: number;
+  submissions: number;
+}
+
+export interface AdminAnalytics {
+  submissionBreakdown: {
+    submitted: number;
+    approved: number;
+    needsWork: number;
+  };
+  weeklyActivity: { weekStart: string; submissions: number }[];
+  cohortStats: AdminCohortStat[];
+}
+
 export interface AdminDashboard {
   applicationStats: {
     total: number;
@@ -42,4 +61,5 @@ export interface AdminDashboard {
   pendingReviews: number;
   recentApplications: Application[];
   recentSubmissions: Submission[];
+  analytics: AdminAnalytics;
 }

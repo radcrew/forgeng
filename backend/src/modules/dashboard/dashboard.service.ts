@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type {
+  CohortStatus,
   Submission,
   SubmissionStatus,
   Task,
@@ -45,6 +46,28 @@ export interface StudentDashboard {
   analytics: StudentAnalytics;
 }
 
+export interface AdminCohortStat {
+  id: number;
+  name: string;
+  status: CohortStatus;
+  students: number;
+  tasks: number;
+  submissions: number;
+}
+
+export interface AdminAnalytics {
+  // Platform-wide submission counts by current status.
+  submissionBreakdown: {
+    submitted: number;
+    approved: number;
+    needsWork: number;
+  };
+  // Submissions per week across the platform, oldest first.
+  weeklyActivity: { weekStart: string; submissions: number }[];
+  // Per-cohort rollup, newest cohort first.
+  cohortStats: AdminCohortStat[];
+}
+
 export interface AdminDashboard {
   applicationStats: ApplicationStats;
   activeCohorts: number;
@@ -52,6 +75,7 @@ export interface AdminDashboard {
   pendingReviews: number;
   recentApplications: ApplicationDto[];
   recentSubmissions: SubmissionDto[];
+  analytics: AdminAnalytics;
 }
 
 @Injectable()
@@ -167,7 +191,7 @@ export class DashboardService {
   }
 
   private buildWeeklyActivity(
-    submissions: Submission[],
+    submissions: { createdAt: Date }[],
   ): StudentAnalytics['weeklyActivity'] {
     const WEEKS = 6;
     const MS_WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -221,6 +245,59 @@ export class DashboardService {
       pendingReviews,
       recentApplications: recentApplications.map(toApplicationDto),
       recentSubmissions,
+      analytics: await this.adminAnalytics(),
+    };
+  }
+
+  private async adminAnalytics(): Promise<AdminAnalytics> {
+    const WEEKS = 6;
+    const since = new Date(Date.now() - WEEKS * 7 * 24 * 60 * 60 * 1000);
+
+    const [byStatus, recentSubs, cohorts, tasksWithCounts] = await Promise.all([
+      this.prisma.submission.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      }),
+      this.prisma.submission.findMany({
+        where: { createdAt: { gte: since } },
+        select: { createdAt: true },
+      }),
+      this.prisma.cohort.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { enrollments: true, tasks: true } } },
+      }),
+      // Submissions hang off tasks, so roll them up to the cohort in memory.
+      this.prisma.task.findMany({
+        select: { cohortId: true, _count: { select: { submissions: true } } },
+      }),
+    ]);
+
+    const countFor = (status: SubmissionStatus): number =>
+      byStatus.find((row) => row.status === status)?._count._all ?? 0;
+
+    const subsByCohort = new Map<number, number>();
+    for (const t of tasksWithCounts) {
+      subsByCohort.set(
+        t.cohortId,
+        (subsByCohort.get(t.cohortId) ?? 0) + t._count.submissions,
+      );
+    }
+
+    return {
+      submissionBreakdown: {
+        submitted: countFor('submitted'),
+        approved: countFor('approved'),
+        needsWork: countFor('needs_work'),
+      },
+      weeklyActivity: this.buildWeeklyActivity(recentSubs),
+      cohortStats: cohorts.map((c) => ({
+        id: c.id,
+        name: c.name,
+        status: c.status,
+        students: c._count.enrollments,
+        tasks: c._count.tasks,
+        submissions: subsByCohort.get(c.id) ?? 0,
+      })),
     };
   }
 

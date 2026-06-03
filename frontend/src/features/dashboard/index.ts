@@ -4,6 +4,8 @@ export { useAdminDashboard, useStudentDashboard } from "./hooks";
 
 export { AdminView } from "./components/admin-view";
 export type { AdminViewProps } from "./components/admin-view";
+export { AdminAnalytics } from "./components/admin-analytics";
+export type { AdminAnalyticsProps } from "./components/admin-analytics";
 export { StudentView } from "./components/student-view";
 export type { StudentViewProps } from "./components/student-view";
 export { StudentOnboarding } from "./components/student-onboarding";
