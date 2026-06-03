@@ -66,6 +66,11 @@ enum VerificationTokenType {
   password_reset
 }
 
+enum NotificationType {
+  feedback_received
+  task_published
+}
+
 // -----------------------------------------------------------------------------
 // Models
 // -----------------------------------------------------------------------------
@@ -94,6 +99,8 @@ model User {
   refreshTokens  RefreshToken[]
   verifyTokens   VerificationToken[]
   application    Application?
+  notifications  Notification[]
+  notificationPreference NotificationPreference?
 
   @@map("users")
 }
@@ -248,4 +255,36 @@ model Feedback {
   reviewer   User       @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
 
   @@map("feedback")
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  type      NotificationType
+  title     String
+  body      String?
+  // In-app deep link, e.g. /student/submissions or /student/tasks/:id.
+  link      String?
+  readAt    DateTime?        @map("read_at") @db.Timestamptz
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+// Per-student delivery settings, one row per user. A missing row means every
+// channel is on (see the defaults below) — rows are created lazily on first edit.
+model NotificationPreference {
+  userId        Int      @id @map("user_id")
+  feedbackInApp Boolean  @default(true) @map("feedback_in_app")
+  feedbackEmail Boolean  @default(true) @map("feedback_email")
+  taskInApp     Boolean  @default(true) @map("task_in_app")
+  taskEmail     Boolean  @default(true) @map("task_email")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }

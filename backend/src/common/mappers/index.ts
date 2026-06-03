@@ -3,6 +3,8 @@ import type {
   Cohort,
   Enrollment,
   Feedback,
+  Notification,
+  NotificationPreference,
   Submission,
   Task,
   User,
@@ -181,6 +183,54 @@ export function toFeedbackDto(
     reviewer: reviewer ? toUserDto(reviewer) : null,
     createdAt: fb.createdAt.toISOString(),
   };
+}
+
+export interface NotificationDto {
+  id: number;
+  type: Notification['type'];
+  title: string;
+  body: string | null;
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export function toNotificationDto(notification: Notification): NotificationDto {
+  return {
+    id: notification.id,
+    type: notification.type,
+    title: notification.title,
+    body: notification.body,
+    link: notification.link,
+    readAt: notification.readAt?.toISOString() ?? null,
+    createdAt: notification.createdAt.toISOString(),
+  };
+}
+
+export interface NotificationPreferenceDto {
+  feedbackInApp: boolean;
+  feedbackEmail: boolean;
+  taskInApp: boolean;
+  taskEmail: boolean;
+}
+
+/** A missing row means every channel is on, so absent fields default to `true`. */
+export function toNotificationPreferenceDto(
+  pref: NotificationPreference | null,
+): NotificationPreferenceDto {
+  return {
+    feedbackInApp: pref?.feedbackInApp ?? true,
+    feedbackEmail: pref?.feedbackEmail ?? true,
+    taskInApp: pref?.taskInApp ?? true,
+    taskEmail: pref?.taskEmail ?? true,
+  };
+}
+
+/** A student's own enrollment, with the cohort they joined — for the profile page. */
+export interface ProfileEnrollmentDto {
+  id: number;
+  enrolledAt: string;
+  cohort: CohortDto;
 }
 
 export interface EnrollmentDto {

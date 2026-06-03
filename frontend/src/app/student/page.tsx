@@ -1,10 +1,16 @@
 "use client";
 
 import { PageContainer, PageHeader } from "@components/shared";
-import { StudentView, useStudentDashboard } from "@features/dashboard";
+import {
+  StudentOnboarding,
+  StudentView,
+  useStudentDashboard,
+} from "@features/dashboard";
+import { useCurrentUser } from "@contexts";
 
 const Page = () => {
   const { data: dashboard, isLoading } = useStudentDashboard();
+  const { user } = useCurrentUser();
 
   if (isLoading || !dashboard) {
     return (
@@ -30,11 +36,15 @@ const Page = () => {
               .
             </>
           ) : (
-            "Welcome back. You are not enrolled in a cohort yet."
+            "Let's get you started."
           )
         }
       />
-      <StudentView dashboard={dashboard} />
+      {cohort ? (
+        <StudentView dashboard={dashboard} />
+      ) : (
+        <StudentOnboarding name={user?.name} />
+      )}
     </PageContainer>
   );
 };

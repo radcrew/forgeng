@@ -10,6 +10,7 @@ import { PrismaService } from '@core/database/prisma.service';
 import { toSubmissionDto, type SubmissionDto } from '@common/mappers';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
+import { UpdateSubmissionDto } from './dto/update-submission.dto';
 
 @Injectable()
 export class SubmissionsService {
@@ -85,6 +86,41 @@ export class SubmissionsService {
       },
     });
     return this.serialize(created, task, user);
+  }
+
+  /**
+   * Resubmit work against a submission the reviewer sent back. Only the owning
+   * student may resubmit, and only while the submission is `needs_work`; this
+   * moves it back into the review queue (`submitted`).
+   */
+  async resubmit(
+    id: number,
+    dto: UpdateSubmissionDto,
+    user: AuthUser,
+  ): Promise<SubmissionDto> {
+    const sub = await this.prisma.submission.findUnique({
+      where: { id },
+      include: { task: true, user: true },
+    });
+    if (!sub) throw new NotFoundException('Submission not found.');
+    if (sub.userId !== user.id) {
+      throw new ForbiddenException('Cannot edit another student submission.');
+    }
+    if (sub.status !== 'needs_work') {
+      throw new ForbiddenException(
+        'Only submissions marked needs work can be resubmitted.',
+      );
+    }
+
+    const updated = await this.prisma.submission.update({
+      where: { id },
+      data: {
+        content: dto.content ?? sub.content,
+        repoUrl: dto.repoUrl ?? sub.repoUrl,
+        status: 'submitted',
+      },
+    });
+    return this.serialize(updated, sub.task, sub.user);
   }
 
   private async serialize(

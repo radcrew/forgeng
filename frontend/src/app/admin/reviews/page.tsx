@@ -20,7 +20,7 @@ const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] =
     useState<SubmissionStatusFilter>("submitted");
-  const { data: submissions = [], isLoading } = useSubmissions({
+  const { data: submissions = [], isLoading, refetch } = useSubmissions({
     status: statusFilter,
   });
   const selected = submissions.find((s) => s.id === selectedId);
@@ -84,6 +84,7 @@ const Page = () => {
           submission={selected}
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
+          onReviewed={refetch}
         />
       )}
     </PageContainer>

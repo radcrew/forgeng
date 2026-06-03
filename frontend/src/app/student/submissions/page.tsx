@@ -15,7 +15,7 @@ import {
 
 const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const { data: submissions = [], isLoading } = useSubmissions();
+  const { data: submissions = [], isLoading, refetch } = useSubmissions();
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (
@@ -68,6 +68,7 @@ const Page = () => {
           submission={selected}
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
+          onResubmitted={refetch}
         />
       )}
     </PageContainer>

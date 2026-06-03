@@ -2,7 +2,10 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { listTasks } from "./api";
+import { getTask, listTasks } from "./api";
 
 export const useTasks = (cohortId?: number) =>
   useAsyncResource(() => listTasks(cohortId), [cohortId]);
+
+export const useTask = (id: number) =>
+  useAsyncResource(() => getTask(id), [id]);

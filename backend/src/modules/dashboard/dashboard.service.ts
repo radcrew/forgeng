@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import type { Submission, Task, User } from '@prisma/client';
+import type {
+  Submission,
+  SubmissionStatus,
+  Task,
+  TaskType,
+  User,
+} from '@prisma/client';
 import { ApplicationsService } from '@modules/applications/applications.service';
 import type { AuthUser } from '@core/auth/auth.types';
 import {
@@ -13,6 +19,19 @@ import {
 import { PrismaService } from '@core/database/prisma.service';
 import type { ApplicationStats } from '@modules/applications/applications.service';
 
+export interface StudentAnalytics {
+  // Mutually exclusive task buckets based on each task's latest submission.
+  statusBreakdown: {
+    todo: number;
+    submitted: number;
+    needsWork: number;
+    approved: number;
+  };
+  typeBreakdown: { type: TaskType; total: number; approved: number }[];
+  // Submissions per week for the trailing weeks, oldest first.
+  weeklyActivity: { weekStart: string; submissions: number }[];
+}
+
 export interface StudentDashboard {
   cohort: CohortDto | null;
   taskStats: {
@@ -23,6 +42,7 @@ export interface StudentDashboard {
   };
   recentSubmissions: SubmissionDto[];
   nextDeadline: string | null;
+  analytics: StudentAnalytics;
 }
 
 export interface AdminDashboard {
@@ -54,6 +74,11 @@ export class DashboardService {
         taskStats: { total: 0, submitted: 0, approved: 0, pending: 0 },
         recentSubmissions: [],
         nextDeadline: null,
+        analytics: {
+          statusBreakdown: { todo: 0, submitted: 0, needsWork: 0, approved: 0 },
+          typeBreakdown: [],
+          weeklyActivity: this.buildWeeklyActivity([]),
+        },
       };
     }
 
@@ -95,12 +120,67 @@ export class DashboardService {
       where: { cohortId: cohort.id },
     });
 
+    // Latest submission status per task (mySubmissions is newest-first, so the
+    // first occurrence of a taskId is its current state).
+    const latestStatusByTask = new Map<number, SubmissionStatus>();
+    for (const s of mySubmissions) {
+      if (!latestStatusByTask.has(s.taskId)) {
+        latestStatusByTask.set(s.taskId, s.status);
+      }
+    }
+
+    const statusBreakdown = {
+      todo: 0,
+      submitted: 0,
+      needsWork: 0,
+      approved: 0,
+    };
+    const byType = new Map<TaskType, { total: number; approved: number }>();
+    for (const t of tasks) {
+      const status = latestStatusByTask.get(t.id);
+      if (!status) statusBreakdown.todo += 1;
+      else if (status === 'approved') statusBreakdown.approved += 1;
+      else if (status === 'needs_work') statusBreakdown.needsWork += 1;
+      else statusBreakdown.submitted += 1;
+
+      const entry = byType.get(t.type) ?? { total: 0, approved: 0 };
+      entry.total += 1;
+      if (status === 'approved') entry.approved += 1;
+      byType.set(t.type, entry);
+    }
+
+    const typeBreakdown = [...byType.entries()]
+      .map(([type, v]) => ({ type, ...v }))
+      .sort((a, b) => b.total - a.total);
+
     return {
       cohort: toCohortDto(cohort, enrolledCount),
       taskStats,
       recentSubmissions,
       nextDeadline,
+      analytics: {
+        statusBreakdown,
+        typeBreakdown,
+        weeklyActivity: this.buildWeeklyActivity(mySubmissions),
+      },
     };
+  }
+
+  private buildWeeklyActivity(
+    submissions: Submission[],
+  ): StudentAnalytics['weeklyActivity'] {
+    const WEEKS = 6;
+    const MS_WEEK = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const buckets = Array.from({ length: WEEKS }, (_, i) => ({
+      weekStart: new Date(now - (WEEKS - 1 - i) * MS_WEEK).toISOString(),
+      submissions: 0,
+    }));
+    for (const s of submissions) {
+      const idx = Math.floor((now - s.createdAt.getTime()) / MS_WEEK);
+      if (idx >= 0 && idx < WEEKS) buckets[WEEKS - 1 - idx].submissions += 1;
+    }
+    return buckets;
   }
 
   async admin(): Promise<AdminDashboard> {

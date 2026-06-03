@@ -4,12 +4,22 @@ export type {
   Submission,
   SubmissionStatus,
 } from "./types";
-export type { ListSubmissionsOptions } from "./api";
+export type {
+  ListSubmissionsOptions,
+  SubmissionInput,
+  FeedbackInput,
+} from "./api";
 export {
   SUBMISSION_STATUS_FILTER_TABS,
   SUBMISSION_STATUS_VARIANT,
 } from "@constants/submissions";
-export { listSubmissions, listFeedback } from "./api";
+export {
+  listSubmissions,
+  listFeedback,
+  createSubmission,
+  resubmitSubmission,
+  createFeedback,
+} from "./api";
 export type { SubmissionStatusFilter, UseSubmissionsOptions } from "./hooks";
 export { useSubmissions, useSubmissionFeedback } from "./hooks";
 export { StatusBadge } from "./components/status-badge";

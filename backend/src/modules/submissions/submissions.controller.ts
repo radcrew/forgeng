@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import type { AuthUser } from '@core/auth/auth.types';
 import type { SubmissionDto } from '@common/mappers';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
+import { UpdateSubmissionDto } from './dto/update-submission.dto';
 import { SubmissionsService } from './submissions.service';
 
 @ApiTags('submissions')
@@ -46,5 +48,14 @@ export class SubmissionsController {
     @CurrentUser() user: AuthUser,
   ): Promise<SubmissionDto> {
     return this.service.findOne(id, user);
+  }
+
+  @Patch(':id')
+  resubmit(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateSubmissionDto,
+    @CurrentUser() user: AuthUser,
+  ): Promise<SubmissionDto> {
+    return this.service.resubmit(id, dto, user);
   }
 }

@@ -42,8 +42,11 @@ export class TasksController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<TaskDto> {
-    return this.service.findOne(id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ): Promise<TaskDto> {
+    return this.service.findOne(id, user);
   }
 
   @Roles('admin')

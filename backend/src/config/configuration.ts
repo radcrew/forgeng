@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import type {
   AppConfiguration,
   OAuthProviderConfig,
@@ -78,6 +80,8 @@ export default (): AppConfiguration => {
     nodeEnv,
     port: parsePort(process.env.PORT, DEFAULT_PORT),
     corsOrigin: parseCorsOrigin(process.env.CORS_ORIGIN),
+    frontendUrl: process.env.FRONTEND_URL ?? DEFAULT_FRONTEND,
+    uploadsDir: process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads'),
     database: {
       url: process.env.DATABASE_URL ?? '',
     },

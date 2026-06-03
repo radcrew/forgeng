@@ -16,8 +16,10 @@ import {
 import { Button } from "@components/ui/button";
 import { Separator } from "@components/ui/separator";
 import { Textarea } from "@components/ui/textarea";
+import { ApiError } from "@lib/api-client";
 import type { FeedbackVerdict, Submission } from "@types";
 
+import { createFeedback } from "../api";
 import { useSubmissionFeedback } from "../hooks";
 import { StatusBadge } from "./status-badge";
 
@@ -25,12 +27,18 @@ export type ReviewSheetProps = {
   submission: Submission;
   open: boolean;
   onClose: () => void;
+  /** Called after feedback is left so the caller can refetch the queue. */
+  onReviewed?: () => void;
 };
 
-export const ReviewSheet = ({ submission, open, onClose }: ReviewSheetProps) => {
-  const { data: feedback = [] } = useSubmissionFeedback(
-    open ? submission.id : null,
-  );
+export const ReviewSheet = ({
+  submission,
+  open,
+  onClose,
+  onReviewed,
+}: ReviewSheetProps) => {
+  const { data: feedback = [], refetch: refetchFeedback } =
+    useSubmissionFeedback(open ? submission.id : null);
   const [feedbackContent, setFeedbackContent] = useState("");
   const [verdict, setVerdict] = useState<FeedbackVerdict>("approved");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,10 +46,23 @@ export const ReviewSheet = ({ submission, open, onClose }: ReviewSheetProps) => 
   const handleSubmitFeedback = async () => {
     if (!feedbackContent.trim()) return;
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsSubmitting(false);
-    toast.success("Feedback submitted!");
-    setFeedbackContent("");
+    try {
+      await createFeedback(submission.id, {
+        content: feedbackContent.trim(),
+        verdict,
+      });
+      toast.success("Feedback submitted!");
+      setFeedbackContent("");
+      refetchFeedback();
+      onReviewed?.();
+      onClose();
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to submit feedback.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

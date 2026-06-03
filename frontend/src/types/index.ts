@@ -13,4 +13,13 @@ export type {
   SubmissionStatus,
   SubmissionStatusFilter,
 } from "./submission";
-export type { AdminDashboard, StudentDashboard } from "./dashboard";
+export type {
+  AdminDashboard,
+  StudentDashboard,
+  StudentAnalytics,
+} from "./dashboard";
+export type {
+  Notification,
+  NotificationType,
+  NotificationPreferences,
+} from "./notification";

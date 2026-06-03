@@ -14,4 +14,9 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsUrl()
   githubUrl?: string;
+
+  @IsOptional()
+  @IsUrl()
+  @MaxLength(2000)
+  avatarUrl?: string;
 }

@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Bell,
   CheckSquare,
   ClipboardList,
   FileText,
+  GraduationCap,
   LayoutDashboard,
   LogOut,
+  Menu,
   Settings,
+  User,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -24,8 +28,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
+  useSidebar,
 } from "@components/ui/sidebar";
 import { useCurrentUser } from "@contexts";
+import { NotificationBell } from "@features/notifications";
 import type { UserRole } from "@types";
 
 interface NavItem {
@@ -38,8 +44,11 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
   applicant: [],
   student: [
     { title: "Dashboard", href: "/student", icon: LayoutDashboard },
+    { title: "Cohort", href: "/student/cohort", icon: GraduationCap },
     { title: "Tasks", href: "/student/tasks", icon: CheckSquare },
     { title: "Submissions", href: "/student/submissions", icon: FileText },
+    { title: "Notifications", href: "/student/notifications", icon: Bell },
+    { title: "Profile", href: "/student/profile", icon: User },
   ],
   admin: [
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -84,9 +93,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       <div className="flex h-screen overflow-hidden w-full bg-background">
         <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
           <SidebarHeader className="p-4 border-b border-sidebar-border">
-            <div className="flex items-center gap-2">
-              <Logo size={28} priority />
-              <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Logo size={28} priority />
+                <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
+              </div>
+              {role === "student" && <NotificationBell />}
             </div>
             <p className="text-sm text-sidebar-foreground/70 capitalize mt-2">
               {role} Portal
@@ -135,8 +147,42 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           </SidebarFooter>
         </Sidebar>
 
-        <main className="flex-1 overflow-y-auto bg-background">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-background">
+          <MobileTopBar role={role} />
+          {children}
+        </main>
       </div>
     </SidebarProvider>
+  );
+}
+
+/**
+ * Mobile-only top bar. On desktop the sidebar is always visible; below `md`
+ * it collapses to an offcanvas sheet, so this exposes a hamburger to open it.
+ */
+function MobileTopBar({ role }: { role: UserRole }) {
+  const { toggleSidebar } = useSidebar();
+
+  return (
+    <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Open menu"
+        onClick={toggleSidebar}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+      <div className="flex items-center gap-2">
+        <Logo size={24} />
+        <span className="font-bold tracking-tight">Forgeng</span>
+      </div>
+      {role === "student" && (
+        <div className="ml-auto">
+          <NotificationBell />
+        </div>
+      )}
+    </header>
   );
 }

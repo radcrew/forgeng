@@ -59,7 +59,12 @@ interface RequestOptions {
 
 const buildHeaders = (init: RequestInit | undefined): Headers => {
   const headers = new Headers(init?.headers);
-  if (!headers.has("Content-Type") && init?.body) {
+  // Let the browser set the multipart boundary for FormData bodies.
+  if (
+    !headers.has("Content-Type") &&
+    init?.body &&
+    !(init.body instanceof FormData)
+  ) {
     headers.set("Content-Type", "application/json");
   }
   const token = readAccessToken();
@@ -132,6 +137,8 @@ export const apiClient = {
     request<T>(path, undefined, options),
   post: <T>(path: string, body: unknown, options?: RequestOptions) =>
     request<T>(path, { method: "POST", body: JSON.stringify(body) }, options),
+  postForm: <T>(path: string, body: FormData, options?: RequestOptions) =>
+    request<T>(path, { method: "POST", body }, options),
   patch: <T>(path: string, body: unknown, options?: RequestOptions) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(body) }, options),
   delete: <T>(path: string, options?: RequestOptions) =>

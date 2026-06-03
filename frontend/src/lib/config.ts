@@ -6,3 +6,11 @@ export const API_URL =
 
 /** Global API prefix from `backend/src/main.ts`. */
 export const API_BASE = buildApiBase(API_URL);
+
+/**
+ * Resolve a stored asset path to a loadable URL. Absolute URLs (legacy
+ * pasted avatar links) pass through; server-relative paths like
+ * `/api/uploads/avatars/x.png` are prefixed with the API origin.
+ */
+export const resolveAssetUrl = (url: string): string =>
+  /^https?:\/\//i.test(url) ? url : `${API_URL}${url}`;

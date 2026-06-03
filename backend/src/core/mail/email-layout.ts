@@ -30,7 +30,7 @@ interface LayoutOptions {
   footnotes: string[];
 }
 
-const escapeHtml = (value: string): string =>
+export const escapeHtml = (value: string): string =>
   value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
