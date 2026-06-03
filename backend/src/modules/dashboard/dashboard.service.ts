@@ -35,6 +35,9 @@ export interface StudentAnalytics {
 
 export interface StudentDashboard {
   cohort: CohortDto | null;
+  // All cohorts the student is enrolled in, newest first — drives the cohort
+  // switcher. Empty when the student has no enrollments.
+  cohorts: { id: number; name: string }[];
   taskStats: {
     total: number;
     submitted: number;
@@ -85,16 +88,17 @@ export class DashboardService {
     private readonly applications: ApplicationsService,
   ) {}
 
-  async student(user: AuthUser): Promise<StudentDashboard> {
-    const enrollment = await this.prisma.enrollment.findFirst({
+  async student(user: AuthUser, cohortId?: number): Promise<StudentDashboard> {
+    const enrollments = await this.prisma.enrollment.findMany({
       where: { userId: user.id },
       include: { cohort: true },
       orderBy: { enrolledAt: 'desc' },
     });
 
-    if (!enrollment) {
+    if (enrollments.length === 0) {
       return {
         cohort: null,
+        cohorts: [],
         taskStats: { total: 0, submitted: 0, approved: 0, pending: 0 },
         recentSubmissions: [],
         nextDeadline: null,
@@ -106,7 +110,17 @@ export class DashboardService {
       };
     }
 
-    const cohort = enrollment.cohort;
+    const cohorts = enrollments.map((e) => ({
+      id: e.cohort.id,
+      name: e.cohort.name,
+    }));
+
+    // Honour the requested cohort when the student is actually enrolled in it;
+    // otherwise fall back to the most recent enrollment.
+    const selected =
+      (cohortId != null && enrollments.find((e) => e.cohortId === cohortId)) ||
+      enrollments[0];
+    const cohort = selected.cohort;
     const tasks = await this.prisma.task.findMany({
       where: { cohortId: cohort.id, status: 'published' },
     });
@@ -179,6 +193,7 @@ export class DashboardService {
 
     return {
       cohort: toCohortDto(cohort, enrolledCount),
+      cohorts,
       taskStats,
       recentSubmissions,
       nextDeadline,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { CalendarDays, Code2, Users } from "lucide-react";
@@ -9,6 +9,13 @@ import { LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/ui/select";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { StatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
@@ -24,8 +31,13 @@ const dateRange = (start: string | null, end: string | null): string | null => {
 };
 
 const Page = () => {
-  const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
+  // Undefined until the student switches cohorts; the API then defaults to the
+  // most recently enrolled cohort.
+  const [selectedCohortId, setSelectedCohortId] = useState<number>();
+  const { data: dashboard, isLoading: dashboardLoading } =
+    useStudentDashboard(selectedCohortId);
   const cohort = dashboard?.cohort ?? null;
+  const cohorts = dashboard?.cohorts ?? [];
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohort?.id);
   const { data: submissions = [] } = useSubmissions();
 
@@ -45,7 +57,9 @@ const Page = () => {
     [tasks],
   );
 
-  if (dashboardLoading || !dashboard) {
+  // Keep the stale dashboard on screen while switching cohorts so the page
+  // (and the switcher) don't flash back to the loading state.
+  if (!dashboard) {
     return (
       <PageContainer maxWidth="4xl" spacing="8">
         <PageHeader title="Cohort" description="Loading…" />
@@ -71,7 +85,30 @@ const Page = () => {
 
   return (
     <PageContainer maxWidth="4xl" spacing="8">
-      <PageHeader title={cohort.name} description="Your cohort overview." />
+      <PageHeader
+        title={cohort.name}
+        description="Your cohort overview."
+        actions={
+          cohorts.length > 1 ? (
+            <Select
+              value={String(cohort.id)}
+              onValueChange={(value) => setSelectedCohortId(Number(value))}
+              disabled={dashboardLoading}
+            >
+              <SelectTrigger className="w-[220px]" aria-label="Switch cohort">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {cohorts.map((c) => (
+                  <SelectItem key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : undefined
+        }
+      />
 
       <Card>
         <CardContent className="space-y-5 p-6">

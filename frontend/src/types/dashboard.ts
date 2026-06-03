@@ -18,6 +18,8 @@ export interface StudentDashboard {
   // The dashboard endpoint already serializes the full cohort; the cohort
   // overview page relies on the description, dates, capacity, and status.
   cohort: Cohort | null;
+  // All cohorts the student belongs to (newest first) for the cohort switcher.
+  cohorts: { id: number; name: string }[];
   taskStats: {
     total: number;
     submitted: number;
