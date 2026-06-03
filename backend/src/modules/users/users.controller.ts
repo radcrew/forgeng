@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import type { UserDto } from '@common/mappers';
+import type { ProfileEnrollmentDto, UserDto } from '@common/mappers';
 import { Roles } from '@core/auth/roles.decorator';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -24,6 +24,13 @@ export class UsersController {
   @Get()
   list(@Query() query: ListUsersQuery): Promise<UserDto[]> {
     return this.service.list(query);
+  }
+
+  @Get(':id/enrollments')
+  enrollments(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ProfileEnrollmentDto[]> {
+    return this.service.enrollments(id);
   }
 
   @Patch(':id/role')

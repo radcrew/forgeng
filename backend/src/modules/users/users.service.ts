@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { toUserDto, type UserDto } from '@common/mappers';
+import {
+  toCohortDto,
+  toUserDto,
+  type ProfileEnrollmentDto,
+  type UserDto,
+} from '@common/mappers';
 import { PrismaService } from '@core/database/prisma.service';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -25,5 +30,25 @@ export class UsersService {
       data: { role: dto.role },
     });
     return toUserDto(updated);
+  }
+
+  /** A user's enrollment history (cohorts joined), newest first — for the admin profile view. */
+  async enrollments(userId: number): Promise<ProfileEnrollmentDto[]> {
+    const exists = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!exists) throw new NotFoundException('User not found.');
+
+    const items = await this.prisma.enrollment.findMany({
+      where: { userId },
+      orderBy: { enrolledAt: 'desc' },
+      include: {
+        cohort: { include: { _count: { select: { enrollments: true } } } },
+      },
+    });
+
+    return items.map((e) => ({
+      id: e.id,
+      enrolledAt: e.enrolledAt.toISOString(),
+      cohort: toCohortDto(e.cohort, e.cohort._count.enrollments),
+    }));
   }
 }
