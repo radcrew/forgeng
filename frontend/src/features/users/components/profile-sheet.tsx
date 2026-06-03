@@ -38,8 +38,8 @@ export const ProfileSheet = ({ user, open, onClose }: ProfileSheetProps) => {
       title={displayName}
       subtitle={
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Mail className="h-3.5 w-3.5" />
-          {user.email}
+          <Mail className="h-3.5 w-3.5 shrink-0" />
+          <span className="min-w-0 break-all">{user.email}</span>
         </span>
       }
     >

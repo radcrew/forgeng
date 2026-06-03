@@ -143,7 +143,9 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
       />
 
       {cohort.description && (
-        <p className="text-sm text-muted-foreground">{cohort.description}</p>
+        <p className="text-sm text-muted-foreground break-words">
+          {cohort.description}
+        </p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

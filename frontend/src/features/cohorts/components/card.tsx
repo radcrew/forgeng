@@ -64,7 +64,9 @@ export const Card = ({
           </Badge>
         </div>
         {cohort.description && (
-          <p className="text-sm text-muted-foreground">{cohort.description}</p>
+          <p className="text-sm text-muted-foreground break-words">
+            {cohort.description}
+          </p>
         )}
       </CardHeader>
       <CardContent className="space-y-3">

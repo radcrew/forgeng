@@ -73,7 +73,7 @@ export const ReviewSheet = ({
       size="md"
       subtitle={
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-muted-foreground break-all">
             By {submission.user?.name ?? submission.user?.email}
           </span>
           <span className="text-muted-foreground">·</span>

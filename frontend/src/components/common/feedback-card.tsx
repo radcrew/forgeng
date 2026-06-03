@@ -36,7 +36,9 @@ export const FeedbackCard = ({
       </div>
     </CardHeader>
     <CardContent className="pt-0">
-      <p className="text-sm text-muted-foreground">{content}</p>
+      <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+        {content}
+      </p>
       <p className="text-xs text-muted-foreground mt-2">
         {format(new Date(createdAt), "MMM d, yyyy")}
       </p>
