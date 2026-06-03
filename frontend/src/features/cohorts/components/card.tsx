@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
-import { Loader2, Pencil, Trash2, Users } from "lucide-react";
+import { ArrowRight, Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
@@ -81,6 +82,11 @@ export const Card = ({
           </p>
         )}
         <div className="flex gap-2 pt-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/admin/cohorts/${cohort.id}`}>
+              <ArrowRight className="h-3.5 w-3.5 mr-1.5" /> View
+            </Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"

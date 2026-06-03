@@ -14,6 +14,9 @@ export interface CohortInput {
 export const listCohorts = async (): Promise<Cohort[]> =>
   apiClient.get<Cohort[]>("/cohorts");
 
+export const getCohort = async (id: number): Promise<Cohort> =>
+  apiClient.get<Cohort>(`/cohorts/${id}`);
+
 export const createCohort = async (input: CohortInput): Promise<Cohort> =>
   apiClient.post<Cohort>("/cohorts", input);
 
