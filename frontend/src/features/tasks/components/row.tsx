@@ -8,19 +8,32 @@ import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { TASK_TYPE_ICON } from "@constants/tasks";
+import { ApiError } from "@lib/api-client";
+import { deleteTask } from "../api";
 import type { Task } from "@types";
 
 export type RowProps = {
   task: Task;
   onEdit: (task: Task) => void;
+  onDeleted?: () => void;
 };
 
-export const Row = ({ task, onEdit }: RowProps) => {
+export const Row = ({ task, onEdit, onDeleted }: RowProps) => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirm(`Delete task "${task.title}"?`)) return;
-    toast.success("Task deleted");
+    try {
+      await deleteTask(task.id);
+      toast.success("Task deleted");
+      onDeleted?.();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not delete task. Please try again.";
+      toast.error(message);
+    }
   };
 
   return (

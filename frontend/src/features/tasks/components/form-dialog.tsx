@@ -20,15 +20,23 @@ import {
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
+import { ApiError } from "@lib/api-client";
+import { createTask, updateTask } from "../api";
 import type { Task, TaskStatus, TaskType } from "@types";
 
 export type FormDialogProps = {
   task?: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSaved?: () => void;
 };
 
-export const FormDialog = ({ task, open, onOpenChange }: FormDialogProps) => {
+export const FormDialog = ({
+  task,
+  open,
+  onOpenChange,
+  onSaved,
+}: FormDialogProps) => {
   const { data: cohorts = [] } = useCohorts();
   const isEdit = !!task;
   const [title, setTitle] = useState(task?.title ?? "");
@@ -42,10 +50,32 @@ export const FormDialog = ({ task, open, onOpenChange }: FormDialogProps) => {
   const handleSave = async () => {
     if (!title || !cohortId) return;
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    setIsSaving(false);
-    toast.success(isEdit ? "Task updated" : "Task created");
-    onOpenChange(false);
+    try {
+      const payload = {
+        cohortId: Number(cohortId),
+        title,
+        description: description || undefined,
+        type,
+        status,
+        dueDate: dueDate || undefined,
+      };
+      if (isEdit) {
+        await updateTask(task.id, payload);
+      } else {
+        await createTask(payload);
+      }
+      toast.success(isEdit ? "Task updated" : "Task created");
+      onSaved?.();
+      onOpenChange(false);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not save task. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

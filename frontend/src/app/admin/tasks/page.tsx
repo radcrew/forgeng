@@ -10,7 +10,7 @@ import { FormDialog, Row, useTasks } from "@features/tasks";
 import type { Task } from "@types";
 
 const Page = () => {
-  const { data: tasks = [], isLoading } = useTasks();
+  const { data: tasks = [], isLoading, refetch } = useTasks();
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<Task | undefined>(undefined);
 
@@ -41,17 +41,20 @@ const Page = () => {
               setEditTask(t);
               setFormOpen(true);
             }}
+            onDeleted={refetch}
           />
         ))}
       </div>
 
       <FormDialog
+        key={editTask?.id ?? "new"}
         task={editTask}
         open={formOpen}
         onOpenChange={(open) => {
           setFormOpen(open);
           if (!open) setEditTask(undefined);
         }}
+        onSaved={refetch}
       />
     </PageContainer>
   );
