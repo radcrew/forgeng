@@ -93,9 +93,11 @@ export class NotificationsService {
     submissionId: number;
     verdict: Verdict;
   }): Promise<void> {
-    const { userId, submissionId, verdict } = params;
+    const { userId, verdict } = params;
     const approved = verdict === 'approved';
-    const link = `/student/submissions/${submissionId}`;
+    // Submissions are viewed via a detail sheet on the list page; there is no
+    // standalone /student/submissions/:id route, so deep-link to the list.
+    const link = `/student/submissions`;
 
     const [prefRow, user] = await Promise.all([
       this.prisma.notificationPreference.findUnique({ where: { userId } }),
