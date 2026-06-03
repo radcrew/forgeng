@@ -20,7 +20,7 @@ import { UpdateNotificationPreferencesDto } from './dto/update-notification-pref
 import { NotificationsService } from './notifications.service';
 
 @ApiTags('notifications')
-@Roles('student')
+@Roles('student', 'admin')
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly service: NotificationsService) {}

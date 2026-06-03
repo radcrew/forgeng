@@ -18,6 +18,7 @@ import {
   SheetTrigger,
 } from "@components/ui/sheet";
 import { Skeleton } from "@components/ui/skeleton";
+import { useCurrentUser } from "@contexts";
 import { cn } from "@utils";
 import type { Notification } from "@types";
 
@@ -27,6 +28,9 @@ import { FALLBACK_NOTIFICATION_ICON, NOTIFICATION_ICONS } from "../icons";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const { user } = useCurrentUser();
+  const viewAllHref =
+    user?.role === "admin" ? "/admin/notifications" : "/student/notifications";
   const { count, setCount, refresh } = useUnreadNotificationCount();
 
   return (
@@ -60,6 +64,7 @@ export function NotificationBell() {
 
         {open && (
           <NotificationPanel
+            viewAllHref={viewAllHref}
             onCountChange={setCount}
             onRefreshCount={() => void refresh()}
             onNavigate={() => setOpen(false)}
@@ -71,12 +76,14 @@ export function NotificationBell() {
 }
 
 interface NotificationPanelProps {
+  viewAllHref: string;
   onCountChange: (count: number) => void;
   onRefreshCount: () => void;
   onNavigate: () => void;
 }
 
 function NotificationPanel({
+  viewAllHref,
   onCountChange,
   onRefreshCount,
   onNavigate,
@@ -170,7 +177,7 @@ function NotificationPanel({
       <div className="border-t p-2">
         <SheetClose asChild>
           <Button asChild variant="ghost" size="sm" className="w-full">
-            <Link href="/student/notifications">View all notifications</Link>
+            <Link href={viewAllHref}>View all notifications</Link>
           </Button>
         </SheetClose>
       </div>

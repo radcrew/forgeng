@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { Prisma, Submission, Task, User } from '@prisma/client';
@@ -8,13 +9,19 @@ import type { Prisma, Submission, Task, User } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
 import { toSubmissionDto, type SubmissionDto } from '@common/mappers';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
 
 @Injectable()
 export class SubmissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(SubmissionsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(
     user: AuthUser,
@@ -85,6 +92,7 @@ export class SubmissionsService {
         status: 'submitted',
       },
     });
+    await this.notifyAdminsOfSubmission(user, task.title);
     return this.serialize(created, task, user);
   }
 
@@ -120,7 +128,27 @@ export class SubmissionsService {
         status: 'submitted',
       },
     });
+    // A resubmission re-enters the review queue, so admins should hear about it.
+    await this.notifyAdminsOfSubmission(user, sub.task?.title ?? 'a task');
     return this.serialize(updated, sub.task, sub.user);
+  }
+
+  /** Best-effort: a notification failure must never break a student's submit. */
+  private async notifyAdminsOfSubmission(
+    student: AuthUser,
+    taskTitle: string,
+  ): Promise<void> {
+    try {
+      await this.notifications.notifySubmissionReceived({
+        studentName: student.name ?? student.email,
+        taskTitle,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Failed to notify admins of submission',
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   private async serialize(

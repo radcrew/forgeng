@@ -69,6 +69,8 @@ enum VerificationTokenType {
 enum NotificationType {
   feedback_received
   task_published
+  submission_received
+  application_received
 }
 
 // -----------------------------------------------------------------------------
