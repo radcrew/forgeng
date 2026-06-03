@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
-import { Code2, Pencil, Trash2 } from "lucide-react";
+import { Code2, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
@@ -20,9 +21,11 @@ export type RowProps = {
 
 export const Row = ({ task, onEdit, onDeleted }: RowProps) => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     if (!confirm(`Delete task "${task.title}"?`)) return;
+    setIsDeleting(true);
     try {
       await deleteTask(task.id);
       toast.success("Task deleted");
@@ -33,6 +36,7 @@ export const Row = ({ task, onEdit, onDeleted }: RowProps) => {
           ? err.message
           : "Could not delete task. Please try again.";
       toast.error(message);
+      setIsDeleting(false);
     }
   };
 
@@ -80,8 +84,13 @@ export const Row = ({ task, onEdit, onDeleted }: RowProps) => {
             size="icon"
             className="text-destructive hover:text-destructive"
             onClick={handleDelete}
+            disabled={isDeleting}
           >
-            <Trash2 className="h-4 w-4" />
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>

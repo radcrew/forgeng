@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
-import { Pencil, Trash2, Users } from "lucide-react";
+import { Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
@@ -30,8 +31,11 @@ export const Card = ({
   onEdit,
   onDeleted,
 }: CardProps) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleDelete = async () => {
     if (!confirm(`Delete "${cohort.name}"? This cannot be undone.`)) return;
+    setIsDeleting(true);
     try {
       await deleteCohort(cohort.id);
       toast.success("Cohort deleted");
@@ -42,6 +46,7 @@ export const Card = ({
           ? err.message
           : "Could not delete cohort. Please try again.";
       toast.error(message);
+      setIsDeleting(false);
     }
   };
 
@@ -91,8 +96,13 @@ export const Card = ({
             size="sm"
             className="text-destructive hover:text-destructive"
             onClick={handleDelete}
+            disabled={isDeleting}
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            {isDeleting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="h-3.5 w-3.5" />
+            )}
           </Button>
         </div>
       </CardContent>
