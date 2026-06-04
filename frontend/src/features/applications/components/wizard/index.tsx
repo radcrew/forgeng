@@ -55,9 +55,7 @@ export const Wizard = () => {
       whatsapp: "",
       address: "",
       videoUrl: "",
-      walletEvm: "",
-      walletSolana: "",
-      walletTron: "",
+      wallets: [{ chain: "evm" as const, address: "" }],
     },
   });
 
@@ -116,9 +114,7 @@ export const Wizard = () => {
         whatsapp: data.whatsapp || undefined,
         address: data.address || undefined,
         videoUrl: data.videoUrl,
-        walletEvm: data.walletEvm || undefined,
-        walletSolana: data.walletSolana || undefined,
-        walletTron: data.walletTron || undefined,
+        wallets: data.wallets,
       });
       removeStorageItem(APPLICATION_DRAFT_STORAGE_KEY);
       toast.success(APPLICATION_WIZARD_COPY.toast.submitSuccess, {

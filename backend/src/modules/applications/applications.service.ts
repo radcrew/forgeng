@@ -65,9 +65,10 @@ export class ApplicationsService {
         whatsapp: dto.whatsapp,
         address: dto.address,
         videoUrl: dto.videoUrl,
-        walletEvm: dto.walletEvm,
-        walletSolana: dto.walletSolana,
-        walletTron: dto.walletTron,
+        wallets: dto.wallets.map((w) => ({
+          chain: w.chain,
+          address: w.address,
+        })),
         status: 'pending',
       },
     });

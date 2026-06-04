@@ -15,9 +15,7 @@ export interface CreateApplicationInput {
   whatsapp?: string;
   address?: string;
   videoUrl: string;
-  walletEvm?: string;
-  walletSolana?: string;
-  walletTron?: string;
+  wallets: Array<{ chain: string; address: string }>;
 }
 
 export const uploadVideoIntro = async (blob: Blob): Promise<{ url: string }> => {

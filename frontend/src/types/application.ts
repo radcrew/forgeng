@@ -18,9 +18,7 @@ export interface Application {
   whatsapp: string | null;
   address: string | null;
   videoUrl: string | null;
-  walletEvm: string | null;
-  walletSolana: string | null;
-  walletTron: string | null;
+  wallets: Array<{ chain: string; address: string }> | null;
   status: ApplicationStatus;
   cohortId: number | null;
   reviewerNote: string | null;

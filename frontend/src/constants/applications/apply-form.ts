@@ -7,6 +7,36 @@ const optionalUrl = z
     "Enter a valid URL (e.g. https://...)",
   );
 
+export const WALLET_CHAINS = ["evm", "solana", "tron"] as const;
+export type WalletChain = (typeof WALLET_CHAINS)[number];
+
+const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
+  evm: /^0x[0-9a-fA-F]{40}$/,
+  solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
+  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
+};
+
+const ADDRESS_MESSAGES: Record<WalletChain, string> = {
+  evm: "Enter a valid EVM address (0x + 40 hex characters)",
+  solana: "Enter a valid Solana address",
+  tron: "Enter a valid Tron address (starts with T)",
+};
+
+const walletEntry = z
+  .object({
+    chain: z.enum(WALLET_CHAINS, { required_error: "Select a chain" }),
+    address: z.string().min(1, "Address is required"),
+  })
+  .superRefine((entry, ctx) => {
+    if (entry.address && !ADDRESS_PATTERNS[entry.chain].test(entry.address)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: ADDRESS_MESSAGES[entry.chain],
+        path: ["address"],
+      });
+    }
+  });
+
 // Identity (name + email) comes from the signed-in account, so it is not part
 // of the form schema — only the application content is collected here.
 export const APPLICATION_FORM_SCHEMA = z.object({
@@ -40,31 +70,10 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     ),
   address: z.string().max(500, "Address must be under 500 characters"),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
-  walletEvm: z
-    .string()
-    .refine(
-      (val) => !val || /^0x[0-9a-fA-F]{40}$/.test(val),
-      "Enter a valid EVM address (0x followed by 40 hex characters)",
-    ),
-  walletSolana: z
-    .string()
-    .refine(
-      (val) => !val || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(val),
-      "Enter a valid Solana address",
-    ),
-  walletTron: z
-    .string()
-    .refine(
-      (val) => !val || /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(val),
-      "Enter a valid Tron address (starts with T)",
-    ),
-}).refine(
-  (data) => data.walletEvm || data.walletSolana || data.walletTron,
-  {
-    message: "Please provide at least one wallet address",
-    path: ["walletEvm"],
-  },
-);
+  wallets: z
+    .array(walletEntry)
+    .min(1, "Please add at least one wallet address"),
+});
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 

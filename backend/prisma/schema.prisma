@@ -181,9 +181,7 @@ model Application {
   whatsapp     String?
   address      String?
   videoUrl     String?           @map("video_url")
-  walletEvm    String?           @map("wallet_evm")
-  walletSolana String?           @map("wallet_solana")
-  walletTron   String?           @map("wallet_tron")
+  wallets      Json?
   reviewerNote String?           @map("reviewer_note")
   cohortId     Int?              @map("cohort_id")
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz

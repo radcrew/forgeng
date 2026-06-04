@@ -1,11 +1,40 @@
 import {
+  ArrayMinSize,
+  IsArray,
+  IsEnum,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export const SUPPORTED_CHAINS = ['evm', 'solana', 'tron'] as const;
+export type WalletChain = (typeof SUPPORTED_CHAINS)[number];
+
+const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
+  evm: /^0x[0-9a-fA-F]{40}$/,
+  solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
+  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
+};
+
+export class WalletEntryDto {
+  @IsEnum(SUPPORTED_CHAINS)
+  chain!: WalletChain;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  address!: string;
+
+  // Address format validated in the service after deserialization.
+  isValidAddress(): boolean {
+    return ADDRESS_PATTERNS[this.chain]?.test(this.address) ?? false;
+  }
+}
 
 /**
  * Identity (name + email) is taken from the authenticated user, not the
@@ -55,19 +84,11 @@ export class CreateApplicationDto {
   @MaxLength(500)
   videoUrl!: string;
 
-  @IsOptional()
-  @Matches(/^0x[0-9a-fA-F]{40}$/, { message: 'Invalid EVM address' })
-  walletEvm?: string;
-
-  @IsOptional()
-  @Matches(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, {
-    message: 'Invalid Solana address',
-  })
-  walletSolana?: string;
-
-  @IsOptional()
-  @Matches(/^T[1-9A-HJ-NP-Za-km-z]{33}$/, { message: 'Invalid Tron address' })
-  walletTron?: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => WalletEntryDto)
+  wallets!: WalletEntryDto[];
 
   @IsOptional()
   @IsString()

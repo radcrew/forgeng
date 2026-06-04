@@ -68,9 +68,7 @@ export interface ApplicationDto {
   whatsapp: string | null;
   address: string | null;
   videoUrl: string | null;
-  walletEvm: string | null;
-  walletSolana: string | null;
-  walletTron: string | null;
+  wallets: Array<{ chain: string; address: string }> | null;
   reviewerNote: string | null;
   cohortId: number | null;
   createdAt: string;
@@ -96,9 +94,7 @@ export function toApplicationDto(app: Application): ApplicationDto {
     whatsapp: app.whatsapp,
     address: app.address,
     videoUrl: app.videoUrl,
-    walletEvm: app.walletEvm,
-    walletSolana: app.walletSolana,
-    walletTron: app.walletTron,
+    wallets: app.wallets as Array<{ chain: string; address: string }> | null,
     reviewerNote: app.reviewerNote,
     cohortId: app.cohortId,
     createdAt: app.createdAt.toISOString(),
