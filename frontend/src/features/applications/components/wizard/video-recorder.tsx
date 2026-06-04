@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@components/ui/button";
 import { APPLICATION_WIZARD_COPY } from "@constants/applications";
-import { uploadVideoIntro } from "../api";
+import { uploadVideoIntro } from "../../api";
 
 const COPY = APPLICATION_WIZARD_COPY.steps.videoIntro;
 const MAX_SECONDS = 30;
@@ -145,7 +145,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Live camera feed */}
       {showLive && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
@@ -166,7 +165,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         </div>
       )}
 
-      {/* Recorded video preview */}
       {showPreview && previewUrl && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
@@ -190,12 +188,10 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         </div>
       )}
 
-      {/* Error state */}
       {state.status === "error" && (
         <p className="text-sm text-destructive">{state.message}</p>
       )}
 
-      {/* Controls */}
       <div className="flex gap-3">
         {(state.status === "idle" || state.status === "error") && (
           <Button type="button" onClick={startRecording}>
