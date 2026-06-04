@@ -32,6 +32,7 @@ import { StepBackground } from "./step-background";
 import { StepMotivation } from "./step-motivation";
 import { StepSocialProfiles } from "./step-social-profiles";
 import { StepVideoIntro } from "./step-video-intro";
+import { StepWallets } from "./step-wallets";
 
 export const Wizard = () => {
   const router = useRouter();
@@ -51,6 +52,9 @@ export const Wizard = () => {
       github: "",
       portfolio: "",
       videoUrl: "",
+      walletEvm: "",
+      walletSolana: "",
+      walletTron: "",
     },
   });
 
@@ -106,6 +110,9 @@ export const Wizard = () => {
         github: data.github,
         portfolio: data.portfolio || undefined,
         videoUrl: data.videoUrl,
+        walletEvm: data.walletEvm || undefined,
+        walletSolana: data.walletSolana || undefined,
+        walletTron: data.walletTron || undefined,
       });
       removeStorageItem(APPLICATION_DRAFT_STORAGE_KEY);
       toast.success(APPLICATION_WIZARD_COPY.toast.submitSuccess, {
@@ -179,6 +186,7 @@ export const Wizard = () => {
                     }
                   />
                 )}
+                {step === 6 && <StepWallets control={form.control} />}
               </CardContent>
               <CardFooter className="flex justify-between border-t p-6">
                 <Button

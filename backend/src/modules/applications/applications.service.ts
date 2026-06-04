@@ -62,6 +62,9 @@ export class ApplicationsService {
         github: dto.github,
         portfolio: dto.portfolio,
         videoUrl: dto.videoUrl,
+        walletEvm: dto.walletEvm,
+        walletSolana: dto.walletSolana,
+        walletTron: dto.walletTron,
         status: 'pending',
       },
     });

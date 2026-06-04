@@ -2,6 +2,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -53,4 +54,16 @@ export class CreateApplicationDto {
   @MinLength(1)
   @MaxLength(500)
   videoUrl!: string;
+
+  @IsOptional()
+  @Matches(/^0x[0-9a-fA-F]{40}$/, { message: 'Invalid EVM address' })
+  walletEvm?: string;
+
+  @IsOptional()
+  @Matches(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, { message: 'Invalid Solana address' })
+  walletSolana?: string;
+
+  @IsOptional()
+  @Matches(/^T[1-9A-HJ-NP-Za-km-z]{33}$/, { message: 'Invalid Tron address' })
+  walletTron?: string;
 }

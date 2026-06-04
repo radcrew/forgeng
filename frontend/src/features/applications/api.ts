@@ -12,6 +12,9 @@ export interface CreateApplicationInput {
   github: string;
   portfolio?: string;
   videoUrl: string;
+  walletEvm?: string;
+  walletSolana?: string;
+  walletTron?: string;
 }
 
 export const uploadVideoIntro = async (blob: Blob): Promise<{ url: string }> => {

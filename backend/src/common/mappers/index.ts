@@ -59,6 +59,9 @@ export interface ApplicationDto {
   github: string | null;
   portfolio: string | null;
   videoUrl: string | null;
+  walletEvm: string | null;
+  walletSolana: string | null;
+  walletTron: string | null;
   reviewerNote: string | null;
   cohortId: number | null;
   createdAt: string;
@@ -81,6 +84,9 @@ export function toApplicationDto(app: Application): ApplicationDto {
     github: app.github,
     portfolio: app.portfolio,
     videoUrl: app.videoUrl,
+    walletEvm: app.walletEvm,
+    walletSolana: app.walletSolana,
+    walletTron: app.walletTron,
     reviewerNote: app.reviewerNote,
     cohortId: app.cohortId,
     createdAt: app.createdAt.toISOString(),

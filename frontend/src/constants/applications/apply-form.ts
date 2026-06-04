@@ -27,13 +27,37 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     .url("Enter a valid GitHub URL (e.g. https://github.com/you)"),
   portfolio: optionalUrl,
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
-});
+  walletEvm: z
+    .string()
+    .refine(
+      (val) => !val || /^0x[0-9a-fA-F]{40}$/.test(val),
+      "Enter a valid EVM address (0x followed by 40 hex characters)",
+    ),
+  walletSolana: z
+    .string()
+    .refine(
+      (val) => !val || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(val),
+      "Enter a valid Solana address",
+    ),
+  walletTron: z
+    .string()
+    .refine(
+      (val) => !val || /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(val),
+      "Enter a valid Tron address (starts with T)",
+    ),
+}).refine(
+  (data) => data.walletEvm || data.walletSolana || data.walletTron,
+  {
+    message: "Please provide at least one wallet address",
+    path: ["walletEvm"],
+  },
+);
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 
 export const APPLICATION_DRAFT_STORAGE_KEY = "apprenticeship_application_draft";
 
-export const APPLICATION_FORM_TOTAL_STEPS = 5;
+export const APPLICATION_FORM_TOTAL_STEPS = 6;
 
 export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
   number,
@@ -44,5 +68,6 @@ export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
   2: ["background", "experience"],
   3: ["motivation"],
   4: ["linkedin", "twitter", "facebook", "github", "portfolio"],
-  // Step 5 (video intro) is the submit step — validated by form.handleSubmit.
+  5: ["videoUrl"],
+  // Step 6 (wallets) is the submit step — validated by form.handleSubmit.
 };

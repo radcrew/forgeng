@@ -41,6 +41,20 @@ export const APPLICATION_WIZARD_COPY = {
       unsupported:
         "Your browser does not support video recording. Try Chrome or Firefox.",
     },
+    wallets: {
+      title: "Wallet Addresses",
+      hint: "Stipends are paid in crypto. Provide at least one address — you will be paid on whichever chain we agree on.",
+      evmLabel: "EVM Address",
+      evmDescription: "Covers Ethereum, BNB Chain, Base, Arbitrum, Optimism, and all other EVM-compatible networks. Starts with 0x.",
+      evmPlaceholder: "0x...",
+      solanaLabel: "Solana Address (Optional)",
+      solanaDescription: "Your Solana wallet address (44 characters, Base58).",
+      solanaPlaceholder: "e.g. 7xKX...",
+      tronLabel: "Tron Address (Optional)",
+      tronDescription: "Your Tron wallet address. Starts with T.",
+      tronPlaceholder: "T...",
+      atLeastOneHint: "At least one address is required.",
+    },
     socialProfiles: {
       title: "Social Profiles",
       hint: "Help us get to know you better. LinkedIn and GitHub are required.",
