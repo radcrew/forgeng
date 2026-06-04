@@ -11,6 +11,9 @@ export interface CreateApplicationInput {
   facebook?: string;
   github: string;
   portfolio?: string;
+  telegram?: string;
+  whatsapp?: string;
+  address?: string;
   videoUrl: string;
   walletEvm?: string;
   walletSolana?: string;

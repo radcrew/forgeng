@@ -68,4 +68,18 @@ export class CreateApplicationDto {
   @IsOptional()
   @Matches(/^T[1-9A-HJ-NP-Za-km-z]{33}$/, { message: 'Invalid Tron address' })
   walletTron?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  telegram?: string;
+
+  @IsOptional()
+  @Matches(/^\+[1-9]\d{6,14}$/, { message: 'Enter a phone number with country code (e.g. +1234567890)' })
+  whatsapp?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  address?: string;
 }

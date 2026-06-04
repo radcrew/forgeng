@@ -64,6 +64,9 @@ export interface ApplicationDto {
   facebook: string | null;
   github: string | null;
   portfolio: string | null;
+  telegram: string | null;
+  whatsapp: string | null;
+  address: string | null;
   videoUrl: string | null;
   walletEvm: string | null;
   walletSolana: string | null;
@@ -89,6 +92,9 @@ export function toApplicationDto(app: Application): ApplicationDto {
     facebook: app.facebook,
     github: app.github,
     portfolio: app.portfolio,
+    telegram: app.telegram,
+    whatsapp: app.whatsapp,
+    address: app.address,
     videoUrl: app.videoUrl,
     walletEvm: app.walletEvm,
     walletSolana: app.walletSolana,

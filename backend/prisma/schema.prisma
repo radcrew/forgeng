@@ -177,6 +177,9 @@ model Application {
   facebook     String?
   github       String?
   portfolio    String?
+  telegram     String?
+  whatsapp     String?
+  address      String?
   videoUrl     String?           @map("video_url")
   walletEvm    String?           @map("wallet_evm")
   walletSolana String?           @map("wallet_solana")

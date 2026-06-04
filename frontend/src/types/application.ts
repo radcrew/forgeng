@@ -14,6 +14,9 @@ export interface Application {
   facebook: string | null;
   github: string | null;
   portfolio: string | null;
+  telegram: string | null;
+  whatsapp: string | null;
+  address: string | null;
   videoUrl: string | null;
   walletEvm: string | null;
   walletSolana: string | null;

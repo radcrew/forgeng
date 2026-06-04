@@ -26,6 +26,19 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     .min(1, "GitHub profile is required")
     .url("Enter a valid GitHub URL (e.g. https://github.com/you)"),
   portfolio: optionalUrl,
+  telegram: z
+    .string()
+    .refine(
+      (val) => !val || /^(https?:\/\/t\.me\/.+|@[\w.]+)$/.test(val),
+      "Enter a t.me URL (https://t.me/you) or a @username",
+    ),
+  whatsapp: z
+    .string()
+    .refine(
+      (val) => !val || /^\+[1-9]\d{6,14}$/.test(val),
+      "Enter a number with country code (e.g. +1234567890)",
+    ),
+  address: z.string().max(500, "Address must be under 500 characters"),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
   walletEvm: z
     .string()
@@ -67,7 +80,7 @@ export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
   1: [],
   2: ["background", "experience"],
   3: ["motivation"],
-  4: ["linkedin", "twitter", "facebook", "github", "portfolio"],
+  4: ["linkedin", "twitter", "facebook", "github", "portfolio", "telegram", "whatsapp", "address"],
   5: ["videoUrl"],
   // Step 6 (wallets) is the submit step — validated by form.handleSubmit.
 };

@@ -68,6 +68,12 @@ export const APPLICATION_WIZARD_COPY = {
       githubPlaceholder: "https://github.com/yourusername",
       portfolioLabel: "Portfolio / Website (Optional)",
       portfolioPlaceholder: "https://yourwebsite.com",
+      telegramLabel: "Telegram (Optional)",
+      telegramPlaceholder: "@username or https://t.me/you",
+      whatsappLabel: "WhatsApp (Optional)",
+      whatsappPlaceholder: "+1234567890",
+      addressLabel: "Address (Optional)",
+      addressPlaceholder: "Street, City, Country",
     },
   },
   actions: {
