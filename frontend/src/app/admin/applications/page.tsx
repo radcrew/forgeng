@@ -1,21 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
-  DetailDialog,
   List,
   StatusTabs,
-  type Application,
   type ApplicationStatusFilter,
   useApplications,
 } from "@features/applications";
 
 const Page = () => {
+  const router = useRouter();
   const [filter, setFilter] = useState<ApplicationStatusFilter>("all");
-  const [selected, setSelected] = useState<Application | null>(null);
 
   const { data: applications = [], isLoading } = useApplications(filter);
 
@@ -33,16 +32,9 @@ const Page = () => {
       ) : applications.length === 0 ? (
         <EmptyState message="No applications in this category." />
       ) : (
-        <List applications={applications} onSelect={setSelected} />
-      )}
-
-      {selected && (
-        <DetailDialog
-          application={selected}
-          open={!!selected}
-          onOpenChange={(open) => {
-            if (!open) setSelected(null);
-          }}
+        <List
+          applications={applications}
+          onSelect={(app) => router.push(`/admin/applications/${app.id}`)}
         />
       )}
     </PageContainer>

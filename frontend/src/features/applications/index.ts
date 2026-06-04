@@ -10,6 +10,7 @@ export {
 } from "@constants/applications";
 export {
   createApplication,
+  getApplication,
   getMyApplication,
   listApplications,
   updateApplicationStatus,

@@ -45,6 +45,9 @@ export const createApplication = async (
 export const getMyApplication = async (): Promise<Application | null> =>
   apiClient.get<Application | null>("/applications/me");
 
+export const getApplication = async (id: number): Promise<Application> =>
+  apiClient.get<Application>(`/applications/${id}`);
+
 export const updateApplicationStatus = async (
   id: number,
   input: UpdateApplicationStatusInput,
