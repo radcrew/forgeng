@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -7,53 +8,68 @@ const daysFromNow = (days: number): Date =>
   new Date(today + days * 86_400_000);
 
 async function main(): Promise<void> {
+  const [studentHash, adminHash] = await Promise.all([
+    bcrypt.hash('student123!', 12),
+    bcrypt.hash('admin123!', 12),
+  ]);
+
   // Users — mirror the frontend mock so a fresh seed lights up every screen.
   const [avery, jordan, sarah, james, riley, sam] = await Promise.all([
     prisma.user.upsert({
       where: { email: 'avery@example.com' },
-      update: {},
+      update: { passwordHash: studentHash, emailVerified: true },
       create: {
         email: 'avery@example.com',
         name: 'Avery Chen',
         role: 'student',
+        passwordHash: studentHash,
+        emailVerified: true,
         githubUrl: 'https://github.com/averychen',
       },
     }),
     prisma.user.upsert({
       where: { email: 'jordan@example.com' },
-      update: {},
+      update: { passwordHash: studentHash, emailVerified: true },
       create: {
         email: 'jordan@example.com',
         name: 'Jordan Reyes',
         role: 'student',
+        passwordHash: studentHash,
+        emailVerified: true,
       },
     }),
     prisma.user.upsert({
       where: { email: 'sarah@example.com' },
-      update: {},
+      update: { passwordHash: adminHash, emailVerified: true },
       create: {
         email: 'sarah@example.com',
         name: 'Sarah Patel',
         role: 'admin',
+        passwordHash: adminHash,
+        emailVerified: true,
         githubUrl: 'https://github.com/sarahp',
       },
     }),
     prisma.user.upsert({
       where: { email: 'james@example.com' },
-      update: {},
+      update: { passwordHash: adminHash, emailVerified: true },
       create: {
         email: 'james@example.com',
         name: 'James Okafor',
         role: 'admin',
+        passwordHash: adminHash,
+        emailVerified: true,
       },
     }),
     prisma.user.upsert({
       where: { email: 'riley@example.com' },
-      update: {},
+      update: { passwordHash: adminHash, emailVerified: true },
       create: {
         email: 'riley@example.com',
         name: 'Riley Park',
         role: 'admin',
+        passwordHash: adminHash,
+        emailVerified: true,
       },
     }),
     prisma.user.upsert({
