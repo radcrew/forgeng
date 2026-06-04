@@ -30,11 +30,24 @@ export interface UpdateApplicationStatusInput {
   cohortId?: number | null;
 }
 
-export const listApplications = async (
-  status?: ApplicationStatus,
-): Promise<Application[]> => {
-  const query = status ? `?status=${encodeURIComponent(status)}` : "";
-  return apiClient.get<Application[]>(`/applications${query}`);
+export interface PaginatedApplications {
+  items: Application[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export const listApplications = async (params?: {
+  status?: ApplicationStatus;
+  page?: number;
+  pageSize?: number;
+}): Promise<PaginatedApplications> => {
+  const search = new URLSearchParams();
+  if (params?.status) search.set("status", params.status);
+  if (params?.page != null) search.set("page", String(params.page));
+  if (params?.pageSize != null) search.set("pageSize", String(params.pageSize));
+  const query = search.toString();
+  return apiClient.get<PaginatedApplications>(`/applications${query ? `?${query}` : ""}`);
 };
 
 export const createApplication = async (

@@ -1,6 +1,7 @@
 export type { Application, ApplicationStatus, ApplicationStatusFilter } from "./types";
 export type {
   CreateApplicationInput,
+  PaginatedApplications,
   UpdateApplicationStatusInput,
 } from "./api";
 export {

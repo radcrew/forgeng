@@ -23,6 +23,7 @@ import type { ApplicationDto } from '@common/mappers';
 import {
   ApplicationsService,
   type ApplicationStats,
+  type PaginatedApplications,
 } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
@@ -47,8 +48,8 @@ export class ApplicationsController {
 
   @Roles('admin')
   @Get()
-  list(@Query() query: ListApplicationsQuery): Promise<ApplicationDto[]> {
-    return this.service.list(query.status);
+  list(@Query() query: ListApplicationsQuery): Promise<PaginatedApplications> {
+    return this.service.list(query);
   }
 
   @Roles('applicant')
