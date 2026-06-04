@@ -75,7 +75,9 @@ export class CreateApplicationDto {
   telegram?: string;
 
   @IsOptional()
-  @Matches(/^\+[1-9]\d{6,14}$/, { message: 'Enter a phone number with country code (e.g. +1234567890)' })
+  @Matches(/^\+[1-9]\d{6,14}$/, {
+    message: 'Enter a phone number with country code (e.g. +1234567890)',
+  })
   whatsapp?: string;
 
   @IsOptional()
