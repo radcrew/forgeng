@@ -90,7 +90,10 @@ model User {
   role          Role     @default(applicant)
   bio           String?
   githubUrl     String?  @map("github_url")
-  avatarUrl     String?  @map("avatar_url")
+  avatarUrl            String?  @map("avatar_url")
+  registrationIp       String?  @map("registration_ip")
+  registrationCountry  String?  @map("registration_country")
+  registrationCity     String?  @map("registration_city")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

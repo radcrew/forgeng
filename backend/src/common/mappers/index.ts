@@ -25,6 +25,9 @@ export interface UserDto {
   bio: string | null;
   githubUrl: string | null;
   avatarUrl: string | null;
+  registrationIp: string | null;
+  registrationCountry: string | null;
+  registrationCity: string | null;
   createdAt: string;
 }
 
@@ -39,6 +42,9 @@ export function toUserDto(user: User): UserDto {
     bio: user.bio,
     githubUrl: user.githubUrl,
     avatarUrl: user.avatarUrl,
+    registrationIp: user.registrationIp,
+    registrationCountry: user.registrationCountry,
+    registrationCity: user.registrationCity,
     createdAt: user.createdAt.toISOString(),
   };
 }
