@@ -32,15 +32,19 @@ function IsWalletAddressForChain() {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isWalletAddressForChain',
-      target: (object as { constructor: new (...args: unknown[]) => unknown }).constructor,
+      target: (object as { constructor: new (...args: unknown[]) => unknown })
+        .constructor,
       propertyName,
       validator: {
         validate(value: unknown, args: ValidationArguments): boolean {
-          const chain = (args.object as WalletEntryDto).chain as WalletChain;
-          return typeof value === 'string' && (ADDRESS_PATTERNS[chain]?.test(value) ?? false);
+          const chain = (args.object as WalletEntryDto).chain;
+          return (
+            typeof value === 'string' &&
+            (ADDRESS_PATTERNS[chain]?.test(value) ?? false)
+          );
         },
         defaultMessage(args: ValidationArguments): string {
-          const chain = (args.object as WalletEntryDto).chain as WalletChain;
+          const chain = (args.object as WalletEntryDto).chain;
           return ADDRESS_MESSAGES[chain] ?? 'Invalid wallet address';
         },
       },

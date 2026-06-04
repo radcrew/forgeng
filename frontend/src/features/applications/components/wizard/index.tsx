@@ -40,6 +40,12 @@ export const Wizard = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Scope the draft key to the current user so different accounts on the
+  // same browser never share draft data.
+  const draftKey = user?.id
+    ? `${APPLICATION_DRAFT_STORAGE_KEY}_${user.id}`
+    : null;
+
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(APPLICATION_FORM_SCHEMA),
     defaultValues: {
@@ -76,9 +82,8 @@ export const Wizard = () => {
   }, [router]);
 
   useEffect(() => {
-    const parsed = readStorageJson<Partial<ApplicationFormValues>>(
-      APPLICATION_DRAFT_STORAGE_KEY,
-    );
+    if (!draftKey) return;
+    const parsed = readStorageJson<Partial<ApplicationFormValues>>(draftKey);
     if (!parsed) return;
     (Object.keys(parsed) as Array<keyof ApplicationFormValues>).forEach(
       (key) => {
@@ -86,17 +91,18 @@ export const Wizard = () => {
         if (typeof value === "string") form.setValue(key, value);
       },
     );
-  }, [form]);
+  }, [form, draftKey]);
 
   useEffect(() => {
+    if (!draftKey) return;
     // React Compiler can't memoize functions returned from useForm; this
     // subscriber only writes to localStorage so it's safe to opt out here.
     // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = form.watch((value) => {
-      writeStorageJson(APPLICATION_DRAFT_STORAGE_KEY, value);
+      writeStorageJson(draftKey, value);
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, draftKey]);
 
   const onSubmit = async (data: ApplicationFormValues) => {
     setIsSubmitting(true);
@@ -116,7 +122,7 @@ export const Wizard = () => {
         videoUrl: data.videoUrl,
         wallets: data.wallets,
       });
-      removeStorageItem(APPLICATION_DRAFT_STORAGE_KEY);
+      if (draftKey) removeStorageItem(draftKey);
       toast.success(APPLICATION_WIZARD_COPY.toast.submitSuccess, {
         description: APPLICATION_WIZARD_COPY.toast.submitSuccessDescription,
       });
