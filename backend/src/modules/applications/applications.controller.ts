@@ -4,12 +4,17 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   ParseIntPipe,
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from '@core/auth/roles.decorator';
 import { CurrentUser } from '@core/auth/current-user.decorator';
@@ -22,11 +27,17 @@ import {
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
+import { VideoService, type UploadedVideo } from './video.service';
+
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024; // 100 MB
 
 @ApiTags('applications')
 @Controller('applications')
 export class ApplicationsController {
-  constructor(private readonly service: ApplicationsService) {}
+  constructor(
+    private readonly service: ApplicationsService,
+    private readonly video: VideoService,
+  ) {}
 
   @Roles('admin')
   @Get('stats')
@@ -52,6 +63,23 @@ export class ApplicationsController {
     @Body() dto: CreateApplicationDto,
   ): Promise<ApplicationDto> {
     return this.service.create(user, dto);
+  }
+
+  @Post('video-intro')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor('video', { limits: { fileSize: MAX_VIDEO_BYTES } }),
+  )
+  uploadVideoIntro(
+    @CurrentUser() user: AuthUser,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: MAX_VIDEO_BYTES })],
+      }),
+    )
+    file: UploadedVideo,
+  ): Promise<{ url: string }> {
+    return this.video.upload(user, file);
   }
 
   @Roles('admin')

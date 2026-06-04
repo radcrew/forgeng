@@ -40,13 +40,17 @@ export class CreateApplicationDto {
   @MaxLength(500)
   facebook?: string;
 
-  @IsOptional()
   @IsUrl()
   @MaxLength(500)
-  github?: string;
+  github!: string;
 
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
   portfolio?: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(500)
+  videoUrl!: string;
 }

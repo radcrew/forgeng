@@ -9,9 +9,16 @@ export interface CreateApplicationInput {
   linkedin: string;
   twitter?: string;
   facebook?: string;
-  github?: string;
+  github: string;
   portfolio?: string;
+  videoUrl: string;
 }
+
+export const uploadVideoIntro = async (blob: Blob): Promise<{ url: string }> => {
+  const form = new FormData();
+  form.append("video", blob, "intro.webm");
+  return apiClient.postForm<{ url: string }>("/applications/video-intro", form);
+};
 
 export interface UpdateApplicationStatusInput {
   status: ApplicationStatus;

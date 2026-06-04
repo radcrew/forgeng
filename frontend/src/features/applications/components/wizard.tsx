@@ -36,6 +36,7 @@ import {
   writeStorageJson,
 } from "@utils/storage";
 import { createApplication, getMyApplication } from "../api";
+import { VideoRecorder } from "./video-recorder";
 import { ApiError } from "@lib/api-client";
 
 export const Wizard = () => {
@@ -55,6 +56,7 @@ export const Wizard = () => {
       facebook: "",
       github: "",
       portfolio: "",
+      videoUrl: "",
     },
   });
 
@@ -110,8 +112,9 @@ export const Wizard = () => {
         linkedin: data.linkedin,
         twitter: data.twitter || undefined,
         facebook: data.facebook || undefined,
-        github: data.github || undefined,
+        github: data.github,
         portfolio: data.portfolio || undefined,
+        videoUrl: data.videoUrl,
       });
       removeStorageItem(APPLICATION_DRAFT_STORAGE_KEY);
       toast.success(APPLICATION_WIZARD_COPY.toast.submitSuccess, {
@@ -382,6 +385,38 @@ export const Wizard = () => {
                             />
                           </FormControl>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+                {step === 5 && (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                    <h2 className="text-xl font-semibold">
+                      {APPLICATION_WIZARD_COPY.steps.videoIntro.title}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {APPLICATION_WIZARD_COPY.steps.videoIntro.hint}
+                    </p>
+                    <FormField
+                      control={form.control}
+                      name="videoUrl"
+                      render={({ fieldState }) => (
+                        <FormItem>
+                          <FormControl>
+                            <VideoRecorder
+                              onUploaded={(url) =>
+                                form.setValue("videoUrl", url, {
+                                  shouldValidate: true,
+                                })
+                              }
+                            />
+                          </FormControl>
+                          {fieldState.error && (
+                            <FormMessage>
+                              {fieldState.error.message}
+                            </FormMessage>
+                          )}
                         </FormItem>
                       )}
                     />

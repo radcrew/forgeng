@@ -14,6 +14,7 @@ export interface Application {
   facebook: string | null;
   github: string | null;
   portfolio: string | null;
+  videoUrl: string | null;
   status: ApplicationStatus;
   cohortId: number | null;
   reviewerNote: string | null;

@@ -58,6 +58,7 @@ export interface ApplicationDto {
   facebook: string | null;
   github: string | null;
   portfolio: string | null;
+  videoUrl: string | null;
   reviewerNote: string | null;
   cohortId: number | null;
   createdAt: string;
@@ -79,6 +80,7 @@ export function toApplicationDto(app: Application): ApplicationDto {
     facebook: app.facebook,
     github: app.github,
     portfolio: app.portfolio,
+    videoUrl: app.videoUrl,
     reviewerNote: app.reviewerNote,
     cohortId: app.cohortId,
     createdAt: app.createdAt.toISOString(),

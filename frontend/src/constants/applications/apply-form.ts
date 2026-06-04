@@ -21,15 +21,19 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     .url("Enter a valid LinkedIn URL (e.g. https://linkedin.com/in/you)"),
   twitter: optionalUrl,
   facebook: optionalUrl,
-  github: optionalUrl,
+  github: z
+    .string()
+    .min(1, "GitHub profile is required")
+    .url("Enter a valid GitHub URL (e.g. https://github.com/you)"),
   portfolio: optionalUrl,
+  videoUrl: z.string().min(1, "Please record and upload your video introduction"),
 });
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 
 export const APPLICATION_DRAFT_STORAGE_KEY = "apprenticeship_application_draft";
 
-export const APPLICATION_FORM_TOTAL_STEPS = 4;
+export const APPLICATION_FORM_TOTAL_STEPS = 5;
 
 export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
   number,
@@ -40,4 +44,5 @@ export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
   2: ["background", "experience"],
   3: ["motivation"],
   4: ["linkedin", "twitter", "facebook", "github", "portfolio"],
+  // Step 5 (video intro) is the submit step — validated by form.handleSubmit.
 };

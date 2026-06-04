@@ -26,16 +26,31 @@ export const APPLICATION_WIZARD_COPY = {
       motivationPlaceholder:
         "What are your goals? How will this apprenticeship help you achieve them?",
     },
+    videoIntro: {
+      title: "Video Introduction",
+      hint: "Record a short video (up to 30 seconds) introducing yourself.",
+      recordLabel: "Start Recording",
+      stopLabel: "Stop",
+      rerecordLabel: "Re-record",
+      countdownLabel: (s: number) => `Recording — ${s}s left`,
+      uploadingLabel: "Uploading...",
+      doneLabel: "Video uploaded",
+      errorLabel: "Something went wrong. Please try again.",
+      permissionDenied:
+        "Camera or microphone access was denied. Please allow access in your browser and try again.",
+      unsupported:
+        "Your browser does not support video recording. Try Chrome or Firefox.",
+    },
     socialProfiles: {
       title: "Social Profiles",
-      hint: "Help us get to know you better. LinkedIn is required.",
+      hint: "Help us get to know you better. LinkedIn and GitHub are required.",
       linkedinLabel: "LinkedIn",
       linkedinPlaceholder: "https://linkedin.com/in/your-profile",
       twitterLabel: "Twitter / X (Optional)",
       twitterPlaceholder: "https://twitter.com/yourhandle",
       facebookLabel: "Facebook (Optional)",
       facebookPlaceholder: "https://facebook.com/yourprofile",
-      githubLabel: "GitHub (Optional)",
+      githubLabel: "GitHub",
       githubPlaceholder: "https://github.com/yourusername",
       portfolioLabel: "Portfolio / Website (Optional)",
       portfolioPlaceholder: "https://yourwebsite.com",

@@ -61,6 +61,7 @@ export class ApplicationsService {
         facebook: dto.facebook,
         github: dto.github,
         portfolio: dto.portfolio,
+        videoUrl: dto.videoUrl,
         status: 'pending',
       },
     });
