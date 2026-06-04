@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { EmptyState } from "@components/shared";
 import { StatusBadge } from "@features/submissions";
 import type { AdminDashboard } from "../types";
+import { AdminAnalytics } from "./admin-analytics";
 
 export type AdminViewProps = { dashboard: AdminDashboard };
 
@@ -59,6 +60,8 @@ export const AdminView = ({ dashboard }: AdminViewProps) => (
         </CardContent>
       </Card>
     </div>
+
+    <AdminAnalytics dashboard={dashboard} />
 
     <div className="grid gap-8 lg:grid-cols-2">
       <div>

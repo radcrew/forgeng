@@ -17,10 +17,10 @@ export const ExternalLinkField = ({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 text-primary hover:underline text-sm"
+      className="flex items-start gap-2 text-primary hover:underline text-sm"
     >
-      <ExternalLink className="h-4 w-4 shrink-0" />
-      {href}
+      <ExternalLink className="h-4 w-4 shrink-0 mt-0.5" />
+      <span className="min-w-0 break-all">{href}</span>
     </a>
   </div>
 );

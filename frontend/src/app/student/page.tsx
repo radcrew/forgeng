@@ -2,17 +2,21 @@
 
 import { PageContainer, PageHeader } from "@components/shared";
 import {
+  CohortSwitcher,
   StudentOnboarding,
   StudentView,
   useStudentDashboard,
 } from "@features/dashboard";
-import { useCurrentUser } from "@contexts";
+import { useCurrentUser, useSelectedCohort } from "@contexts";
 
 const Page = () => {
-  const { data: dashboard, isLoading } = useStudentDashboard();
+  const { selectedCohortId } = useSelectedCohort();
+  const { data: dashboard, isLoading } = useStudentDashboard(selectedCohortId);
   const { user } = useCurrentUser();
 
-  if (isLoading || !dashboard) {
+  // Keep the stale dashboard on screen while switching cohorts so the page
+  // (and the switcher) don't flash back to the loading state.
+  if (!dashboard) {
     return (
       <PageContainer maxWidth="6xl" spacing="8">
         <PageHeader title="Student Dashboard" description="Loading…" />
@@ -20,7 +24,7 @@ const Page = () => {
     );
   }
 
-  const { cohort } = dashboard;
+  const { cohort, cohorts } = dashboard;
 
   return (
     <PageContainer maxWidth="6xl" spacing="8">
@@ -38,6 +42,15 @@ const Page = () => {
           ) : (
             "Let's get you started."
           )
+        }
+        actions={
+          cohort ? (
+            <CohortSwitcher
+              cohorts={cohorts}
+              activeCohortId={cohort.id}
+              disabled={isLoading}
+            />
+          ) : undefined
         }
       />
       {cohort ? (

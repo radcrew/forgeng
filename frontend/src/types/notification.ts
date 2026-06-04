@@ -1,4 +1,8 @@
-export type NotificationType = "feedback_received" | "task_published";
+export type NotificationType =
+  | "feedback_received"
+  | "task_published"
+  | "submission_received"
+  | "application_received";
 
 export interface Notification {
   id: number;

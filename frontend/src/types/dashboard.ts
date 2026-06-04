@@ -1,5 +1,5 @@
 import type { Application } from "./application";
-import type { Cohort } from "./cohort";
+import type { Cohort, CohortStatus } from "./cohort";
 import type { Submission } from "./submission";
 import type { TaskType } from "./task";
 
@@ -18,6 +18,8 @@ export interface StudentDashboard {
   // The dashboard endpoint already serializes the full cohort; the cohort
   // overview page relies on the description, dates, capacity, and status.
   cohort: Cohort | null;
+  // All cohorts the student belongs to (newest first) for the cohort switcher.
+  cohorts: { id: number; name: string }[];
   taskStats: {
     total: number;
     submitted: number;
@@ -27,6 +29,25 @@ export interface StudentDashboard {
   nextDeadline: string | null;
   recentSubmissions: Submission[];
   analytics: StudentAnalytics;
+}
+
+export interface AdminCohortStat {
+  id: number;
+  name: string;
+  status: CohortStatus;
+  students: number;
+  tasks: number;
+  submissions: number;
+}
+
+export interface AdminAnalytics {
+  submissionBreakdown: {
+    submitted: number;
+    approved: number;
+    needsWork: number;
+  };
+  weeklyActivity: { weekStart: string; submissions: number }[];
+  cohortStats: AdminCohortStat[];
 }
 
 export interface AdminDashboard {
@@ -42,4 +63,5 @@ export interface AdminDashboard {
   pendingReviews: number;
   recentApplications: Application[];
   recentSubmissions: Submission[];
+  analytics: AdminAnalytics;
 }

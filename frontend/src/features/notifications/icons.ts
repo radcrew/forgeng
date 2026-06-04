@@ -1,4 +1,10 @@
-import { Bell, ClipboardList, MessageSquare } from "lucide-react";
+import {
+  Bell,
+  ClipboardList,
+  Inbox,
+  MessageSquare,
+  UserPlus,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import type { NotificationType } from "@types";
@@ -7,6 +13,8 @@ import type { NotificationType } from "@types";
 export const NOTIFICATION_ICONS: Record<NotificationType, LucideIcon> = {
   feedback_received: MessageSquare,
   task_published: ClipboardList,
+  submission_received: Inbox,
+  application_received: UserPlus,
 };
 
 export const FALLBACK_NOTIFICATION_ICON = Bell;

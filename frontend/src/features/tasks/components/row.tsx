@@ -1,26 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
-import { Code2, Pencil, Trash2 } from "lucide-react";
+import { Code2, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { TASK_TYPE_ICON } from "@constants/tasks";
+import { ApiError } from "@lib/api-client";
+import { deleteTask } from "../api";
 import type { Task } from "@types";
 
 export type RowProps = {
   task: Task;
   onEdit: (task: Task) => void;
+  onDeleted?: () => void;
 };
 
-export const Row = ({ task, onEdit }: RowProps) => {
+export const Row = ({ task, onEdit, onDeleted }: RowProps) => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirm(`Delete task "${task.title}"?`)) return;
-    toast.success("Task deleted");
+    setIsDeleting(true);
+    try {
+      await deleteTask(task.id);
+      toast.success("Task deleted");
+      onDeleted?.();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not delete task. Please try again.";
+      toast.error(message);
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -67,8 +84,13 @@ export const Row = ({ task, onEdit }: RowProps) => {
             size="icon"
             className="text-destructive hover:text-destructive"
             onClick={handleDelete}
+            disabled={isDeleting}
           >
-            <Trash2 className="h-4 w-4" />
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>

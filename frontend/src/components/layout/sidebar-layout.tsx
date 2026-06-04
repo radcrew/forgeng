@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Settings,
   User,
   Users,
 } from "lucide-react";
@@ -54,9 +53,10 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { title: "Applications", href: "/admin/applications", icon: FileText },
     { title: "Review Queue", href: "/admin/reviews", icon: ClipboardList },
-    { title: "Cohorts", href: "/admin/cohorts", icon: Users },
+    { title: "Cohorts", href: "/admin/cohorts", icon: GraduationCap },
     { title: "Tasks", href: "/admin/tasks", icon: CheckSquare },
-    { title: "Users", href: "/admin/users", icon: Settings },
+    { title: "Notifications", href: "/admin/notifications", icon: Bell },
+    { title: "Users", href: "/admin/users", icon: Users },
   ],
 };
 
@@ -98,7 +98,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 <Logo size={28} priority />
                 <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
               </div>
-              {role === "student" && <NotificationBell />}
+              {(role === "student" || role === "admin") && <NotificationBell />}
             </div>
             <p className="text-sm text-sidebar-foreground/70 capitalize mt-2">
               {role} Portal
@@ -178,7 +178,7 @@ function MobileTopBar({ role }: { role: UserRole }) {
         <Logo size={24} />
         <span className="font-bold tracking-tight">Forgeng</span>
       </div>
-      {role === "student" && (
+      {(role === "student" || role === "admin") && (
         <div className="ml-auto">
           <NotificationBell />
         </div>

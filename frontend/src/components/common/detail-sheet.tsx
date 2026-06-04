@@ -39,8 +39,8 @@ export const DetailSheet = ({
       className={`${SHEET_SIZES[size]} overflow-y-auto`}
     >
       <SheetHeader>
-        <SheetTitle className="text-xl">{title}</SheetTitle>
-        {subtitle ? <div className="mt-1">{subtitle}</div> : null}
+        <SheetTitle className="text-xl break-words">{title}</SheetTitle>
+        {subtitle ? <div className="mt-1 min-w-0">{subtitle}</div> : null}
       </SheetHeader>
       <div className="mt-6 space-y-6">{children}</div>
     </SheetContent>

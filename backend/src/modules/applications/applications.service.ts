@@ -1,12 +1,14 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ApplicationStatus, Role, type User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { toApplicationDto, type ApplicationDto } from '@common/mappers';
 import { splitName } from '@common/string';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 
@@ -20,7 +22,12 @@ export interface ApplicationStats {
 
 @Injectable()
 export class ApplicationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ApplicationsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(status?: ApplicationStatus): Promise<ApplicationDto[]> {
     const rows = await this.prisma.application.findMany({
@@ -52,6 +59,19 @@ export class ApplicationsService {
         status: 'pending',
       },
     });
+
+    // Best-effort: a notification failure must never break the application.
+    try {
+      await this.notifications.notifyApplicationReceived({
+        applicantName: `${firstName} ${lastName}`.trim() || user.email,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Failed to notify admins of application',
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+
     return toApplicationDto(created);
   }
 

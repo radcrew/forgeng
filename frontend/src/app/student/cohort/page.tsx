@@ -10,9 +10,10 @@ import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { useSelectedCohort } from "@contexts";
 import { StatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
-import { useStudentDashboard } from "@features/dashboard";
+import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useTasks } from "@features/tasks";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 
@@ -24,8 +25,11 @@ const dateRange = (start: string | null, end: string | null): string | null => {
 };
 
 const Page = () => {
-  const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
+  const { selectedCohortId } = useSelectedCohort();
+  const { data: dashboard, isLoading: dashboardLoading } =
+    useStudentDashboard(selectedCohortId);
   const cohort = dashboard?.cohort ?? null;
+  const cohorts = dashboard?.cohorts ?? [];
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohort?.id);
   const { data: submissions = [] } = useSubmissions();
 
@@ -45,7 +49,9 @@ const Page = () => {
     [tasks],
   );
 
-  if (dashboardLoading || !dashboard) {
+  // Keep the stale dashboard on screen while switching cohorts so the page
+  // (and the switcher) don't flash back to the loading state.
+  if (!dashboard) {
     return (
       <PageContainer maxWidth="4xl" spacing="8">
         <PageHeader title="Cohort" description="Loading…" />
@@ -71,7 +77,17 @@ const Page = () => {
 
   return (
     <PageContainer maxWidth="4xl" spacing="8">
-      <PageHeader title={cohort.name} description="Your cohort overview." />
+      <PageHeader
+        title={cohort.name}
+        description="Your cohort overview."
+        actions={
+          <CohortSwitcher
+            cohorts={cohorts}
+            activeCohortId={cohort.id}
+            disabled={dashboardLoading}
+          />
+        }
+      />
 
       <Card>
         <CardContent className="space-y-5 p-6">

@@ -24,9 +24,9 @@ export const DetailField = ({
   label: string;
   value: React.ReactNode;
 }) => (
-  <div>
+  <div className="min-w-0">
     <p className="text-muted-foreground">{label}</p>
-    <p className="font-medium">{value}</p>
+    <p className="font-medium break-words">{value}</p>
   </div>
 );
 
@@ -49,7 +49,7 @@ export const ProseBlock = ({
 }) => (
   <p
     className={cn(
-      "text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 rounded-lg p-3",
+      "text-sm text-muted-foreground whitespace-pre-wrap break-words bg-muted/50 rounded-lg p-3",
       className,
     )}
   >

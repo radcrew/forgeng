@@ -29,9 +29,10 @@ import {
   type TaskProgressFilter,
   type TaskSort,
 } from "@constants/tasks";
-import { useStudentDashboard } from "@features/dashboard";
+import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
+import { useSelectedCohort } from "@contexts";
 import { cn } from "@utils";
 import type { Task, TaskType } from "@types";
 
@@ -47,7 +48,9 @@ const Page = () => {
   // Captured once at mount so overdue checks stay pure across re-renders.
   const [now] = useState(() => Date.now());
 
-  const { data: dashboard, isLoading: dashboardLoading } = useStudentDashboard();
+  const { selectedCohortId } = useSelectedCohort();
+  const { data: dashboard, isLoading: dashboardLoading } =
+    useStudentDashboard(selectedCohortId);
   const cohortId = dashboard?.cohort?.id;
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohortId);
   const { data: submissions = [], refetch: refetchSubmissions } =
@@ -80,7 +83,9 @@ const Page = () => {
     return filtered;
   }, [tasks, submissionByTaskId, search, typeFilter, progressFilter, sort]);
 
-  if (dashboardLoading || !dashboard) {
+  // Keep stale data on screen while switching cohorts so the page (and the
+  // switcher) don't flash back to the loading state.
+  if (!dashboard) {
     return (
       <PageContainer maxWidth="4xl">
         <PageHeader title="Tasks" description="Loading…" />
@@ -111,6 +116,13 @@ const Page = () => {
           hasTasks
             ? `${cohort.name} — ${visibleTasks.length} of ${tasks.length} tasks`
             : cohort.name
+        }
+        actions={
+          <CohortSwitcher
+            cohorts={dashboard.cohorts}
+            activeCohortId={cohort.id}
+            disabled={dashboardLoading}
+          />
         }
       />
 

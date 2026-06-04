@@ -93,9 +93,11 @@ export class NotificationsService {
     submissionId: number;
     verdict: Verdict;
   }): Promise<void> {
-    const { userId, submissionId, verdict } = params;
+    const { userId, verdict } = params;
     const approved = verdict === 'approved';
-    const link = `/student/submissions/${submissionId}`;
+    // Submissions are viewed via a detail sheet on the list page; there is no
+    // standalone /student/submissions/:id route, so deep-link to the list.
+    const link = `/student/submissions`;
 
     const [prefRow, user] = await Promise.all([
       this.prisma.notificationPreference.findUnique({ where: { userId } }),
@@ -171,6 +173,50 @@ export class NotificationsService {
       .filter((e) => prefsFor(e.userId).taskEmail)
       .map((e) => e.user.email);
     await Promise.all(recipients.map((to) => this.sendEmail(to, email)));
+  }
+
+  /**
+   * Notify every admin that a student submitted work for review. In-app only —
+   * admins have no per-category email preferences in the current model.
+   */
+  async notifySubmissionReceived(params: {
+    studentName: string;
+    taskTitle: string;
+  }): Promise<void> {
+    await this.notifyAdmins({
+      type: 'submission_received',
+      title: 'New submission to review',
+      body: `${params.studentName} submitted "${params.taskTitle}"`,
+      link: '/admin/reviews',
+    });
+  }
+
+  /** Notify every admin that a new application was submitted. */
+  async notifyApplicationReceived(params: {
+    applicantName: string;
+  }): Promise<void> {
+    await this.notifyAdmins({
+      type: 'application_received',
+      title: 'New application received',
+      body: `${params.applicantName} submitted an application`,
+      link: '/admin/applications',
+    });
+  }
+
+  private async notifyAdmins(notification: {
+    type: 'submission_received' | 'application_received';
+    title: string;
+    body: string;
+    link: string;
+  }): Promise<void> {
+    const admins = await this.prisma.user.findMany({
+      where: { role: 'admin' },
+      select: { id: true },
+    });
+    if (admins.length === 0) return;
+    await this.prisma.notification.createMany({
+      data: admins.map((a) => ({ userId: a.id, ...notification })),
+    });
   }
 
   private absoluteUrl(path: string): string {

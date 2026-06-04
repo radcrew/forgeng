@@ -17,11 +17,14 @@ import {
 } from "@components/ui/select";
 import type { UserProfile, UserRole } from "@types";
 
+import { ProfileSheet } from "./profile-sheet";
+
 export type RowProps = { user: UserProfile };
 
 export const Row = ({ user }: RowProps) => {
   const [role, setRole] = useState<UserRole>(user.role);
   const [isSaving, setIsSaving] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleRoleChange = async (next: string) => {
     const newRole = next as UserRole;
@@ -48,18 +51,27 @@ export const Row = ({ user }: RowProps) => {
   return (
     <Card>
       <div className="flex items-center gap-4 p-4">
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
-          {(user.name?.[0] ?? user.email[0]).toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{user.name ?? "—"}</p>
-          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-          {user.githubUrl && (
-            <p className="text-xs text-muted-foreground truncate">
-              {user.githubUrl}
+        <button
+          type="button"
+          onClick={() => setProfileOpen(true)}
+          className="flex flex-1 items-center gap-4 min-w-0 rounded-md text-left transition-colors hover:bg-accent/40 -m-1 p-1"
+          aria-label={`View profile for ${user.name ?? user.email}`}
+        >
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+            {(user.name?.[0] ?? user.email[0]).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium truncate">{user.name ?? "—"}</p>
+            <p className="text-sm text-muted-foreground truncate">
+              {user.email}
             </p>
-          )}
-        </div>
+            {user.githubUrl && (
+              <p className="text-xs text-muted-foreground truncate">
+                {user.githubUrl}
+              </p>
+            )}
+          </div>
+        </button>
         <div className="flex items-center gap-3 shrink-0">
           <span className="text-xs text-muted-foreground hidden sm:block">
             {format(new Date(user.createdAt), "MMM d, yyyy")}
@@ -82,6 +94,12 @@ export const Row = ({ user }: RowProps) => {
           </Select>
         </div>
       </div>
+
+      <ProfileSheet
+        user={user}
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+      />
     </Card>
   );
 };

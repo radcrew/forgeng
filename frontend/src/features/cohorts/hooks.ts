@@ -2,9 +2,18 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { listCohorts, listEnrollments } from "./api";
+import { getCohort, listCohorts, listEnrollments } from "./api";
 
 export const useCohorts = () => useAsyncResource(() => listCohorts(), []);
+
+export const useCohort = (cohortId: number) =>
+  useAsyncResource(
+    () =>
+      Number.isFinite(cohortId)
+        ? getCohort(cohortId)
+        : Promise.reject(new Error("Invalid cohort id")),
+    [cohortId],
+  );
 
 export const useEnrollments = (cohortId: number | undefined) =>
   useAsyncResource(

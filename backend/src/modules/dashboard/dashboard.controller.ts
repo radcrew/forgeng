@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@core/auth/current-user.decorator';
 import { Roles } from '@core/auth/roles.decorator';
@@ -16,8 +16,12 @@ export class DashboardController {
 
   @Roles('student')
   @Get('student')
-  student(@CurrentUser() user: AuthUser): Promise<StudentDashboard> {
-    return this.service.student(user);
+  student(
+    @CurrentUser() user: AuthUser,
+    @Query('cohortId', new ParseIntPipe({ optional: true }))
+    cohortId?: number,
+  ): Promise<StudentDashboard> {
+    return this.service.student(user, cohortId);
   }
 
   @Roles('admin')
