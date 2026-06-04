@@ -50,6 +50,11 @@ export const Wizard = () => {
       background: "",
       experience: "",
       motivation: "",
+      linkedin: "",
+      twitter: "",
+      facebook: "",
+      github: "",
+      portfolio: "",
     },
   });
 
@@ -102,6 +107,11 @@ export const Wizard = () => {
         background: data.background,
         motivation: data.motivation,
         experience: data.experience || undefined,
+        linkedin: data.linkedin,
+        twitter: data.twitter || undefined,
+        facebook: data.facebook || undefined,
+        github: data.github || undefined,
+        portfolio: data.portfolio || undefined,
       });
       removeStorageItem(APPLICATION_DRAFT_STORAGE_KEY);
       toast.success(APPLICATION_WIZARD_COPY.toast.submitSuccess, {
@@ -267,6 +277,107 @@ export const Wizard = () => {
                                   .motivationPlaceholder
                               }
                               className="min-h-[150px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
+                {step === 4 && (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                    <h2 className="text-xl font-semibold">
+                      {APPLICATION_WIZARD_COPY.steps.socialProfiles.title}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {APPLICATION_WIZARD_COPY.steps.socialProfiles.hint}
+                    </p>
+                    <FormField
+                      control={form.control}
+                      name="linkedin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {APPLICATION_WIZARD_COPY.steps.socialProfiles.linkedinLabel}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={APPLICATION_WIZARD_COPY.steps.socialProfiles.linkedinPlaceholder}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="github"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {APPLICATION_WIZARD_COPY.steps.socialProfiles.githubLabel}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={APPLICATION_WIZARD_COPY.steps.socialProfiles.githubPlaceholder}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="twitter"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {APPLICATION_WIZARD_COPY.steps.socialProfiles.twitterLabel}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={APPLICATION_WIZARD_COPY.steps.socialProfiles.twitterPlaceholder}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="facebook"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {APPLICATION_WIZARD_COPY.steps.socialProfiles.facebookLabel}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={APPLICATION_WIZARD_COPY.steps.socialProfiles.facebookPlaceholder}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="portfolio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {APPLICATION_WIZARD_COPY.steps.socialProfiles.portfolioLabel}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={APPLICATION_WIZARD_COPY.steps.socialProfiles.portfolioPlaceholder}
                               {...field}
                             />
                           </FormControl>

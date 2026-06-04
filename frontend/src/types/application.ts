@@ -9,6 +9,11 @@ export interface Application {
   background: string | null;
   experience: string | null;
   motivation: string | null;
+  linkedin: string | null;
+  twitter: string | null;
+  facebook: string | null;
+  github: string | null;
+  portfolio: string | null;
   status: ApplicationStatus;
   cohortId: number | null;
   reviewerNote: string | null;

@@ -169,6 +169,11 @@ model Application {
   motivation   String?
   background   String?
   experience   String?
+  linkedin     String?
+  twitter      String?
+  facebook     String?
+  github       String?
+  portfolio    String?
   reviewerNote String?           @map("reviewer_note")
   cohortId     Int?              @map("cohort_id")
   createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz

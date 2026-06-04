@@ -6,6 +6,11 @@ export interface CreateApplicationInput {
   background: string;
   motivation: string;
   experience?: string;
+  linkedin: string;
+  twitter?: string;
+  facebook?: string;
+  github?: string;
+  portfolio?: string;
 }
 
 export interface UpdateApplicationStatusInput {

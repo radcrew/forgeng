@@ -1,4 +1,10 @@
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /**
  * Identity (name + email) is taken from the authenticated user, not the
@@ -19,4 +25,28 @@ export class CreateApplicationDto {
   @IsString()
   @MaxLength(4000)
   experience?: string;
+
+  @IsUrl()
+  @MaxLength(500)
+  linkedin!: string;
+
+  @IsOptional()
+  @IsUrl()
+  @MaxLength(500)
+  twitter?: string;
+
+  @IsOptional()
+  @IsUrl()
+  @MaxLength(500)
+  facebook?: string;
+
+  @IsOptional()
+  @IsUrl()
+  @MaxLength(500)
+  github?: string;
+
+  @IsOptional()
+  @IsUrl()
+  @MaxLength(500)
+  portfolio?: string;
 }

@@ -53,6 +53,11 @@ export interface ApplicationDto {
   motivation: string | null;
   background: string | null;
   experience: string | null;
+  linkedin: string | null;
+  twitter: string | null;
+  facebook: string | null;
+  github: string | null;
+  portfolio: string | null;
   reviewerNote: string | null;
   cohortId: number | null;
   createdAt: string;
@@ -69,6 +74,11 @@ export function toApplicationDto(app: Application): ApplicationDto {
     motivation: app.motivation,
     background: app.background,
     experience: app.experience,
+    linkedin: app.linkedin,
+    twitter: app.twitter,
+    facebook: app.facebook,
+    github: app.github,
+    portfolio: app.portfolio,
     reviewerNote: app.reviewerNote,
     cohortId: app.cohortId,
     createdAt: app.createdAt.toISOString(),

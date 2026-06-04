@@ -26,6 +26,20 @@ export const APPLICATION_WIZARD_COPY = {
       motivationPlaceholder:
         "What are your goals? How will this apprenticeship help you achieve them?",
     },
+    socialProfiles: {
+      title: "Social Profiles",
+      hint: "Help us get to know you better. LinkedIn is required.",
+      linkedinLabel: "LinkedIn",
+      linkedinPlaceholder: "https://linkedin.com/in/your-profile",
+      twitterLabel: "Twitter / X (Optional)",
+      twitterPlaceholder: "https://twitter.com/yourhandle",
+      facebookLabel: "Facebook (Optional)",
+      facebookPlaceholder: "https://facebook.com/yourprofile",
+      githubLabel: "GitHub (Optional)",
+      githubPlaceholder: "https://github.com/yourusername",
+      portfolioLabel: "Portfolio / Website (Optional)",
+      portfolioPlaceholder: "https://yourwebsite.com",
+    },
   },
   actions: {
     back: "Back",

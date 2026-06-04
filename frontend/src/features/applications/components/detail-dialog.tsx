@@ -107,6 +107,39 @@ export const DetailDialog = ({
           </div>
         )}
 
+        {(application.linkedin ||
+          application.github ||
+          application.twitter ||
+          application.facebook ||
+          application.portfolio) && (
+          <div>
+            <SectionTitle className="mb-2">Social Profiles</SectionTitle>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { key: "linkedin", label: "LinkedIn" },
+                  { key: "github", label: "GitHub" },
+                  { key: "twitter", label: "Twitter" },
+                  { key: "facebook", label: "Facebook" },
+                  { key: "portfolio", label: "Portfolio" },
+                ] as const
+              )
+                .filter(({ key }) => !!application[key])
+                .map(({ key, label }) => (
+                  <a
+                    key={key}
+                    href={application[key]!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary underline underline-offset-2 hover:opacity-80"
+                  >
+                    {label}
+                  </a>
+                ))}
+            </div>
+          </div>
+        )}
+
         <FormField label="Status">
           <Select
             value={status}

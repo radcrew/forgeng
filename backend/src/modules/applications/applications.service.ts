@@ -56,6 +56,11 @@ export class ApplicationsService {
         motivation: dto.motivation,
         background: dto.background,
         experience: dto.experience,
+        linkedin: dto.linkedin,
+        twitter: dto.twitter,
+        facebook: dto.facebook,
+        github: dto.github,
+        portfolio: dto.portfolio,
         status: 'pending',
       },
     });
