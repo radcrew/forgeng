@@ -6,6 +6,8 @@ export {
   APPLICATION_FORM_FIELDS_BY_STEP,
   APPLICATION_FORM_SCHEMA,
   APPLICATION_FORM_TOTAL_STEPS,
+  WALLET_CHAINS,
   type ApplicationFormValues,
+  type WalletChain,
 } from "./apply-form";
 export { APPLICATION_WIZARD_COPY } from "./wizard";
