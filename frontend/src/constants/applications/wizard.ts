@@ -53,7 +53,7 @@ export const APPLICATION_WIZARD_COPY = {
       tronLabel: "Tron Address (Optional)",
       tronDescription: "Your Tron wallet address. Starts with T.",
       tronPlaceholder: "T...",
-      atLeastOneHint: "At least one address is required.",
+      atLeastOneHint: "Optional — you can skip this if you prefer.",
     },
     socialProfiles: {
       title: "Social Profiles",

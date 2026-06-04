@@ -117,18 +117,15 @@ export const StepWallets = ({ control }: Props) => {
                 )}
               />
 
-              {/* Remove row */}
-              {fields.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="mt-0.5 shrink-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => remove(index)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="mt-0.5 shrink-0 text-muted-foreground hover:text-destructive"
+                onClick={() => remove(index)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           );
         })}

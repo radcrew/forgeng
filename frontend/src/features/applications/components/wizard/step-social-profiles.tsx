@@ -19,8 +19,12 @@ interface Props {
   control: Control<ApplicationFormValues>;
 }
 
+type SocialProfileFieldName =
+  | "linkedin" | "github" | "twitter" | "facebook"
+  | "telegram" | "whatsapp" | "portfolio" | "address";
+
 type SocialField = {
-  name: keyof ApplicationFormValues;
+  name: SocialProfileFieldName;
   label: string;
   placeholder: string;
   multiline?: boolean;
@@ -51,9 +55,9 @@ export const StepSocialProfiles = ({ control }: Props) => (
             <FormLabel>{label}</FormLabel>
             <FormControl>
               {multiline ? (
-                <Textarea placeholder={placeholder} className="min-h-[80px]" {...field} />
+                <Textarea placeholder={placeholder} className="min-h-[80px]" {...field} value={field.value as string} />
               ) : (
-                <Input placeholder={placeholder} {...field} />
+                <Input placeholder={placeholder} {...field} value={field.value as string} />
               )}
             </FormControl>
             <FormMessage />

@@ -65,10 +65,9 @@ export class ApplicationsService {
         whatsapp: dto.whatsapp,
         address: dto.address,
         videoUrl: dto.videoUrl,
-        wallets: dto.wallets.map((w) => ({
-          chain: w.chain,
-          address: w.address,
-        })),
+        wallets:
+          dto.wallets?.map((w) => ({ chain: w.chain, address: w.address })) ??
+          [],
         status: 'pending',
       },
     });

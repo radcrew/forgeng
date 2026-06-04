@@ -1,5 +1,4 @@
 import {
-  ArrayMinSize,
   IsArray,
   IsEnum,
   IsOptional,
@@ -84,11 +83,11 @@ export class CreateApplicationDto {
   @MaxLength(500)
   videoUrl!: string;
 
+  @IsOptional()
   @IsArray()
-  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => WalletEntryDto)
-  wallets!: WalletEntryDto[];
+  wallets?: WalletEntryDto[];
 
   @IsOptional()
   @IsString()

@@ -24,7 +24,7 @@ const ADDRESS_MESSAGES: Record<WalletChain, string> = {
 
 const walletEntry = z
   .object({
-    chain: z.enum(WALLET_CHAINS, { required_error: "Select a chain" }),
+    chain: z.enum(["evm", "solana", "tron"] as ["evm", "solana", "tron"], { error: "Select a chain" }),
     address: z.string().min(1, "Address is required"),
   })
   .superRefine((entry, ctx) => {
@@ -70,9 +70,7 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     ),
   address: z.string().max(500, "Address must be under 500 characters"),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
-  wallets: z
-    .array(walletEntry)
-    .min(1, "Please add at least one wallet address"),
+  wallets: z.array(walletEntry),
 });
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
