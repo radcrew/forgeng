@@ -51,11 +51,13 @@ export class ApplicationsController {
     return this.service.list(query.status);
   }
 
+  @Roles('applicant')
   @Get('me')
   findMine(@CurrentUser() user: AuthUser): Promise<ApplicationDto | null> {
     return this.service.findMine(user.id);
   }
 
+  @Roles('applicant')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(
@@ -65,6 +67,7 @@ export class ApplicationsController {
     return this.service.create(user, dto);
   }
 
+  @Roles('applicant')
   @Post('video-intro')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(
