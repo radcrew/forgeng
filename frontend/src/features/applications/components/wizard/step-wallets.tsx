@@ -19,6 +19,19 @@ interface Props {
   control: Control<ApplicationFormValues>;
 }
 
+type WalletField = {
+  name: keyof ApplicationFormValues;
+  label: string;
+  description: string;
+  placeholder: string;
+};
+
+const FIELDS: WalletField[] = [
+  { name: "walletEvm", label: COPY.evmLabel, description: COPY.evmDescription, placeholder: COPY.evmPlaceholder },
+  { name: "walletSolana", label: COPY.solanaLabel, description: COPY.solanaDescription, placeholder: COPY.solanaPlaceholder },
+  { name: "walletTron", label: COPY.tronLabel, description: COPY.tronDescription, placeholder: COPY.tronPlaceholder },
+];
+
 export const StepWallets = ({ control }: Props) => (
   <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
     <div>
@@ -26,50 +39,22 @@ export const StepWallets = ({ control }: Props) => (
       <p className="mt-1 text-sm text-muted-foreground">{COPY.hint}</p>
       <p className="mt-1 text-xs text-muted-foreground">{COPY.atLeastOneHint}</p>
     </div>
-
-    <FormField
-      control={control}
-      name="walletEvm"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{COPY.evmLabel}</FormLabel>
-          <FormDescription>{COPY.evmDescription}</FormDescription>
-          <FormControl>
-            <Input placeholder={COPY.evmPlaceholder} {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-
-    <FormField
-      control={control}
-      name="walletSolana"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{COPY.solanaLabel}</FormLabel>
-          <FormDescription>{COPY.solanaDescription}</FormDescription>
-          <FormControl>
-            <Input placeholder={COPY.solanaPlaceholder} {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-
-    <FormField
-      control={control}
-      name="walletTron"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{COPY.tronLabel}</FormLabel>
-          <FormDescription>{COPY.tronDescription}</FormDescription>
-          <FormControl>
-            <Input placeholder={COPY.tronPlaceholder} {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    {FIELDS.map(({ name, label, description, placeholder }) => (
+      <FormField
+        key={name}
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <FormDescription>{description}</FormDescription>
+            <FormControl>
+              <Input placeholder={placeholder} {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    ))}
   </div>
 );

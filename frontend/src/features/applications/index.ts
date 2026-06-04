@@ -1,4 +1,4 @@
-export type { Application, ApplicationStatus } from "./types";
+export type { Application, ApplicationStatus, ApplicationStatusFilter } from "./types";
 export type {
   CreateApplicationInput,
   UpdateApplicationStatusInput,
@@ -16,7 +16,7 @@ export {
 } from "./api";
 export { useApplications, useUpdateApplicationStatus } from "./hooks";
 
-export type { ApplicationStatusFilter } from "@types";
+export { uploadVideoIntro } from "./api";
 export { StatusTabs } from "./components/status-tabs";
 export type { StatusTabsProps } from "./components/status-tabs";
 export { StatusBadge } from "./components/status-badge";

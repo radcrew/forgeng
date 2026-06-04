@@ -60,7 +60,9 @@ export class CreateApplicationDto {
   walletEvm?: string;
 
   @IsOptional()
-  @Matches(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, { message: 'Invalid Solana address' })
+  @Matches(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, {
+    message: 'Invalid Solana address',
+  })
   walletSolana?: string;
 
   @IsOptional()
