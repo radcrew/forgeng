@@ -7,6 +7,8 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  registerDecorator,
+  ValidationArguments,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -20,6 +22,32 @@ const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
   tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
 };
 
+const ADDRESS_MESSAGES: Record<WalletChain, string> = {
+  evm: 'Invalid EVM address (0x + 40 hex characters)',
+  solana: 'Invalid Solana address',
+  tron: 'Invalid Tron address (must start with T)',
+};
+
+function IsWalletAddressForChain() {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'isWalletAddressForChain',
+      target: (object as { constructor: new (...args: unknown[]) => unknown }).constructor,
+      propertyName,
+      validator: {
+        validate(value: unknown, args: ValidationArguments): boolean {
+          const chain = (args.object as WalletEntryDto).chain as WalletChain;
+          return typeof value === 'string' && (ADDRESS_PATTERNS[chain]?.test(value) ?? false);
+        },
+        defaultMessage(args: ValidationArguments): string {
+          const chain = (args.object as WalletEntryDto).chain as WalletChain;
+          return ADDRESS_MESSAGES[chain] ?? 'Invalid wallet address';
+        },
+      },
+    });
+  };
+}
+
 export class WalletEntryDto {
   @IsEnum(SUPPORTED_CHAINS)
   chain!: WalletChain;
@@ -27,12 +55,8 @@ export class WalletEntryDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
+  @IsWalletAddressForChain()
   address!: string;
-
-  // Address format validated in the service after deserialization.
-  isValidAddress(): boolean {
-    return ADDRESS_PATTERNS[this.chain]?.test(this.address) ?? false;
-  }
 }
 
 /**
