@@ -29,7 +29,14 @@ export const Row = ({ application, onSelect }: RowProps) => {
             {format(new Date(application.createdAt), "MMM d, yyyy")}
           </span>
           <StatusBadge status={application.status} />
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect();
+            }}
+          >
             Review
           </Button>
         </div>

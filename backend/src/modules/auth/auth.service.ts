@@ -14,6 +14,7 @@ import { toUserDto, type UserDto } from '@common/mappers';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 import { EmailService } from './services/email.service';
+import { GeoService } from './services/geo.service';
 import { PasswordService } from './services/password.service';
 import { TokenService } from './services/token.service';
 import { VerificationService } from './services/verification.service';
@@ -38,16 +39,21 @@ export class AuthService {
     private readonly tokens: TokenService,
     private readonly verification: VerificationService,
     private readonly email: EmailService,
+    private readonly geo: GeoService,
     private readonly config: ConfigService<AppConfiguration, true>,
   ) {}
 
-  async register(dto: RegisterDto): Promise<{ user: UserDto }> {
+  async register(
+    dto: RegisterDto,
+    ctx: RequestContext,
+  ): Promise<{ user: UserDto }> {
     const email = dto.email.toLowerCase();
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new ConflictException('Email is already registered.');
     }
 
+    const { country, city } = this.geo.lookup(ctx.ip);
     const passwordHash = await this.password.hash(dto.password);
     const user = await this.prisma.user.create({
       data: {
@@ -55,6 +61,9 @@ export class AuthService {
         passwordHash,
         name: dto.name,
         emailVerified: false,
+        registrationIp: ctx.ip ?? null,
+        registrationCountry: country,
+        registrationCity: city,
       },
     });
 
@@ -178,12 +187,16 @@ export class AuthService {
 
       let dbUser = await tx.user.findUnique({ where: { email } });
       if (!dbUser) {
+        const { country, city } = this.geo.lookup(ctx.ip);
         dbUser = await tx.user.create({
           data: {
             email,
             name: profile.name,
             avatarUrl: profile.avatarUrl,
             emailVerified: profile.emailVerified,
+            registrationIp: ctx.ip ?? null,
+            registrationCountry: country,
+            registrationCity: city,
           },
         });
       } else if (!dbUser.emailVerified && profile.emailVerified) {

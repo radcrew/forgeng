@@ -51,8 +51,11 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() dto: RegisterDto): Promise<{ user: UserDto }> {
-    return this.service.register(dto);
+  async register(
+    @Body() dto: RegisterDto,
+    @Req() req: Request,
+  ): Promise<{ user: UserDto }> {
+    return this.service.register(dto, ctxFromRequest(req));
   }
 
   @Public()
@@ -248,8 +251,12 @@ export class AuthController {
 
 function ctxFromRequest(req: Request): { userAgent?: string; ip?: string } {
   const ua = req.headers['user-agent'];
+  // Prefer X-Forwarded-For (set by reverse proxies); fall back to socket IP.
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip =
+    typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
   return {
     userAgent: typeof ua === 'string' ? ua.slice(0, 255) : undefined,
-    ip: req.ip,
+    ip,
   };
 }

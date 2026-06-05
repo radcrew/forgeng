@@ -12,7 +12,7 @@ import type { Response } from 'express';
  * Translate Prisma errors into clean HTTP responses.
  * - P2002 (unique violation) → 409 Conflict
  * - P2025 (record not found) → 404 Not Found
- * - everything else → 500 with the Prisma code surfaced.
+ * - everything else → 500 with a generic message (code logged server-side only)
  */
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaExceptionFilter implements ExceptionFilter {
@@ -42,13 +42,13 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         return;
       default:
         this.logger.error(
-          `Unhandled Prisma error ${exception.code}`,
-          exception,
+          `Unhandled Prisma error ${exception.code}: ${exception.message}`,
+          exception.stack,
         );
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'Internal Server Error',
-          message: `Database error (${exception.code}).`,
+          message: 'Something went wrong. Please try again later.',
         });
     }
   }

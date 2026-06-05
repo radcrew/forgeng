@@ -11,10 +11,19 @@ import {
 } from "./api";
 import type { ApplicationStatusFilter } from "@types";
 
-export const useApplications = (filter: ApplicationStatusFilter) =>
+export const useApplications = (
+  filter: ApplicationStatusFilter,
+  page = 1,
+  pageSize?: number,
+) =>
   useAsyncResource(
-    () => listApplications(filter === "all" ? undefined : filter),
-    [filter],
+    () =>
+      listApplications({
+        status: filter === "all" ? undefined : filter,
+        page,
+        pageSize,
+      }),
+    [filter, page, pageSize],
   );
 
 export const useUpdateApplicationStatus = () => {

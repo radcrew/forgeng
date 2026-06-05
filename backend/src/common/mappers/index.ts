@@ -25,6 +25,9 @@ export interface UserDto {
   bio: string | null;
   githubUrl: string | null;
   avatarUrl: string | null;
+  registrationIp: string | null;
+  registrationCountry: string | null;
+  registrationCity: string | null;
   createdAt: string;
 }
 
@@ -39,6 +42,9 @@ export function toUserDto(user: User): UserDto {
     bio: user.bio,
     githubUrl: user.githubUrl,
     avatarUrl: user.avatarUrl,
+    registrationIp: user.registrationIp,
+    registrationCountry: user.registrationCountry,
+    registrationCity: user.registrationCity,
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -53,6 +59,16 @@ export interface ApplicationDto {
   motivation: string | null;
   background: string | null;
   experience: string | null;
+  linkedin: string | null;
+  twitter: string | null;
+  facebook: string | null;
+  github: string | null;
+  portfolio: string | null;
+  telegram: string | null;
+  whatsapp: string | null;
+  address: string | null;
+  videoUrl: string | null;
+  wallets: Array<{ chain: string; address: string }> | null;
   reviewerNote: string | null;
   cohortId: number | null;
   createdAt: string;
@@ -69,6 +85,16 @@ export function toApplicationDto(app: Application): ApplicationDto {
     motivation: app.motivation,
     background: app.background,
     experience: app.experience,
+    linkedin: app.linkedin,
+    twitter: app.twitter,
+    facebook: app.facebook,
+    github: app.github,
+    portfolio: app.portfolio,
+    telegram: app.telegram,
+    whatsapp: app.whatsapp,
+    address: app.address,
+    videoUrl: app.videoUrl,
+    wallets: app.wallets as Array<{ chain: string; address: string }> | null,
     reviewerNote: app.reviewerNote,
     cohortId: app.cohortId,
     createdAt: app.createdAt.toISOString(),

@@ -10,7 +10,17 @@ import { toApplicationDto, type ApplicationDto } from '@common/mappers';
 import { splitName } from '@common/string';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
+import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
+
+const DEFAULT_PAGE_SIZE = 20;
+
+export interface PaginatedApplications {
+  items: ApplicationDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 export interface ApplicationStats {
   pending: number;
@@ -29,12 +39,22 @@ export class ApplicationsService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  async list(status?: ApplicationStatus): Promise<ApplicationDto[]> {
-    const rows = await this.prisma.application.findMany({
-      where: status ? { status } : undefined,
-      orderBy: { createdAt: 'desc' },
-    });
-    return rows.map(toApplicationDto);
+  async list(query: ListApplicationsQuery): Promise<PaginatedApplications> {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? DEFAULT_PAGE_SIZE;
+    const where = query.status ? { status: query.status } : undefined;
+
+    const [rows, total] = await Promise.all([
+      this.prisma.application.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.application.count({ where }),
+    ]);
+
+    return { items: rows.map(toApplicationDto), total, page, pageSize };
   }
 
   async create(user: User, dto: CreateApplicationDto): Promise<ApplicationDto> {
@@ -56,6 +76,18 @@ export class ApplicationsService {
         motivation: dto.motivation,
         background: dto.background,
         experience: dto.experience,
+        linkedin: dto.linkedin,
+        twitter: dto.twitter,
+        facebook: dto.facebook,
+        github: dto.github,
+        portfolio: dto.portfolio,
+        telegram: dto.telegram,
+        whatsapp: dto.whatsapp,
+        address: dto.address,
+        videoUrl: dto.videoUrl,
+        wallets:
+          dto.wallets?.map((w) => ({ chain: w.chain, address: w.address })) ??
+          [],
         status: 'pending',
       },
     });

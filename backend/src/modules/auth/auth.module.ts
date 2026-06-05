@@ -7,6 +7,7 @@ import type { AppConfiguration } from '@config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { EmailService } from './services/email.service';
+import { GeoService } from './services/geo.service';
 import { PasswordService } from './services/password.service';
 import { TokenService } from './services/token.service';
 import { VerificationService } from './services/verification.service';
@@ -29,6 +30,7 @@ import { GitHubStrategy } from './strategies/github.strategy';
   ],
   providers: [
     AuthService,
+    GeoService,
     PasswordService,
     TokenService,
     VerificationService,
