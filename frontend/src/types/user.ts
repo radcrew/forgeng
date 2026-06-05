@@ -20,4 +20,7 @@ export interface UserProfile {
   portfolio: string | null;
   telegram: string | null;
   whatsapp: string | null;
+  registrationIp: string | null;
+  registrationCountry: string | null;
+  registrationCity: string | null;
 }
