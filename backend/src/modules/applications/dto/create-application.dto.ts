@@ -16,10 +16,14 @@ import { Type } from 'class-transformer';
 export const SUPPORTED_CHAINS = ['evm', 'solana', 'tron'] as const;
 export type WalletChain = (typeof SUPPORTED_CHAINS)[number];
 
+const EVM_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
+const SOLANA_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
+
 const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
-  evm: /^0x[0-9a-fA-F]{40}$/,
-  solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
-  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
+  evm: EVM_ADDRESS_REGEX,
+  solana: SOLANA_ADDRESS_REGEX,
+  tron: TRON_ADDRESS_REGEX,
 };
 
 const ADDRESS_MESSAGES: Record<WalletChain, string> = {
