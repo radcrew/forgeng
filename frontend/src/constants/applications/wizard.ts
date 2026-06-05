@@ -32,10 +32,12 @@ export const APPLICATION_WIZARD_COPY = {
       recordLabel: "Start Recording",
       stopLabel: "Stop",
       rerecordLabel: "Re-record",
+      uploadLabel: "Upload Video",
+      retryUploadLabel: "Try again",
       countdownLabel: (s: number) => `Recording — ${s}s left`,
       uploadingLabel: "Uploading...",
       doneLabel: "Video uploaded",
-      errorLabel: "Something went wrong. Please try again.",
+      errorLabel: "Upload failed. Please try again.",
       permissionDenied:
         "Camera or microphone access was denied. Please allow access in your browser and try again.",
       unsupported:

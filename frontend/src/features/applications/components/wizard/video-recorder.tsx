@@ -12,9 +12,10 @@ type State =
   | { status: "idle" }
   | { status: "requesting" }
   | { status: "recording"; timeLeft: number }
-  | { status: "uploading"; objectUrl: string }
+  | { status: "preview"; blob: Blob; objectUrl: string }
+  | { status: "uploading"; blob: Blob; objectUrl: string }
   | { status: "done"; objectUrl: string; serverUrl: string }
-  | { status: "error"; message: string };
+  | { status: "error"; message: string; blob?: Blob; objectUrl?: string };
 
 interface VideoRecorderProps {
   onUploaded: (url: string) => void;
@@ -28,7 +29,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Revoke object URLs and stop streams on unmount.
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -45,15 +45,14 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
     }
   };
 
-  const uploadBlob = async (blob: Blob, objectUrl: string) => {
-    setState({ status: "uploading", objectUrl });
+  const doUpload = async (blob: Blob, objectUrl: string) => {
+    setState({ status: "uploading", blob, objectUrl });
     try {
       const { url } = await uploadVideoIntro(blob);
       setState({ status: "done", objectUrl, serverUrl: url });
       onUploaded(url);
     } catch {
-      URL.revokeObjectURL(objectUrl);
-      setState({ status: "error", message: COPY.errorLabel });
+      setState({ status: "error", message: COPY.errorLabel, blob, objectUrl });
     }
   };
 
@@ -81,7 +80,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
       liveVideoRef.current.srcObject = stream;
     }
 
-    // Pick the best available container.
     const mimeType =
       ["video/webm;codecs=vp9,opus", "video/webm", "video/mp4"].find((t) =>
         MediaRecorder.isTypeSupported(t),
@@ -101,7 +99,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         type: mimeType || "video/webm",
       });
       const objectUrl = URL.createObjectURL(blob);
-      void uploadBlob(blob, objectUrl);
+      setState({ status: "preview", blob, objectUrl });
     };
 
     recorder.start(100);
@@ -129,8 +127,20 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
   };
 
   const rerecord = () => {
+    // Revoke any blob URL we created.
+    if (
+      state.status === "preview" ||
+      state.status === "uploading" ||
+      state.status === "done" ||
+      (state.status === "error" && state.objectUrl)
+    ) {
+      URL.revokeObjectURL(
+        (state as { objectUrl?: string }).objectUrl ?? "",
+      );
+    }
+    // If a video was already uploaded, clear it from the form.
     if (state.status === "done") {
-      URL.revokeObjectURL(state.objectUrl);
+      onUploaded("");
     }
     stopStream();
     setState({ status: "idle" });
@@ -138,13 +148,18 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
 
   const isRecording = state.status === "recording";
   const showLive = state.status === "requesting" || isRecording;
-  const showPreview = state.status === "uploading" || state.status === "done";
+  const showPreview =
+    state.status === "preview" ||
+    state.status === "uploading" ||
+    state.status === "done" ||
+    (state.status === "error" && !!state.objectUrl);
   const previewUrl = showPreview
-    ? (state as { objectUrl: string }).objectUrl
+    ? (state as { objectUrl?: string }).objectUrl
     : undefined;
 
   return (
     <div className="space-y-4">
+      {/* Live camera feed */}
       {showLive && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
@@ -165,6 +180,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         </div>
       )}
 
+      {/* Recorded video preview */}
       {showPreview && previewUrl && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
@@ -188,27 +204,57 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         </div>
       )}
 
+      {/* Error message */}
       {state.status === "error" && (
         <p className="text-sm text-destructive">{state.message}</p>
       )}
 
+      {/* Controls */}
       <div className="flex gap-3">
-        {(state.status === "idle" || state.status === "error") && (
+        {(state.status === "idle" ||
+          (state.status === "error" && !state.blob)) && (
           <Button type="button" onClick={startRecording}>
             {COPY.recordLabel}
           </Button>
         )}
+
         {state.status === "requesting" && (
           <Button type="button" disabled>
             {COPY.recordLabel}
           </Button>
         )}
+
         {isRecording && (
           <Button type="button" variant="destructive" onClick={stopRecording}>
             {COPY.stopLabel}
           </Button>
         )}
-        {(state.status === "done" || state.status === "error") && (
+
+        {/* Upload button — shown after recording, and on error if blob is available */}
+        {(state.status === "preview" ||
+          (state.status === "error" && !!state.blob)) && (
+          <Button
+            type="button"
+            onClick={() => {
+              const blob =
+                state.status === "preview"
+                  ? state.blob
+                  : (state as { blob?: Blob }).blob!;
+              const objectUrl =
+                state.status === "preview"
+                  ? state.objectUrl
+                  : (state as { objectUrl?: string }).objectUrl ?? "";
+              void doUpload(blob, objectUrl);
+            }}
+          >
+            {state.status === "error" ? COPY.retryUploadLabel : COPY.uploadLabel}
+          </Button>
+        )}
+
+        {/* Re-record — available after preview, upload error, or successful upload */}
+        {(state.status === "preview" ||
+          state.status === "done" ||
+          state.status === "error") && (
           <Button type="button" variant="outline" onClick={rerecord}>
             {COPY.rerecordLabel}
           </Button>
