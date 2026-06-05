@@ -37,7 +37,7 @@ export class UsersService {
       this.prisma.user.count({ where }),
     ]);
 
-    return { items: users.map(toUserDto), total, page, pageSize };
+    return { items: users.map((u) => toUserDto(u)), total, page, pageSize };
   }
 
   async updateRole(id: number, dto: UpdateRoleDto): Promise<UserDto> {

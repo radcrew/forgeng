@@ -9,6 +9,12 @@ export interface ProfileEnrollment {
 export interface ProfileUpdate {
   name?: string;
   bio?: string;
-  githubUrl?: string;
+  linkedin?: string;
+  twitter?: string;
+  facebook?: string;
+  github?: string;
+  portfolio?: string;
+  telegram?: string;
+  whatsapp?: string;
   avatarUrl?: string;
 }

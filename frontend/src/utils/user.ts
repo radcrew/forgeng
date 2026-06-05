@@ -10,6 +10,13 @@ export interface UserDto {
   githubUrl: string | null;
   avatarUrl: string | null;
   createdAt: string;
+  linkedin: string | null;
+  twitter: string | null;
+  facebook: string | null;
+  github: string | null;
+  portfolio: string | null;
+  telegram: string | null;
+  whatsapp: string | null;
 }
 
 export const mapUserDto = (dto: UserDto): UserProfile => ({
@@ -22,4 +29,11 @@ export const mapUserDto = (dto: UserDto): UserProfile => ({
   githubUrl: dto.githubUrl,
   avatarUrl: dto.avatarUrl,
   createdAt: dto.createdAt,
+  linkedin: dto.linkedin,
+  twitter: dto.twitter,
+  facebook: dto.facebook,
+  github: dto.github,
+  portfolio: dto.portfolio,
+  telegram: dto.telegram,
+  whatsapp: dto.whatsapp,
 });

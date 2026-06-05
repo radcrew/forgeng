@@ -30,7 +30,13 @@ const initials = (name: string | null, email: string) =>
 export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
   const [name, setName] = useState(user.name ?? "");
   const [bio, setBio] = useState(user.bio ?? "");
-  const [githubUrl, setGithubUrl] = useState(user.githubUrl ?? "");
+  const [linkedin, setLinkedin] = useState(user.linkedin ?? "");
+  const [twitter, setTwitter] = useState(user.twitter ?? "");
+  const [facebook, setFacebook] = useState(user.facebook ?? "");
+  const [github, setGithub] = useState(user.github ?? "");
+  const [portfolio, setPortfolio] = useState(user.portfolio ?? "");
+  const [telegram, setTelegram] = useState(user.telegram ?? "");
+  const [whatsapp, setWhatsapp] = useState(user.whatsapp ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -40,7 +46,13 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
     // URL fields are validated as URLs server-side, so omit them when blank
     // rather than sending an empty string that would fail validation.
     const payload: ProfileUpdate = { name: name.trim(), bio: bio.trim() };
-    if (githubUrl.trim()) payload.githubUrl = githubUrl.trim();
+    if (linkedin.trim()) payload.linkedin = linkedin.trim();
+    if (twitter.trim()) payload.twitter = twitter.trim();
+    if (facebook.trim()) payload.facebook = facebook.trim();
+    if (github.trim()) payload.github = github.trim();
+    if (portfolio.trim()) payload.portfolio = portfolio.trim();
+    if (telegram.trim()) payload.telegram = telegram.trim();
+    if (whatsapp.trim()) payload.whatsapp = whatsapp.trim();
 
     setIsSaving(true);
     try {
@@ -157,13 +169,64 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
               placeholder="A short bio about you…"
             />
           </FormField>
-          <FormField label="GitHub URL" htmlFor="profile-github">
+          <FormField label="GitHub" htmlFor="profile-github">
             <Input
               id="profile-github"
-              value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
+              value={github}
+              onChange={(e) => setGithub(e.target.value)}
               placeholder="https://github.com/you"
             />
+          </FormField>
+          <FormField label="LinkedIn" htmlFor="profile-linkedin">
+            <Input
+              id="profile-linkedin"
+              value={linkedin}
+              onChange={(e) => setLinkedin(e.target.value)}
+              placeholder="https://linkedin.com/in/you"
+            />
+          </FormField>
+          <FormField label="X (Twitter)" htmlFor="profile-twitter">
+            <Input
+              id="profile-twitter"
+              value={twitter}
+              onChange={(e) => setTwitter(e.target.value)}
+              placeholder="https://x.com/you"
+            />
+          </FormField>
+          <FormField label="Facebook" htmlFor="profile-facebook">
+            <Input
+              id="profile-facebook"
+              value={facebook}
+              onChange={(e) => setFacebook(e.target.value)}
+              placeholder="https://facebook.com/you"
+            />
+          </FormField>
+          <FormField label="Portfolio" htmlFor="profile-portfolio">
+            <Input
+              id="profile-portfolio"
+              value={portfolio}
+              onChange={(e) => setPortfolio(e.target.value)}
+              placeholder="https://yoursite.com"
+            />
+          </FormField>
+          <FormField label="Telegram" htmlFor="profile-telegram">
+            <Input
+              id="profile-telegram"
+              value={telegram}
+              onChange={(e) => setTelegram(e.target.value)}
+              placeholder="@yourusername"
+            />
+          </FormField>
+          <FormField label="WhatsApp" htmlFor="profile-whatsapp">
+            <Input
+              id="profile-whatsapp"
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="+1234567890"
+            />
+            <p className="text-xs text-muted-foreground">
+              Include country code, e.g. +1234567890
+            </p>
           </FormField>
         </FormBody>
 

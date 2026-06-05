@@ -35,8 +35,20 @@ export class AccountController {
   ) {}
 
   @Get('me')
-  getMe(@CurrentUser() user: AuthUser): UserDto {
-    return toUserDto(user);
+  async getMe(@CurrentUser() user: AuthUser): Promise<UserDto> {
+    const socials = await this.prisma.application.findUnique({
+      where: { userId: user.id },
+      select: {
+        linkedin: true,
+        twitter: true,
+        facebook: true,
+        github: true,
+        portfolio: true,
+        telegram: true,
+        whatsapp: true,
+      },
+    });
+    return toUserDto(user, socials);
   }
 
   @Patch('profile')
@@ -44,11 +56,61 @@ export class AccountController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateProfileDto,
   ): Promise<UserDto> {
-    const updated = await this.prisma.user.update({
-      where: { id: user.id },
-      data: dto,
-    });
-    return toUserDto(updated);
+    const {
+      linkedin,
+      twitter,
+      facebook,
+      github,
+      portfolio,
+      telegram,
+      whatsapp,
+      ...userFields
+    } = dto;
+    const socialFields = {
+      linkedin,
+      twitter,
+      facebook,
+      github,
+      portfolio,
+      telegram,
+      whatsapp,
+    };
+    const hasSocials = Object.values(socialFields).some((v) => v !== undefined);
+
+    const [updated, socials] = await Promise.all([
+      this.prisma.user.update({ where: { id: user.id }, data: userFields }),
+      hasSocials
+        ? this.prisma.application
+            .updateMany({ where: { userId: user.id }, data: socialFields })
+            .then(() =>
+              this.prisma.application.findUnique({
+                where: { userId: user.id },
+                select: {
+                  linkedin: true,
+                  twitter: true,
+                  facebook: true,
+                  github: true,
+                  portfolio: true,
+                  telegram: true,
+                  whatsapp: true,
+                },
+              }),
+            )
+        : this.prisma.application.findUnique({
+            where: { userId: user.id },
+            select: {
+              linkedin: true,
+              twitter: true,
+              facebook: true,
+              github: true,
+              portfolio: true,
+              telegram: true,
+              whatsapp: true,
+            },
+          }),
+    ]);
+
+    return toUserDto(updated, socials);
   }
 
   @Post('avatar')

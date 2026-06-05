@@ -221,16 +221,28 @@ export class DashboardService {
   ): MonthlyPayment {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const monthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
     const tasksThisMonth = tasks.filter(
       (t) => t.dueDate && t.dueDate >= monthStart && t.dueDate <= monthEnd,
     );
-    const approvedThisMonth = tasksThisMonth.filter((t) => approvedIds.has(t.id)).length;
+    const approvedThisMonth = tasksThisMonth.filter((t) =>
+      approvedIds.has(t.id),
+    ).length;
     return {
       tasksThisMonth: tasksThisMonth.length,
       approvedThisMonth,
       paymentDate: monthEnd.toISOString(),
-      eligible: tasksThisMonth.length > 0 && approvedThisMonth === tasksThisMonth.length,
+      eligible:
+        tasksThisMonth.length > 0 &&
+        approvedThisMonth === tasksThisMonth.length,
     };
   }
 

@@ -15,6 +15,17 @@ import type {
  * All `Date` values become ISO strings, optional foreign rows become `null`.
  */
 
+type ApplicationSocials = Pick<
+  Application,
+  | 'linkedin'
+  | 'twitter'
+  | 'facebook'
+  | 'github'
+  | 'portfolio'
+  | 'telegram'
+  | 'whatsapp'
+>;
+
 export interface UserDto {
   id: number;
   clerkId: string | null;
@@ -29,9 +40,20 @@ export interface UserDto {
   registrationCountry: string | null;
   registrationCity: string | null;
   createdAt: string;
+  // Social links sourced from the user's application; null when no application exists.
+  linkedin: string | null;
+  twitter: string | null;
+  facebook: string | null;
+  github: string | null;
+  portfolio: string | null;
+  telegram: string | null;
+  whatsapp: string | null;
 }
 
-export function toUserDto(user: User): UserDto {
+export function toUserDto(
+  user: User,
+  socials?: ApplicationSocials | null,
+): UserDto {
   return {
     id: user.id,
     clerkId: user.clerkId,
@@ -46,6 +68,13 @@ export function toUserDto(user: User): UserDto {
     registrationCountry: user.registrationCountry,
     registrationCity: user.registrationCity,
     createdAt: user.createdAt.toISOString(),
+    linkedin: socials?.linkedin ?? null,
+    twitter: socials?.twitter ?? null,
+    facebook: socials?.facebook ?? null,
+    github: socials?.github ?? null,
+    portfolio: socials?.portfolio ?? null,
+    telegram: socials?.telegram ?? null,
+    whatsapp: socials?.whatsapp ?? null,
   };
 }
 
