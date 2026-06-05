@@ -68,7 +68,7 @@ export const APPLICATION_FORM_SCHEMA = z.object({
       (val) => !val || /^\+[1-9]\d{6,14}$/.test(val),
       "Enter a number with country code (e.g. +1234567890)",
     ),
-  address: z.string().max(500, "Address must be under 500 characters"),
+  address: z.string().min(1, "Address is required").max(500, "Address must be under 500 characters"),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
   wallets: z.array(walletEntry),
 });

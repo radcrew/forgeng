@@ -132,8 +132,8 @@ export class CreateApplicationDto {
   })
   whatsapp?: string;
 
-  @IsOptional()
   @IsString()
+  @MinLength(1)
   @MaxLength(500)
-  address?: string;
+  address!: string;
 }
