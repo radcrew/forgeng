@@ -11,6 +11,7 @@ const MAX_SECONDS = 30;
 type State =
   | { status: "idle" }
   | { status: "requesting" }
+  | { status: "ready" }
   | { status: "recording"; timeLeft: number }
   | { status: "preview"; blob: Blob; objectUrl: string }
   | { status: "uploading"; blob: Blob; objectUrl: string }
@@ -26,6 +27,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
   const liveVideoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const mimeTypeRef = useRef<string>("");
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -45,18 +47,8 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
     }
   };
 
-  const doUpload = async (blob: Blob, objectUrl: string) => {
-    setState({ status: "uploading", blob, objectUrl });
-    try {
-      const { url } = await uploadVideoIntro(blob);
-      setState({ status: "done", objectUrl, serverUrl: url });
-      onUploaded(url);
-    } catch {
-      setState({ status: "error", message: COPY.errorLabel, blob, objectUrl });
-    }
-  };
-
-  const startRecording = async () => {
+  // Step 1 — ask for camera/mic permission and show a live preview.
+  const requestCamera = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
       setState({ status: "error", message: COPY.unsupported });
       return;
@@ -76,17 +68,28 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
     }
 
     streamRef.current = stream;
-    if (liveVideoRef.current) {
-      liveVideoRef.current.srcObject = stream;
-    }
-
-    const mimeType =
+    mimeTypeRef.current =
       ["video/webm;codecs=vp9,opus", "video/webm", "video/mp4"].find((t) =>
         MediaRecorder.isTypeSupported(t),
       ) ?? "";
 
+    if (liveVideoRef.current) {
+      liveVideoRef.current.srcObject = stream;
+    }
+
+    setState({ status: "ready" });
+  };
+
+  // Step 2 — user clicks "Start Recording"; camera is already on.
+  const beginRecording = () => {
+    if (!streamRef.current) return;
+
     chunksRef.current = [];
-    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    const mimeType = mimeTypeRef.current;
+    const recorder = new MediaRecorder(
+      streamRef.current,
+      mimeType ? { mimeType } : {},
+    );
     mediaRecorderRef.current = recorder;
 
     recorder.ondataavailable = (e) => {
@@ -94,7 +97,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
     };
 
     recorder.onstop = () => {
-      stopStream();
       const blob = new Blob(chunksRef.current, {
         type: mimeType || "video/webm",
       });
@@ -126,8 +128,18 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
     mediaRecorderRef.current?.stop();
   };
 
+  const doUpload = async (blob: Blob, objectUrl: string) => {
+    setState({ status: "uploading", blob, objectUrl });
+    try {
+      const { url } = await uploadVideoIntro(blob);
+      setState({ status: "done", objectUrl, serverUrl: url });
+      onUploaded(url);
+    } catch {
+      setState({ status: "error", message: COPY.errorLabel, blob, objectUrl });
+    }
+  };
+
   const rerecord = () => {
-    // Revoke any blob URL we created.
     if (
       state.status === "preview" ||
       state.status === "uploading" ||
@@ -138,16 +150,32 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         (state as { objectUrl?: string }).objectUrl ?? "",
       );
     }
-    // If a video was already uploaded, clear it from the form.
     if (state.status === "done") {
       onUploaded("");
     }
-    stopStream();
-    setState({ status: "idle" });
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // If camera stream is still alive, go back to the ready preview;
+    // otherwise stop everything and return to idle.
+    if (streamRef.current?.active) {
+      if (liveVideoRef.current) {
+        liveVideoRef.current.srcObject = streamRef.current;
+      }
+      setState({ status: "ready" });
+    } else {
+      stopStream();
+      setState({ status: "idle" });
+    }
   };
 
   const isRecording = state.status === "recording";
-  const showLive = state.status === "requesting" || isRecording;
+  const showLive =
+    state.status === "requesting" ||
+    state.status === "ready" ||
+    isRecording;
   const showPreview =
     state.status === "preview" ||
     state.status === "uploading" ||
@@ -159,7 +187,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Live camera feed */}
+      {/* Live camera feed (ready + recording) */}
       {showLive && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
@@ -211,26 +239,36 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
 
       {/* Controls */}
       <div className="flex gap-3">
+        {/* Allow camera (first step) */}
         {(state.status === "idle" ||
-          (state.status === "error" && !state.blob)) && (
-          <Button type="button" onClick={startRecording}>
-            {COPY.recordLabel}
+          (state.status === "error" && !state.blob && !state.objectUrl)) && (
+          <Button type="button" onClick={requestCamera}>
+            {COPY.allowCameraLabel}
           </Button>
         )}
 
+        {/* Waiting for permission */}
         {state.status === "requesting" && (
           <Button type="button" disabled>
+            {COPY.allowCameraLabel}
+          </Button>
+        )}
+
+        {/* Camera is on — user decides when to start */}
+        {state.status === "ready" && (
+          <Button type="button" onClick={beginRecording}>
             {COPY.recordLabel}
           </Button>
         )}
 
+        {/* Stop recording */}
         {isRecording && (
           <Button type="button" variant="destructive" onClick={stopRecording}>
             {COPY.stopLabel}
           </Button>
         )}
 
-        {/* Upload button — shown after recording, and on error if blob is available */}
+        {/* Upload */}
         {(state.status === "preview" ||
           (state.status === "error" && !!state.blob)) && (
           <Button
@@ -251,7 +289,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
           </Button>
         )}
 
-        {/* Re-record — available after preview, upload error, or successful upload */}
+        {/* Re-record */}
         {(state.status === "preview" ||
           state.status === "done" ||
           state.status === "error") && (
