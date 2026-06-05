@@ -1,5 +1,6 @@
 import {
   Award,
+  Banknote,
   ClipboardList,
   Code2,
   MessageSquare,
@@ -57,6 +58,15 @@ export const STEPS: Step[] = [
   },
   {
     number: "05",
+    title: "Get Paid",
+    description:
+      "Finish every task due that month and receive your monthly stipend — automatic and no negotiation needed. Complete the work, get the money.",
+    icon: Banknote,
+    photo: PHOTOS.pairProgramming,
+    photoAlt: "Developer reviewing progress on screen",
+  },
+  {
+    number: "06",
     title: "Level Up",
     description:
       "Track your progress, build a portfolio of real work, and graduate with evidence of what you can actually do.",

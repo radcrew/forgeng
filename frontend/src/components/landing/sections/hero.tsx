@@ -22,9 +22,10 @@ export function Hero() {
             <span className="text-primary">Engineering</span> the Right Way.
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            A rigorous, mentor-led apprenticeship. Apply, join a cohort,
-            complete real projects, get expert code review, and build the
-            skills that actually get you hired.
+            A rigorous, mentor-led apprenticeship where you{" "}
+            <span className="text-foreground font-medium">earn a monthly stipend</span>{" "}
+            while you learn. Complete real projects, get expert code review,
+            and get paid for your progress every month you keep up.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Button
@@ -46,7 +47,7 @@ export function Hero() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            Free to apply · No CS degree required · Real mentor feedback
+            Free to apply · Monthly stipend · No CS degree required
           </p>
         </div>
 
