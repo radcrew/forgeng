@@ -203,8 +203,21 @@ export class NotificationsService {
     });
   }
 
+  /** Notify every admin that a student is eligible for their monthly payment. */
+  async notifyPaymentEligible(params: {
+    studentName: string;
+    studentId: number;
+  }): Promise<void> {
+    await this.notifyAdmins({
+      type: 'payment_eligible',
+      title: 'Student eligible for monthly payment',
+      body: `${params.studentName} completed all tasks due this month`,
+      link: `/admin/users/${params.studentId}`,
+    });
+  }
+
   private async notifyAdmins(notification: {
-    type: 'submission_received' | 'application_received';
+    type: 'submission_received' | 'application_received' | 'payment_eligible';
     title: string;
     body: string;
     link: string;

@@ -26,7 +26,7 @@ const Page = () => {
     <PageContainer maxWidth="4xl" spacing="8">
       <PageHeader title="Profile" description="Manage your account details." />
 
-      <ProfileForm user={user} onSaved={refreshUser} />
+      <ProfileForm key={user.github ?? user.linkedin ?? "empty"} user={user} onSaved={refreshUser} />
 
       <div>
         <h2 className="mb-4 text-xl font-semibold">Enrollment History</h2>

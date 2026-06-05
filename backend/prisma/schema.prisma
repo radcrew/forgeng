@@ -71,6 +71,7 @@ enum NotificationType {
   task_published
   submission_received
   application_received
+  payment_eligible
 }
 
 // -----------------------------------------------------------------------------
