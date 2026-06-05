@@ -16,3 +16,4 @@ export { LoadingState, type LoadingStateProps } from "./loading-state";
 export { ModalActions, type ModalActionsProps } from "./modal-actions";
 export { StatusBadge, type StatusBadgeProps } from "./status-badge";
 export { VerdictPicker, type VerdictPickerProps } from "./verdict-picker";
+export { VideoRecorder, type VideoRecorderProps } from "./video-recorder";

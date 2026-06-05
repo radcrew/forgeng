@@ -9,7 +9,8 @@ import {
   APPLICATION_WIZARD_COPY,
   type ApplicationFormValues,
 } from "@constants/applications";
-import { VideoRecorder } from "./video-recorder";
+import { VideoRecorder } from "@components/common";
+import { uploadVideoIntro } from "../../api";
 
 const COPY = APPLICATION_WIZARD_COPY.steps.videoIntro;
 
@@ -28,7 +29,7 @@ export const StepVideoIntro = ({ control, onVideoUploaded }: Props) => (
       render={({ fieldState }) => (
         <FormItem>
           <FormControl>
-            <VideoRecorder onUploaded={onVideoUploaded} />
+            <VideoRecorder onUpload={uploadVideoIntro} onUploaded={onVideoUploaded} />
           </FormControl>
           {fieldState.error && (
             <FormMessage>{fieldState.error.message}</FormMessage>

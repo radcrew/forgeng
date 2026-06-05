@@ -2,11 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@components/ui/button";
-import { APPLICATION_WIZARD_COPY } from "@constants/applications";
-import { uploadVideoIntro } from "../../api";
 
-const COPY = APPLICATION_WIZARD_COPY.steps.videoIntro;
 const MAX_SECONDS = 30;
+
+const COPY = {
+  allowCameraLabel: "Allow Camera",
+  recordLabel: "Start Recording",
+  stopLabel: "Stop",
+  rerecordLabel: "Re-record",
+  uploadLabel: "Upload Video",
+  retryUploadLabel: "Try again",
+  countdownLabel: (s: number) => `Recording — ${s}s left`,
+  uploadingLabel: "Uploading...",
+  doneLabel: "Video uploaded",
+  errorLabel: "Upload failed. Please try again.",
+  permissionDenied:
+    "Camera or microphone access was denied. Please allow access in your browser and try again.",
+  unsupported:
+    "Your browser does not support video recording. Try Chrome or Firefox.",
+};
 
 type State =
   | { status: "idle" }
@@ -19,10 +33,11 @@ type State =
   | { status: "error"; message: string; blob?: Blob; objectUrl?: string };
 
 interface VideoRecorderProps {
+  onUpload: (blob: Blob) => Promise<{ url: string }>;
   onUploaded: (url: string) => void;
 }
 
-export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
+export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
   const [state, setState] = useState<State>({ status: "idle" });
   const liveVideoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -47,7 +62,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
     }
   };
 
-  // Step 1 — ask for camera/mic permission and show a live preview.
   const requestCamera = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
       setState({ status: "error", message: COPY.unsupported });
@@ -80,7 +94,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
     setState({ status: "ready" });
   };
 
-  // Step 2 — user clicks "Start Recording"; camera is already on.
   const beginRecording = () => {
     if (!streamRef.current) return;
 
@@ -131,7 +144,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
   const doUpload = async (blob: Blob, objectUrl: string) => {
     setState({ status: "uploading", blob, objectUrl });
     try {
-      const { url } = await uploadVideoIntro(blob);
+      const { url } = await onUpload(blob);
       setState({ status: "done", objectUrl, serverUrl: url });
       onUploaded(url);
     } catch {
@@ -146,9 +159,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
       state.status === "done" ||
       (state.status === "error" && state.objectUrl)
     ) {
-      URL.revokeObjectURL(
-        (state as { objectUrl?: string }).objectUrl ?? "",
-      );
+      URL.revokeObjectURL((state as { objectUrl?: string }).objectUrl ?? "");
     }
     if (state.status === "done") {
       onUploaded("");
@@ -158,8 +169,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
       timerRef.current = null;
     }
 
-    // If camera stream is still alive, go back to the ready preview;
-    // otherwise stop everything and return to idle.
     if (streamRef.current?.active) {
       if (liveVideoRef.current) {
         liveVideoRef.current.srcObject = streamRef.current;
@@ -173,9 +182,7 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
 
   const isRecording = state.status === "recording";
   const showLive =
-    state.status === "requesting" ||
-    state.status === "ready" ||
-    isRecording;
+    state.status === "requesting" || state.status === "ready" || isRecording;
   const showPreview =
     state.status === "preview" ||
     state.status === "uploading" ||
@@ -187,7 +194,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Live camera feed (ready + recording) */}
       {showLive && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
@@ -208,7 +214,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         </div>
       )}
 
-      {/* Recorded video preview */}
       {showPreview && previewUrl && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
@@ -232,14 +237,11 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
         </div>
       )}
 
-      {/* Error message */}
       {state.status === "error" && (
         <p className="text-sm text-destructive">{state.message}</p>
       )}
 
-      {/* Controls */}
       <div className="flex gap-3">
-        {/* Allow camera (first step) */}
         {(state.status === "idle" ||
           (state.status === "error" && !state.blob && !state.objectUrl)) && (
           <Button type="button" onClick={requestCamera}>
@@ -247,28 +249,24 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
           </Button>
         )}
 
-        {/* Waiting for permission */}
         {state.status === "requesting" && (
           <Button type="button" disabled>
             {COPY.allowCameraLabel}
           </Button>
         )}
 
-        {/* Camera is on — user decides when to start */}
         {state.status === "ready" && (
           <Button type="button" onClick={beginRecording}>
             {COPY.recordLabel}
           </Button>
         )}
 
-        {/* Stop recording */}
         {isRecording && (
           <Button type="button" variant="destructive" onClick={stopRecording}>
             {COPY.stopLabel}
           </Button>
         )}
 
-        {/* Upload */}
         {(state.status === "preview" ||
           (state.status === "error" && !!state.blob)) && (
           <Button
@@ -289,7 +287,6 @@ export const VideoRecorder = ({ onUploaded }: VideoRecorderProps) => {
           </Button>
         )}
 
-        {/* Re-record */}
         {(state.status === "preview" ||
           state.status === "done" ||
           state.status === "error") && (
