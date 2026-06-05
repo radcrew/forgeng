@@ -14,6 +14,13 @@ export interface StudentAnalytics {
   weeklyActivity: { weekStart: string; submissions: number }[];
 }
 
+export interface MonthlyPayment {
+  tasksThisMonth: number;
+  approvedThisMonth: number;
+  paymentDate: string;
+  eligible: boolean;
+}
+
 export interface StudentDashboard {
   // The dashboard endpoint already serializes the full cohort; the cohort
   // overview page relies on the description, dates, capacity, and status.
@@ -29,6 +36,7 @@ export interface StudentDashboard {
   nextDeadline: string | null;
   recentSubmissions: Submission[];
   analytics: StudentAnalytics;
+  monthlyPayment: MonthlyPayment;
 }
 
 export interface AdminCohortStat {

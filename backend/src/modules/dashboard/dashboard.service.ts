@@ -33,6 +33,13 @@ export interface StudentAnalytics {
   weeklyActivity: { weekStart: string; submissions: number }[];
 }
 
+export interface MonthlyPayment {
+  tasksThisMonth: number;
+  approvedThisMonth: number;
+  paymentDate: string;
+  eligible: boolean;
+}
+
 export interface StudentDashboard {
   cohort: CohortDto | null;
   // All cohorts the student is enrolled in, newest first — drives the cohort
@@ -47,6 +54,7 @@ export interface StudentDashboard {
   recentSubmissions: SubmissionDto[];
   nextDeadline: string | null;
   analytics: StudentAnalytics;
+  monthlyPayment: MonthlyPayment;
 }
 
 export interface AdminCohortStat {
@@ -107,6 +115,7 @@ export class DashboardService {
           typeBreakdown: [],
           weeklyActivity: this.buildWeeklyActivity([]),
         },
+        monthlyPayment: this.buildMonthlyPayment([], new Set()),
       };
     }
 
@@ -202,6 +211,26 @@ export class DashboardService {
         typeBreakdown,
         weeklyActivity: this.buildWeeklyActivity(mySubmissions),
       },
+      monthlyPayment: this.buildMonthlyPayment(tasks, approvedIds),
+    };
+  }
+
+  private buildMonthlyPayment(
+    tasks: { id: number; dueDate: Date | null }[],
+    approvedIds: Set<number>,
+  ): MonthlyPayment {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const tasksThisMonth = tasks.filter(
+      (t) => t.dueDate && t.dueDate >= monthStart && t.dueDate <= monthEnd,
+    );
+    const approvedThisMonth = tasksThisMonth.filter((t) => approvedIds.has(t.id)).length;
+    return {
+      tasksThisMonth: tasksThisMonth.length,
+      approvedThisMonth,
+      paymentDate: monthEnd.toISOString(),
+      eligible: tasksThisMonth.length > 0 && approvedThisMonth === tasksThisMonth.length,
     };
   }
 
