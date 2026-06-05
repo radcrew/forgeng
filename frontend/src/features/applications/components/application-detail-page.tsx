@@ -21,6 +21,7 @@ import { Textarea } from "@components/ui/textarea";
 import { APPLICATION_STATUS_OPTIONS } from "@constants/applications";
 import { useCohorts } from "@features/cohorts";
 import { useAsyncResource } from "@hooks/use-async-resource";
+import { resolveAssetUrl } from "@lib/config";
 import type { ApplicationStatus } from "@types";
 import { getApplication, updateApplicationStatus } from "../api";
 import { StatusBadge } from "./status-badge";
@@ -142,7 +143,7 @@ export const ApplicationDetailPage = ({ id }: Props) => {
           </CardHeader>
           <CardContent>
             <video
-              src={application.videoUrl}
+              src={resolveAssetUrl(application.videoUrl)}
               controls
               playsInline
               className="w-full max-h-[480px] rounded-lg bg-black object-contain"
@@ -170,6 +171,59 @@ export const ApplicationDetailPage = ({ id }: Props) => {
             <div>
               <SectionTitle className="mb-2">Experience</SectionTitle>
               <ProseBlock>{application.experience}</ProseBlock>
+            </div>
+          )}
+          {hasSocialLinks && (
+            <div>
+              <SectionTitle className="mb-2">Social Profiles</SectionTitle>
+              <div className="space-y-2 text-sm">
+                {SOCIAL_LINKS.filter(({ key }) => !!application[key]).map(
+                  ({ key, label }) => (
+                    <div key={key} className="flex items-start justify-between gap-2">
+                      <span className="text-muted-foreground shrink-0">{label}</span>
+                      <a
+                        href={application[key]!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs break-all text-right hover:underline"
+                      >
+                        {application[key]}
+                      </a>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+          {hasContact && (
+            <div>
+              <SectionTitle className="mb-2">Contact</SectionTitle>
+              <div className="space-y-2 text-sm">
+                {application.telegram && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Telegram</span>
+                    <span className="font-mono text-xs flex items-center">
+                      {application.telegram}
+                      <CopyButton text={application.telegram} />
+                    </span>
+                  </div>
+                )}
+                {application.whatsapp && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">WhatsApp</span>
+                    <span className="font-mono text-xs flex items-center">
+                      {application.whatsapp}
+                      <CopyButton text={application.whatsapp} />
+                    </span>
+                  </div>
+                )}
+                {application.address && (
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-muted-foreground shrink-0">Address</span>
+                    <span className="text-xs text-right whitespace-pre-line">{application.address}</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -238,65 +292,6 @@ export const ApplicationDetailPage = ({ id }: Props) => {
               </Button>
             </CardContent>
           </Card>
-
-          {/* Social profiles */}
-          {hasSocialLinks && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Social Profiles</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-2">
-                {SOCIAL_LINKS.filter(({ key }) => !!application[key]).map(
-                  ({ key, label }) => (
-                    <a
-                      key={key}
-                      href={application[key]!}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted transition-colors"
-                    >
-                      {label}
-                    </a>
-                  ),
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Contact info */}
-          {hasContact && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Contact</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {application.telegram && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Telegram</span>
-                    <span className="font-mono text-xs flex items-center">
-                      {application.telegram}
-                      <CopyButton text={application.telegram} />
-                    </span>
-                  </div>
-                )}
-                {application.whatsapp && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">WhatsApp</span>
-                    <span className="font-mono text-xs flex items-center">
-                      {application.whatsapp}
-                      <CopyButton text={application.whatsapp} />
-                    </span>
-                  </div>
-                )}
-                {application.address && (
-                  <div>
-                    <p className="text-muted-foreground mb-0.5">Address</p>
-                    <p className="text-xs whitespace-pre-line">{application.address}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Wallets */}
           {hasWallets && (
