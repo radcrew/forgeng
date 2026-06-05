@@ -9,3 +9,4 @@ export * from "./features";
 export * from "./feedback";
 export * from "./roles";
 export * from "./faqs";
+export * from "./social-links";
