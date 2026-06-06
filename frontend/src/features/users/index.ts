@@ -12,5 +12,3 @@ export { useUsers, useUserEnrollments } from "./hooks";
 
 export { Row } from "./components/row";
 export type { RowProps } from "./components/row";
-export { ProfileSheet } from "./components/profile-sheet";
-export type { ProfileSheetProps } from "./components/profile-sheet";
