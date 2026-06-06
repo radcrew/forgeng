@@ -34,6 +34,14 @@ export const listUserEnrollments = async (
 ): Promise<UserEnrollment[]> =>
   apiClient.get<UserEnrollment[]>(`/users/${userId}/enrollments`);
 
+export const getUser = async (id: number): Promise<UserProfile> =>
+  apiClient.get<UserProfile>(`/users/${id}`);
+
+export const notifyPaymentReleased = async (
+  id: number,
+): Promise<{ sent: boolean }> =>
+  apiClient.post<{ sent: boolean }>(`/users/${id}/notify-payment`, {});
+
 export const updateUserRole = async (
   id: number,
   role: UserRole,

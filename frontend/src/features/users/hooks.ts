@@ -2,10 +2,13 @@
 
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { listUserEnrollments, listUsers } from "./api";
+import { getUser, listUserEnrollments, listUsers } from "./api";
 import type { UserRoleFilter } from "@types";
 
 export type { UserRoleFilter };
+
+export const useUser = (id: number) =>
+  useAsyncResource(() => getUser(id), [id]);
 
 export const useUsers = (
   role: UserRoleFilter = "all",

@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -24,6 +25,18 @@ export class UsersController {
   @Get()
   list(@Query() query: ListUsersQuery): Promise<PaginatedUsers> {
     return this.service.list(query);
+  }
+
+  @Get(':id')
+  getById(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
+    return this.service.getById(id);
+  }
+
+  @Post(':id/notify-payment')
+  notifyPaymentReleased(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ sent: boolean }> {
+    return this.service.notifyPaymentReleased(id);
   }
 
   @Get(':id/enrollments')

@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { AppConfiguration } from '@config';
 import {
   toCohortDto,
   toUserDto,
   type ProfileEnrollmentDto,
   type UserDto,
 } from '@common/mappers';
+import { MailService } from '@core/mail';
 import { PrismaService } from '@core/database/prisma.service';
+import { paymentReleasedEmail } from '@modules/notifications/templates';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
@@ -20,7 +24,30 @@ export interface PaginatedUsers {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+    private readonly config: ConfigService<AppConfiguration, true>,
+  ) {}
+
+  async getById(id: number): Promise<UserDto> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found.');
+    return toUserDto(user);
+  }
+
+  async notifyPaymentReleased(id: number): Promise<{ sent: boolean }> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found.');
+
+    const frontendUrl = this.config.get('frontendUrl', { infer: true });
+    const email = paymentReleasedEmail({
+      studentName: user.name ?? user.email,
+      url: `${frontendUrl}/student/dashboard`,
+    });
+    await this.mail.send({ to: user.email, ...email });
+    return { sent: true };
+  }
 
   async list(query: ListUsersQuery): Promise<PaginatedUsers> {
     const page = query.page ?? 1;

@@ -13,6 +13,7 @@ export { FormBody, FormField, FormGrid, type FormFieldProps } from "./form-field
 export { FormDialog, type FormDialogProps } from "./form-dialog";
 export { ListRow, type ListRowProps } from "./list-row";
 export { LoadingState, type LoadingStateProps } from "./loading-state";
+export { NavigationLoader } from "./navigation-loader";
 export { ModalActions, type ModalActionsProps } from "./modal-actions";
 export { RadialProgress, type RadialProgressProps } from "./radial-progress";
 export { StatusBadge, type StatusBadgeProps } from "./status-badge";
