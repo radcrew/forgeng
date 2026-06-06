@@ -1,4 +1,5 @@
 import {
+  ArrayMaxSize,
   IsArray,
   IsEnum,
   IsOptional,
@@ -131,8 +132,10 @@ export class CreateApplicationDto {
   @MaxLength(500)
   videoUrl!: string;
 
+  // Optional, and at most one withdrawal address per applicant.
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(1, { message: 'Only one withdrawal address is allowed' })
   @ValidateNested({ each: true })
   @Type(() => WalletEntryDto)
   wallets?: WalletEntryDto[];

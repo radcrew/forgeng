@@ -46,8 +46,8 @@ export const APPLICATION_WIZARD_COPY = {
         "Your browser does not support video recording. Try Chrome or Firefox.",
     },
     wallets: {
-      title: "Wallet Addresses",
-      hint: "Stipends are paid in crypto. Provide at least one address — you will be paid on whichever chain we agree on.",
+      title: "Withdrawal Address",
+      hint: "Stipends are paid in crypto to a single wallet. Choose a chain and enter the address you'd like to be paid on.",
       evmLabel: "EVM Address",
       evmDescription: "Covers Ethereum, BNB Chain, Base, Arbitrum, Optimism, and all other EVM-compatible networks. Starts with 0x.",
       evmPlaceholder: "0x...",

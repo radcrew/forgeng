@@ -1,6 +1,5 @@
-import { useFieldArray, type Control } from "react-hook-form";
-import { Info, X } from "lucide-react";
-import { Button } from "@components/ui/button";
+import { useWatch, type Control } from "react-hook-form";
+import { Info } from "lucide-react";
 import {
   FormControl,
   FormField,
@@ -24,25 +23,10 @@ import {
 
 const COPY = APPLICATION_WIZARD_COPY.steps.wallets;
 
-const CHAIN_META: Record<
-  WalletChain,
-  { label: string; description: string; placeholder: string }
-> = {
-  evm: {
-    label: "BSC",
-    description: "BNB Smart Chain — payments are sent on BSC only",
-    placeholder: "0x...",
-  },
-  solana: {
-    label: "Solana",
-    description: "Solana network",
-    placeholder: "e.g. 7xKX...",
-  },
-  tron: {
-    label: "Tron",
-    description: "Tron network",
-    placeholder: "T...",
-  },
+const CHAIN_META: Record<WalletChain, { label: string; placeholder: string }> = {
+  evm: { label: "BSC", placeholder: "0x..." },
+  solana: { label: "Solana", placeholder: "e.g. 7xKX..." },
+  tron: { label: "Tron", placeholder: "T..." },
 };
 
 interface Props {
@@ -50,17 +34,17 @@ interface Props {
 }
 
 export const StepWallets = ({ control }: Props) => {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "wallets",
-  });
+  // Drive the address placeholder off the currently selected chain.
+  const chain = useWatch({ control, name: "wallet.chain" }) ?? "evm";
 
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
       <div>
         <h2 className="text-xl font-semibold">{COPY.title}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{COPY.hint}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{COPY.atLeastOneHint}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {COPY.atLeastOneHint}
+        </p>
       </div>
 
       <div className="flex gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
@@ -68,89 +52,53 @@ export const StepWallets = ({ control }: Props) => {
         <p className="text-sm text-amber-800 dark:text-amber-300">
           To minimize fees, stipends are paid in <strong>USDT</strong> on{" "}
           <strong>BNB Smart Chain</strong>, <strong>Solana</strong>, and{" "}
-          <strong>Tron</strong> only. Make sure your wallet supports at least one
-          of these networks.
+          <strong>Tron</strong> only. Make sure your wallet supports one of these
+          networks.
         </p>
       </div>
 
-      <div className="space-y-3">
-        {fields.map((field, index) => {
-          const chain = field.chain as WalletChain;
-          const meta = CHAIN_META[chain] ?? CHAIN_META.evm;
-
-          return (
-            <div key={field.id} className="flex gap-2 items-start">
-              {/* Chain selector */}
-              <FormField
-                control={control}
-                name={`wallets.${index}.chain`}
-                render={({ field: chainField }) => (
-                  <FormItem className="w-36 shrink-0">
-                    <Select
-                      value={chainField.value}
-                      onValueChange={(val) => {
-                        chainField.onChange(val);
-                      }}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chain" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {WALLET_CHAINS.map((c) => (
-                          <SelectItem key={c} value={c}>
-                            {CHAIN_META[c].label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Address input */}
-              <FormField
-                control={control}
-                name={`wallets.${index}.address`}
-                render={({ field: addrField }) => (
-                  <FormItem className="flex-1">
-                    <FormControl>
-                      <Input
-                        placeholder={meta.placeholder}
-                        {...addrField}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="mt-0.5 shrink-0 text-muted-foreground hover:text-destructive"
-                onClick={() => remove(index)}
+      {/* A student has a single withdrawal address: pick the chain, enter it. */}
+      <div className="flex gap-2 items-start">
+        <FormField
+          control={control}
+          name="wallet.chain"
+          render={({ field: chainField }) => (
+            <FormItem className="w-36 shrink-0">
+              <Select
+                value={chainField.value}
+                onValueChange={chainField.onChange}
               >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          );
-        })}
-      </div>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chain" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {WALLET_CHAINS.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {CHAIN_META[c].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      {fields.length < WALLET_CHAINS.length && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => append({ chain: "evm" as const, address: "" })}
-        >
-          + Add another wallet
-        </Button>
-      )}
+        <FormField
+          control={control}
+          name="wallet.address"
+          render={({ field: addrField }) => (
+            <FormItem className="flex-1">
+              <FormControl>
+                <Input placeholder={CHAIN_META[chain].placeholder} {...addrField} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 };

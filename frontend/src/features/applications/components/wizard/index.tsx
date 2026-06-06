@@ -76,7 +76,7 @@ export const Wizard = ({ children }: WizardProps) => {
       whatsapp: "",
       address: "",
       videoUrl: "",
-      wallets: [{ chain: "evm" as const, address: "" }],
+      wallet: { chain: "evm" as const, address: "" },
     },
   });
 
@@ -149,7 +149,10 @@ export const Wizard = ({ children }: WizardProps) => {
         whatsapp: data.whatsapp || undefined,
         address: data.address || undefined,
         videoUrl: data.videoUrl,
-        wallets: data.wallets,
+        // Send the single withdrawal address as a one-element array (or none).
+        wallets: data.wallet.address.trim()
+          ? [{ chain: data.wallet.chain, address: data.wallet.address.trim() }]
+          : [],
       });
       if (draftKey) removeStorageItem(draftKey);
       toast.success(APPLICATION_WIZARD_COPY.toast.submitSuccess, {

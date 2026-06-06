@@ -34,10 +34,12 @@ const ADDRESS_MESSAGES: Record<WalletChain, string> = {
   tron: "Enter a valid Tron address (starts with T)",
 };
 
+// A student has a single, optional withdrawal address. The address may be left
+// blank (skipped), but if provided it must be valid for the selected chain.
 const walletEntry = z
   .object({
     chain: z.enum(["evm", "solana", "tron"] as ["evm", "solana", "tron"], { error: "Select a chain" }),
-    address: z.string().min(1, "Address is required"),
+    address: z.string(),
   })
   .superRefine((entry, ctx) => {
     if (entry.address && !ADDRESS_PATTERNS[entry.chain].test(entry.address)) {
@@ -111,7 +113,7 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     ),
   address: z.string().min(1, "Address is required").max(500, "Address must be under 500 characters"),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
-  wallets: z.array(walletEntry),
+  wallet: walletEntry,
 });
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
