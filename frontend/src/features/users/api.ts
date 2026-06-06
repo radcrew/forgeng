@@ -64,6 +64,11 @@ export const getUserPaymentStats = async (
 ): Promise<UserPaymentStats> =>
   apiClient.get<UserPaymentStats>(`/users/${id}/payment-stats`);
 
+export const notifyWalletMissing = async (
+  id: number,
+): Promise<{ sent: boolean }> =>
+  apiClient.post<{ sent: boolean }>(`/users/${id}/notify-wallet-missing`, {});
+
 export const recordPayment = async (
   id: number,
   payload: { amount: number; currency: string; note?: string },

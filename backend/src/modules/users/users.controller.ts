@@ -38,6 +38,13 @@ export class UsersController {
     return this.service.getById(id);
   }
 
+  @Post(':id/notify-wallet-missing')
+  notifyWalletMissing(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ sent: boolean }> {
+    return this.service.notifyWalletMissing(id);
+  }
+
   @Post(':id/payments')
   recordPayment(
     @Param('id', ParseIntPipe) id: number,

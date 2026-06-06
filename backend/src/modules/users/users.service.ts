@@ -9,7 +9,10 @@ import {
 } from '@common/mappers';
 import { MailService } from '@core/mail';
 import { PrismaService } from '@core/database/prisma.service';
-import { paymentReleasedEmail } from '@modules/notifications/templates';
+import {
+  paymentReleasedEmail,
+  walletMissingEmail,
+} from '@modules/notifications/templates';
 import { ListUsersQuery } from './dto/list-users.query';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -116,6 +119,19 @@ export class UsersService {
       data: { role: dto.role },
     });
     return toUserDto(updated);
+  }
+
+  async notifyWalletMissing(id: number): Promise<{ sent: boolean }> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found.');
+
+    const frontendUrl = this.config.get('frontendUrl', { infer: true });
+    const email = walletMissingEmail({
+      studentName: user.name ?? user.email,
+      url: `${frontendUrl}/student/profile`,
+    });
+    await this.mail.send({ to: user.email, ...email });
+    return { sent: true };
   }
 
   async paymentStats(userId: number): Promise<UserPaymentStats> {

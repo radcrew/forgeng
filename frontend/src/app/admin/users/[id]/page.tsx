@@ -3,13 +3,13 @@
 import { use, useRef, useState } from "react";
 import { format } from "date-fns";
 import {
+  AlertCircle,
   ArrowLeft,
   BadgeCheck,
   Mail,
   MapPin,
   Monitor,
   Send,
-  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ import {
 } from "@components/ui/select";
 import { Separator } from "@components/ui/separator";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
-import { recordPayment } from "@features/users/api";
+import { notifyWalletMissing, recordPayment } from "@features/users/api";
 import { useUser, useUserEnrollments, useUserPaymentStats } from "@features/users/hooks";
 import { ApiError } from "@lib/api-client";
 import { resolveAssetUrl } from "@lib/config";
@@ -70,7 +70,25 @@ export default function UserDetailPage({
   const [currency, setCurrency] = useState("USDT");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [sendingWalletReminder, setSendingWalletReminder] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
+
+  const walletsEmpty =
+    !paymentStats || paymentStats.wallets.length === 0;
+
+  const handleNotifyWalletMissing = async () => {
+    setSendingWalletReminder(true);
+    try {
+      await notifyWalletMissing(userId);
+      toast.success("Reminder sent — student notified to add their wallet.");
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to send reminder.",
+      );
+    } finally {
+      setSendingWalletReminder(false);
+    }
+  };
 
   const openDialog = () => {
     setAmount("");
@@ -244,6 +262,43 @@ export default function UserDetailPage({
                 )}
               </div>
             )}
+
+            {/* Wallet addresses */}
+            <div className="space-y-2">
+              <SectionTitle>Wallet addresses</SectionTitle>
+              {walletsEmpty ? (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-3 space-y-2.5">
+                  <p className="flex items-center gap-2 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    No wallet address added — payment cannot be processed.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    disabled={sendingWalletReminder}
+                    onClick={handleNotifyWalletMissing}
+                  >
+                    <Mail className="h-3.5 w-3.5 mr-1.5" />
+                    {sendingWalletReminder ? "Sending…" : "Email student to add wallet"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {paymentStats!.wallets.map((w) => (
+                    <div
+                      key={w.chain}
+                      className="rounded-lg bg-muted/50 px-3 py-2"
+                    >
+                      <p className="text-xs font-medium capitalize">{w.chain}</p>
+                      <p className="text-xs text-muted-foreground font-mono break-all mt-0.5">
+                        {w.address}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right column */}
@@ -255,31 +310,6 @@ export default function UserDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
-                {/* Wallet addresses */}
-                {paymentStats && paymentStats.wallets.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                      <Wallet className="h-3.5 w-3.5" />
-                      Wallets
-                    </p>
-                    <div className="space-y-1.5">
-                      {paymentStats.wallets.map((w) => (
-                        <div
-                          key={w.chain}
-                          className="rounded-lg bg-muted/50 px-3 py-2"
-                        >
-                          <p className="text-xs font-medium capitalize">
-                            {w.chain}
-                          </p>
-                          <p className="text-xs text-muted-foreground font-mono break-all mt-0.5">
-                            {w.address}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Monthly chart */}
                 {paymentStats && (
                   <div className="space-y-2">
@@ -292,7 +322,16 @@ export default function UserDetailPage({
 
                 <Separator />
 
-                <Button onClick={openDialog} className="w-full">
+                <Button
+                  onClick={openDialog}
+                  disabled={walletsEmpty}
+                  className="w-full"
+                  title={
+                    walletsEmpty
+                      ? "Student must add a wallet address first"
+                      : undefined
+                  }
+                >
                   <Send className="h-4 w-4 mr-2" />
                   Record payment &amp; notify student
                 </Button>
