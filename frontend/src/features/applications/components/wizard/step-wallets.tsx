@@ -29,7 +29,7 @@ const CHAIN_META: Record<
   { label: string; description: string; placeholder: string }
 > = {
   evm: {
-    label: "EVM (BSC)",
+    label: "BSC",
     description: "BNB Smart Chain — payments are sent on BSC only",
     placeholder: "0x...",
   },

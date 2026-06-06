@@ -24,7 +24,7 @@ import { ApiError } from "@lib/api-client";
 import { getWallets, updateWallets, type WalletEntry } from "../api";
 
 const CHAIN_LABELS: Record<WalletChain, string> = {
-  evm: "BSC (EVM)",
+  evm: "BSC",
   solana: "Solana",
   tron: "Tron",
 };
