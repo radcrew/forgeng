@@ -19,6 +19,11 @@ export class RecordPaymentDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
+  txHash?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(500)
   note?: string;
 }

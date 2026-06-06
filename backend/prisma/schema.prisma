@@ -296,6 +296,7 @@ model Payment {
   userId    Int      @map("user_id")
   amount    Decimal  @db.Decimal(12, 2)
   currency  String   @default("USDT") @db.VarChar(20)
+  txHash    String?  @map("tx_hash") @db.VarChar(200)
   note      String?
   paidAt    DateTime @default(now()) @map("paid_at") @db.Timestamptz
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz

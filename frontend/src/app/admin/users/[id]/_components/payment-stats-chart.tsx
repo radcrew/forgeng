@@ -50,10 +50,15 @@ export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
             </div>
 
             {stat.payment && (
-              <div className="ml-[64px] flex items-center gap-1.5">
+              <div className="ml-[64px] space-y-0.5">
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
                   {stat.payment.amount} {stat.payment.currency} paid
                 </span>
+                {stat.payment.txHash && (
+                  <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[200px]" title={stat.payment.txHash}>
+                    {stat.payment.txHash}
+                  </p>
+                )}
               </div>
             )}
           </div>

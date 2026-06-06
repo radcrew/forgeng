@@ -72,7 +72,10 @@ export class AccountController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateWalletsDto,
   ): Promise<{ wallets: Array<{ chain: string; address: string }> }> {
-    const wallets = dto.wallets.map((w) => ({ chain: w.chain, address: w.address }));
+    const wallets = dto.wallets.map((w) => ({
+      chain: w.chain,
+      address: w.address,
+    }));
     await this.prisma.application.updateMany({
       where: { userId: user.id },
       data: { wallets },

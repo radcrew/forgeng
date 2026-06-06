@@ -68,6 +68,7 @@ export default function UserDetailPage({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("USDT");
+  const [txHash, setTxHash] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [sendingWalletReminder, setSendingWalletReminder] = useState(false);
@@ -92,8 +93,9 @@ export default function UserDetailPage({
 
   const openDialog = () => {
     setAmount("");
-    setNote("");
     setCurrency("USDT");
+    setTxHash("");
+    setNote("");
     setDialogOpen(true);
   };
 
@@ -108,6 +110,7 @@ export default function UserDetailPage({
       await recordPayment(userId, {
         amount: parsed,
         currency,
+        txHash: txHash.trim() || undefined,
         note: note.trim() || undefined,
       });
       toast.success("Payment recorded and student notified by email.");
@@ -413,6 +416,22 @@ export default function UserDetailPage({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="txHash">
+                Transaction ID / Hash{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </Label>
+              <Input
+                id="txHash"
+                placeholder="0x… or transaction hash"
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+                className="font-mono text-xs"
+              />
             </div>
 
             <div className="space-y-1.5">

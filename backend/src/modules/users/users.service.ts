@@ -33,7 +33,12 @@ export interface MonthlyPaymentStat {
   tasksApproved: number;
   eligible: boolean;
   notifiedAt: string | null;
-  payment: { amount: string; currency: string; paidAt: string } | null;
+  payment: {
+    amount: string;
+    currency: string;
+    txHash: string | null;
+    paidAt: string;
+  } | null;
 }
 
 export interface UserPaymentStats {
@@ -45,6 +50,7 @@ export interface PaymentDto {
   id: number;
   amount: string;
   currency: string;
+  txHash: string | null;
   note: string | null;
   paidAt: string;
 }
@@ -72,6 +78,7 @@ export class UsersService {
         userId: id,
         amount: dto.amount,
         currency: dto.currency,
+        txHash: dto.txHash,
         note: dto.note,
       },
     });
@@ -87,6 +94,7 @@ export class UsersService {
       id: payment.id,
       amount: payment.amount.toString(),
       currency: payment.currency,
+      txHash: payment.txHash,
       note: payment.note,
       paidAt: payment.paidAt.toISOString(),
     };
@@ -212,6 +220,7 @@ export class UsersService {
           ? {
               amount: payment.amount.toString(),
               currency: payment.currency,
+              txHash: payment.txHash,
               paidAt: payment.paidAt.toISOString(),
             }
           : null,
