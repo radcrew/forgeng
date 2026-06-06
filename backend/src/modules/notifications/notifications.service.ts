@@ -11,6 +11,7 @@ import {
   type NotificationDto,
   type NotificationPreferenceDto,
 } from '@common/mappers';
+import { ADMIN_ROUTES, STUDENT_ROUTES } from '@common/constants/routes';
 import { PrismaService } from '@core/database/prisma.service';
 import { ListNotificationsQuery } from './dto/list-notifications.query';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
@@ -118,7 +119,7 @@ export class NotificationsService {
     const approved = verdict === 'approved';
     // Submissions are viewed via a detail sheet on the list page; there is no
     // standalone /student/submissions/:id route, so deep-link to the list.
-    const link = `/student/submissions`;
+    const link = STUDENT_ROUTES.SUBMISSIONS;
 
     const [prefRow, user] = await Promise.all([
       this.prisma.notificationPreference.findUnique({ where: { userId } }),
@@ -173,7 +174,7 @@ export class NotificationsService {
     const prefsFor = (userId: number) =>
       toNotificationPreferenceDto(prefByUser.get(userId) ?? null);
 
-    const link = `/student/tasks/${task.id}`;
+    const link = STUDENT_ROUTES.TASK(task.id);
 
     const inAppUserIds = userIds.filter((id) => prefsFor(id).taskInApp);
     if (inAppUserIds.length > 0) {
@@ -208,7 +209,7 @@ export class NotificationsService {
       type: 'submission_received',
       title: 'New submission to review',
       body: `${params.studentName} submitted "${params.taskTitle}"`,
-      link: '/admin/reviews',
+      link: ADMIN_ROUTES.REVIEWS,
     });
   }
 
@@ -220,7 +221,7 @@ export class NotificationsService {
       type: 'application_received',
       title: 'New application received',
       body: `${params.applicantName} submitted an application`,
-      link: '/admin/applications',
+      link: ADMIN_ROUTES.APPLICATIONS,
     });
   }
 
@@ -235,10 +236,10 @@ export class NotificationsService {
       type: 'payment_eligible',
       title: 'Student eligible for monthly payment',
       body: `${params.studentName} completed all tasks due this month`,
-      link: `/admin/users/${params.studentId}`,
+      link: ADMIN_ROUTES.USER(params.studentId),
     });
 
-    const url = this.absoluteUrl('/student/dashboard');
+    const url = this.absoluteUrl(STUDENT_ROUTES.DASHBOARD);
     await this.sendEmail(
       params.studentEmail,
       paymentEligibleEmail({ studentName: params.studentName, url }),

@@ -16,11 +16,12 @@ import {
   applicationAcceptedEmail,
   applicationRejectedEmail,
 } from '@modules/notifications/templates';
+import { DEFAULT_PAGE_SIZE } from '@common/constants/pagination';
+import { paginationParams } from '@common/utils/pagination';
+import { STUDENT_ROUTES } from '@common/constants/routes';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
-
-const DEFAULT_PAGE_SIZE = 20;
 
 export interface PaginatedApplications {
   items: ApplicationDto[];
@@ -41,12 +42,16 @@ export interface ApplicationStats {
 export class ApplicationsService {
   private readonly logger = new Logger(ApplicationsService.name);
 
+  private readonly frontendUrl: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     private readonly mail: MailService,
     private readonly config: ConfigService<AppConfiguration, true>,
-  ) {}
+  ) {
+    this.frontendUrl = this.config.get('frontendUrl', { infer: true });
+  }
 
   async list(query: ListApplicationsQuery): Promise<PaginatedApplications> {
     const page = query.page ?? 1;
@@ -57,8 +62,7 @@ export class ApplicationsService {
       this.prisma.application.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        ...paginationParams(page, pageSize),
       }),
       this.prisma.application.count({ where }),
     ]);
@@ -170,7 +174,6 @@ export class ApplicationsService {
     });
 
     const applicantName = `${updated.firstName} ${updated.lastName}`.trim();
-    const frontendUrl = this.config.get('frontendUrl', { infer: true });
 
     if (updated.status === ApplicationStatus.accepted) {
       try {
@@ -179,7 +182,7 @@ export class ApplicationsService {
           ...applicationAcceptedEmail({
             applicantName,
             reviewerNote: updated.reviewerNote,
-            dashboardUrl: `${frontendUrl}/student/dashboard`,
+            dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
           }),
         });
       } catch (err) {

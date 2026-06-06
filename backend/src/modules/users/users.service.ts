@@ -13,11 +13,13 @@ import {
   paymentReleasedEmail,
   walletMissingEmail,
 } from '@modules/notifications/templates';
+import { DEFAULT_PAGE_SIZE } from '@common/constants/pagination';
+import { paginationParams } from '@common/utils/pagination';
+import { STUDENT_ROUTES } from '@common/constants/routes';
 import { ListUsersQuery } from './dto/list-users.query';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
-const DEFAULT_PAGE_SIZE = 20;
 const PAYMENT_HISTORY_MONTHS = 6;
 
 export interface PaginatedUsers {
@@ -57,11 +59,19 @@ export interface PaymentDto {
 
 @Injectable()
 export class UsersService {
+  private readonly frontendUrl: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly config: ConfigService<AppConfiguration, true>,
-  ) {}
+  ) {
+    this.frontendUrl = this.config.get('frontendUrl', { infer: true });
+  }
+
+  private absoluteUrl(path: string): string {
+    return `${this.frontendUrl}${path}`;
+  }
 
   async getById(id: number): Promise<UserDto> {
     const user = await this.prisma.user.findUnique({ where: { id } });
@@ -83,10 +93,9 @@ export class UsersService {
       },
     });
 
-    const frontendUrl = this.config.get('frontendUrl', { infer: true });
     const email = paymentReleasedEmail({
       studentName: user.name ?? user.email,
-      url: `${frontendUrl}/student/dashboard`,
+      url: this.absoluteUrl(STUDENT_ROUTES.DASHBOARD),
     });
     await this.mail.send({ to: user.email, ...email });
 
@@ -109,8 +118,7 @@ export class UsersService {
       this.prisma.user.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        ...paginationParams(page, pageSize),
       }),
       this.prisma.user.count({ where }),
     ]);
@@ -133,10 +141,9 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found.');
 
-    const frontendUrl = this.config.get('frontendUrl', { infer: true });
     const email = walletMissingEmail({
       studentName: user.name ?? user.email,
-      url: `${frontendUrl}/student/profile`,
+      url: this.absoluteUrl(STUDENT_ROUTES.PROFILE),
     });
     await this.mail.send({ to: user.email, ...email });
     return { sent: true };
