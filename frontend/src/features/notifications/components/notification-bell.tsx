@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
@@ -22,7 +22,11 @@ import { useCurrentUser } from "@contexts";
 import { cn } from "@utils";
 import type { Notification } from "@types";
 
-import { markAllNotificationsRead, markNotificationRead } from "../api";
+import {
+  deleteNotification,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "../api";
 import { useNotifications, useUnreadNotificationCount } from "../hooks";
 import { FALLBACK_NOTIFICATION_ICON, NOTIFICATION_ICONS } from "../icons";
 
@@ -91,6 +95,7 @@ function NotificationPanel({
   const router = useRouter();
   const { data, isLoading, error, refetch } = useNotifications();
   const [busy, setBusy] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const notifications = data ?? [];
   const hasUnread = notifications.some((n) => n.readAt === null);
@@ -121,6 +126,20 @@ function NotificationPanel({
       toast.error("Couldn't mark notifications as read.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setDeletingId(id);
+    try {
+      await deleteNotification(id);
+      refetch();
+      onRefreshCount();
+    } catch {
+      toast.error("Couldn't delete notification.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -167,7 +186,9 @@ function NotificationPanel({
               <NotificationRow
                 key={notification.id}
                 notification={notification}
+                deleting={deletingId === notification.id}
                 onClick={() => void handleItemClick(notification)}
+                onDelete={(e) => void handleDelete(e, notification.id)}
               />
             ))}
           </ul>
@@ -187,56 +208,76 @@ function NotificationPanel({
 
 interface NotificationRowProps {
   notification: Notification;
+  deleting: boolean;
   onClick: () => void;
+  onDelete: (e: React.MouseEvent) => void;
 }
 
-function NotificationRow({ notification, onClick }: NotificationRowProps) {
+function NotificationRow({
+  notification,
+  deleting,
+  onClick,
+  onDelete,
+}: NotificationRowProps) {
   const Icon =
     NOTIFICATION_ICONS[notification.type] ?? FALLBACK_NOTIFICATION_ICON;
   const unread = notification.readAt === null;
 
   return (
     <li>
-      <button
-        type="button"
-        onClick={onClick}
+      <div
         className={cn(
-          "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent",
+          "flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent",
           unread && "bg-accent/40",
         )}
       >
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground [&_svg]:size-4">
-          <Icon />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2">
-            <span
-              className={cn(
-                "truncate text-sm",
-                unread ? "font-semibold" : "font-medium",
-              )}
-            >
-              {notification.title}
-            </span>
-            {unread && (
+        <button
+          type="button"
+          onClick={onClick}
+          className="flex flex-1 items-start gap-3 text-left min-w-0"
+        >
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground [&_svg]:size-4">
+            <Icon />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2">
               <span
-                aria-hidden
-                className="h-2 w-2 shrink-0 rounded-full bg-primary"
-              />
-            )}
-          </span>
-          {notification.body && (
-            <span className="mt-0.5 block truncate text-sm text-muted-foreground">
-              {notification.body}
+                className={cn(
+                  "truncate text-sm",
+                  unread ? "font-semibold" : "font-medium",
+                )}
+              >
+                {notification.title}
+              </span>
+              {unread && (
+                <span
+                  aria-hidden
+                  className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                />
+              )}
             </span>
-          )}
-          <span className="mt-1 block text-xs text-muted-foreground">
-            {formatDistanceToNow(new Date(notification.createdAt), {
-              addSuffix: true,
-            })}
+            {notification.body && (
+              <span className="mt-0.5 block truncate text-sm text-muted-foreground">
+                {notification.body}
+              </span>
+            )}
+            <span className="mt-1 block text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(notification.createdAt), {
+                addSuffix: true,
+              })}
+            </span>
           </span>
-        </span>
-      </button>
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleting}
+          className="mt-1 shrink-0 text-muted-foreground transition-colors hover:text-destructive disabled:opacity-40"
+          aria-label="Delete notification"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </li>
   );
 }

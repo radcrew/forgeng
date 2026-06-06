@@ -8,6 +8,8 @@ export {
   getUnreadCount,
   markNotificationRead,
   markAllNotificationsRead,
+  deleteNotification,
+  deleteAllNotifications,
   getNotificationPreferences,
   updateNotificationPreferences,
 } from "./api";

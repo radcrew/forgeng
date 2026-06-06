@@ -29,7 +29,7 @@ const persistSession = (response: AuthSessionResponse): UserProfile => {
 };
 
 export const getMe = async (): Promise<UserProfile> => {
-  const dto = await apiClient.get<UserDto>("/auth/me");
+  const dto = await apiClient.get<UserDto>("/account/me");
   const profile = mapUserDto(dto);
   writeSession(profile);
   return profile;

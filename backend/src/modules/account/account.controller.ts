@@ -23,6 +23,7 @@ import { CurrentUser } from '@core/auth/current-user.decorator';
 import { PrismaService } from '@core/database/prisma.service';
 import { AvatarService, type UploadedImage } from './avatar.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateWalletsDto } from './dto/update-wallets.dto';
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 
@@ -35,8 +36,51 @@ export class AccountController {
   ) {}
 
   @Get('me')
-  getMe(@CurrentUser() user: AuthUser): UserDto {
-    return toUserDto(user);
+  async getMe(@CurrentUser() user: AuthUser): Promise<UserDto> {
+    const socials = await this.prisma.application.findUnique({
+      where: { userId: user.id },
+      select: {
+        linkedin: true,
+        twitter: true,
+        facebook: true,
+        github: true,
+        portfolio: true,
+        telegram: true,
+        whatsapp: true,
+      },
+    });
+    return toUserDto(user, socials);
+  }
+
+  @Get('wallets')
+  async getWallets(
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ wallets: Array<{ chain: string; address: string }> }> {
+    const app = await this.prisma.application.findUnique({
+      where: { userId: user.id },
+      select: { wallets: true },
+    });
+    return {
+      wallets:
+        (app?.wallets as Array<{ chain: string; address: string }> | null) ??
+        [],
+    };
+  }
+
+  @Patch('wallets')
+  async updateWallets(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateWalletsDto,
+  ): Promise<{ wallets: Array<{ chain: string; address: string }> }> {
+    const wallets = dto.wallets.map((w) => ({
+      chain: w.chain,
+      address: w.address,
+    }));
+    await this.prisma.application.updateMany({
+      where: { userId: user.id },
+      data: { wallets },
+    });
+    return { wallets };
   }
 
   @Patch('profile')
@@ -44,11 +88,61 @@ export class AccountController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateProfileDto,
   ): Promise<UserDto> {
-    const updated = await this.prisma.user.update({
-      where: { id: user.id },
-      data: dto,
-    });
-    return toUserDto(updated);
+    const {
+      linkedin,
+      twitter,
+      facebook,
+      github,
+      portfolio,
+      telegram,
+      whatsapp,
+      ...userFields
+    } = dto;
+    const socialFields = {
+      linkedin,
+      twitter,
+      facebook,
+      github,
+      portfolio,
+      telegram,
+      whatsapp,
+    };
+    const hasSocials = Object.values(socialFields).some((v) => v !== undefined);
+
+    const [updated, socials] = await Promise.all([
+      this.prisma.user.update({ where: { id: user.id }, data: userFields }),
+      hasSocials
+        ? this.prisma.application
+            .updateMany({ where: { userId: user.id }, data: socialFields })
+            .then(() =>
+              this.prisma.application.findUnique({
+                where: { userId: user.id },
+                select: {
+                  linkedin: true,
+                  twitter: true,
+                  facebook: true,
+                  github: true,
+                  portfolio: true,
+                  telegram: true,
+                  whatsapp: true,
+                },
+              }),
+            )
+        : this.prisma.application.findUnique({
+            where: { userId: user.id },
+            select: {
+              linkedin: true,
+              twitter: true,
+              facebook: true,
+              github: true,
+              portfolio: true,
+              telegram: true,
+              whatsapp: true,
+            },
+          }),
+    ]);
+
+    return toUserDto(updated, socials);
   }
 
   @Post('avatar')

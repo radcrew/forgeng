@@ -20,6 +20,9 @@ import {
 import { PrismaService } from '@core/database/prisma.service';
 import type { ApplicationStats } from '@modules/applications/applications.service';
 
+const ANALYTICS_WEEKS = 6;
+const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+
 export interface StudentAnalytics {
   // Mutually exclusive task buckets based on each task's latest submission.
   statusBreakdown: {
@@ -31,6 +34,13 @@ export interface StudentAnalytics {
   typeBreakdown: { type: TaskType; total: number; approved: number }[];
   // Submissions per week for the trailing weeks, oldest first.
   weeklyActivity: { weekStart: string; submissions: number }[];
+}
+
+export interface MonthlyPayment {
+  tasksThisMonth: number;
+  approvedThisMonth: number;
+  paymentDate: string;
+  eligible: boolean;
 }
 
 export interface StudentDashboard {
@@ -47,6 +57,7 @@ export interface StudentDashboard {
   recentSubmissions: SubmissionDto[];
   nextDeadline: string | null;
   analytics: StudentAnalytics;
+  monthlyPayment: MonthlyPayment;
 }
 
 export interface AdminCohortStat {
@@ -107,6 +118,7 @@ export class DashboardService {
           typeBreakdown: [],
           weeklyActivity: this.buildWeeklyActivity([]),
         },
+        monthlyPayment: this.buildMonthlyPayment([], new Set()),
       };
     }
 
@@ -202,22 +214,55 @@ export class DashboardService {
         typeBreakdown,
         weeklyActivity: this.buildWeeklyActivity(mySubmissions),
       },
+      monthlyPayment: this.buildMonthlyPayment(tasks, approvedIds),
+    };
+  }
+
+  private buildMonthlyPayment(
+    tasks: { id: number; dueDate: Date | null }[],
+    approvedIds: Set<number>,
+  ): MonthlyPayment {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+    const tasksThisMonth = tasks.filter(
+      (t) => t.dueDate && t.dueDate >= monthStart && t.dueDate <= monthEnd,
+    );
+    const approvedThisMonth = tasksThisMonth.filter((t) =>
+      approvedIds.has(t.id),
+    ).length;
+    return {
+      tasksThisMonth: tasksThisMonth.length,
+      approvedThisMonth,
+      paymentDate: monthEnd.toISOString(),
+      eligible:
+        tasksThisMonth.length > 0 &&
+        approvedThisMonth === tasksThisMonth.length,
     };
   }
 
   private buildWeeklyActivity(
     submissions: { createdAt: Date }[],
   ): StudentAnalytics['weeklyActivity'] {
-    const WEEKS = 6;
-    const MS_WEEK = 7 * 24 * 60 * 60 * 1000;
     const now = Date.now();
-    const buckets = Array.from({ length: WEEKS }, (_, i) => ({
-      weekStart: new Date(now - (WEEKS - 1 - i) * MS_WEEK).toISOString(),
+    const buckets = Array.from({ length: ANALYTICS_WEEKS }, (_, i) => ({
+      weekStart: new Date(
+        now - (ANALYTICS_WEEKS - 1 - i) * MS_PER_WEEK,
+      ).toISOString(),
       submissions: 0,
     }));
     for (const s of submissions) {
-      const idx = Math.floor((now - s.createdAt.getTime()) / MS_WEEK);
-      if (idx >= 0 && idx < WEEKS) buckets[WEEKS - 1 - idx].submissions += 1;
+      const idx = Math.floor((now - s.createdAt.getTime()) / MS_PER_WEEK);
+      if (idx >= 0 && idx < ANALYTICS_WEEKS)
+        buckets[ANALYTICS_WEEKS - 1 - idx].submissions += 1;
     }
     return buckets;
   }
@@ -265,8 +310,7 @@ export class DashboardService {
   }
 
   private async adminAnalytics(): Promise<AdminAnalytics> {
-    const WEEKS = 6;
-    const since = new Date(Date.now() - WEEKS * 7 * 24 * 60 * 60 * 1000);
+    const since = new Date(Date.now() - ANALYTICS_WEEKS * MS_PER_WEEK);
 
     const [byStatus, recentSubs, cohorts, tasksWithCounts] = await Promise.all([
       this.prisma.submission.groupBy({

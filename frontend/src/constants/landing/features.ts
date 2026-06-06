@@ -1,6 +1,7 @@
 import {
   BarChart3,
   BookOpen,
+  Banknote,
   FolderGit2,
   MessageSquare,
   Users,
@@ -15,6 +16,12 @@ export interface Feature {
 }
 
 export const FEATURES: Feature[] = [
+  {
+    icon: Banknote,
+    title: "Monthly Stipend",
+    description:
+      "Complete all your tasks for the month and receive a monthly stipend. You're putting in real work — you should get real compensation for it.",
+  },
   {
     icon: FolderGit2,
     title: "Real Projects",

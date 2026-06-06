@@ -4,16 +4,24 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApplicationStatus, Role, type User } from '@prisma/client';
+import type { AppConfiguration } from '@config';
 import { PrismaService } from '@core/database/prisma.service';
 import { toApplicationDto, type ApplicationDto } from '@common/mappers';
 import { splitName } from '@common/string';
+import { MailService } from '@core/mail';
 import { NotificationsService } from '@modules/notifications/notifications.service';
+import {
+  applicationAcceptedEmail,
+  applicationRejectedEmail,
+} from '@modules/notifications/templates';
+import { DEFAULT_PAGE_SIZE } from '@common/constants/pagination';
+import { paginationParams } from '@common/utils/pagination';
+import { STUDENT_ROUTES } from '@common/constants/routes';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
-
-const DEFAULT_PAGE_SIZE = 20;
 
 export interface PaginatedApplications {
   items: ApplicationDto[];
@@ -34,10 +42,16 @@ export interface ApplicationStats {
 export class ApplicationsService {
   private readonly logger = new Logger(ApplicationsService.name);
 
+  private readonly frontendUrl: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
-  ) {}
+    private readonly mail: MailService,
+    private readonly config: ConfigService<AppConfiguration, true>,
+  ) {
+    this.frontendUrl = this.config.get('frontendUrl', { infer: true });
+  }
 
   async list(query: ListApplicationsQuery): Promise<PaginatedApplications> {
     const page = query.page ?? 1;
@@ -48,8 +62,7 @@ export class ApplicationsService {
       this.prisma.application.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        ...paginationParams(page, pageSize),
       }),
       this.prisma.application.count({ where }),
     ]);
@@ -159,6 +172,41 @@ export class ApplicationsService {
 
       return app;
     });
+
+    const applicantName = `${updated.firstName} ${updated.lastName}`.trim();
+
+    if (updated.status === ApplicationStatus.accepted) {
+      try {
+        await this.mail.send({
+          to: updated.email,
+          ...applicationAcceptedEmail({
+            applicantName,
+            reviewerNote: updated.reviewerNote,
+            dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
+          }),
+        });
+      } catch (err) {
+        this.logger.error(
+          `Failed to send acceptance email to ${updated.email}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    } else if (updated.status === ApplicationStatus.rejected) {
+      try {
+        await this.mail.send({
+          to: updated.email,
+          ...applicationRejectedEmail({
+            applicantName,
+            reviewerNote: updated.reviewerNote,
+          }),
+        });
+      } catch (err) {
+        this.logger.error(
+          `Failed to send rejection email to ${updated.email}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    }
 
     return toApplicationDto(updated);
   }

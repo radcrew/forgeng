@@ -34,6 +34,53 @@ export const listUserEnrollments = async (
 ): Promise<UserEnrollment[]> =>
   apiClient.get<UserEnrollment[]>(`/users/${userId}/enrollments`);
 
+export interface MonthlyPaymentStat {
+  month: string;
+  tasksTotal: number;
+  tasksApproved: number;
+  eligible: boolean;
+  notifiedAt: string | null;
+  payment: {
+    amount: string;
+    currency: string;
+    txLink: string | null;
+    paidAt: string;
+  } | null;
+}
+
+export interface PaymentRecord {
+  id: number;
+  amount: string;
+  currency: string;
+  txLink: string | null;
+  note: string | null;
+  paidAt: string;
+}
+
+export interface UserPaymentStats {
+  wallets: Array<{ chain: string; address: string }>;
+  monthlyStats: MonthlyPaymentStat[];
+}
+
+export const getUser = async (id: number): Promise<UserProfile> =>
+  apiClient.get<UserProfile>(`/users/${id}`);
+
+export const getUserPaymentStats = async (
+  id: number,
+): Promise<UserPaymentStats> =>
+  apiClient.get<UserPaymentStats>(`/users/${id}/payment-stats`);
+
+export const notifyWalletMissing = async (
+  id: number,
+): Promise<{ sent: boolean }> =>
+  apiClient.post<{ sent: boolean }>(`/users/${id}/notify-wallet-missing`, {});
+
+export const recordPayment = async (
+  id: number,
+  payload: { amount: number; currency: string; txLink?: string; note?: string },
+): Promise<PaymentRecord> =>
+  apiClient.post<PaymentRecord>(`/users/${id}/payments`, payload);
+
 export const updateUserRole = async (
   id: number,
   role: UserRole,

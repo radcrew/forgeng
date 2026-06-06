@@ -1,5 +1,5 @@
 import { useFieldArray, type Control } from "react-hook-form";
-import { X } from "lucide-react";
+import { Info, X } from "lucide-react";
 import { Button } from "@components/ui/button";
 import {
   FormControl,
@@ -29,8 +29,8 @@ const CHAIN_META: Record<
   { label: string; description: string; placeholder: string }
 > = {
   evm: {
-    label: "EVM",
-    description: "Ethereum, BNB Chain, Base, Arbitrum, Optimism, ...",
+    label: "BSC",
+    description: "BNB Smart Chain — payments are sent on BSC only",
     placeholder: "0x...",
   },
   solana: {
@@ -61,6 +61,16 @@ export const StepWallets = ({ control }: Props) => {
         <h2 className="text-xl font-semibold">{COPY.title}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{COPY.hint}</p>
         <p className="mt-1 text-xs text-muted-foreground">{COPY.atLeastOneHint}</p>
+      </div>
+
+      <div className="flex gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+        <p className="text-sm text-amber-800 dark:text-amber-300">
+          To minimize fees, stipends are paid in <strong>USDT</strong> on{" "}
+          <strong>BNB Smart Chain</strong>, <strong>Solana</strong>, and{" "}
+          <strong>Tron</strong> only. Make sure your wallet supports at least one
+          of these networks.
+        </p>
       </div>
 
       <div className="space-y-3">

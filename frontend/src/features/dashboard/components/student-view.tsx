@@ -9,11 +9,12 @@ import { EmptyState } from "@components/shared";
 import type { StudentDashboard } from "../types";
 import { StatusBadge } from "@features/submissions";
 import { StudentAnalytics } from "./student-analytics";
+import { PaymentProgress } from "./payment-progress";
 
 export type StudentViewProps = { dashboard: StudentDashboard };
 
 export const StudentView = ({ dashboard }: StudentViewProps) => {
-  const { taskStats, recentSubmissions, nextDeadline, analytics } = dashboard;
+  const { taskStats, recentSubmissions, nextDeadline, analytics, monthlyPayment } = dashboard;
   const progressPercent =
     taskStats.total > 0
       ? Math.round((taskStats.approved / taskStats.total) * 100)
@@ -81,6 +82,8 @@ export const StudentView = ({ dashboard }: StudentViewProps) => {
           </CardContent>
         </Card>
       </div>
+
+      <PaymentProgress monthlyPayment={monthlyPayment} />
 
       <StudentAnalytics analytics={analytics} />
 

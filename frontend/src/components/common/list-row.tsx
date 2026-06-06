@@ -1,5 +1,5 @@
 export type ListRowProps = {
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
 };
 

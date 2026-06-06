@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { BadgeCheck, Mail } from "lucide-react";
+import { BadgeCheck, Mail, MapPin, Monitor } from "lucide-react";
 
 import {
   DetailSheet,
@@ -75,6 +75,28 @@ export const ProfileSheet = ({ user, open, onClose }: ProfileSheetProps) => {
           {format(new Date(user.createdAt), "MMMM d, yyyy")}
         </p>
       </div>
+
+      {(user.registrationIp || user.registrationCity || user.registrationCountry) && (
+        <div>
+          <SectionTitle>Registration</SectionTitle>
+          <div className="space-y-1.5">
+            {user.registrationIp && (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Monitor className="h-3.5 w-3.5 shrink-0" />
+                {user.registrationIp}
+              </p>
+            )}
+            {(user.registrationCity || user.registrationCountry) && (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                {[user.registrationCity, user.registrationCountry]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       <div>
         <SectionTitle>Bio</SectionTitle>

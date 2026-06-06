@@ -17,6 +17,7 @@ export type {
   AdminDashboard,
   StudentDashboard,
   StudentAnalytics,
+  MonthlyPayment,
 } from "./dashboard";
 export type {
   Notification,

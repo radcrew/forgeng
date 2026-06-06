@@ -14,3 +14,5 @@ export { StudentOnboarding } from "./components/student-onboarding";
 export type { StudentOnboardingProps } from "./components/student-onboarding";
 export { StudentAnalytics } from "./components/student-analytics";
 export type { StudentAnalyticsProps } from "./components/student-analytics";
+export { PaymentProgress } from "./components/payment-progress";
+export type { PaymentProgressProps } from "./components/payment-progress";

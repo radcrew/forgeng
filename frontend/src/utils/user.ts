@@ -1,4 +1,30 @@
-import type { UserProfile, UserRole } from "@types";
+import type { Application, UserProfile, UserRole } from "@types";
+
+const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
+  "name",
+  "bio",
+  "github",
+  "linkedin",
+  "twitter",
+  "facebook",
+  "telegram",
+  "whatsapp",
+];
+
+export const isProfileComplete = (user: UserProfile): boolean =>
+  REQUIRED_PROFILE_FIELDS.every((f) => Boolean(user[f]));
+
+const REQUIRED_APPLICATION_FIELDS: (keyof Application)[] = [
+  "linkedin",
+  "twitter",
+  "facebook",
+  "github",
+  "telegram",
+  "whatsapp",
+];
+
+export const isApplicationComplete = (app: Application): boolean =>
+  REQUIRED_APPLICATION_FIELDS.every((f) => Boolean(app[f]));
 
 export interface UserDto {
   id: number;
@@ -10,6 +36,16 @@ export interface UserDto {
   githubUrl: string | null;
   avatarUrl: string | null;
   createdAt: string;
+  linkedin: string | null;
+  twitter: string | null;
+  facebook: string | null;
+  github: string | null;
+  portfolio: string | null;
+  telegram: string | null;
+  whatsapp: string | null;
+  registrationIp: string | null;
+  registrationCountry: string | null;
+  registrationCity: string | null;
 }
 
 export const mapUserDto = (dto: UserDto): UserProfile => ({
@@ -22,4 +58,14 @@ export const mapUserDto = (dto: UserDto): UserProfile => ({
   githubUrl: dto.githubUrl,
   avatarUrl: dto.avatarUrl,
   createdAt: dto.createdAt,
+  linkedin: dto.linkedin,
+  twitter: dto.twitter,
+  facebook: dto.facebook,
+  github: dto.github,
+  portfolio: dto.portfolio,
+  telegram: dto.telegram,
+  whatsapp: dto.whatsapp,
+  registrationIp: dto.registrationIp,
+  registrationCountry: dto.registrationCountry,
+  registrationCity: dto.registrationCity,
 });

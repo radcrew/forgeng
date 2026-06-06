@@ -24,8 +24,8 @@ interface LayoutOptions {
   heading: string;
   /** Paragraphs rendered above the call-to-action button. */
   intro: string[];
-  buttonLabel: string;
-  buttonUrl: string;
+  buttonLabel?: string;
+  buttonUrl?: string;
   /** Muted paragraphs rendered below the button (e.g. expiry, disclaimers). */
   footnotes: string[];
 }
@@ -48,7 +48,7 @@ export const layout = (options: LayoutOptions): string => {
   const footnotes = options.footnotes
     .map((line) => paragraph(escapeHtml(line), MUTED, 14))
     .join('');
-  const safeUrl = escapeHtml(options.buttonUrl);
+  const safeUrl = options.buttonUrl ? escapeHtml(options.buttonUrl) : '';
 
   return `<!doctype html>
 <html lang="en">
@@ -77,7 +77,9 @@ export const layout = (options: LayoutOptions): string => {
                   options.heading,
                 )}</h1>
                 ${intro}
-                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+                ${
+                  options.buttonLabel && safeUrl
+                    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;">
                   <tr>
                     <td align="center" bgcolor="${BRAND}" style="border-radius:8px;">
                       <a href="${safeUrl}" target="_blank" style="display:inline-block;padding:13px 28px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;background-color:${BRAND};font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">${escapeHtml(
@@ -90,7 +92,9 @@ export const layout = (options: LayoutOptions): string => {
                   `Button not working? Copy and paste this link into your browser:<br /><a href="${safeUrl}" target="_blank" style="color:${BRAND_DARK};word-break:break-all;">${safeUrl}</a>`,
                   MUTED,
                   14,
-                )}
+                )}`
+                    : ''
+                }
                 ${footnotes}
               </td>
             </tr>

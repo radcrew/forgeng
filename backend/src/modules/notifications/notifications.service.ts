@@ -11,10 +11,15 @@ import {
   type NotificationDto,
   type NotificationPreferenceDto,
 } from '@common/mappers';
+import { ADMIN_ROUTES, STUDENT_ROUTES } from '@common/constants/routes';
 import { PrismaService } from '@core/database/prisma.service';
 import { ListNotificationsQuery } from './dto/list-notifications.query';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
-import { feedbackReceivedEmail, taskPublishedEmail } from './templates';
+import {
+  feedbackReceivedEmail,
+  paymentEligibleEmail,
+  taskPublishedEmail,
+} from './templates';
 
 @Injectable()
 export class NotificationsService {
@@ -68,6 +73,23 @@ export class NotificationsService {
     return { count };
   }
 
+  async delete(id: number, user: AuthUser): Promise<void> {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+    if (!notification || notification.userId !== user.id) {
+      throw new NotFoundException('Notification not found.');
+    }
+    await this.prisma.notification.delete({ where: { id } });
+  }
+
+  async deleteAll(user: AuthUser): Promise<{ count: number }> {
+    const { count } = await this.prisma.notification.deleteMany({
+      where: { userId: user.id },
+    });
+    return { count };
+  }
+
   async getPreferences(user: AuthUser): Promise<NotificationPreferenceDto> {
     const pref = await this.prisma.notificationPreference.findUnique({
       where: { userId: user.id },
@@ -97,7 +119,7 @@ export class NotificationsService {
     const approved = verdict === 'approved';
     // Submissions are viewed via a detail sheet on the list page; there is no
     // standalone /student/submissions/:id route, so deep-link to the list.
-    const link = `/student/submissions`;
+    const link = STUDENT_ROUTES.SUBMISSIONS;
 
     const [prefRow, user] = await Promise.all([
       this.prisma.notificationPreference.findUnique({ where: { userId } }),
@@ -152,7 +174,7 @@ export class NotificationsService {
     const prefsFor = (userId: number) =>
       toNotificationPreferenceDto(prefByUser.get(userId) ?? null);
 
-    const link = `/student/tasks/${task.id}`;
+    const link = STUDENT_ROUTES.TASK(task.id);
 
     const inAppUserIds = userIds.filter((id) => prefsFor(id).taskInApp);
     if (inAppUserIds.length > 0) {
@@ -187,7 +209,7 @@ export class NotificationsService {
       type: 'submission_received',
       title: 'New submission to review',
       body: `${params.studentName} submitted "${params.taskTitle}"`,
-      link: '/admin/reviews',
+      link: ADMIN_ROUTES.REVIEWS,
     });
   }
 
@@ -199,12 +221,33 @@ export class NotificationsService {
       type: 'application_received',
       title: 'New application received',
       body: `${params.applicantName} submitted an application`,
-      link: '/admin/applications',
+      link: ADMIN_ROUTES.APPLICATIONS,
     });
   }
 
+  /** Notify every admin that a student is eligible for their monthly payment,
+   *  and email the student that their stipend will arrive within 2 business days. */
+  async notifyPaymentEligible(params: {
+    studentName: string;
+    studentId: number;
+    studentEmail: string;
+  }): Promise<void> {
+    await this.notifyAdmins({
+      type: 'payment_eligible',
+      title: 'Student eligible for monthly payment',
+      body: `${params.studentName} completed all tasks due this month`,
+      link: ADMIN_ROUTES.USER(params.studentId),
+    });
+
+    const url = this.absoluteUrl(STUDENT_ROUTES.DASHBOARD);
+    await this.sendEmail(
+      params.studentEmail,
+      paymentEligibleEmail({ studentName: params.studentName, url }),
+    );
+  }
+
   private async notifyAdmins(notification: {
-    type: 'submission_received' | 'application_received';
+    type: 'submission_received' | 'application_received' | 'payment_eligible';
     title: string;
     body: string;
     link: string;

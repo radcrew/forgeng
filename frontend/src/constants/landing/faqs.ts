@@ -25,6 +25,11 @@ export const FAQS: Faq[] = [
       "Most apprentices do. Tasks are async with flexible deadlines, and mentor feedback is asynchronous. Plan for roughly 10 to 15 hours per week to stay on pace with your cohort.",
   },
   {
+    question: "Do apprentices actually get paid?",
+    answer:
+      "Yes. Every month you complete all your assigned tasks on time, you receive a monthly stipend. It's not a salary, but it's real money that recognises the real work you're doing. The exact amount is in your offer letter and scales with your cohort track.",
+  },
+  {
     question: "How is this different from a bootcamp?",
     answer:
       "Bootcamps front-load lectures and end with a capstone. Forgeng inverts that — from day one you're shipping real tasks reviewed by working engineers. Less classroom, more code review. We're not in the business of teaching syntax; we're in the business of building engineers.",

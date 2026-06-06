@@ -14,9 +14,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { USER_ROLE_FILTER_TABS } from "@constants/users";
+import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
 import { Row, useUsers, type UserRoleFilter } from "@features/users";
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 const Page = () => {
   const [roleFilter, setRoleFilter] = useState<UserRoleFilter>("all");

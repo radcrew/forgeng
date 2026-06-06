@@ -20,8 +20,7 @@ import {
   type ApplicationStatusFilter,
   useApplications,
 } from "@features/applications";
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
 
 const Page = () => {
   const router = useRouter();
