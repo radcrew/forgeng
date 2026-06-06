@@ -14,7 +14,11 @@ import type { ProfileEnrollmentDto, UserDto } from '@common/mappers';
 import { Roles } from '@core/auth/roles.decorator';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { UsersService, type PaginatedUsers } from './users.service';
+import {
+  UsersService,
+  type PaginatedUsers,
+  type UserPaymentStats,
+} from './users.service';
 
 @ApiTags('users')
 @Roles('admin')
@@ -37,6 +41,13 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<{ sent: boolean }> {
     return this.service.notifyPaymentReleased(id);
+  }
+
+  @Get(':id/payment-stats')
+  paymentStats(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UserPaymentStats> {
+    return this.service.paymentStats(id);
   }
 
   @Get(':id/enrollments')

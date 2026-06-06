@@ -9,6 +9,7 @@ import {
   MapPin,
   Monitor,
   Send,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -26,7 +27,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Separator } from "@components/ui/separator";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { notifyPaymentReleased } from "@features/users/api";
-import { useUser, useUserEnrollments } from "@features/users/hooks";
+import { useUser, useUserEnrollments, useUserPaymentStats } from "@features/users/hooks";
+import { PaymentStatsChart } from "./_components/payment-stats-chart";
 import { ApiError } from "@lib/api-client";
 import { resolveAssetUrl } from "@lib/config";
 
@@ -41,6 +43,7 @@ export default function UserDetailPage({
   const { data: user, isLoading } = useUser(userId);
   const { data: enrollments = [], isLoading: enrollmentsLoading } =
     useUserEnrollments(userId);
+  const { data: paymentStats } = useUserPaymentStats(userId);
 
   const [sending, setSending] = useState(false);
 
@@ -202,26 +205,66 @@ export default function UserDetailPage({
 
           {/* Right column */}
           <div className="space-y-6">
-            {/* Payment action */}
+            {/* Payment stats */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
                   Monthly Payment
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Once you have processed the student&apos;s monthly stipend,
-                  send them an email confirmation.
-                </p>
-                <Button
-                  onClick={handleNotifyPayment}
-                  disabled={sending}
-                  className="w-full"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  {sending ? "Sending…" : "Notify payment released"}
-                </Button>
+              <CardContent className="space-y-5">
+                {/* Wallet addresses */}
+                {paymentStats && paymentStats.wallets.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                      <Wallet className="h-3.5 w-3.5" />
+                      Wallets
+                    </p>
+                    <div className="space-y-1.5">
+                      {paymentStats.wallets.map((w) => (
+                        <div
+                          key={w.chain}
+                          className="rounded-lg bg-muted/50 px-3 py-2"
+                        >
+                          <p className="text-xs font-medium capitalize">
+                            {w.chain}
+                          </p>
+                          <p className="text-xs text-muted-foreground font-mono break-all mt-0.5">
+                            {w.address}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Monthly chart */}
+                {paymentStats && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Last 6 months
+                    </p>
+                    <PaymentStatsChart stats={paymentStats.monthlyStats} />
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Notify action */}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Once you have processed the student&apos;s stipend, notify
+                    them by email.
+                  </p>
+                  <Button
+                    onClick={handleNotifyPayment}
+                    disabled={sending}
+                    className="w-full"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {sending ? "Sending…" : "Notify payment released"}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 

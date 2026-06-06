@@ -34,8 +34,26 @@ export const listUserEnrollments = async (
 ): Promise<UserEnrollment[]> =>
   apiClient.get<UserEnrollment[]>(`/users/${userId}/enrollments`);
 
+export interface MonthlyPaymentStat {
+  month: string;
+  tasksTotal: number;
+  tasksApproved: number;
+  eligible: boolean;
+  notifiedAt: string | null;
+}
+
+export interface UserPaymentStats {
+  wallets: Array<{ chain: string; address: string }>;
+  monthlyStats: MonthlyPaymentStat[];
+}
+
 export const getUser = async (id: number): Promise<UserProfile> =>
   apiClient.get<UserProfile>(`/users/${id}`);
+
+export const getUserPaymentStats = async (
+  id: number,
+): Promise<UserPaymentStats> =>
+  apiClient.get<UserPaymentStats>(`/users/${id}/payment-stats`);
 
 export const notifyPaymentReleased = async (
   id: number,

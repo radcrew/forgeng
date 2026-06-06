@@ -14,12 +14,26 @@ import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
 const DEFAULT_PAGE_SIZE = 20;
+const PAYMENT_HISTORY_MONTHS = 6;
 
 export interface PaginatedUsers {
   items: UserDto[];
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface MonthlyPaymentStat {
+  month: string; // "2026-01"
+  tasksTotal: number;
+  tasksApproved: number;
+  eligible: boolean;
+  notifiedAt: string | null;
+}
+
+export interface UserPaymentStats {
+  wallets: Array<{ chain: string; address: string }>;
+  monthlyStats: MonthlyPaymentStat[];
 }
 
 @Injectable()
@@ -76,6 +90,84 @@ export class UsersService {
       data: { role: dto.role },
     });
     return toUserDto(updated);
+  }
+
+  async paymentStats(userId: number): Promise<UserPaymentStats> {
+    const [application, enrollments] = await Promise.all([
+      this.prisma.application.findUnique({
+        where: { userId },
+        select: { wallets: true },
+      }),
+      this.prisma.enrollment.findMany({
+        where: { userId },
+        select: { cohortId: true },
+      }),
+    ]);
+
+    const cohortIds = enrollments.map((e) => e.cohortId);
+    const now = new Date();
+    const monthlyStats: MonthlyPaymentStat[] = [];
+
+    for (let i = PAYMENT_HISTORY_MONTHS - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+      const monthEnd = new Date(
+        d.getFullYear(),
+        d.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+      const tasks =
+        cohortIds.length > 0
+          ? await this.prisma.task.findMany({
+              where: {
+                cohortId: { in: cohortIds },
+                status: 'published',
+                dueDate: { gte: monthStart, lte: monthEnd },
+              },
+              select: { id: true },
+            })
+          : [];
+
+      const taskIds = tasks.map((t) => t.id);
+      const tasksApproved =
+        taskIds.length > 0
+          ? await this.prisma.submission.count({
+              where: { userId, taskId: { in: taskIds }, status: 'approved' },
+            })
+          : 0;
+
+      const notification = await this.prisma.notification.findFirst({
+        where: {
+          type: 'payment_eligible',
+          link: `/admin/users/${userId}`,
+          createdAt: { gte: monthStart, lte: monthEnd },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      monthlyStats.push({
+        month,
+        tasksTotal: tasks.length,
+        tasksApproved,
+        eligible: tasks.length > 0 && tasksApproved === tasks.length,
+        notifiedAt: notification?.createdAt.toISOString() ?? null,
+      });
+    }
+
+    return {
+      wallets:
+        (application?.wallets as Array<{
+          chain: string;
+          address: string;
+        }> | null) ?? [],
+      monthlyStats,
+    };
   }
 
   /** A user's enrollment history (cohorts joined), newest first — for the admin profile view. */
