@@ -37,9 +37,15 @@ const walletEntry = z
     }
   });
 
-// Identity (name + email) comes from the signed-in account, so it is not part
-// of the form schema — only the application content is collected here.
+// Email comes from the signed-in account (read-only), but the applicant can
+// edit their name in the first step — so name is part of the form schema and
+// is persisted back to their profile on submit.
 export const APPLICATION_FORM_SCHEMA = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(120, "Name must be under 120 characters"),
   background: z
     .string()
     .min(50, "Please provide more detail about your background"),
@@ -83,8 +89,8 @@ export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
   number,
   Array<keyof ApplicationFormValues>
 > = {
-  // Step 1 confirms identity (read-only, no validated fields).
-  1: [],
+  // Step 1 collects the editable name (email stays read-only).
+  1: ["name"],
   2: ["background", "experience"],
   3: ["motivation"],
   4: ["linkedin", "twitter", "facebook", "github", "portfolio", "telegram", "whatsapp", "address"],

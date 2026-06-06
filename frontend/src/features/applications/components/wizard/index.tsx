@@ -26,6 +26,7 @@ import {
   writeStorageJson,
 } from "@utils/storage";
 import { ApiError } from "@lib/api-client";
+import { updateProfile } from "@features/profile";
 import { createApplication, getMyApplication } from "../../api";
 import { StepBasicInfo } from "./step-basic-info";
 import { StepBackground } from "./step-background";
@@ -36,7 +37,7 @@ import { StepWallets } from "./step-wallets";
 
 export const Wizard = () => {
   const router = useRouter();
-  const { user } = useCurrentUser();
+  const { user, refreshUser } = useCurrentUser();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,6 +50,7 @@ export const Wizard = () => {
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(APPLICATION_FORM_SCHEMA),
     defaultValues: {
+      name: "",
       background: "",
       experience: "",
       motivation: "",
@@ -93,6 +95,14 @@ export const Wizard = () => {
     );
   }, [form, draftKey]);
 
+  // Prefill the editable name from the signed-in account, unless the user has
+  // already typed one (e.g. restored from a draft above).
+  useEffect(() => {
+    if (user?.name && !form.getValues("name")) {
+      form.setValue("name", user.name);
+    }
+  }, [form, user?.name]);
+
   useEffect(() => {
     if (!draftKey) return;
     // React Compiler can't memoize functions returned from useForm; this
@@ -107,6 +117,12 @@ export const Wizard = () => {
   const onSubmit = async (data: ApplicationFormValues) => {
     setIsSubmitting(true);
     try {
+      // Persist the (possibly edited) name back to the account before applying.
+      const trimmedName = data.name.trim();
+      if (trimmedName && trimmedName !== (user?.name ?? "")) {
+        await updateProfile({ name: trimmedName });
+        await refreshUser();
+      }
       await createApplication({
         background: data.background,
         motivation: data.motivation,
@@ -182,7 +198,9 @@ export const Wizard = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent className="pt-6 space-y-6">
-                {step === 1 && <StepBasicInfo user={user} />}
+                {step === 1 && (
+                  <StepBasicInfo control={form.control} user={user} />
+                )}
                 {step === 2 && <StepBackground control={form.control} />}
                 {step === 3 && <StepMotivation control={form.control} />}
                 {step === 4 && <StepSocialProfiles control={form.control} />}

@@ -7,8 +7,9 @@ export const APPLICATION_WIZARD_COPY = {
     basicInfo: {
       title: "Basic Information",
       accountHint:
-        "You're applying with your Forgeng account. We'll use these details — update them in your profile if they need to change.",
+        "You're applying with your Forgeng account. Make sure your name is correct — it'll be saved to your profile. Your email can't be changed here.",
       nameLabel: "Name",
+      namePlaceholder: "Your full name",
       emailLabel: "Email",
     },
     background: {
