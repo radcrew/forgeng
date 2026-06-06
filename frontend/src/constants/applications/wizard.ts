@@ -7,8 +7,9 @@ export const APPLICATION_WIZARD_COPY = {
     basicInfo: {
       title: "Basic Information",
       accountHint:
-        "You're applying with your Forgeng account. We'll use these details — update them in your profile if they need to change.",
+        "You're applying with your Forgeng account. Make sure your name is correct — it'll be saved to your profile. Your email can't be changed here.",
       nameLabel: "Name",
+      namePlaceholder: "Your full name",
       emailLabel: "Email",
     },
     background: {
@@ -16,7 +17,7 @@ export const APPLICATION_WIZARD_COPY = {
       backgroundLabel: "Tell us about yourself",
       backgroundPlaceholder:
         "Where are you coming from? What have you been learning?",
-      experienceLabel: "Technical Experience (Optional)",
+      experienceLabel: "Technical Experience",
       experiencePlaceholder:
         "Any programming languages, tools, or projects you've worked with?",
     },
@@ -45,8 +46,8 @@ export const APPLICATION_WIZARD_COPY = {
         "Your browser does not support video recording. Try Chrome or Firefox.",
     },
     wallets: {
-      title: "Wallet Addresses",
-      hint: "Stipends are paid in crypto. Provide at least one address — you will be paid on whichever chain we agree on.",
+      title: "Withdrawal Address",
+      hint: "Stipends are paid in crypto to a single wallet. Choose a chain and enter the address you'd like to be paid on.",
       evmLabel: "EVM Address",
       evmDescription: "Covers Ethereum, BNB Chain, Base, Arbitrum, Optimism, and all other EVM-compatible networks. Starts with 0x.",
       evmPlaceholder: "0x...",

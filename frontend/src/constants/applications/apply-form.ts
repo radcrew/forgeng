@@ -7,6 +7,18 @@ const optionalUrl = z
     "Enter a valid URL (e.g. https://...)",
   );
 
+// A LinkedIn member profile: linkedin.com/in/<slug>, optionally on a country
+// subdomain (e.g. de.linkedin.com). Rejects company pages, feeds, and other
+// linkedin.com URLs that aren't a personal profile.
+const LINKEDIN_PROFILE_RE =
+  /^https?:\/\/([a-z]{2,3}\.)?linkedin\.com\/in\/[\w%-]+\/?(\?.*)?$/i;
+
+// A GitHub user profile: github.com/<username>. The username follows GitHub's
+// own rules — 1–39 chars, alphanumeric or single hyphens, no leading/trailing
+// or consecutive hyphens — so repo/org sub-paths are rejected.
+const GITHUB_PROFILE_RE =
+  /^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9](?:-?[A-Za-z0-9]){0,38}\/?(\?.*)?$/i;
+
 export const WALLET_CHAINS = ["evm", "solana", "tron"] as const;
 export type WalletChain = (typeof WALLET_CHAINS)[number];
 
@@ -22,10 +34,12 @@ const ADDRESS_MESSAGES: Record<WalletChain, string> = {
   tron: "Enter a valid Tron address (starts with T)",
 };
 
+// A student has a single, optional withdrawal address. The address may be left
+// blank (skipped), but if provided it must be valid for the selected chain.
 const walletEntry = z
   .object({
     chain: z.enum(["evm", "solana", "tron"] as ["evm", "solana", "tron"], { error: "Select a chain" }),
-    address: z.string().min(1, "Address is required"),
+    address: z.string(),
   })
   .superRefine((entry, ctx) => {
     if (entry.address && !ADDRESS_PATTERNS[entry.chain].test(entry.address)) {
@@ -37,24 +51,53 @@ const walletEntry = z
     }
   });
 
-// Identity (name + email) comes from the signed-in account, so it is not part
-// of the form schema — only the application content is collected here.
+/** Max length for the free-text background and motivation answers. */
+export const APPLICATION_TEXT_MAX_LENGTH = 1000;
+
+// Email comes from the signed-in account (read-only), but the applicant can
+// edit their name in the first step — so name is part of the form schema and
+// is persisted back to their profile on submit.
 export const APPLICATION_FORM_SCHEMA = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(120, "Name must be under 120 characters"),
   background: z
     .string()
-    .min(50, "Please provide more detail about your background"),
-  experience: z.string().optional(),
-  motivation: z.string().min(50, "Please tell us why you want to join"),
+    .min(20, "Please provide more detail about your background")
+    .max(
+      APPLICATION_TEXT_MAX_LENGTH,
+      `Please keep this under ${APPLICATION_TEXT_MAX_LENGTH} characters`,
+    ),
+  experience: z
+    .string()
+    .min(1, "Please share your technical experience"),
+  motivation: z
+    .string()
+    .min(20, "Please tell us why you want to join")
+    .max(
+      APPLICATION_TEXT_MAX_LENGTH,
+      `Please keep this under ${APPLICATION_TEXT_MAX_LENGTH} characters`,
+    ),
   linkedin: z
     .string()
     .min(1, "LinkedIn profile is required")
-    .url("Enter a valid LinkedIn URL (e.g. https://linkedin.com/in/you)"),
+    .url("Enter a valid LinkedIn URL (e.g. https://linkedin.com/in/you)")
+    .refine(
+      (val) => LINKEDIN_PROFILE_RE.test(val),
+      "Enter your LinkedIn profile URL (e.g. https://linkedin.com/in/you)",
+    ),
   twitter: optionalUrl,
   facebook: optionalUrl,
   github: z
     .string()
     .min(1, "GitHub profile is required")
-    .url("Enter a valid GitHub URL (e.g. https://github.com/you)"),
+    .url("Enter a valid GitHub URL (e.g. https://github.com/you)")
+    .refine(
+      (val) => GITHUB_PROFILE_RE.test(val),
+      "Enter your GitHub profile URL (e.g. https://github.com/you)",
+    ),
   portfolio: optionalUrl,
   telegram: z
     .string()
@@ -70,24 +113,52 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     ),
   address: z.string().min(1, "Address is required").max(500, "Address must be under 500 characters"),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
-  wallets: z.array(walletEntry),
+  wallet: walletEntry,
 });
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 
 export const APPLICATION_DRAFT_STORAGE_KEY = "apprenticeship_application_draft";
 
-export const APPLICATION_FORM_TOTAL_STEPS = 6;
+// Each wizard step has its own URL segment, e.g. /apply/background. The order
+// of this array is the order steps are shown in.
+export const APPLICATION_STEP_SLUGS = [
+  "basic-info",
+  "background",
+  "motivation",
+  "social-profiles",
+  "video",
+  "wallets",
+] as const;
 
-export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
-  number,
+export type ApplicationStepSlug = (typeof APPLICATION_STEP_SLUGS)[number];
+
+export const APPLICATION_FORM_TOTAL_STEPS = APPLICATION_STEP_SLUGS.length;
+
+export const isApplicationStepSlug = (
+  value: string | undefined,
+): value is ApplicationStepSlug =>
+  APPLICATION_STEP_SLUGS.includes(value as ApplicationStepSlug);
+
+// Fields validated before advancing from each step. The final step (wallets)
+// is validated by form.handleSubmit, so it has no gated fields here.
+export const APPLICATION_FIELDS_BY_SLUG: Record<
+  ApplicationStepSlug,
   Array<keyof ApplicationFormValues>
 > = {
-  // Step 1 confirms identity (read-only, no validated fields).
-  1: [],
-  2: ["background", "experience"],
-  3: ["motivation"],
-  4: ["linkedin", "twitter", "facebook", "github", "portfolio", "telegram", "whatsapp", "address"],
-  5: ["videoUrl"],
-  // Step 6 (wallets) is the submit step — validated by form.handleSubmit.
+  "basic-info": ["name"],
+  background: ["background", "experience"],
+  motivation: ["motivation"],
+  "social-profiles": [
+    "linkedin",
+    "twitter",
+    "facebook",
+    "github",
+    "portfolio",
+    "telegram",
+    "whatsapp",
+    "address",
+  ],
+  video: ["videoUrl"],
+  wallets: [],
 };

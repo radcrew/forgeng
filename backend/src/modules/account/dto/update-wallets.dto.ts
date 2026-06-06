@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
   IsIn,
   IsString,
@@ -33,7 +34,9 @@ export class WalletEntryDto {
 }
 
 export class UpdateWalletsDto {
+  // A student has at most one withdrawal address.
   @IsArray()
+  @ArrayMaxSize(1, { message: 'Only one withdrawal address is allowed' })
   @ValidateNested({ each: true })
   @Type(() => WalletEntryDto)
   wallets!: WalletEntryDto[];

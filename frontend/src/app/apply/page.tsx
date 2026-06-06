@@ -1,12 +1,9 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { Wizard } from "@features/applications";
-import { RoleGuard } from "@lib/auth";
+import { APPLICATION_STEP_SLUGS } from "@constants/applications";
 
-const Page = () => (
-  <RoleGuard allowedRoles={["applicant"]}>
-    <Wizard />
-  </RoleGuard>
-);
+const Page = () => {
+  redirect(`/apply/${APPLICATION_STEP_SLUGS[0]}`);
+};
 
 export default Page;
