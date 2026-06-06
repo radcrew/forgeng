@@ -4,11 +4,18 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApplicationStatus, Role, type User } from '@prisma/client';
+import type { AppConfiguration } from '@config';
 import { PrismaService } from '@core/database/prisma.service';
 import { toApplicationDto, type ApplicationDto } from '@common/mappers';
 import { splitName } from '@common/string';
+import { MailService } from '@core/mail';
 import { NotificationsService } from '@modules/notifications/notifications.service';
+import {
+  applicationAcceptedEmail,
+  applicationRejectedEmail,
+} from '@modules/notifications/templates';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
@@ -37,6 +44,8 @@ export class ApplicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly mail: MailService,
+    private readonly config: ConfigService<AppConfiguration, true>,
   ) {}
 
   async list(query: ListApplicationsQuery): Promise<PaginatedApplications> {
@@ -159,6 +168,42 @@ export class ApplicationsService {
 
       return app;
     });
+
+    const applicantName = `${updated.firstName} ${updated.lastName}`.trim();
+    const frontendUrl = this.config.get('frontendUrl', { infer: true });
+
+    if (updated.status === ApplicationStatus.accepted) {
+      try {
+        await this.mail.send({
+          to: updated.email,
+          ...applicationAcceptedEmail({
+            applicantName,
+            reviewerNote: updated.reviewerNote,
+            dashboardUrl: `${frontendUrl}/student/dashboard`,
+          }),
+        });
+      } catch (err) {
+        this.logger.error(
+          `Failed to send acceptance email to ${updated.email}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    } else if (updated.status === ApplicationStatus.rejected) {
+      try {
+        await this.mail.send({
+          to: updated.email,
+          ...applicationRejectedEmail({
+            applicantName,
+            reviewerNote: updated.reviewerNote,
+          }),
+        });
+      } catch (err) {
+        this.logger.error(
+          `Failed to send rejection email to ${updated.email}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    }
 
     return toApplicationDto(updated);
   }
