@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCheck } from "lucide-react";
+import { CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ClickableCard, LoadingState } from "@components/common";
@@ -15,6 +15,8 @@ import {
   FALLBACK_NOTIFICATION_ICON,
   NOTIFICATION_ICONS,
   NotificationPreferencesCard,
+  deleteAllNotifications,
+  deleteNotification,
   markAllNotificationsRead,
   markNotificationRead,
   useNotifications,
@@ -24,6 +26,7 @@ const Page = () => {
   const router = useRouter();
   const { data = [], isLoading, error, refetch } = useNotifications();
   const [busy, setBusy] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const hasUnread = data.some((n) => n.readAt === null);
 
@@ -51,23 +54,61 @@ const Page = () => {
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setDeletingId(id);
+    try {
+      await deleteNotification(id);
+      refetch();
+    } catch {
+      toast.error("Couldn't delete notification.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    setBusy(true);
+    try {
+      await deleteAllNotifications();
+      refetch();
+    } catch {
+      toast.error("Couldn't clear notifications.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <PageContainer maxWidth="4xl">
       <PageHeader
         title="Notifications"
         description="Updates on your feedback and new tasks."
         actions={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={handleMarkAllRead}
-            disabled={busy || !hasUnread}
-          >
-            <CheckCheck className="h-4 w-4" />
-            Mark all read
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={handleMarkAllRead}
+              disabled={busy || !hasUnread}
+            >
+              <CheckCheck className="h-4 w-4" />
+              Mark all read
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-destructive hover:text-destructive"
+              onClick={handleDeleteAll}
+              disabled={busy || data.length === 0}
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear all
+            </Button>
+          </div>
         }
       />
 
@@ -133,6 +174,16 @@ const Page = () => {
                     })}
                   </p>
                 </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                  disabled={deletingId === notification.id}
+                  onClick={(e) => void handleDelete(e, notification.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </ClickableCard>
             );
           })}

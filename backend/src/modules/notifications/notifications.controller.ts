@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -64,5 +67,20 @@ export class NotificationsController {
     @CurrentUser() user: AuthUser,
   ): Promise<NotificationDto> {
     return this.service.markRead(id, user);
+  }
+
+  @Delete()
+  @HttpCode(HttpStatus.OK)
+  deleteAll(@CurrentUser() user: AuthUser): Promise<{ count: number }> {
+    return this.service.deleteAll(user);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  delete(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ): Promise<void> {
+    return this.service.delete(id, user);
   }
 }

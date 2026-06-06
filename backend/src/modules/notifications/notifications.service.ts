@@ -72,6 +72,23 @@ export class NotificationsService {
     return { count };
   }
 
+  async delete(id: number, user: AuthUser): Promise<void> {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+    if (!notification || notification.userId !== user.id) {
+      throw new NotFoundException('Notification not found.');
+    }
+    await this.prisma.notification.delete({ where: { id } });
+  }
+
+  async deleteAll(user: AuthUser): Promise<{ count: number }> {
+    const { count } = await this.prisma.notification.deleteMany({
+      where: { userId: user.id },
+    });
+    return { count };
+  }
+
   async getPreferences(user: AuthUser): Promise<NotificationPreferenceDto> {
     const pref = await this.prisma.notificationPreference.findUnique({
       where: { userId: user.id },
