@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Info, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@components/ui/button";
@@ -24,7 +24,7 @@ import { ApiError } from "@lib/api-client";
 import { getWallets, updateWallets, type WalletEntry } from "../api";
 
 const CHAIN_LABELS: Record<WalletChain, string> = {
-  evm: "EVM",
+  evm: "BSC (EVM)",
   solana: "Solana",
   tron: "Tron",
 };
@@ -105,6 +105,15 @@ export function WalletManager() {
         <p className="text-sm text-muted-foreground">
           Used to receive your monthly stipend. Add one per chain.
         </p>
+        <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-900/50 dark:bg-amber-950/30">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="text-xs text-amber-800 dark:text-amber-300">
+            Stipends are paid in <strong>USDT</strong> on{" "}
+            <strong>BNB Smart Chain</strong>, <strong>Solana</strong>, and{" "}
+            <strong>Tron</strong> only. Add a wallet on one of these networks to
+            receive your payment.
+          </p>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Existing wallets */}
