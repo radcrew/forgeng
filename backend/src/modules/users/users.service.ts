@@ -36,7 +36,7 @@ export interface MonthlyPaymentStat {
   payment: {
     amount: string;
     currency: string;
-    txHash: string | null;
+    txLink: string | null;
     paidAt: string;
   } | null;
 }
@@ -50,7 +50,7 @@ export interface PaymentDto {
   id: number;
   amount: string;
   currency: string;
-  txHash: string | null;
+  txLink: string | null;
   note: string | null;
   paidAt: string;
 }
@@ -78,7 +78,7 @@ export class UsersService {
         userId: id,
         amount: dto.amount,
         currency: dto.currency,
-        txHash: dto.txHash,
+        txLink: dto.txLink,
         note: dto.note,
       },
     });
@@ -94,7 +94,7 @@ export class UsersService {
       id: payment.id,
       amount: payment.amount.toString(),
       currency: payment.currency,
-      txHash: payment.txHash,
+      txLink: payment.txLink,
       note: payment.note,
       paidAt: payment.paidAt.toISOString(),
     };
@@ -220,7 +220,7 @@ export class UsersService {
           ? {
               amount: payment.amount.toString(),
               currency: payment.currency,
-              txHash: payment.txHash,
+              txLink: payment.txLink,
               paidAt: payment.paidAt.toISOString(),
             }
           : null,

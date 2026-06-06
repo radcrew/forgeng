@@ -43,7 +43,7 @@ export interface MonthlyPaymentStat {
   payment: {
     amount: string;
     currency: string;
-    txHash: string | null;
+    txLink: string | null;
     paidAt: string;
   } | null;
 }
@@ -52,7 +52,7 @@ export interface PaymentRecord {
   id: number;
   amount: string;
   currency: string;
-  txHash: string | null;
+  txLink: string | null;
   note: string | null;
   paidAt: string;
 }
@@ -77,7 +77,7 @@ export const notifyWalletMissing = async (
 
 export const recordPayment = async (
   id: number,
-  payload: { amount: number; currency: string; txHash?: string; note?: string },
+  payload: { amount: number; currency: string; txLink?: string; note?: string },
 ): Promise<PaymentRecord> =>
   apiClient.post<PaymentRecord>(`/users/${id}/payments`, payload);
 
