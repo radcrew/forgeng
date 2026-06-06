@@ -99,7 +99,8 @@ export class CreateApplicationDto {
   @IsUrl()
   @MaxLength(500)
   @Matches(LINKEDIN_PROFILE_REGEX, {
-    message: 'Enter your LinkedIn profile URL (e.g. https://linkedin.com/in/you)',
+    message:
+      'Enter your LinkedIn profile URL (e.g. https://linkedin.com/in/you)',
   })
   linkedin!: string;
 

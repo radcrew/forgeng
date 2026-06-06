@@ -94,6 +94,28 @@ export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
     setState({ status: "ready" });
   };
 
+  // If the browser already granted camera access (e.g. a returning applicant),
+  // skip the "Allow Camera" step and go straight to the live preview. The
+  // Permissions API isn't available everywhere, so this is best-effort.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const status = await navigator.permissions?.query({
+          name: "camera" as PermissionName,
+        });
+        if (!cancelled && status?.state === "granted") {
+          await requestCamera();
+        }
+      } catch {
+        // Permissions API unsupported or "camera" not queryable; stay idle.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const beginRecording = () => {
     if (!streamRef.current) return;
 
