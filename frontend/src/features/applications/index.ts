@@ -30,3 +30,4 @@ export type { ListProps } from "./components/list";
 export { DetailDialog } from "./components/detail-dialog";
 export type { DetailDialogProps } from "./components/detail-dialog";
 export { Wizard } from "./components/wizard";
+export { WizardStep } from "./components/wizard/step";

@@ -118,17 +118,45 @@ export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 
 export const APPLICATION_DRAFT_STORAGE_KEY = "apprenticeship_application_draft";
 
-export const APPLICATION_FORM_TOTAL_STEPS = 6;
+// Each wizard step has its own URL segment, e.g. /apply/background. The order
+// of this array is the order steps are shown in.
+export const APPLICATION_STEP_SLUGS = [
+  "basic-info",
+  "background",
+  "motivation",
+  "social-profiles",
+  "video",
+  "wallets",
+] as const;
 
-export const APPLICATION_FORM_FIELDS_BY_STEP: Record<
-  number,
+export type ApplicationStepSlug = (typeof APPLICATION_STEP_SLUGS)[number];
+
+export const APPLICATION_FORM_TOTAL_STEPS = APPLICATION_STEP_SLUGS.length;
+
+export const isApplicationStepSlug = (
+  value: string | undefined,
+): value is ApplicationStepSlug =>
+  APPLICATION_STEP_SLUGS.includes(value as ApplicationStepSlug);
+
+// Fields validated before advancing from each step. The final step (wallets)
+// is validated by form.handleSubmit, so it has no gated fields here.
+export const APPLICATION_FIELDS_BY_SLUG: Record<
+  ApplicationStepSlug,
   Array<keyof ApplicationFormValues>
 > = {
-  // Step 1 collects the editable name (email stays read-only).
-  1: ["name"],
-  2: ["background", "experience"],
-  3: ["motivation"],
-  4: ["linkedin", "twitter", "facebook", "github", "portfolio", "telegram", "whatsapp", "address"],
-  5: ["videoUrl"],
-  // Step 6 (wallets) is the submit step — validated by form.handleSubmit.
+  "basic-info": ["name"],
+  background: ["background", "experience"],
+  motivation: ["motivation"],
+  "social-profiles": [
+    "linkedin",
+    "twitter",
+    "facebook",
+    "github",
+    "portfolio",
+    "telegram",
+    "whatsapp",
+    "address",
+  ],
+  video: ["videoUrl"],
+  wallets: [],
 };
