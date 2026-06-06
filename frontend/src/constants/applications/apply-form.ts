@@ -7,6 +7,18 @@ const optionalUrl = z
     "Enter a valid URL (e.g. https://...)",
   );
 
+// A LinkedIn member profile: linkedin.com/in/<slug>, optionally on a country
+// subdomain (e.g. de.linkedin.com). Rejects company pages, feeds, and other
+// linkedin.com URLs that aren't a personal profile.
+const LINKEDIN_PROFILE_RE =
+  /^https?:\/\/([a-z]{2,3}\.)?linkedin\.com\/in\/[\w%-]+\/?(\?.*)?$/i;
+
+// A GitHub user profile: github.com/<username>. The username follows GitHub's
+// own rules — 1–39 chars, alphanumeric or single hyphens, no leading/trailing
+// or consecutive hyphens — so repo/org sub-paths are rejected.
+const GITHUB_PROFILE_RE =
+  /^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9](?:-?[A-Za-z0-9]){0,38}\/?(\?.*)?$/i;
+
 export const WALLET_CHAINS = ["evm", "solana", "tron"] as const;
 export type WalletChain = (typeof WALLET_CHAINS)[number];
 
@@ -69,13 +81,21 @@ export const APPLICATION_FORM_SCHEMA = z.object({
   linkedin: z
     .string()
     .min(1, "LinkedIn profile is required")
-    .url("Enter a valid LinkedIn URL (e.g. https://linkedin.com/in/you)"),
+    .url("Enter a valid LinkedIn URL (e.g. https://linkedin.com/in/you)")
+    .refine(
+      (val) => LINKEDIN_PROFILE_RE.test(val),
+      "Enter your LinkedIn profile URL (e.g. https://linkedin.com/in/you)",
+    ),
   twitter: optionalUrl,
   facebook: optionalUrl,
   github: z
     .string()
     .min(1, "GitHub profile is required")
-    .url("Enter a valid GitHub URL (e.g. https://github.com/you)"),
+    .url("Enter a valid GitHub URL (e.g. https://github.com/you)")
+    .refine(
+      (val) => GITHUB_PROFILE_RE.test(val),
+      "Enter your GitHub profile URL (e.g. https://github.com/you)",
+    ),
   portfolio: optionalUrl,
   telegram: z
     .string()

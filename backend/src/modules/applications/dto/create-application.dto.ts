@@ -20,6 +20,15 @@ const EVM_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
 const SOLANA_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 
+// A LinkedIn member profile (linkedin.com/in/<slug>), optionally on a country
+// subdomain. A GitHub user profile (github.com/<username>) follows GitHub's
+// username rules: 1–39 chars, alphanumeric or single non-leading/trailing
+// hyphens. Both reject non-profile URLs that merely live on the right host.
+const LINKEDIN_PROFILE_REGEX =
+  /^https?:\/\/([a-z]{2,3}\.)?linkedin\.com\/in\/[\w%-]+\/?(\?.*)?$/i;
+const GITHUB_PROFILE_REGEX =
+  /^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9](?:-?[A-Za-z0-9]){0,38}\/?(\?.*)?$/i;
+
 const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
   evm: EVM_ADDRESS_REGEX,
   solana: SOLANA_ADDRESS_REGEX,
@@ -89,6 +98,9 @@ export class CreateApplicationDto {
 
   @IsUrl()
   @MaxLength(500)
+  @Matches(LINKEDIN_PROFILE_REGEX, {
+    message: 'Enter your LinkedIn profile URL (e.g. https://linkedin.com/in/you)',
+  })
   linkedin!: string;
 
   @IsOptional()
@@ -103,6 +115,9 @@ export class CreateApplicationDto {
 
   @IsUrl()
   @MaxLength(500)
+  @Matches(GITHUB_PROFILE_REGEX, {
+    message: 'Enter your GitHub profile URL (e.g. https://github.com/you)',
+  })
   github!: string;
 
   @IsOptional()
