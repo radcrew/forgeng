@@ -201,14 +201,6 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
               placeholder="https://facebook.com/you"
             />
           </FormField>
-          <FormField label="Portfolio" htmlFor="profile-portfolio">
-            <Input
-              id="profile-portfolio"
-              value={portfolio}
-              onChange={(e) => setPortfolio(e.target.value)}
-              placeholder="https://yoursite.com"
-            />
-          </FormField>
           <FormField label="Telegram" htmlFor="profile-telegram">
             <Input
               id="profile-telegram"
@@ -226,6 +218,18 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
             />
             <p className="text-xs text-muted-foreground">
               Include country code, e.g. +1234567890
+            </p>
+          </FormField>
+          <FormField label="Portfolio" htmlFor="profile-portfolio">
+            <Input
+              id="profile-portfolio"
+              value={portfolio}
+              onChange={(e) => setPortfolio(e.target.value)}
+              placeholder="https://yoursite.com"
+            />
+            <p className="text-xs text-muted-foreground">
+              If you don&apos;t have a portfolio website yet, you can leave this
+              blank — your profile can still be considered complete.
             </p>
           </FormField>
         </FormBody>

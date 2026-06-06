@@ -4,6 +4,7 @@ import { use, useRef, useState } from "react";
 import { format } from "date-fns";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   BadgeCheck,
   Mail,
@@ -46,6 +47,7 @@ import { notifyWalletMissing, recordPayment } from "@features/users/api";
 import { useUser, useUserEnrollments, useUserPaymentStats } from "@features/users/hooks";
 import { ApiError } from "@lib/api-client";
 import { resolveAssetUrl } from "@lib/config";
+import { isProfileComplete } from "@utils/user";
 
 import { PaymentStatsChart } from "./_components/payment-stats-chart";
 
@@ -134,6 +136,7 @@ export default function UserDetailPage({
   }
 
   const displayName = user.name ?? user.email;
+  const profileIncomplete = !isProfileComplete(user);
 
   return (
     <PageContainer maxWidth="2xl">
@@ -179,6 +182,17 @@ export default function UserDetailPage({
             </div>
           </div>
         </div>
+
+        {profileIncomplete && (
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              This student has not completed their profile. Do not approve them
+              for a cohort or assign tasks until all profile fields are filled
+              in.
+            </p>
+          </div>
+        )}
 
         <Separator />
 

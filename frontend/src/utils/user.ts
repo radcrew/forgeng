@@ -1,5 +1,19 @@
 import type { UserProfile, UserRole } from "@types";
 
+const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
+  "name",
+  "bio",
+  "github",
+  "linkedin",
+  "twitter",
+  "facebook",
+  "telegram",
+  "whatsapp",
+];
+
+export const isProfileComplete = (user: UserProfile): boolean =>
+  REQUIRED_PROFILE_FIELDS.every((f) => Boolean(user[f]));
+
 export interface UserDto {
   id: number;
   email: string;
