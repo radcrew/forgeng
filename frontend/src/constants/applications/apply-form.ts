@@ -37,6 +37,9 @@ const walletEntry = z
     }
   });
 
+/** Max length for the free-text background and motivation answers. */
+export const APPLICATION_TEXT_MAX_LENGTH = 1000;
+
 // Email comes from the signed-in account (read-only), but the applicant can
 // edit their name in the first step — so name is part of the form schema and
 // is persisted back to their profile on submit.
@@ -48,11 +51,21 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     .max(120, "Name must be under 120 characters"),
   background: z
     .string()
-    .min(50, "Please provide more detail about your background"),
+    .min(20, "Please provide more detail about your background")
+    .max(
+      APPLICATION_TEXT_MAX_LENGTH,
+      `Please keep this under ${APPLICATION_TEXT_MAX_LENGTH} characters`,
+    ),
   experience: z
     .string()
     .min(1, "Please share your technical experience"),
-  motivation: z.string().min(50, "Please tell us why you want to join"),
+  motivation: z
+    .string()
+    .min(20, "Please tell us why you want to join")
+    .max(
+      APPLICATION_TEXT_MAX_LENGTH,
+      `Please keep this under ${APPLICATION_TEXT_MAX_LENGTH} characters`,
+    ),
   linkedin: z
     .string()
     .min(1, "LinkedIn profile is required")

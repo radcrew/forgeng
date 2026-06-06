@@ -8,6 +8,7 @@ import {
 } from "@components/ui/form";
 import { Textarea } from "@components/ui/textarea";
 import {
+  APPLICATION_TEXT_MAX_LENGTH,
   APPLICATION_WIZARD_COPY,
   type ApplicationFormValues,
 } from "@constants/applications";
@@ -31,10 +32,16 @@ export const StepMotivation = ({ control }: Props) => (
             <Textarea
               placeholder={COPY.motivationPlaceholder}
               className="min-h-[150px]"
+              maxLength={APPLICATION_TEXT_MAX_LENGTH}
               {...field}
             />
           </FormControl>
-          <FormMessage />
+          <div className="flex items-center justify-between">
+            <FormMessage />
+            <span className="ml-auto text-xs text-muted-foreground">
+              {field.value?.length ?? 0}/{APPLICATION_TEXT_MAX_LENGTH}
+            </span>
+          </div>
         </FormItem>
       )}
     />

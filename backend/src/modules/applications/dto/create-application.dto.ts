@@ -74,12 +74,12 @@ export class WalletEntryDto {
 export class CreateApplicationDto {
   @IsString()
   @MinLength(1)
-  @MaxLength(4000)
+  @MaxLength(1000)
   motivation!: string;
 
   @IsString()
   @MinLength(1)
-  @MaxLength(4000)
+  @MaxLength(1000)
   background!: string;
 
   @IsOptional()
