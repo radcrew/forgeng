@@ -8,7 +8,7 @@ import { Badge } from "@components/ui/badge";
 import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { useCurrentUser } from "@contexts";
-import { ProfileForm, useEnrollments } from "@features/profile";
+import { ProfileForm, WalletManager, useEnrollments } from "@features/profile";
 
 const Page = () => {
   const { user, isHydrated, refreshUser } = useCurrentUser();
@@ -27,6 +27,8 @@ const Page = () => {
       <PageHeader title="Profile" description="Manage your account details." />
 
       <ProfileForm key={user.github ?? user.linkedin ?? "empty"} user={user} onSaved={refreshUser} />
+
+      <WalletManager />
 
       <div>
         <h2 className="mb-4 text-xl font-semibold">Enrollment History</h2>

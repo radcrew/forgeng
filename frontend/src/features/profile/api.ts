@@ -16,3 +16,17 @@ export const uploadAvatar = async (file: File): Promise<UserProfile> => {
 
 export const listEnrollments = async (): Promise<ProfileEnrollment[]> =>
   apiClient.get<ProfileEnrollment[]>("/account/enrollments");
+
+export type WalletEntry = { chain: string; address: string };
+
+export const getWallets = async (): Promise<WalletEntry[]> =>
+  apiClient
+    .get<{ wallets: WalletEntry[] }>("/account/wallets")
+    .then((r) => r.wallets);
+
+export const updateWallets = async (
+  wallets: WalletEntry[],
+): Promise<WalletEntry[]> =>
+  apiClient
+    .patch<{ wallets: WalletEntry[] }>("/account/wallets", { wallets })
+    .then((r) => r.wallets);

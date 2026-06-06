@@ -23,6 +23,7 @@ import { CurrentUser } from '@core/auth/current-user.decorator';
 import { PrismaService } from '@core/database/prisma.service';
 import { AvatarService, type UploadedImage } from './avatar.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateWalletsDto } from './dto/update-wallets.dto';
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 
@@ -49,6 +50,33 @@ export class AccountController {
       },
     });
     return toUserDto(user, socials);
+  }
+
+  @Get('wallets')
+  async getWallets(
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ wallets: Array<{ chain: string; address: string }> }> {
+    const app = await this.prisma.application.findUnique({
+      where: { userId: user.id },
+      select: { wallets: true },
+    });
+    return {
+      wallets:
+        (app?.wallets as Array<{ chain: string; address: string }> | null) ??
+        [],
+    };
+  }
+
+  @Patch('wallets')
+  async updateWallets(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateWalletsDto,
+  ): Promise<{ wallets: Array<{ chain: string; address: string }> }> {
+    await this.prisma.application.updateMany({
+      where: { userId: user.id },
+      data: { wallets: dto.wallets },
+    });
+    return { wallets: dto.wallets };
   }
 
   @Patch('profile')
