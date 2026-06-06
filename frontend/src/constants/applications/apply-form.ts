@@ -49,7 +49,9 @@ export const APPLICATION_FORM_SCHEMA = z.object({
   background: z
     .string()
     .min(50, "Please provide more detail about your background"),
-  experience: z.string().optional(),
+  experience: z
+    .string()
+    .min(1, "Please share your technical experience"),
   motivation: z.string().min(50, "Please tell us why you want to join"),
   linkedin: z
     .string()

@@ -17,7 +17,7 @@ export const APPLICATION_WIZARD_COPY = {
       backgroundLabel: "Tell us about yourself",
       backgroundPlaceholder:
         "Where are you coming from? What have you been learning?",
-      experienceLabel: "Technical Experience (Optional)",
+      experienceLabel: "Technical Experience",
       experiencePlaceholder:
         "Any programming languages, tools, or projects you've worked with?",
     },
