@@ -23,7 +23,8 @@ import { useCohorts } from "@features/cohorts";
 import { useAsyncResource } from "@hooks/use-async-resource";
 import { resolveAssetUrl } from "@lib/config";
 import type { ApplicationStatus } from "@types";
-import { getApplication, updateApplicationStatus } from "../api";
+import { getApplication } from "../api";
+import { useUpdateApplicationStatus } from "../hooks";
 import { StatusBadge } from "./status-badge";
 
 const SOCIAL_LINKS = [
@@ -73,7 +74,8 @@ export const ApplicationDetailPage = ({ id }: Props) => {
   const [status, setStatus] = useState<ApplicationStatus | null>(null);
   const [reviewerNote, setReviewerNote] = useState<string | null>(null);
   const [cohortId, setCohortId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+
+  const { update, isPending: isSaving } = useUpdateApplicationStatus();
 
   const resolvedStatus = (status ?? application?.status) as ApplicationStatus | undefined;
   const resolvedNote = reviewerNote ?? application?.reviewerNote ?? "";
@@ -81,9 +83,8 @@ export const ApplicationDetailPage = ({ id }: Props) => {
 
   const handleSave = async () => {
     if (!application) return;
-    setIsSaving(true);
     try {
-      await updateApplicationStatus(application.id, {
+      await update(application.id, {
         status: resolvedStatus!,
         reviewerNote: resolvedNote || null,
         cohortId:
@@ -94,8 +95,6 @@ export const ApplicationDetailPage = ({ id }: Props) => {
       toast.success("Application updated");
     } catch {
       toast.error("Failed to update application");
-    } finally {
-      setIsSaving(false);
     }
   };
 

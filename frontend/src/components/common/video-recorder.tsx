@@ -32,7 +32,7 @@ type State =
   | { status: "done"; objectUrl: string; serverUrl: string }
   | { status: "error"; message: string; blob?: Blob; objectUrl?: string };
 
-interface VideoRecorderProps {
+export interface VideoRecorderProps {
   onUpload: (blob: Blob) => Promise<{ url: string }>;
   onUploaded: (url: string) => void;
 }

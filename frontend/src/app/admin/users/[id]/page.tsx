@@ -43,15 +43,13 @@ import {
 } from "@components/ui/select";
 import { Separator } from "@components/ui/separator";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
-import { notifyWalletMissing, recordPayment } from "@features/users/api";
-import { useUser, useUserEnrollments, useUserPaymentStats } from "@features/users/hooks";
+import { CURRENCIES } from "@constants/payments";
+import { useUser, useUserEnrollments, useUserPaymentStats, useRecordPayment, useNotifyWalletMissing } from "@features/users/hooks";
 import { ApiError } from "@lib/api-client";
 import { resolveAssetUrl } from "@lib/config";
 import { isProfileComplete } from "@utils/user";
 
 import { PaymentStatsChart } from "./_components/payment-stats-chart";
-
-const CURRENCIES = ["USDT", "USDC", "ETH", "SOL", "BNB", "TRX", "USD"];
 
 export default function UserDetailPage({
   params,
@@ -67,29 +65,27 @@ export default function UserDetailPage({
   const { data: paymentStats, refetch: refetchStats } =
     useUserPaymentStats(userId);
 
+  const { record, isPending: submitting } = useRecordPayment();
+  const { notify: notifyWallet, isPending: sendingWalletReminder } = useNotifyWalletMissing();
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("USDT");
   const [txLink, setTxLink] = useState("");
   const [note, setNote] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [sendingWalletReminder, setSendingWalletReminder] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
 
   const walletsEmpty =
     !paymentStats || paymentStats.wallets.length === 0;
 
   const handleNotifyWalletMissing = async () => {
-    setSendingWalletReminder(true);
     try {
-      await notifyWalletMissing(userId);
+      await notifyWallet(userId);
       toast.success("Reminder sent — student notified to add their wallet.");
     } catch (err) {
       toast.error(
         err instanceof ApiError ? err.message : "Failed to send reminder.",
       );
-    } finally {
-      setSendingWalletReminder(false);
     }
   };
 
@@ -107,9 +103,8 @@ export default function UserDetailPage({
       amountRef.current?.focus();
       return;
     }
-    setSubmitting(true);
     try {
-      await recordPayment(userId, {
+      await record(userId, {
         amount: parsed,
         currency,
         txLink: txLink.trim() || undefined,
@@ -122,8 +117,6 @@ export default function UserDetailPage({
       toast.error(
         err instanceof ApiError ? err.message : "Failed to record payment.",
       );
-    } finally {
-      setSubmitting(false);
     }
   };
 

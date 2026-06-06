@@ -6,5 +6,5 @@ export {
   removeStorageItem,
   writeStorageJson,
 } from "./storage";
-export { formatStatusLabel } from "./string";
+export { formatStatusLabel, initials } from "./string";
 export { mapUserDto, type UserDto } from "./user";

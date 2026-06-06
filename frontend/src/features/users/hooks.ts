@@ -1,8 +1,10 @@
 "use client";
 
+import { useCallback, useState } from "react";
+
 import { useAsyncResource } from "@hooks/use-async-resource";
 
-import { getUser, getUserPaymentStats, listUserEnrollments, listUsers } from "./api";
+import { getUser, getUserPaymentStats, listUserEnrollments, listUsers, notifyWalletMissing, recordPayment } from "./api";
 import type { UserRoleFilter } from "@types";
 
 export type { UserRoleFilter };
@@ -28,3 +30,36 @@ export const useUserEnrollments = (userId: number | null) =>
     () => (userId == null ? Promise.resolve([]) : listUserEnrollments(userId)),
     [userId],
   );
+
+export const useRecordPayment = () => {
+  const [isPending, setIsPending] = useState(false);
+
+  const record = useCallback(
+    async (userId: number, payload: Parameters<typeof recordPayment>[1]) => {
+      setIsPending(true);
+      try {
+        return await recordPayment(userId, payload);
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [],
+  );
+
+  return { record, isPending };
+};
+
+export const useNotifyWalletMissing = () => {
+  const [isPending, setIsPending] = useState(false);
+
+  const notify = useCallback(async (userId: number) => {
+    setIsPending(true);
+    try {
+      return await notifyWalletMissing(userId);
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
+
+  return { notify, isPending };
+};

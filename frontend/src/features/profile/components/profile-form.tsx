@@ -10,6 +10,7 @@ import { Input } from "@components/ui/input";
 import { Textarea } from "@components/ui/textarea";
 import { ApiError } from "@lib/api-client";
 import { resolveAssetUrl } from "@lib/config";
+import { initials } from "@utils";
 import type { UserProfile } from "@types";
 
 import { updateProfile, uploadAvatar } from "../api";
@@ -23,9 +24,6 @@ export type ProfileFormProps = {
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
-
-const initials = (name: string | null, email: string) =>
-  (name?.trim() || email).slice(0, 2).toUpperCase();
 
 export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
   const [name, setName] = useState(user.name ?? "");
