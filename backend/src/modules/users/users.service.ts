@@ -11,6 +11,7 @@ import { MailService } from '@core/mail';
 import { PrismaService } from '@core/database/prisma.service';
 import { paymentReleasedEmail } from '@modules/notifications/templates';
 import { ListUsersQuery } from './dto/list-users.query';
+import { RecordPaymentDto } from './dto/record-payment.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -29,11 +30,20 @@ export interface MonthlyPaymentStat {
   tasksApproved: number;
   eligible: boolean;
   notifiedAt: string | null;
+  payment: { amount: string; currency: string; paidAt: string } | null;
 }
 
 export interface UserPaymentStats {
   wallets: Array<{ chain: string; address: string }>;
   monthlyStats: MonthlyPaymentStat[];
+}
+
+export interface PaymentDto {
+  id: number;
+  amount: string;
+  currency: string;
+  note: string | null;
+  paidAt: string;
 }
 
 @Injectable()
@@ -50,9 +60,18 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async notifyPaymentReleased(id: number): Promise<{ sent: boolean }> {
+  async recordPayment(id: number, dto: RecordPaymentDto): Promise<PaymentDto> {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found.');
+
+    const payment = await this.prisma.payment.create({
+      data: {
+        userId: id,
+        amount: dto.amount,
+        currency: dto.currency,
+        note: dto.note,
+      },
+    });
 
     const frontendUrl = this.config.get('frontendUrl', { infer: true });
     const email = paymentReleasedEmail({
@@ -60,7 +79,14 @@ export class UsersService {
       url: `${frontendUrl}/student/dashboard`,
     });
     await this.mail.send({ to: user.email, ...email });
-    return { sent: true };
+
+    return {
+      id: payment.id,
+      amount: payment.amount.toString(),
+      currency: payment.currency,
+      note: payment.note,
+      paidAt: payment.paidAt.toISOString(),
+    };
   }
 
   async list(query: ListUsersQuery): Promise<PaginatedUsers> {
@@ -142,14 +168,23 @@ export class UsersService {
             })
           : 0;
 
-      const notification = await this.prisma.notification.findFirst({
-        where: {
-          type: 'payment_eligible',
-          link: `/admin/users/${userId}`,
-          createdAt: { gte: monthStart, lte: monthEnd },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+      const [notification, payment] = await Promise.all([
+        this.prisma.notification.findFirst({
+          where: {
+            type: 'payment_eligible',
+            link: `/admin/users/${userId}`,
+            createdAt: { gte: monthStart, lte: monthEnd },
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.payment.findFirst({
+          where: {
+            userId,
+            paidAt: { gte: monthStart, lte: monthEnd },
+          },
+          orderBy: { paidAt: 'desc' },
+        }),
+      ]);
 
       monthlyStats.push({
         month,
@@ -157,6 +192,13 @@ export class UsersService {
         tasksApproved,
         eligible: tasks.length > 0 && tasksApproved === tasks.length,
         notifiedAt: notification?.createdAt.toISOString() ?? null,
+        payment: payment
+          ? {
+              amount: payment.amount.toString(),
+              currency: payment.currency,
+              paidAt: payment.paidAt.toISOString(),
+            }
+          : null,
       });
     }
 

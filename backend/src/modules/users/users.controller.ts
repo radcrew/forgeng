@@ -14,9 +14,11 @@ import type { ProfileEnrollmentDto, UserDto } from '@common/mappers';
 import { Roles } from '@core/auth/roles.decorator';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { RecordPaymentDto } from './dto/record-payment.dto';
 import {
   UsersService,
   type PaginatedUsers,
+  type PaymentDto,
   type UserPaymentStats,
 } from './users.service';
 
@@ -36,11 +38,12 @@ export class UsersController {
     return this.service.getById(id);
   }
 
-  @Post(':id/notify-payment')
-  notifyPaymentReleased(
+  @Post(':id/payments')
+  recordPayment(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<{ sent: boolean }> {
-    return this.service.notifyPaymentReleased(id);
+    @Body() dto: RecordPaymentDto,
+  ): Promise<PaymentDto> {
+    return this.service.recordPayment(id, dto);
   }
 
   @Get(':id/payment-stats')

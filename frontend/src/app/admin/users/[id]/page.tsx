@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useRef, useState } from "react";
 import { format } from "date-fns";
 import {
   ArrowLeft,
@@ -24,13 +24,32 @@ import { PageContainer } from "@components/shared";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@components/ui/dialog";
+import { Input } from "@components/ui/input";
+import { Label } from "@components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/ui/select";
 import { Separator } from "@components/ui/separator";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
-import { notifyPaymentReleased } from "@features/users/api";
+import { recordPayment } from "@features/users/api";
 import { useUser, useUserEnrollments, useUserPaymentStats } from "@features/users/hooks";
-import { PaymentStatsChart } from "./_components/payment-stats-chart";
 import { ApiError } from "@lib/api-client";
 import { resolveAssetUrl } from "@lib/config";
+
+import { PaymentStatsChart } from "./_components/payment-stats-chart";
+
+const CURRENCIES = ["USDT", "USDC", "ETH", "SOL", "BNB", "TRX", "USD"];
 
 export default function UserDetailPage({
   params,
@@ -43,21 +62,45 @@ export default function UserDetailPage({
   const { data: user, isLoading } = useUser(userId);
   const { data: enrollments = [], isLoading: enrollmentsLoading } =
     useUserEnrollments(userId);
-  const { data: paymentStats } = useUserPaymentStats(userId);
+  const { data: paymentStats, refetch: refetchStats } =
+    useUserPaymentStats(userId);
 
-  const [sending, setSending] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("USDT");
+  const [note, setNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const amountRef = useRef<HTMLInputElement>(null);
 
-  const handleNotifyPayment = async () => {
-    setSending(true);
+  const openDialog = () => {
+    setAmount("");
+    setNote("");
+    setCurrency("USDT");
+    setDialogOpen(true);
+  };
+
+  const handleRecord = async () => {
+    const parsed = parseFloat(amount);
+    if (!amount || isNaN(parsed) || parsed <= 0) {
+      amountRef.current?.focus();
+      return;
+    }
+    setSubmitting(true);
     try {
-      await notifyPaymentReleased(userId);
-      toast.success("Payment notification sent to student.");
+      await recordPayment(userId, {
+        amount: parsed,
+        currency,
+        note: note.trim() || undefined,
+      });
+      toast.success("Payment recorded and student notified by email.");
+      setDialogOpen(false);
+      refetchStats();
     } catch (err) {
       toast.error(
-        err instanceof ApiError ? err.message : "Failed to send email.",
+        err instanceof ApiError ? err.message : "Failed to record payment.",
       );
     } finally {
-      setSending(false);
+      setSubmitting(false);
     }
   };
 
@@ -205,10 +248,9 @@ export default function UserDetailPage({
 
           {/* Right column */}
           <div className="space-y-6">
-            {/* Payment stats */}
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">
                   Monthly Payment
                 </CardTitle>
               </CardHeader>
@@ -250,21 +292,10 @@ export default function UserDetailPage({
 
                 <Separator />
 
-                {/* Notify action */}
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    Once you have processed the student&apos;s stipend, notify
-                    them by email.
-                  </p>
-                  <Button
-                    onClick={handleNotifyPayment}
-                    disabled={sending}
-                    className="w-full"
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    {sending ? "Sending…" : "Notify payment released"}
-                  </Button>
-                </div>
+                <Button onClick={openDialog} className="w-full">
+                  <Send className="h-4 w-4 mr-2" />
+                  Record payment &amp; notify student
+                </Button>
               </CardContent>
             </Card>
 
@@ -307,6 +338,80 @@ export default function UserDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Record payment dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="amount">Amount</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="amount"
+                  ref={amountRef}
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="flex-1"
+                />
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="note">
+                Note{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </Label>
+              <Input
+                id="note"
+                placeholder="e.g. June 2026 stipend"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              This will record the payment and send {user.name ?? user.email} an
+              email confirmation.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleRecord} disabled={submitting}>
+              <Send className="h-4 w-4 mr-2" />
+              {submitting ? "Sending…" : "Confirm & notify"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

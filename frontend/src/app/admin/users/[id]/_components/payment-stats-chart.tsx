@@ -4,104 +4,61 @@ import { format, parse } from "date-fns";
 import { CheckCircle2 } from "lucide-react";
 import type { MonthlyPaymentStat } from "@features/users/api";
 
-const BAR_WIDTH = 32;
-const BAR_GAP = 16;
-const CHART_HEIGHT = 100;
-const LABEL_HEIGHT = 20;
-const SVG_HEIGHT = CHART_HEIGHT + LABEL_HEIGHT + 8;
-
-function barColor(stat: MonthlyPaymentStat): string {
-  if (stat.tasksTotal === 0) return "hsl(var(--muted))";
-  if (stat.eligible) return "hsl(var(--primary))";
-  return "hsl(var(--primary) / 0.4)";
-}
-
 export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
-  const svgWidth =
-    stats.length * (BAR_WIDTH + BAR_GAP) - BAR_GAP + 2;
-
   return (
-    <div className="space-y-3">
-      <svg
-        width="100%"
-        viewBox={`0 0 ${svgWidth} ${SVG_HEIGHT}`}
-        className="overflow-visible"
-        aria-label="Monthly payment progress chart"
-      >
-        {stats.map((stat, i) => {
-          const x = i * (BAR_WIDTH + BAR_GAP);
-          const pct =
-            stat.tasksTotal > 0
-              ? stat.tasksApproved / stat.tasksTotal
-              : 0;
-          const barH = Math.max(pct > 0 ? 4 : 2, Math.round(pct * CHART_HEIGHT));
-          const barY = CHART_HEIGHT - barH;
-          const label = format(
-            parse(stat.month, "yyyy-MM", new Date()),
-            "MMM",
-          );
+    <div className="space-y-2.5">
+      {stats.map((stat) => {
+        const pct =
+          stat.tasksTotal > 0
+            ? Math.round((stat.tasksApproved / stat.tasksTotal) * 100)
+            : 0;
 
-          return (
-            <g key={stat.month}>
-              {/* background track */}
-              <rect
-                x={x}
-                y={0}
-                width={BAR_WIDTH}
-                height={CHART_HEIGHT}
-                rx={6}
-                className="fill-muted"
-              />
-              {/* filled bar */}
-              <rect
-                x={x}
-                y={barY}
-                width={BAR_WIDTH}
-                height={barH}
-                rx={6}
-                fill={barColor(stat)}
-              />
-              {/* month label */}
-              <text
-                x={x + BAR_WIDTH / 2}
-                y={CHART_HEIGHT + LABEL_HEIGHT}
-                textAnchor="middle"
-                className="fill-muted-foreground"
-                style={{ fontSize: 11 }}
-              >
-                {label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+        const label = format(
+          parse(stat.month, "yyyy-MM", new Date()),
+          "MMM yy",
+        );
 
-      {/* Legend row */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-        {stats.map((stat) => {
-          const label = format(
-            parse(stat.month, "yyyy-MM", new Date()),
-            "MMM yyyy",
-          );
-          return (
-            <div key={stat.month} className="flex items-center gap-1.5">
-              {stat.eligible ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-              ) : (
-                <span className="h-3.5 w-3.5 rounded-sm bg-muted inline-block shrink-0" />
-              )}
-              <span className="text-xs text-muted-foreground">
+        return (
+          <div key={stat.month} className="space-y-1">
+            <div className="grid grid-cols-[56px_1fr_auto] items-center gap-2">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {label}
+              </span>
+
+              <div className="relative h-1.5 rounded-full bg-muted overflow-hidden">
                 {stat.tasksTotal > 0 && (
-                  <span className="ml-1 text-foreground">
+                  <div
+                    className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
+                      stat.eligible ? "bg-primary" : "bg-primary/40"
+                    }`}
+                    style={{ width: `${pct}%` }}
+                  />
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 justify-end min-w-[64px]">
+                {stat.tasksTotal === 0 ? (
+                  <span className="text-xs text-muted-foreground">—</span>
+                ) : stat.eligible ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                ) : (
+                  <span className="text-xs text-muted-foreground tabular-nums">
                     {stat.tasksApproved}/{stat.tasksTotal}
                   </span>
                 )}
-              </span>
+              </div>
             </div>
-          );
-        })}
-      </div>
+
+            {stat.payment && (
+              <div className="ml-[64px] flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                  {stat.payment.amount} {stat.payment.currency} paid
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

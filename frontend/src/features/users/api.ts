@@ -40,6 +40,15 @@ export interface MonthlyPaymentStat {
   tasksApproved: number;
   eligible: boolean;
   notifiedAt: string | null;
+  payment: { amount: string; currency: string; paidAt: string } | null;
+}
+
+export interface PaymentRecord {
+  id: number;
+  amount: string;
+  currency: string;
+  note: string | null;
+  paidAt: string;
 }
 
 export interface UserPaymentStats {
@@ -55,10 +64,11 @@ export const getUserPaymentStats = async (
 ): Promise<UserPaymentStats> =>
   apiClient.get<UserPaymentStats>(`/users/${id}/payment-stats`);
 
-export const notifyPaymentReleased = async (
+export const recordPayment = async (
   id: number,
-): Promise<{ sent: boolean }> =>
-  apiClient.post<{ sent: boolean }>(`/users/${id}/notify-payment`, {});
+  payload: { amount: number; currency: string; note?: string },
+): Promise<PaymentRecord> =>
+  apiClient.post<PaymentRecord>(`/users/${id}/payments`, payload);
 
 export const updateUserRole = async (
   id: number,
