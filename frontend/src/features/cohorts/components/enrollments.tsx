@@ -4,6 +4,8 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
+import { AlertTriangle } from "lucide-react";
+
 import {
   ContentDialog,
   FormBody,
@@ -21,6 +23,7 @@ import {
 import { Separator } from "@components/ui/separator";
 import { useUsers } from "@features/users";
 import { ApiError } from "@lib/api-client";
+import { isProfileComplete } from "@utils/user";
 import { enrollStudent } from "../api";
 import { useEnrollments } from "../hooks";
 import type { Cohort } from "@types";
@@ -82,13 +85,26 @@ export const Enrollments = ({
 
         {enrollments.length > 0 ? (
           <div className="space-y-2 max-h-48 overflow-y-auto">
-            {enrollments.map((e) => (
-              <ListRow
-                key={e.id}
-                title={e.user?.name ?? e.user?.email ?? "Unknown"}
-                subtitle={`Enrolled ${format(new Date(e.enrolledAt), "MMM d, yyyy")}`}
-              />
-            ))}
+            {enrollments.map((e) => {
+              const incomplete = e.user && !isProfileComplete(e.user);
+              return (
+                <ListRow
+                  key={e.id}
+                  title={
+                    <span className="flex items-center gap-2 flex-wrap">
+                      {e.user?.name ?? e.user?.email ?? "Unknown"}
+                      {incomplete && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                          <AlertTriangle className="h-3 w-3" />
+                          Incomplete profile
+                        </span>
+                      )}
+                    </span>
+                  }
+                  subtitle={`Enrolled ${format(new Date(e.enrolledAt), "MMM d, yyyy")}`}
+                />
+              );
+            })}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">

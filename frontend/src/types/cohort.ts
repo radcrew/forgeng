@@ -17,6 +17,6 @@ export interface Enrollment {
   id: number;
   userId: number;
   cohortId: number;
-  user?: Pick<UserProfile, "id" | "name" | "email">;
+  user?: UserProfile;
   enrolledAt: string;
 }

@@ -1,4 +1,4 @@
-import type { UserProfile, UserRole } from "@types";
+import type { Application, UserProfile, UserRole } from "@types";
 
 const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
   "name",
@@ -13,6 +13,18 @@ const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
 
 export const isProfileComplete = (user: UserProfile): boolean =>
   REQUIRED_PROFILE_FIELDS.every((f) => Boolean(user[f]));
+
+const REQUIRED_APPLICATION_FIELDS: (keyof Application)[] = [
+  "linkedin",
+  "twitter",
+  "facebook",
+  "github",
+  "telegram",
+  "whatsapp",
+];
+
+export const isApplicationComplete = (app: Application): boolean =>
+  REQUIRED_APPLICATION_FIELDS.every((f) => Boolean(app[f]));
 
 export interface UserDto {
   id: number;
