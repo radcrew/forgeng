@@ -72,6 +72,7 @@ export class FeedbackService {
     await this.notifications.notifyPaymentEligible({
       studentName: student?.name ?? student?.email ?? 'A student',
       studentId: userId,
+      studentEmail: student?.email ?? '',
     });
   }
 

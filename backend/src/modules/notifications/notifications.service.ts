@@ -14,7 +14,11 @@ import {
 import { PrismaService } from '@core/database/prisma.service';
 import { ListNotificationsQuery } from './dto/list-notifications.query';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
-import { feedbackReceivedEmail, taskPublishedEmail } from './templates';
+import {
+  feedbackReceivedEmail,
+  paymentEligibleEmail,
+  taskPublishedEmail,
+} from './templates';
 
 @Injectable()
 export class NotificationsService {
@@ -203,10 +207,12 @@ export class NotificationsService {
     });
   }
 
-  /** Notify every admin that a student is eligible for their monthly payment. */
+  /** Notify every admin that a student is eligible for their monthly payment,
+   *  and email the student that their stipend will arrive within 2 business days. */
   async notifyPaymentEligible(params: {
     studentName: string;
     studentId: number;
+    studentEmail: string;
   }): Promise<void> {
     await this.notifyAdmins({
       type: 'payment_eligible',
@@ -214,6 +220,12 @@ export class NotificationsService {
       body: `${params.studentName} completed all tasks due this month`,
       link: `/admin/users/${params.studentId}`,
     });
+
+    const url = this.absoluteUrl('/student/dashboard');
+    await this.sendEmail(
+      params.studentEmail,
+      paymentEligibleEmail({ studentName: params.studentName, url }),
+    );
   }
 
   private async notifyAdmins(notification: {
