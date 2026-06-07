@@ -7,6 +7,7 @@ import { CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ClickableCard, LoadingState } from "@components/common";
+import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { cn } from "@utils";
@@ -142,12 +143,20 @@ const Page = () => {
                   <div className="flex items-center gap-2">
                     <p
                       className={cn(
-                        "truncate",
+                        "min-w-0 truncate",
                         unread ? "font-semibold" : "font-medium",
                       )}
                     >
                       {notification.title}
                     </p>
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 whitespace-nowrap font-normal text-muted-foreground"
+                    >
+                      {formatDistanceToNow(new Date(notification.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </Badge>
                     {unread && (
                       <span
                         aria-hidden
@@ -160,11 +169,6 @@ const Page = () => {
                       {notification.body}
                     </p>
                   )}
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(notification.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </p>
                 </div>
                 <Button
                   type="button"
