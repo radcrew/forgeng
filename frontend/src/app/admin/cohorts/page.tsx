@@ -7,7 +7,7 @@ import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
-  Card,
+  Row,
   Enrollments,
   FormDialog,
   useCohorts,
@@ -42,9 +42,9 @@ const Page = () => {
       ) : cohorts.length === 0 ? (
         <EmptyState message="No cohorts yet. Create your first cohort to get started." />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-3">
           {cohorts.map((cohort) => (
-            <Card
+            <Row
               key={cohort.id}
               cohort={cohort}
               onEnrollments={setEnrollCohort}
