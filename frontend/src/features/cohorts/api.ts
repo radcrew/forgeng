@@ -4,7 +4,7 @@ import type { Cohort, CohortStatus, Enrollment } from "./types";
 
 export interface CohortInput {
   name: string;
-  description?: string;
+  description?: string | null;
   capacity: number;
   status?: CohortStatus;
   startDate?: string;

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft, Clock, Code2, MessageSquare } from "lucide-react";
+import { Clock, Code2, MessageSquare } from "lucide-react";
 
 import { LoadingState, ProseBlock, SectionTitle } from "@components/common";
 import { Badge } from "@components/ui/badge";
@@ -31,12 +31,12 @@ const Page = () => {
   const [detailOpen, setDetailOpen] = useState(false);
 
   const backLink = (
-    <Button variant="ghost" size="sm" asChild>
-      <Link href="/student/tasks" className="flex items-center gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back to Tasks
-      </Link>
-    </Button>
+    <Link
+      href="/student/tasks"
+      className="text-sm text-muted-foreground hover:text-foreground inline-block"
+    >
+      ← Back to Tasks
+    </Link>
   );
 
   if (isLoading) {

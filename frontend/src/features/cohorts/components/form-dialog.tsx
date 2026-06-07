@@ -53,7 +53,10 @@ export const FormDialog = ({
     try {
       const payload = {
         name,
-        description: description || undefined,
+        // Send null (not undefined) so clearing the field persists — Prisma
+        // treats undefined as "leave unchanged", so an empty description would
+        // otherwise never be saved.
+        description: description || null,
         capacity: Number(capacity),
         status,
         startDate: startDate || undefined,

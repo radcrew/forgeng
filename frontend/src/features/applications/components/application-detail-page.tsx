@@ -112,7 +112,7 @@ export const ApplicationDetailPage = ({ id }: Props) => {
           href="/admin/applications"
           className="text-sm text-muted-foreground hover:text-foreground mb-4 inline-block"
         >
-          ← Applications
+          ← Back to Applications
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold">

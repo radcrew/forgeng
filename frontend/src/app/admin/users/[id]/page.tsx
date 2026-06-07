@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import {
   AlertCircle,
   AlertTriangle,
-  ArrowLeft,
   Mail,
   MapPin,
   Monitor,
@@ -134,12 +133,12 @@ export default function UserDetailPage({
     <PageContainer maxWidth="5xl">
       <div className="space-y-6">
         {/* Back */}
-        <Button variant="ghost" size="sm" asChild className="-ml-2">
-          <Link href="/admin/users">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            All users
-          </Link>
-        </Button>
+        <Link
+          href="/admin/users"
+          className="text-sm text-muted-foreground hover:text-foreground inline-block"
+        >
+          ← Back to Users
+        </Link>
 
         {/* Header */}
         <div className="flex items-start gap-4">

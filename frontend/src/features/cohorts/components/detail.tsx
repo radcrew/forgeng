@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, CheckSquare, ClipboardList, Users } from "lucide-react";
+import { CheckSquare, ClipboardList, Users } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
@@ -38,12 +38,12 @@ type StudentProgress = {
 };
 
 const backLink = (
-  <Button variant="ghost" size="sm" asChild>
-    <Link href="/admin/cohorts" className="flex items-center gap-2">
-      <ArrowLeft className="h-4 w-4" />
-      Back to Cohorts
-    </Link>
-  </Button>
+  <Link
+    href="/admin/cohorts"
+    className="text-sm text-muted-foreground hover:text-foreground inline-block"
+  >
+    ← Back to Cohorts
+  </Link>
 );
 
 export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
