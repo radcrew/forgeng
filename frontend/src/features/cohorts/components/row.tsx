@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Eye, Loader2, Pencil, Trash2, Users } from "lucide-react";
+import { Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
@@ -21,7 +22,9 @@ export type RowProps = {
 };
 
 export const Row = ({ cohort, onEdit, onDeleted }: RowProps) => {
+  const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const detailHref = `/admin/cohorts/${cohort.id}`;
 
   const handleDelete = async () => {
     if (!confirm(`Delete "${cohort.name}"? This cannot be undone.`)) return;
@@ -41,11 +44,15 @@ export const Row = ({ cohort, onEdit, onDeleted }: RowProps) => {
   };
 
   return (
-    <UiCard className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <UiCard
+      onClick={() => router.push(detailHref)}
+      className="flex cursor-pointer flex-col gap-3 p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
+    >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <Link
-            href={`/admin/cohorts/${cohort.id}`}
+            href={detailHref}
+            onClick={(e) => e.stopPropagation()}
             className="font-medium hover:underline truncate"
           >
             {cohort.name}
@@ -73,15 +80,13 @@ export const Row = ({ cohort, onEdit, onDeleted }: RowProps) => {
       </div>
 
       <div className="flex shrink-0 gap-2">
-        <Button variant="outline" size="sm" asChild aria-label="View cohort">
-          <Link href={`/admin/cohorts/${cohort.id}`}>
-            <Eye className="h-3.5 w-3.5" />
-          </Link>
-        </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onEdit(cohort)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(cohort);
+          }}
           aria-label="Edit cohort"
         >
           <Pencil className="h-3.5 w-3.5" />
@@ -90,7 +95,10 @@ export const Row = ({ cohort, onEdit, onDeleted }: RowProps) => {
           variant="outline"
           size="sm"
           className="text-destructive hover:text-destructive"
-          onClick={handleDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete();
+          }}
           disabled={isDeleting}
         >
           {isDeleting ? (
