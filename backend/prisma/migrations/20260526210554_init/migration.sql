@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('applicant', 'student', 'mentor', 'admin');
 
 -- CreateEnum
-CREATE TYPE "ApplicationStatus" AS ENUM ('pending', 'reviewing', 'accepted', 'rejected');
+CREATE TYPE "ApplicationStatus" AS ENUM ('pending', 'accepted', 'rejected');
 
 -- CreateEnum
 CREATE TYPE "CohortStatus" AS ENUM ('draft', 'active', 'completed');

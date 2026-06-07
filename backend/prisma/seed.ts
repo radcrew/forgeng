@@ -298,22 +298,6 @@ async function main(): Promise<void> {
     },
   });
   await prisma.application.upsert({
-    where: { id: 302 },
-    update: {},
-    create: {
-      id: 302,
-      firstName: 'Morgan',
-      lastName: 'Lee',
-      email: 'morgan@example.com',
-      background: 'Career switcher from finance. Completed CS50 and a bootcamp.',
-      experience: 'Python, SQL, basic React.',
-      motivation:
-        'I keep getting stuck on the gap between tutorials and real engineering.',
-      status: 'reviewing',
-      reviewerNote: 'Strong written communication.',
-    },
-  });
-  await prisma.application.upsert({
     where: { id: 303 },
     update: {},
     create: {

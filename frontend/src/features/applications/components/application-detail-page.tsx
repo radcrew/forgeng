@@ -19,7 +19,6 @@ import {
 import { Skeleton } from "@components/ui/skeleton";
 import { Textarea } from "@components/ui/textarea";
 import { APPLICATION_STATUS_OPTIONS } from "@constants/applications";
-import { useCohorts } from "@features/cohorts";
 import { useAsyncResource } from "@hooks/use-async-resource";
 import { resolveAssetUrl } from "@lib/config";
 import type { ApplicationStatus } from "@types";
@@ -69,17 +68,14 @@ export const ApplicationDetailPage = ({ id }: Props) => {
     () => getApplication(id),
     [id],
   );
-  const { data: cohorts = [] } = useCohorts();
 
   const [status, setStatus] = useState<ApplicationStatus | null>(null);
   const [reviewerNote, setReviewerNote] = useState<string | null>(null);
-  const [cohortId, setCohortId] = useState<string | null>(null);
 
   const { update, isPending: isSaving } = useUpdateApplicationStatus();
 
   const resolvedStatus = (status ?? application?.status) as ApplicationStatus | undefined;
   const resolvedNote = reviewerNote ?? application?.reviewerNote ?? "";
-  const resolvedCohortId = cohortId ?? application?.cohortId?.toString() ?? "";
 
   const handleSave = async () => {
     if (!application) return;
@@ -87,10 +83,6 @@ export const ApplicationDetailPage = ({ id }: Props) => {
       await update(application.id, {
         status: resolvedStatus!,
         reviewerNote: resolvedNote || null,
-        cohortId:
-          resolvedStatus === "accepted" && resolvedCohortId
-            ? Number.parseInt(resolvedCohortId, 10)
-            : null,
       });
       toast.success("Application updated");
     } catch {
@@ -253,24 +245,6 @@ export const ApplicationDetailPage = ({ id }: Props) => {
                   </SelectContent>
                 </Select>
               </div>
-
-              {resolvedStatus === "accepted" && cohorts.length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-sm font-medium">Assign to Cohort</p>
-                  <Select value={resolvedCohortId} onValueChange={setCohortId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a cohort…" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cohorts.map((c) => (
-                        <SelectItem key={c.id} value={c.id.toString()}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
 
               <div className="space-y-1.5">
                 <p className="text-sm font-medium">Reviewer Note</p>

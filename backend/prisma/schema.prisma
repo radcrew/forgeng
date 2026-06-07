@@ -22,7 +22,6 @@ enum Role {
 
 enum ApplicationStatus {
   pending
-  reviewing
   accepted
   rejected
 }

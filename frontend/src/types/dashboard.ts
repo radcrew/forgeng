@@ -62,7 +62,6 @@ export interface AdminDashboard {
   applicationStats: {
     total: number;
     pending: number;
-    reviewing: number;
     accepted: number;
     rejected: number;
   };
