@@ -58,7 +58,9 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Submissions
+            <Link href="/admin/reviews" className="hover:underline">
+              Submissions
+            </Link>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -87,7 +89,9 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Applications
+            <Link href="/admin/applications" className="hover:underline">
+              Applications
+            </Link>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
