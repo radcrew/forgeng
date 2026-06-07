@@ -124,7 +124,10 @@ export class ApplicationsService {
     const app = await this.prisma.application.findUnique({
       where: { userId },
     });
-    return app ? toApplicationDto(app) : null;
+    if (!app) return null;
+    // The reviewer note is internal to admins and must never reach the
+    // applicant, regardless of the application's status.
+    return { ...toApplicationDto(app), reviewerNote: null };
   }
 
   async findOne(id: number): Promise<ApplicationDto> {
@@ -180,7 +183,6 @@ export class ApplicationsService {
           to: updated.email,
           ...applicationAcceptedEmail({
             applicantName,
-            reviewerNote: updated.reviewerNote,
             dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
           }),
         });
@@ -196,7 +198,6 @@ export class ApplicationsService {
           to: updated.email,
           ...applicationRejectedEmail({
             applicantName,
-            reviewerNote: updated.reviewerNote,
           }),
         });
       } catch (err) {
