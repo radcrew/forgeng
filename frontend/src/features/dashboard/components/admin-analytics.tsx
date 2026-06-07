@@ -102,11 +102,6 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
                 color: "bg-primary",
               },
               {
-                label: "Reviewing",
-                value: applicationStats.reviewing,
-                color: "bg-sky-500",
-              },
-              {
                 label: "Pending",
                 value: applicationStats.pending,
                 color: "bg-amber-500",
