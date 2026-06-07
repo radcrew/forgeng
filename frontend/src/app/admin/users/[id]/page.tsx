@@ -214,7 +214,9 @@ export default function UserDetailPage({
             <div>
               <SectionTitle>Bio</SectionTitle>
               {user.bio ? (
-                <ProseBlock className="whitespace-pre-wrap">{user.bio}</ProseBlock>
+                <ProseBlock className="whitespace-pre-wrap bg-transparent p-0">
+                  {user.bio}
+                </ProseBlock>
               ) : (
                 <p className="text-sm text-muted-foreground">No bio provided.</p>
               )}
@@ -263,7 +265,7 @@ export default function UserDetailPage({
 
             {/* Wallet addresses */}
             <div className="space-y-2">
-              <SectionTitle>Wallet addresses</SectionTitle>
+              <SectionTitle>Wallet address</SectionTitle>
               {walletsEmpty ? (
                 <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-3 space-y-2.5">
                   <p className="flex items-center gap-2 text-sm text-destructive">
@@ -282,12 +284,9 @@ export default function UserDetailPage({
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-1.5">
+                <div className="space-y-3">
                   {paymentStats!.wallets.map((w) => (
-                    <div
-                      key={w.chain}
-                      className="rounded-lg bg-muted/50 px-3 py-2"
-                    >
+                    <div key={w.chain}>
                       <p className="text-xs font-medium capitalize">{w.chain}</p>
                       <p className="text-xs text-muted-foreground font-mono break-all mt-0.5">
                         {w.address}
