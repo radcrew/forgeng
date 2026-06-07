@@ -6,7 +6,6 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
-  BadgeCheck,
   Mail,
   MapPin,
   Monitor,
@@ -162,17 +161,6 @@ export default function UserDetailPage({
               <Mail className="h-3.5 w-3.5 shrink-0" />
               {user.email}
             </span>
-            <div className="flex flex-wrap gap-2 pt-0.5">
-              <Badge variant="secondary" className="capitalize">
-                {user.role}
-              </Badge>
-              {user.emailVerified && (
-                <Badge variant="outline" className="gap-1">
-                  <BadgeCheck className="h-3.5 w-3.5" />
-                  Verified
-                </Badge>
-              )}
-            </div>
           </div>
         </div>
 
