@@ -58,37 +58,6 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            <Link href="/admin/reviews" className="hover:underline">
-              Submissions
-            </Link>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <SegmentedBar
-            segments={[
-              {
-                label: "Approved",
-                value: submissionBreakdown.approved,
-                color: "bg-primary",
-              },
-              {
-                label: "In Review",
-                value: submissionBreakdown.submitted,
-                color: "bg-sky-500",
-              },
-              {
-                label: "Needs Work",
-                value: submissionBreakdown.needsWork,
-                color: "bg-destructive",
-              },
-            ]}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
             <Link href="/admin/applications" className="hover:underline">
               Applications
             </Link>
@@ -110,6 +79,37 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
               {
                 label: "Rejected",
                 value: applicationStats.rejected,
+                color: "bg-destructive",
+              },
+            ]}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            <Link href="/admin/reviews" className="hover:underline">
+              Submissions
+            </Link>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SegmentedBar
+            segments={[
+              {
+                label: "Approved",
+                value: submissionBreakdown.approved,
+                color: "bg-primary",
+              },
+              {
+                label: "In Review",
+                value: submissionBreakdown.submitted,
+                color: "bg-sky-500",
+              },
+              {
+                label: "Needs Work",
+                value: submissionBreakdown.needsWork,
                 color: "bg-destructive",
               },
             ]}
