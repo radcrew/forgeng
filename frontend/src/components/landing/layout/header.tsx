@@ -8,10 +8,10 @@ import { NAV_LINKS } from "@constants/landing";
 export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border px-6 py-4 flex items-center justify-between">
-      <div className="flex items-center gap-2">
+      <Link href="/" className="flex items-center gap-2">
         <Logo size={28} priority />
         <span className="font-bold text-lg tracking-tight">Forgeng</span>
-      </div>
+      </Link>
       <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
         {NAV_LINKS.map((link) => (
           <a
