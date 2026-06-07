@@ -73,6 +73,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   // This fallback keeps types honest for the rare race during navigation.
   const role: UserRole = user?.role ?? "applicant";
   const navItems = NAV_ITEMS_BY_ROLE[role];
+  // Logo links to the role's dashboard (its first nav item), or the
+  // marketing homepage for roles without a portal (e.g. applicant).
+  const homeHref = navItems[0]?.href ?? "/";
 
   // Pick the most-specific matching nav item so a parent route
   // doesn't stay highlighted when the user is on a child path.
@@ -94,10 +97,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
         <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
           <SidebarHeader className="p-4 border-b border-sidebar-border">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
+              <Link href={homeHref} className="flex items-center gap-2">
                 <Logo size={28} priority />
                 <h2 className="font-bold text-lg tracking-tight">Forgeng</h2>
-              </div>
+              </Link>
               {(role === "student" || role === "admin") && <NotificationBell />}
             </div>
             <p className="text-sm text-sidebar-foreground/70 capitalize mt-2">
