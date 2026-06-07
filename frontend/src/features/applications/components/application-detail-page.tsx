@@ -215,9 +215,11 @@ export const ApplicationDetailPage = ({ id }: Props) => {
                   </div>
                 )}
                 {application.address && (
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-muted-foreground shrink-0">Address</span>
-                    <span className="text-xs text-right whitespace-pre-line">{application.address}</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-muted-foreground">Address</span>
+                    <span className="text-xs whitespace-pre-line break-words">
+                      {application.address}
+                    </span>
                   </div>
                 )}
               </div>
