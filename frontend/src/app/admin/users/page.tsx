@@ -11,27 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { USER_ROLE_FILTER_TABS } from "@constants/users";
 import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
-import { Row, useUsers, type UserRoleFilter } from "@features/users";
+import { Row, useUsers } from "@features/users";
 
 const Page = () => {
-  const [roleFilter, setRoleFilter] = useState<UserRoleFilter>("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const { data, isLoading } = useUsers(roleFilter, page, pageSize);
+  const { data, isLoading } = useUsers("student", page, pageSize);
 
   const users = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-  // Switching filters resets to the first page so we never land past the end.
-  const handleRoleChange = (value: UserRoleFilter) => {
-    setRoleFilter(value);
-    setPage(1);
-  };
 
   // Changing page size also resets to page 1 so the offset stays valid.
   const handlePageSizeChange = (value: string) => {
@@ -42,29 +33,18 @@ const Page = () => {
   return (
     <PageContainer maxWidth="4xl">
       <PageHeader
-        title="Users"
-        description="Manage platform users and their roles."
+        title="Students"
+        description="Manage students and their roles."
       />
 
-      <Tabs
-        value={roleFilter}
-        onValueChange={(v) => handleRoleChange(v as UserRoleFilter)}
-      >
-        <TabsList>
-          {USER_ROLE_FILTER_TABS.map(({ value, label }) => (
-            <TabsTrigger key={value} value={value}>
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
       <p className="text-sm text-muted-foreground">
-        {isLoading ? "Loading…" : `${total} ${total === 1 ? "user" : "users"}`}
+        {isLoading
+          ? "Loading…"
+          : `${total} ${total === 1 ? "student" : "students"}`}
       </p>
 
       {!isLoading && users.length === 0 ? (
-        <EmptyState message="No users match this filter." />
+        <EmptyState message="No students yet." />
       ) : (
         <div className="space-y-2">
           {users.map((user) => (
