@@ -51,7 +51,7 @@ export const Row = ({ user }: RowProps) => {
       <div className="flex items-center gap-4 p-4">
         <Link
           href={`/admin/users/${user.id}`}
-          className="flex flex-1 items-center gap-4 min-w-0 rounded-md text-left transition-colors hover:bg-accent/40 -m-1 p-1"
+          className="flex flex-1 items-center gap-4 min-w-0"
           aria-label={`View details for ${user.name ?? user.email}`}
         >
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
