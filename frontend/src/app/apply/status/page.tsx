@@ -26,10 +26,6 @@ const STATUS_COPY: Record<ApplicationStatus, { title: string; body: string }> =
       title: "Application received",
       body: "Thanks for applying! Your application is in the queue. We review every application personally and aim to get back to you within a week.",
     },
-    reviewing: {
-      title: "Under review",
-      body: "Good news — a mentor is reviewing your application right now. Hang tight, you'll hear from us soon.",
-    },
     accepted: {
       title: "You're in! 🎉",
       body: "Congratulations — you've been accepted. Sign in again to access your student portal and get started.",

@@ -32,7 +32,6 @@ export interface PaginatedApplications {
 
 export interface ApplicationStats {
   pending: number;
-  reviewing: number;
   accepted: number;
   rejected: number;
   total: number;
@@ -218,7 +217,6 @@ export class ApplicationsService {
     });
     const stats: ApplicationStats = {
       pending: 0,
-      reviewing: 0,
       accepted: 0,
       rejected: 0,
       total: 0,

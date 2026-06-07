@@ -5,7 +5,6 @@ export const APPLICATION_STATUS_VARIANT: Record<
   "default" | "secondary" | "outline" | "destructive"
 > = {
   pending: "secondary",
-  reviewing: "outline",
   accepted: "default",
   rejected: "destructive",
 };
