@@ -51,10 +51,7 @@ const SegmentedBar = ({ segments }: { segments: Segment[] }) => {
 
 export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
   const { applicationStats, analytics } = dashboard;
-  const { submissionBreakdown, weeklyActivity, cohortStats } = analytics;
-
-  const maxWeek = Math.max(1, ...weeklyActivity.map((w) => w.submissions));
-  const totalActivity = weeklyActivity.reduce((n, w) => n + w.submissions, 0);
+  const { submissionBreakdown, cohortStats } = analytics;
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -113,41 +110,6 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
               },
             ]}
           />
-        </CardContent>
-      </Card>
-
-      <Card className="md:col-span-2">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            Submission Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-24 items-end gap-3">
-            {weeklyActivity.map((w, i) => (
-              <div
-                key={w.weekStart}
-                className="flex flex-1 flex-col items-center gap-2"
-              >
-                <div className="flex w-full flex-1 items-end">
-                  <div
-                    className="w-full rounded-t bg-primary/70"
-                    style={{ height: `${(w.submissions / maxWeek) * 100}%` }}
-                    title={`${w.submissions} submissions`}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {i === weeklyActivity.length - 1
-                    ? "This wk"
-                    : `-${weeklyActivity.length - 1 - i}w`}
-                </span>
-              </div>
-            ))}
-          </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            {totalActivity} submission{totalActivity === 1 ? "" : "s"} in the
-            last {weeklyActivity.length} weeks
-          </p>
         </CardContent>
       </Card>
 
