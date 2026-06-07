@@ -6,19 +6,13 @@ import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import {
-  Row,
-  Enrollments,
-  FormDialog,
-  useCohorts,
-} from "@features/cohorts";
+import { Row, FormDialog, useCohorts } from "@features/cohorts";
 import type { Cohort } from "@types";
 
 const Page = () => {
   const { data: cohorts = [], isLoading, refetch } = useCohorts();
   const [formOpen, setFormOpen] = useState(false);
   const [editCohort, setEditCohort] = useState<Cohort | undefined>(undefined);
-  const [enrollCohort, setEnrollCohort] = useState<Cohort | undefined>(undefined);
 
   return (
     <PageContainer maxWidth="5xl">
@@ -47,7 +41,6 @@ const Page = () => {
             <Row
               key={cohort.id}
               cohort={cohort}
-              onEnrollments={setEnrollCohort}
               onEdit={(c) => {
                 setEditCohort(c);
                 setFormOpen(true);
@@ -68,17 +61,6 @@ const Page = () => {
         }}
         onSaved={refetch}
       />
-
-      {enrollCohort && (
-        <Enrollments
-          cohort={enrollCohort}
-          open={!!enrollCohort}
-          onOpenChange={(open) => {
-            if (!open) setEnrollCohort(undefined);
-          }}
-          onEnrolled={refetch}
-        />
-      )}
     </PageContainer>
   );
 };

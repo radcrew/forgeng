@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowRight, Loader2, Pencil, Trash2, Users } from "lucide-react";
+import { Eye, Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@components/ui/badge";
@@ -16,12 +16,11 @@ import type { Cohort } from "@types";
 
 export type RowProps = {
   cohort: Cohort;
-  onEnrollments: (cohort: Cohort) => void;
   onEdit: (cohort: Cohort) => void;
   onDeleted?: () => void;
 };
 
-export const Row = ({ cohort, onEnrollments, onEdit, onDeleted }: RowProps) => {
+export const Row = ({ cohort, onEdit, onDeleted }: RowProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -74,20 +73,18 @@ export const Row = ({ cohort, onEnrollments, onEdit, onDeleted }: RowProps) => {
       </div>
 
       <div className="flex shrink-0 gap-2">
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" asChild aria-label="View cohort">
           <Link href={`/admin/cohorts/${cohort.id}`}>
-            <ArrowRight className="h-3.5 w-3.5 mr-1.5" /> View
+            <Eye className="h-3.5 w-3.5" />
           </Link>
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onEnrollments(cohort)}
+          onClick={() => onEdit(cohort)}
+          aria-label="Edit cohort"
         >
-          <Users className="h-3.5 w-3.5 mr-1.5" /> Enrollments
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => onEdit(cohort)}>
-          <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
+          <Pencil className="h-3.5 w-3.5" />
         </Button>
         <Button
           variant="outline"
