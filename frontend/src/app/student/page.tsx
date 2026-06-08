@@ -1,12 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
-
 import { PageContainer, PageHeader } from "@components/shared";
 import {
   CohortSwitcher,
-  StudentOnboarding,
   StudentView,
   useStudentDashboard,
 } from "@features/dashboard";
@@ -60,26 +56,19 @@ const Page = () => {
         }
       />
 
-      {profileIncomplete && (
-        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-          <p className="text-sm text-amber-800 dark:text-amber-300">
-            Your profile is incomplete. Please{" "}
-            <Link
-              href="/student/profile"
-              className="font-medium underline underline-offset-2 hover:no-underline"
-            >
-              complete all profile fields
-            </Link>{" "}
-            to take part in a cohort and receive tasks.
-          </p>
-        </div>
-      )}
-
-      {cohort ? (
-        <StudentView dashboard={dashboard} />
+      {profileIncomplete ? (
+        <p className="text-sm text-muted-foreground">
+          Your profile is incomplete. Please complete all profile fields to take
+          part in a cohort and receive tasks.
+        </p>
+      ) : !cohort ? (
+        <p className="text-sm text-muted-foreground">
+          Your account is ready, but you haven&apos;t been added to a cohort yet.
+          Once an instructor enrolls you, your tasks, schedule, and progress will
+          show up here.
+        </p>
       ) : (
-        <StudentOnboarding name={user?.name} />
+        <StudentView dashboard={dashboard} />
       )}
     </PageContainer>
   );

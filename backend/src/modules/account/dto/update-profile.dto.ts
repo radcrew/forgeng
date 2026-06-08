@@ -6,6 +6,16 @@ import {
   MaxLength,
 } from 'class-validator';
 
+import {
+  FACEBOOK_PROFILE_REGEX,
+  GITHUB_PROFILE_REGEX,
+  LINKEDIN_PROFILE_REGEX,
+  SOCIAL_PROFILE_MESSAGES,
+  TELEGRAM_REGEX,
+  TWITTER_PROFILE_REGEX,
+  WHATSAPP_REGEX,
+} from '@common/constants/social-profiles';
+
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
@@ -20,21 +30,29 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
+  @Matches(LINKEDIN_PROFILE_REGEX, {
+    message: SOCIAL_PROFILE_MESSAGES.linkedin,
+  })
   linkedin?: string;
 
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
+  @Matches(TWITTER_PROFILE_REGEX, { message: SOCIAL_PROFILE_MESSAGES.twitter })
   twitter?: string;
 
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
+  @Matches(FACEBOOK_PROFILE_REGEX, {
+    message: SOCIAL_PROFILE_MESSAGES.facebook,
+  })
   facebook?: string;
 
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
+  @Matches(GITHUB_PROFILE_REGEX, { message: SOCIAL_PROFILE_MESSAGES.github })
   github?: string;
 
   @IsOptional()
@@ -45,12 +63,11 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @Matches(TELEGRAM_REGEX, { message: SOCIAL_PROFILE_MESSAGES.telegram })
   telegram?: string;
 
   @IsOptional()
-  @Matches(/^\+[1-9]\d{6,14}$/, {
-    message: 'Enter a phone number with country code (e.g. +1234567890)',
-  })
+  @Matches(WHATSAPP_REGEX, { message: SOCIAL_PROFILE_MESSAGES.whatsapp })
   whatsapp?: string;
 
   @IsOptional()

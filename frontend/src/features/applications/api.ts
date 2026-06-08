@@ -13,7 +13,7 @@ export interface CreateApplicationInput {
   portfolio?: string;
   telegram?: string;
   whatsapp?: string;
-  address?: string;
+  country: string;
   videoUrl: string;
   wallets: Array<{ chain: string; address: string }>;
 }

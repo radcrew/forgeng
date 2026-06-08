@@ -52,7 +52,7 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
                   );
                 })}
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
                 {STATUS_SEGMENTS.map((s) => (
                   <div key={s.key} className="flex items-center gap-2 text-sm">
                     <span

@@ -180,7 +180,7 @@ model Application {
   portfolio    String?
   telegram     String?
   whatsapp     String?
-  address      String?
+  country      String?
   videoUrl     String?           @map("video_url")
   wallets      Json?
   reviewerNote String?           @map("reviewer_note")

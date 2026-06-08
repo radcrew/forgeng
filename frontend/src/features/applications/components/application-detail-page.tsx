@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@components/ui/skeleton";
 import { Textarea } from "@components/ui/textarea";
 import { APPLICATION_STATUS_OPTIONS } from "@constants/applications";
+import { countryLabel } from "@constants/shared/countries";
 import { useAsyncResource } from "@hooks/use-async-resource";
 import { resolveAssetUrl } from "@lib/config";
 import type { ApplicationStatus } from "@types";
@@ -101,7 +102,7 @@ export const ApplicationDetailPage = ({ id }: Props) => {
   }
 
   const hasSocialLinks = SOCIAL_LINKS.some(({ key }) => !!application[key]);
-  const hasContact = application.telegram || application.whatsapp || application.address;
+  const hasContact = application.telegram || application.whatsapp || application.country;
   const hasWallets = application.wallets && application.wallets.length > 0;
 
   return (
@@ -214,11 +215,11 @@ export const ApplicationDetailPage = ({ id }: Props) => {
                     </span>
                   </div>
                 )}
-                {application.address && (
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-muted-foreground">Address</span>
-                    <span className="text-xs whitespace-pre-line break-words">
-                      {application.address}
+                {application.country && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Country</span>
+                    <span className="text-xs">
+                      {countryLabel(application.country)}
                     </span>
                   </div>
                 )}

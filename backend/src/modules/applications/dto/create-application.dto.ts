@@ -2,6 +2,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   IsUrl,
@@ -14,31 +15,21 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+import { APPLICATION_COUNTRY_CODES } from '@common/constants/countries';
+import {
+  FACEBOOK_PROFILE_REGEX,
+  GITHUB_PROFILE_REGEX,
+  LINKEDIN_PROFILE_REGEX,
+  TELEGRAM_REGEX,
+  TWITTER_PROFILE_REGEX,
+} from '@common/constants/social-profiles';
+
 export const SUPPORTED_CHAINS = ['evm', 'solana', 'tron'] as const;
 export type WalletChain = (typeof SUPPORTED_CHAINS)[number];
 
 const EVM_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
 const SOLANA_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
-
-// A LinkedIn member profile (linkedin.com/in/<slug>), optionally on a country
-// subdomain. A GitHub user profile (github.com/<username>) follows GitHub's
-// username rules: 1–39 chars, alphanumeric or single non-leading/trailing
-// hyphens. Both reject non-profile URLs that merely live on the right host.
-const LINKEDIN_PROFILE_REGEX =
-  /^https?:\/\/([a-z]{2,3}\.)?linkedin\.com\/in\/[\w%-]+\/?(\?.*)?$/i;
-const GITHUB_PROFILE_REGEX =
-  /^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9](?:-?[A-Za-z0-9]){0,38}\/?(\?.*)?$/i;
-
-// X / Twitter profile (handle: 1–15 chars), Facebook profile (username or the
-// numeric profile.php?id= form), and a Telegram t.me link or @username
-// (5–32 chars, starts with a letter). Each rejects non-profile URLs on-host.
-const TWITTER_PROFILE_REGEX =
-  /^https?:\/\/(www\.)?(twitter|x)\.com\/[A-Za-z0-9_]{1,15}\/?(\?.*)?$/i;
-const FACEBOOK_PROFILE_REGEX =
-  /^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(profile\.php\?id=\d+|[A-Za-z0-9.]{3,})\/?$/i;
-const TELEGRAM_REGEX =
-  /^(https?:\/\/t\.me\/[A-Za-z][A-Za-z0-9_]{4,31}\/?|@[A-Za-z][A-Za-z0-9_]{4,31})$/;
 
 const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
   evm: EVM_ADDRESS_REGEX,
@@ -170,8 +161,6 @@ export class CreateApplicationDto {
   })
   whatsapp?: string;
 
-  @IsString()
-  @MinLength(1)
-  @MaxLength(500)
-  address!: string;
+  @IsIn(APPLICATION_COUNTRY_CODES, { message: 'Select your country' })
+  country!: string;
 }

@@ -16,7 +16,7 @@ export interface Application {
   portfolio: string | null;
   telegram: string | null;
   whatsapp: string | null;
-  address: string | null;
+  country: string | null;
   videoUrl: string | null;
   wallets: Array<{ chain: string; address: string }> | null;
   status: ApplicationStatus;

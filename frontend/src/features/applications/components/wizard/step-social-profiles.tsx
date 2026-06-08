@@ -8,19 +8,23 @@ import {
 } from "@components/ui/form";
 import { Input } from "@components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/ui/select";
+import {
   APPLICATION_WIZARD_COPY,
   type ApplicationFormValues,
 } from "@constants/applications";
+import { APPLICATION_COUNTRY_OPTIONS } from "@constants/shared/countries";
 
 const COPY = APPLICATION_WIZARD_COPY.steps.socialProfiles;
 
-interface Props {
-  control: Control<ApplicationFormValues>;
-}
-
 type SocialProfileFieldName =
   | "linkedin" | "github" | "twitter" | "facebook"
-  | "telegram" | "whatsapp" | "portfolio" | "address";
+  | "telegram" | "whatsapp" | "portfolio";
 
 type SocialField = {
   name: SocialProfileFieldName;
@@ -32,7 +36,6 @@ type SocialField = {
 const FIELDS: SocialField[] = [
   { name: "linkedin", label: COPY.linkedinLabel, placeholder: COPY.linkedinPlaceholder, required: true },
   { name: "github", label: COPY.githubLabel, placeholder: COPY.githubPlaceholder, required: true },
-  { name: "address", label: COPY.addressLabel, placeholder: COPY.addressPlaceholder, required: true },
   { name: "twitter", label: COPY.twitterLabel, placeholder: COPY.twitterPlaceholder },
   { name: "facebook", label: COPY.facebookLabel, placeholder: COPY.facebookPlaceholder },
   { name: "telegram", label: COPY.telegramLabel, placeholder: COPY.telegramPlaceholder },
@@ -40,10 +43,43 @@ const FIELDS: SocialField[] = [
   { name: "portfolio", label: COPY.portfolioLabel, placeholder: COPY.portfolioPlaceholder },
 ];
 
+interface Props {
+  control: Control<ApplicationFormValues>;
+}
+
 export const StepSocialProfiles = ({ control }: Props) => (
   <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
     <h2 className="text-xl font-semibold">{COPY.title}</h2>
     <p className="text-sm text-muted-foreground">{COPY.hint}</p>
+
+    <FormField
+      control={control}
+      name="country"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            {COPY.countryLabel}
+            <span className="text-destructive ml-0.5">*</span>
+          </FormLabel>
+          <Select value={field.value} onValueChange={field.onChange}>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue placeholder={COPY.countryPlaceholder} />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {APPLICATION_COUNTRY_OPTIONS.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+
     {FIELDS.map(({ name, label, placeholder, required }) => (
       <FormField
         key={name}

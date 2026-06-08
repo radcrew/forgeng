@@ -1,9 +1,19 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
-import { FormBody, FormField } from "@components/common";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@components/ui/form";
 import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
 import { Input } from "@components/ui/input";
@@ -14,6 +24,7 @@ import { initials } from "@utils";
 import type { UserProfile } from "@types";
 
 import { updateProfile, uploadAvatar } from "../api";
+import { PROFILE_FORM_SCHEMA, type ProfileFormValues } from "../form-schema";
 import type { ProfileUpdate } from "../types";
 
 export type ProfileFormProps = {
@@ -25,34 +36,48 @@ export type ProfileFormProps = {
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 
+// The URL/handle fields are validated server-side and only sent when filled, so
+// a blank field clears rather than fails. These map form keys to payload keys.
+const OPTIONAL_FIELDS = [
+  "linkedin",
+  "twitter",
+  "facebook",
+  "github",
+  "portfolio",
+  "telegram",
+  "whatsapp",
+] as const;
+
 export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
-  const [name, setName] = useState(user.name ?? "");
-  const [bio, setBio] = useState(user.bio ?? "");
-  const [linkedin, setLinkedin] = useState(user.linkedin ?? "");
-  const [twitter, setTwitter] = useState(user.twitter ?? "");
-  const [facebook, setFacebook] = useState(user.facebook ?? "");
-  const [github, setGithub] = useState(user.github ?? "");
-  const [portfolio, setPortfolio] = useState(user.portfolio ?? "");
-  const [telegram, setTelegram] = useState(user.telegram ?? "");
-  const [whatsapp, setWhatsapp] = useState(user.whatsapp ?? "");
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(PROFILE_FORM_SCHEMA),
+    defaultValues: {
+      name: user.name ?? "",
+      bio: user.bio ?? "",
+      linkedin: user.linkedin ?? "",
+      twitter: user.twitter ?? "",
+      facebook: user.facebook ?? "",
+      github: user.github ?? "",
+      portfolio: user.portfolio ?? "",
+      telegram: user.telegram ?? "",
+      whatsapp: user.whatsapp ?? "",
+    },
+  });
+
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
-  const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = async () => {
-    // URL fields are validated as URLs server-side, so omit them when blank
-    // rather than sending an empty string that would fail validation.
-    const payload: ProfileUpdate = { name: name.trim(), bio: bio.trim() };
-    if (linkedin.trim()) payload.linkedin = linkedin.trim();
-    if (twitter.trim()) payload.twitter = twitter.trim();
-    if (facebook.trim()) payload.facebook = facebook.trim();
-    if (github.trim()) payload.github = github.trim();
-    if (portfolio.trim()) payload.portfolio = portfolio.trim();
-    if (telegram.trim()) payload.telegram = telegram.trim();
-    if (whatsapp.trim()) payload.whatsapp = whatsapp.trim();
+  const onSubmit = async (data: ProfileFormValues) => {
+    const payload: ProfileUpdate = {
+      name: data.name.trim(),
+      bio: data.bio.trim(),
+    };
+    for (const field of OPTIONAL_FIELDS) {
+      const value = data[field].trim();
+      if (value) payload[field] = value;
+    }
 
-    setIsSaving(true);
     try {
       await updateProfile(payload);
       toast.success("Profile saved.");
@@ -61,8 +86,6 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
       toast.error(
         err instanceof ApiError ? err.message : "Failed to save your profile.",
       );
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -149,94 +172,147 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
           </div>
         </div>
 
-        <FormBody>
-          <FormField label="Name" htmlFor="profile-name">
-            <Input
-              id="profile-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 py-2"
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
-          <FormField label="Bio" htmlFor="profile-bio">
-            <Textarea
-              id="profile-bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-              placeholder="A short bio about you…"
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      rows={4}
+                      placeholder="A short bio about you…"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
-          <FormField label="GitHub" htmlFor="profile-github">
-            <Input
-              id="profile-github"
-              value={github}
-              onChange={(e) => setGithub(e.target.value)}
-              placeholder="https://github.com/you"
+            <FormField
+              control={form.control}
+              name="github"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>GitHub</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://github.com/you" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
-          <FormField label="LinkedIn" htmlFor="profile-linkedin">
-            <Input
-              id="profile-linkedin"
-              value={linkedin}
-              onChange={(e) => setLinkedin(e.target.value)}
-              placeholder="https://linkedin.com/in/you"
+            <FormField
+              control={form.control}
+              name="linkedin"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LinkedIn</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://linkedin.com/in/you" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
-          <FormField label="X (Twitter)" htmlFor="profile-twitter">
-            <Input
-              id="profile-twitter"
-              value={twitter}
-              onChange={(e) => setTwitter(e.target.value)}
-              placeholder="https://x.com/you"
+            <FormField
+              control={form.control}
+              name="twitter"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>X (Twitter)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://x.com/you" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
-          <FormField label="Facebook" htmlFor="profile-facebook">
-            <Input
-              id="profile-facebook"
-              value={facebook}
-              onChange={(e) => setFacebook(e.target.value)}
-              placeholder="https://facebook.com/you"
+            <FormField
+              control={form.control}
+              name="facebook"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Facebook</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://facebook.com/you" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
-          <FormField label="Telegram" htmlFor="profile-telegram">
-            <Input
-              id="profile-telegram"
-              value={telegram}
-              onChange={(e) => setTelegram(e.target.value)}
-              placeholder="@yourusername"
+            <FormField
+              control={form.control}
+              name="telegram"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telegram</FormLabel>
+                  <FormControl>
+                    <Input placeholder="@yourusername" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </FormField>
-          <FormField label="WhatsApp" htmlFor="profile-whatsapp">
-            <Input
-              id="profile-whatsapp"
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              placeholder="+1234567890"
+            <FormField
+              control={form.control}
+              name="whatsapp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>WhatsApp</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+1234567890" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Include country code, e.g. +1234567890
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <p className="text-xs text-muted-foreground">
-              Include country code, e.g. +1234567890
-            </p>
-          </FormField>
-          <FormField label="Portfolio" htmlFor="profile-portfolio">
-            <Input
-              id="profile-portfolio"
-              value={portfolio}
-              onChange={(e) => setPortfolio(e.target.value)}
-              placeholder="https://yoursite.com"
+            <FormField
+              control={form.control}
+              name="portfolio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Portfolio</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://yoursite.com" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    If you don&apos;t have a portfolio website yet, you can leave
+                    this blank — your profile can still be considered complete.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <p className="text-xs text-muted-foreground">
-              If you don&apos;t have a portfolio website yet, you can leave this
-              blank — your profile can still be considered complete.
-            </p>
-          </FormField>
-        </FormBody>
 
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving…" : "Save Changes"}
-          </Button>
-        </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Saving…" : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

@@ -95,7 +95,7 @@ export interface ApplicationDto {
   portfolio: string | null;
   telegram: string | null;
   whatsapp: string | null;
-  address: string | null;
+  country: string | null;
   videoUrl: string | null;
   wallets: Array<{ chain: string; address: string }> | null;
   reviewerNote: string | null;
@@ -121,7 +121,7 @@ export function toApplicationDto(app: Application): ApplicationDto {
     portfolio: app.portfolio,
     telegram: app.telegram,
     whatsapp: app.whatsapp,
-    address: app.address,
+    country: app.country,
     videoUrl: app.videoUrl,
     wallets: app.wallets as Array<{ chain: string; address: string }> | null,
     reviewerNote: app.reviewerNote,
