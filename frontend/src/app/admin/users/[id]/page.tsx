@@ -5,8 +5,6 @@ import { format } from "date-fns";
 import {
   AlertCircle,
   AlertTriangle,
-  ArrowLeft,
-  BadgeCheck,
   Mail,
   MapPin,
   Monitor,
@@ -135,12 +133,12 @@ export default function UserDetailPage({
     <PageContainer maxWidth="5xl">
       <div className="space-y-6">
         {/* Back */}
-        <Button variant="ghost" size="sm" asChild className="-ml-2">
-          <Link href="/admin/users">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            All users
-          </Link>
-        </Button>
+        <Link
+          href="/admin/users"
+          className="text-sm text-muted-foreground hover:text-foreground inline-block"
+        >
+          ← Back to Users
+        </Link>
 
         {/* Header */}
         <div className="flex items-start gap-4">
@@ -162,17 +160,6 @@ export default function UserDetailPage({
               <Mail className="h-3.5 w-3.5 shrink-0" />
               {user.email}
             </span>
-            <div className="flex flex-wrap gap-2 pt-0.5">
-              <Badge variant="secondary" className="capitalize">
-                {user.role}
-              </Badge>
-              {user.emailVerified && (
-                <Badge variant="outline" className="gap-1">
-                  <BadgeCheck className="h-3.5 w-3.5" />
-                  Verified
-                </Badge>
-              )}
-            </div>
           </div>
         </div>
 
@@ -202,31 +189,33 @@ export default function UserDetailPage({
             {(user.registrationIp ||
               user.registrationCity ||
               user.registrationCountry) && (
-              <div>
-                <SectionTitle>Registration</SectionTitle>
-                <div className="space-y-1.5">
-                  {user.registrationIp && (
-                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Monitor className="h-3.5 w-3.5 shrink-0" />
-                      {user.registrationIp}
-                    </p>
-                  )}
-                  {(user.registrationCity || user.registrationCountry) && (
-                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      {[user.registrationCity, user.registrationCountry]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
+                <div>
+                  <SectionTitle>IP</SectionTitle>
+                  <div className="space-y-1.5">
+                    {user.registrationIp && (
+                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Monitor className="h-3.5 w-3.5 shrink-0" />
+                        {user.registrationIp}
+                      </p>
+                    )}
+                    {(user.registrationCity || user.registrationCountry) && (
+                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        {[user.registrationCity, user.registrationCountry]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div>
               <SectionTitle>Bio</SectionTitle>
               {user.bio ? (
-                <ProseBlock className="whitespace-pre-wrap">{user.bio}</ProseBlock>
+                <ProseBlock className="whitespace-pre-wrap bg-transparent p-0">
+                  {user.bio}
+                </ProseBlock>
               ) : (
                 <p className="text-sm text-muted-foreground">No bio provided.</p>
               )}
@@ -237,25 +226,25 @@ export default function UserDetailPage({
               user.twitter ||
               user.facebook ||
               user.portfolio) && (
-              <div className="space-y-2">
-                <SectionTitle>Social profiles</SectionTitle>
-                {user.linkedin && (
-                  <ExternalLinkField href={user.linkedin} title="LinkedIn" />
-                )}
-                {user.github && (
-                  <ExternalLinkField href={user.github} title="GitHub" />
-                )}
-                {user.twitter && (
-                  <ExternalLinkField href={user.twitter} title="X / Twitter" />
-                )}
-                {user.facebook && (
-                  <ExternalLinkField href={user.facebook} title="Facebook" />
-                )}
-                {user.portfolio && (
-                  <ExternalLinkField href={user.portfolio} title="Portfolio" />
-                )}
-              </div>
-            )}
+                <div className="space-y-2">
+                  <SectionTitle>Social profiles</SectionTitle>
+                  {user.linkedin && (
+                    <ExternalLinkField href={user.linkedin} title="LinkedIn" />
+                  )}
+                  {user.github && (
+                    <ExternalLinkField href={user.github} title="GitHub" />
+                  )}
+                  {user.twitter && (
+                    <ExternalLinkField href={user.twitter} title="X / Twitter" />
+                  )}
+                  {user.facebook && (
+                    <ExternalLinkField href={user.facebook} title="Facebook" />
+                  )}
+                  {user.portfolio && (
+                    <ExternalLinkField href={user.portfolio} title="Portfolio" />
+                  )}
+                </div>
+              )}
 
             {(user.telegram || user.whatsapp) && (
               <div className="space-y-1.5">
@@ -275,7 +264,7 @@ export default function UserDetailPage({
 
             {/* Wallet addresses */}
             <div className="space-y-2">
-              <SectionTitle>Wallet addresses</SectionTitle>
+              <SectionTitle>Wallet address</SectionTitle>
               {walletsEmpty ? (
                 <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-3 space-y-2.5">
                   <p className="flex items-center gap-2 text-sm text-destructive">
@@ -294,12 +283,9 @@ export default function UserDetailPage({
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-1.5">
+                <div className="space-y-3">
                   {paymentStats!.wallets.map((w) => (
-                    <div
-                      key={w.chain}
-                      className="rounded-lg bg-muted/50 px-3 py-2"
-                    >
+                    <div key={w.chain}>
                       <p className="text-xs font-medium capitalize">{w.chain}</p>
                       <p className="text-xs text-muted-foreground font-mono break-all mt-0.5">
                         {w.address}

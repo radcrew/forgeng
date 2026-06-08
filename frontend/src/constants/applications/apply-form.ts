@@ -19,6 +19,22 @@ const LINKEDIN_PROFILE_RE =
 const GITHUB_PROFILE_RE =
   /^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9](?:-?[A-Za-z0-9]){0,38}\/?(\?.*)?$/i;
 
+// An X / Twitter profile: x.com or twitter.com followed by a handle (1–15
+// chars, letters/numbers/underscore). Rejects status links and other paths.
+const TWITTER_PROFILE_RE =
+  /^https?:\/\/(www\.)?(twitter|x)\.com\/[A-Za-z0-9_]{1,15}\/?(\?.*)?$/i;
+
+// A Facebook profile: facebook.com/<username> (3+ chars, letters/numbers/dots)
+// or the numeric profile.php?id=<digits> form. Also allows the fb.com and m.
+// hosts.
+const FACEBOOK_PROFILE_RE =
+  /^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(profile\.php\?id=\d+|[A-Za-z0-9.]{3,})\/?$/i;
+
+// A Telegram handle: a t.me link or an @username. Usernames are 5–32 chars,
+// must start with a letter, and contain only letters, numbers, underscores.
+const TELEGRAM_RE =
+  /^(https?:\/\/t\.me\/[A-Za-z][A-Za-z0-9_]{4,31}\/?|@[A-Za-z][A-Za-z0-9_]{4,31})$/;
+
 export const WALLET_CHAINS = ["evm", "solana", "tron"] as const;
 export type WalletChain = (typeof WALLET_CHAINS)[number];
 
@@ -88,8 +104,18 @@ export const APPLICATION_FORM_SCHEMA = z.object({
       (val) => LINKEDIN_PROFILE_RE.test(val),
       "Enter your LinkedIn profile URL (e.g. https://linkedin.com/in/you)",
     ),
-  twitter: optionalUrl,
-  facebook: optionalUrl,
+  twitter: z
+    .string()
+    .refine(
+      (val) => !val || TWITTER_PROFILE_RE.test(val),
+      "Enter your X/Twitter profile URL (e.g. https://x.com/you)",
+    ),
+  facebook: z
+    .string()
+    .refine(
+      (val) => !val || FACEBOOK_PROFILE_RE.test(val),
+      "Enter your Facebook profile URL (e.g. https://facebook.com/you)",
+    ),
   github: z
     .string()
     .min(1, "GitHub profile is required")
@@ -102,7 +128,7 @@ export const APPLICATION_FORM_SCHEMA = z.object({
   telegram: z
     .string()
     .refine(
-      (val) => !val || /^(https?:\/\/t\.me\/.+|@[\w.]+)$/.test(val),
+      (val) => !val || TELEGRAM_RE.test(val),
       "Enter a t.me URL (https://t.me/you) or a @username",
     ),
   whatsapp: z

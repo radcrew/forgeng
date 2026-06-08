@@ -334,6 +334,31 @@ async function main(): Promise<void> {
   void riley;
   void sam;
 
+  // Seeding rows with explicit `id` values does not advance Postgres'
+  // autoincrement sequences, so the next app `create()` would reuse an
+  // existing primary key and fail with a unique-constraint conflict. Bump
+  // each sequence up to MAX(id) so new rows get fresh ids.
+  const tablesWithSerialId = [
+    'users',
+    'cohorts',
+    'tasks',
+    'submissions',
+    'applications',
+    'feedback',
+    'enrollments',
+    'payments',
+    'notifications',
+  ];
+  for (const table of tablesWithSerialId) {
+    await prisma.$queryRawUnsafe(
+      `SELECT setval(
+         pg_get_serial_sequence('"${table}"', 'id'),
+         GREATEST((SELECT COALESCE(MAX(id), 0) FROM "${table}"), 1),
+         (SELECT COUNT(*) > 0 FROM "${table}")
+       )`,
+    );
+  }
+
   console.log('Seed complete.');
 }
 

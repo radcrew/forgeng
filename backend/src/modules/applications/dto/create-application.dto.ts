@@ -30,6 +30,16 @@ const LINKEDIN_PROFILE_REGEX =
 const GITHUB_PROFILE_REGEX =
   /^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9](?:-?[A-Za-z0-9]){0,38}\/?(\?.*)?$/i;
 
+// X / Twitter profile (handle: 1–15 chars), Facebook profile (username or the
+// numeric profile.php?id= form), and a Telegram t.me link or @username
+// (5–32 chars, starts with a letter). Each rejects non-profile URLs on-host.
+const TWITTER_PROFILE_REGEX =
+  /^https?:\/\/(www\.)?(twitter|x)\.com\/[A-Za-z0-9_]{1,15}\/?(\?.*)?$/i;
+const FACEBOOK_PROFILE_REGEX =
+  /^https?:\/\/(www\.|m\.)?(facebook|fb)\.com\/(profile\.php\?id=\d+|[A-Za-z0-9.]{3,})\/?$/i;
+const TELEGRAM_REGEX =
+  /^(https?:\/\/t\.me\/[A-Za-z][A-Za-z0-9_]{4,31}\/?|@[A-Za-z][A-Za-z0-9_]{4,31})$/;
+
 const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
   evm: EVM_ADDRESS_REGEX,
   solana: SOLANA_ADDRESS_REGEX,
@@ -108,11 +118,17 @@ export class CreateApplicationDto {
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
+  @Matches(TWITTER_PROFILE_REGEX, {
+    message: 'Enter your X/Twitter profile URL (e.g. https://x.com/you)',
+  })
   twitter?: string;
 
   @IsOptional()
   @IsUrl()
   @MaxLength(500)
+  @Matches(FACEBOOK_PROFILE_REGEX, {
+    message: 'Enter your Facebook profile URL (e.g. https://facebook.com/you)',
+  })
   facebook?: string;
 
   @IsUrl()
@@ -143,6 +159,9 @@ export class CreateApplicationDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @Matches(TELEGRAM_REGEX, {
+    message: 'Enter a t.me URL (https://t.me/you) or a @username',
+  })
   telegram?: string;
 
   @IsOptional()

@@ -5,7 +5,7 @@ import type { Task, TaskStatus, TaskType } from "./types";
 export interface TaskInput {
   cohortId: number;
   title: string;
-  description?: string;
+  description?: string | null;
   type: TaskType;
   status?: TaskStatus;
   dueDate?: string;

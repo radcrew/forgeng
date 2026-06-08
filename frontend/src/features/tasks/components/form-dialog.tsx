@@ -11,6 +11,7 @@ import {
 } from "@components/common";
 import { TASK_STATUS_OPTIONS, TASK_TYPE_OPTIONS } from "@constants/tasks";
 import { Input } from "@components/ui/input";
+import { DateInput } from "@components/ui/date-input";
 import {
   Select,
   SelectContent,
@@ -52,17 +53,20 @@ export const FormDialog = ({
     setIsSaving(true);
     try {
       const payload = {
-        cohortId: Number(cohortId),
         title,
-        description: description || undefined,
+        // Send null (not undefined) so clearing the field persists — Prisma
+        // treats undefined as "leave unchanged".
+        description: description || null,
         type,
         status,
         dueDate: dueDate || undefined,
       };
       if (isEdit) {
+        // cohortId is omitted on update: a task can't move cohorts, and the
+        // update DTO rejects unknown fields.
         await updateTask(task.id, payload);
       } else {
-        await createTask(payload);
+        await createTask({ ...payload, cohortId: Number(cohortId) });
       }
       toast.success(isEdit ? "Task updated" : "Task created");
       onSaved?.();
@@ -158,8 +162,7 @@ export const FormDialog = ({
             </Select>
           </FormField>
           <FormField label="Due Date">
-            <Input
-              type="date"
+            <DateInput
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />

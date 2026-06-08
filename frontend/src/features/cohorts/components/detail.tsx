@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, CheckSquare, ClipboardList, Users } from "lucide-react";
+import { CheckSquare, ClipboardList, Users } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
@@ -23,6 +23,7 @@ import { useTasks } from "@features/tasks";
 import type { Submission, SubmissionStatus, TaskStatus, TaskType } from "@types";
 
 import { useCohort, useEnrollments } from "../hooks";
+import { Enrollments } from "./enrollments";
 
 export type CohortDetailProps = { cohortId: number };
 
@@ -37,22 +38,24 @@ type StudentProgress = {
 };
 
 const backLink = (
-  <Button variant="ghost" size="sm" asChild>
-    <Link href="/admin/cohorts" className="flex items-center gap-2">
-      <ArrowLeft className="h-4 w-4" />
-      Back to Cohorts
-    </Link>
-  </Button>
+  <Link
+    href="/admin/cohorts"
+    className="text-sm text-muted-foreground hover:text-foreground inline-block"
+  >
+    ← Back to Cohorts
+  </Link>
 );
 
 export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
   const { data: cohort, isLoading, error } = useCohort(cohortId);
-  const { data: enrollments = [] } = useEnrollments(cohortId);
+  const { data: enrollments = [], refetch: refetchEnrollments } =
+    useEnrollments(cohortId);
   const { data: tasks = [] } = useTasks(cohortId);
   const { data: submissions = [], refetch: refetchSubmissions } =
     useSubmissions({ cohortId });
 
   const [tab, setTab] = useState<"students" | "tasks">("students");
+  const [enrollOpen, setEnrollOpen] = useState(false);
   const [reviewId, setReviewId] = useState<number | null>(null);
   const reviewing = submissions.find((s) => s.id === reviewId);
 
@@ -140,6 +143,11 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
             )}
           </span>
         }
+        actions={
+          <Button variant="outline" onClick={() => setEnrollOpen(true)}>
+            <Users className="h-4 w-4 mr-2" /> Enrollments
+          </Button>
+        }
       />
 
       {cohort.description && (
@@ -224,6 +232,13 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
           onReviewed={refetchSubmissions}
         />
       )}
+
+      <Enrollments
+        cohort={cohort}
+        open={enrollOpen}
+        onOpenChange={setEnrollOpen}
+        onEnrolled={refetchEnrollments}
+      />
     </PageContainer>
   );
 };

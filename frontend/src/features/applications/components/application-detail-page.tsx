@@ -112,7 +112,7 @@ export const ApplicationDetailPage = ({ id }: Props) => {
           href="/admin/applications"
           className="text-sm text-muted-foreground hover:text-foreground mb-4 inline-block"
         >
-          ← Applications
+          ← Back to Applications
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold">
@@ -149,19 +149,25 @@ export const ApplicationDetailPage = ({ id }: Props) => {
           {application.motivation && (
             <div>
               <SectionTitle className="mb-2">Motivation</SectionTitle>
-              <ProseBlock>{application.motivation}</ProseBlock>
+              <ProseBlock className="bg-transparent p-0">
+                {application.motivation}
+              </ProseBlock>
             </div>
           )}
           {application.background && (
             <div>
               <SectionTitle className="mb-2">Background</SectionTitle>
-              <ProseBlock>{application.background}</ProseBlock>
+              <ProseBlock className="bg-transparent p-0">
+                {application.background}
+              </ProseBlock>
             </div>
           )}
           {application.experience && (
             <div>
               <SectionTitle className="mb-2">Experience</SectionTitle>
-              <ProseBlock>{application.experience}</ProseBlock>
+              <ProseBlock className="bg-transparent p-0">
+                {application.experience}
+              </ProseBlock>
             </div>
           )}
           {hasSocialLinks && (
@@ -170,13 +176,13 @@ export const ApplicationDetailPage = ({ id }: Props) => {
               <div className="space-y-2 text-sm">
                 {SOCIAL_LINKS.filter(({ key }) => !!application[key]).map(
                   ({ key, label }) => (
-                    <div key={key} className="flex items-start justify-between gap-2">
-                      <span className="text-muted-foreground shrink-0">{label}</span>
+                    <div key={key} className="flex flex-col gap-0.5">
+                      <span className="text-muted-foreground">{label}</span>
                       <a
                         href={application[key]!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs break-all text-right hover:underline"
+                        className="text-xs break-all hover:underline"
                       >
                         {application[key]}
                       </a>
@@ -209,9 +215,11 @@ export const ApplicationDetailPage = ({ id }: Props) => {
                   </div>
                 )}
                 {application.address && (
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-muted-foreground shrink-0">Address</span>
-                    <span className="text-xs text-right whitespace-pre-line">{application.address}</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-muted-foreground">Address</span>
+                    <span className="text-xs whitespace-pre-line break-words">
+                      {application.address}
+                    </span>
                   </div>
                 )}
               </div>

@@ -91,14 +91,6 @@ const StatusInner = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {data.reviewerNote && (
-            <div className="rounded-lg border bg-muted/40 p-4">
-              <p className="text-sm font-medium">A note from the team</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {data.reviewerNote}
-              </p>
-            </div>
-          )}
           <p className="text-xs text-muted-foreground">
             Submitted on {submitted}
           </p>

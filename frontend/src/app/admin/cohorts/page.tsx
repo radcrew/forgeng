@@ -6,19 +6,13 @@ import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import {
-  Card,
-  Enrollments,
-  FormDialog,
-  useCohorts,
-} from "@features/cohorts";
+import { Row, FormDialog, useCohorts } from "@features/cohorts";
 import type { Cohort } from "@types";
 
 const Page = () => {
   const { data: cohorts = [], isLoading, refetch } = useCohorts();
   const [formOpen, setFormOpen] = useState(false);
   const [editCohort, setEditCohort] = useState<Cohort | undefined>(undefined);
-  const [enrollCohort, setEnrollCohort] = useState<Cohort | undefined>(undefined);
 
   return (
     <PageContainer maxWidth="5xl">
@@ -42,12 +36,11 @@ const Page = () => {
       ) : cohorts.length === 0 ? (
         <EmptyState message="No cohorts yet. Create your first cohort to get started." />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-3">
           {cohorts.map((cohort) => (
-            <Card
+            <Row
               key={cohort.id}
               cohort={cohort}
-              onEnrollments={setEnrollCohort}
               onEdit={(c) => {
                 setEditCohort(c);
                 setFormOpen(true);
@@ -68,17 +61,6 @@ const Page = () => {
         }}
         onSaved={refetch}
       />
-
-      {enrollCohort && (
-        <Enrollments
-          cohort={enrollCohort}
-          open={!!enrollCohort}
-          onOpenChange={(open) => {
-            if (!open) setEnrollCohort(undefined);
-          }}
-          onEnrolled={refetch}
-        />
-      )}
     </PageContainer>
   );
 };
