@@ -1,6 +1,6 @@
 import 'tsconfig-paths/register';
 
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -54,9 +54,11 @@ async function bootstrap(): Promise<void> {
   setupSwagger(app);
 
   await app.listen(port);
-  console.log(`🚀 forgeng API running on http://localhost:${port}/api`);
+
+  const logger = new Logger('Bootstrap');
+  logger.log(`🚀 forgeng API running on http://localhost:${port}/api`);
   if (config.getOrThrow('nodeEnv', { infer: true }) !== 'production') {
-    console.log(`📖 OpenAPI docs at http://localhost:${port}/api/docs`);
+    logger.log(`📖 OpenAPI docs at http://localhost:${port}/api/docs`);
   }
 }
 void bootstrap();
