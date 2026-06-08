@@ -78,7 +78,7 @@ export const ProfileSheet = ({ user, open, onClose }: ProfileSheetProps) => {
 
       {(user.registrationIp || user.registrationCity || user.registrationCountry) && (
         <div>
-          <SectionTitle>Registration</SectionTitle>
+          <SectionTitle>IP</SectionTitle>
           <div className="space-y-1.5">
             {user.registrationIp && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">

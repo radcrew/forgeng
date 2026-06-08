@@ -189,26 +189,26 @@ export default function UserDetailPage({
             {(user.registrationIp ||
               user.registrationCity ||
               user.registrationCountry) && (
-              <div>
-                <SectionTitle>Registration</SectionTitle>
-                <div className="space-y-1.5">
-                  {user.registrationIp && (
-                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Monitor className="h-3.5 w-3.5 shrink-0" />
-                      {user.registrationIp}
-                    </p>
-                  )}
-                  {(user.registrationCity || user.registrationCountry) && (
-                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      {[user.registrationCity, user.registrationCountry]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </p>
-                  )}
+                <div>
+                  <SectionTitle>IP</SectionTitle>
+                  <div className="space-y-1.5">
+                    {user.registrationIp && (
+                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Monitor className="h-3.5 w-3.5 shrink-0" />
+                        {user.registrationIp}
+                      </p>
+                    )}
+                    {(user.registrationCity || user.registrationCountry) && (
+                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        {[user.registrationCity, user.registrationCountry]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div>
               <SectionTitle>Bio</SectionTitle>
@@ -226,25 +226,25 @@ export default function UserDetailPage({
               user.twitter ||
               user.facebook ||
               user.portfolio) && (
-              <div className="space-y-2">
-                <SectionTitle>Social profiles</SectionTitle>
-                {user.linkedin && (
-                  <ExternalLinkField href={user.linkedin} title="LinkedIn" />
-                )}
-                {user.github && (
-                  <ExternalLinkField href={user.github} title="GitHub" />
-                )}
-                {user.twitter && (
-                  <ExternalLinkField href={user.twitter} title="X / Twitter" />
-                )}
-                {user.facebook && (
-                  <ExternalLinkField href={user.facebook} title="Facebook" />
-                )}
-                {user.portfolio && (
-                  <ExternalLinkField href={user.portfolio} title="Portfolio" />
-                )}
-              </div>
-            )}
+                <div className="space-y-2">
+                  <SectionTitle>Social profiles</SectionTitle>
+                  {user.linkedin && (
+                    <ExternalLinkField href={user.linkedin} title="LinkedIn" />
+                  )}
+                  {user.github && (
+                    <ExternalLinkField href={user.github} title="GitHub" />
+                  )}
+                  {user.twitter && (
+                    <ExternalLinkField href={user.twitter} title="X / Twitter" />
+                  )}
+                  {user.facebook && (
+                    <ExternalLinkField href={user.facebook} title="Facebook" />
+                  )}
+                  {user.portfolio && (
+                    <ExternalLinkField href={user.portfolio} title="Portfolio" />
+                  )}
+                </div>
+              )}
 
             {(user.telegram || user.whatsapp) && (
               <div className="space-y-1.5">
