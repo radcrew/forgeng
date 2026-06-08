@@ -74,7 +74,7 @@ export const Wizard = ({ children }: WizardProps) => {
       portfolio: "",
       telegram: "",
       whatsapp: "",
-      address: "",
+      country: "",
       videoUrl: "",
       wallet: { chain: "evm" as const, address: "" },
     },
@@ -147,7 +147,7 @@ export const Wizard = ({ children }: WizardProps) => {
         portfolio: data.portfolio || undefined,
         telegram: data.telegram || undefined,
         whatsapp: data.whatsapp || undefined,
-        address: data.address || undefined,
+        country: data.country,
         videoUrl: data.videoUrl,
         // Send the single withdrawal address as a one-element array (or none).
         wallets: data.wallet.address.trim()

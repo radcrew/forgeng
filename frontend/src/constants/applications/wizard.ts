@@ -76,8 +76,8 @@ export const APPLICATION_WIZARD_COPY = {
       telegramPlaceholder: "@username or https://t.me/you",
       whatsappLabel: "WhatsApp (Optional)",
       whatsappPlaceholder: "+1234567890",
-      addressLabel: "Address",
-      addressPlaceholder: "Street, City, Country",
+      countryLabel: "Country",
+      countryPlaceholder: "Select your country",
     },
   },
   actions: {

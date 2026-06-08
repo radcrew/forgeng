@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { APPLICATION_COUNTRY_CODES } from "@constants/shared/countries";
 import {
   FACEBOOK_PROFILE_RE,
   GITHUB_PROFILE_RE,
@@ -88,7 +89,12 @@ export const APPLICATION_FORM_SCHEMA = z.object({
   portfolio: optionalUrl,
   telegram: optionalMatching(TELEGRAM_RE, SOCIAL_PROFILE_MESSAGES.telegram),
   whatsapp: optionalMatching(WHATSAPP_RE, SOCIAL_PROFILE_MESSAGES.whatsapp),
-  address: z.string().min(1, "Address is required").max(500, "Address must be under 500 characters"),
+  country: z
+    .string()
+    .refine(
+      (val) => (APPLICATION_COUNTRY_CODES as readonly string[]).includes(val),
+      "Select your country",
+    ),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
   wallet: walletEntry,
 });
@@ -134,7 +140,7 @@ export const APPLICATION_FIELDS_BY_SLUG: Record<
     "portfolio",
     "telegram",
     "whatsapp",
-    "address",
+    "country",
   ],
   video: ["videoUrl"],
   wallets: [],

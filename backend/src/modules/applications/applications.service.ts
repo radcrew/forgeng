@@ -95,7 +95,7 @@ export class ApplicationsService {
         portfolio: dto.portfolio,
         telegram: dto.telegram,
         whatsapp: dto.whatsapp,
-        address: dto.address,
+        country: dto.country,
         videoUrl: dto.videoUrl,
         wallets:
           dto.wallets?.map((w) => ({ chain: w.chain, address: w.address })) ??

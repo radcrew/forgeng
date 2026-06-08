@@ -2,6 +2,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   IsUrl,
@@ -14,6 +15,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+import { APPLICATION_COUNTRY_CODES } from '@common/constants/countries';
 import {
   FACEBOOK_PROFILE_REGEX,
   GITHUB_PROFILE_REGEX,
@@ -159,8 +161,6 @@ export class CreateApplicationDto {
   })
   whatsapp?: string;
 
-  @IsString()
-  @MinLength(1)
-  @MaxLength(500)
-  address!: string;
+  @IsIn(APPLICATION_COUNTRY_CODES, { message: 'Select your country' })
+  country!: string;
 }
