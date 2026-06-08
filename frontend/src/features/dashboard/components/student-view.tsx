@@ -1,20 +1,18 @@
 "use client";
 
 import { format } from "date-fns";
-import { AlertCircle, CheckCircle2, Clock, Code2 } from "lucide-react";
+import { Clock } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
-import { EmptyState } from "@components/shared";
 import type { StudentDashboard } from "../types";
-import { StatusBadge } from "@features/submissions";
 import { StudentAnalytics } from "./student-analytics";
 import { PaymentProgress } from "./payment-progress";
 
 export type StudentViewProps = { dashboard: StudentDashboard };
 
 export const StudentView = ({ dashboard }: StudentViewProps) => {
-  const { taskStats, recentSubmissions, nextDeadline, analytics, monthlyPayment } = dashboard;
+  const { taskStats, nextDeadline, analytics, monthlyPayment } = dashboard;
   const progressPercent =
     taskStats.total > 0
       ? Math.round((taskStats.approved / taskStats.total) * 100)
@@ -86,44 +84,6 @@ export const StudentView = ({ dashboard }: StudentViewProps) => {
       <PaymentProgress monthlyPayment={monthlyPayment} />
 
       <StudentAnalytics analytics={analytics} />
-
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Recent Submissions</h2>
-        {recentSubmissions.length === 0 ? (
-          <EmptyState>
-            <Code2 className="h-10 w-10 text-muted-foreground mb-4" />
-            <p>No submissions yet.</p>
-          </EmptyState>
-        ) : (
-          <div className="space-y-4">
-            {recentSubmissions.map((sub) => (
-              <Card key={sub.id}>
-                <div className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-4">
-                    {sub.status === "approved" ? (
-                      <CheckCircle2 className="h-5 w-5 text-primary" />
-                    ) : sub.status === "needs_work" ? (
-                      <AlertCircle className="h-5 w-5 text-destructive" />
-                    ) : (
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                    )}
-                    <div>
-                      <p className="font-medium">
-                        {sub.task?.title ?? "Unknown Task"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Submitted on{" "}
-                        {format(new Date(sub.createdAt), "MMM d, yyyy")}
-                      </p>
-                    </div>
-                  </div>
-                  <StatusBadge status={sub.status} showIcon={false} />
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
     </>
   );
 };
