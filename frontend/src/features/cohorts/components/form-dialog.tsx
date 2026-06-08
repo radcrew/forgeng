@@ -11,6 +11,7 @@ import {
 } from "@components/common";
 import { COHORT_STATUS_OPTIONS } from "@constants/cohorts";
 import { Input } from "@components/ui/input";
+import { DateInput } from "@components/ui/date-input";
 import {
   Select,
   SelectContent,
@@ -137,15 +138,13 @@ export const FormDialog = ({
         </FormGrid>
         <FormGrid>
           <FormField label="Start Date">
-            <Input
-              type="date"
+            <DateInput
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
             />
           </FormField>
           <FormField label="End Date">
-            <Input
-              type="date"
+            <DateInput
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />

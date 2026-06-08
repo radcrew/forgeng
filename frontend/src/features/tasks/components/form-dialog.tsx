@@ -11,6 +11,7 @@ import {
 } from "@components/common";
 import { TASK_STATUS_OPTIONS, TASK_TYPE_OPTIONS } from "@constants/tasks";
 import { Input } from "@components/ui/input";
+import { DateInput } from "@components/ui/date-input";
 import {
   Select,
   SelectContent,
@@ -161,8 +162,7 @@ export const FormDialog = ({
             </Select>
           </FormField>
           <FormField label="Due Date">
-            <Input
-              type="date"
+            <DateInput
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
