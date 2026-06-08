@@ -13,9 +13,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import type { AppConfiguration } from '@config';
+import { AUTH_THROTTLE } from './auth.constants';
 import { Public } from '@core/auth/public.decorator';
 import type { AuthUser } from '@core/auth/auth.types';
 import { CurrentUser } from '@core/auth/current-user.decorator';
@@ -49,6 +51,7 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(
@@ -59,6 +62,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
@@ -105,6 +109,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('resend-verification')
   @HttpCode(HttpStatus.ACCEPTED)
   async resendVerification(@Body() dto: ResendVerificationDto): Promise<void> {
@@ -112,6 +117,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('forgot-password')
   @HttpCode(HttpStatus.ACCEPTED)
   async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
@@ -119,6 +125,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('reset-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
