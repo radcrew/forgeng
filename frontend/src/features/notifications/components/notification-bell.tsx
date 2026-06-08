@@ -243,7 +243,7 @@ function NotificationRow({
             <span className="flex items-center gap-2">
               <span
                 className={cn(
-                  "truncate text-sm",
+                  "min-w-0 truncate text-sm",
                   unread ? "font-semibold" : "font-medium",
                 )}
               >
@@ -261,13 +261,13 @@ function NotificationRow({
                 {notification.body}
               </span>
             )}
-            <span className="mt-1 block text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(notification.createdAt), {
-                addSuffix: true,
-              })}
-            </span>
           </span>
         </button>
+        <span className="mt-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+          {formatDistanceToNow(new Date(notification.createdAt), {
+            addSuffix: true,
+          })}
+        </span>
         <button
           type="button"
           onClick={onDelete}
