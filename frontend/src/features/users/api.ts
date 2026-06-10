@@ -1,7 +1,7 @@
 import { apiClient } from "@lib/api-client";
 
 import type { Cohort } from "@types";
-import type { UserProfile, UserRole } from "./types";
+import type { AdminUserDetail, UserRole } from "./types";
 
 export interface UserEnrollment {
   id: number;
@@ -10,7 +10,7 @@ export interface UserEnrollment {
 }
 
 export interface PaginatedUsers {
-  items: UserProfile[];
+  items: AdminUserDetail[];
   total: number;
   page: number;
   pageSize: number;
@@ -62,8 +62,8 @@ export interface UserPaymentStats {
   monthlyStats: MonthlyPaymentStat[];
 }
 
-export const getUser = async (id: number): Promise<UserProfile> =>
-  apiClient.get<UserProfile>(`/users/${id}`);
+export const getUser = async (id: number): Promise<AdminUserDetail> =>
+  apiClient.get<AdminUserDetail>(`/users/${id}`);
 
 export const getUserPaymentStats = async (
   id: number,
@@ -84,4 +84,5 @@ export const recordPayment = async (
 export const updateUserRole = async (
   id: number,
   role: UserRole,
-): Promise<UserProfile> => apiClient.patch<UserProfile>(`/users/${id}/role`, { role });
+): Promise<AdminUserDetail> =>
+  apiClient.patch<AdminUserDetail>(`/users/${id}/role`, { role });

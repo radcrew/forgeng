@@ -1,4 +1,9 @@
-export type { UserRole, UserProfile, UserRoleFilter } from "./user";
+export type {
+  AdminUserDetail,
+  UserRole,
+  UserProfile,
+  UserRoleFilter,
+} from "./user";
 export type {
   Application,
   ApplicationStatus,

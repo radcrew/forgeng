@@ -20,6 +20,13 @@ export interface UserProfile {
   portfolio: string | null;
   telegram: string | null;
   whatsapp: string | null;
+}
+
+/**
+ * Admin-only view of a user. Registration forensics stay out of UserProfile
+ * so they are never persisted to the localStorage session.
+ */
+export interface AdminUserDetail extends UserProfile {
   registrationIp: string | null;
   registrationCountry: string | null;
   registrationCity: string | null;

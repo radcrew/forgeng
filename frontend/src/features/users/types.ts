@@ -1,1 +1,1 @@
-export type { UserProfile, UserRole } from "@types";
+export type { AdminUserDetail, UserProfile, UserRole } from "@types";

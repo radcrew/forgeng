@@ -13,12 +13,12 @@ import {
 import { Badge } from "@components/ui/badge";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { resolveAssetUrl } from "@lib/config";
-import type { UserProfile } from "@types";
+import type { AdminUserDetail } from "@types";
 
 import { useUserEnrollments } from "../hooks";
 
 export type ProfileSheetProps = {
-  user: UserProfile;
+  user: AdminUserDetail;
   open: boolean;
   onClose: () => void;
 };
