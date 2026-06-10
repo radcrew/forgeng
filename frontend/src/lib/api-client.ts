@@ -1,3 +1,4 @@
+import axios, { type AxiosError } from "axios";
 import { API_BASE } from "@lib/config";
 import {
   clearAuth,
@@ -20,6 +21,18 @@ interface RefreshSuccess {
   accessToken: string;
 }
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    /** Skip the auto-refresh dance — used by the refresh / login calls themselves. */
+    skipAuthRetry?: boolean;
+  }
+}
+
+const http = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
+
 /**
  * One in-flight refresh promise shared by every request that hits a 401.
  * Without this guard a burst of parallel calls would each try to refresh,
@@ -29,15 +42,14 @@ let refreshPromise: Promise<string | null> | null = null;
 
 const performRefresh = async (): Promise<string | null> => {
   try {
-    const response = await fetch(`${API_BASE}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-    if (!response.ok) return null;
-    const json = (await response.json()) as Partial<RefreshSuccess>;
-    if (typeof json.accessToken !== "string") return null;
-    writeAccessToken(json.accessToken);
-    return json.accessToken;
+    const { data } = await axios.post<Partial<RefreshSuccess>>(
+      `${API_BASE}/auth/refresh`,
+      undefined,
+      { withCredentials: true },
+    );
+    if (typeof data.accessToken !== "string") return null;
+    writeAccessToken(data.accessToken);
+    return data.accessToken;
   } catch {
     return null;
   }
@@ -52,46 +64,6 @@ const refreshAccessToken = async (): Promise<string | null> => {
   return refreshPromise;
 };
 
-interface RequestOptions {
-  /** Skip the auto-refresh dance — used by the refresh / login calls themselves. */
-  skipAuthRetry?: boolean;
-}
-
-const buildHeaders = (init: RequestInit | undefined): Headers => {
-  const headers = new Headers(init?.headers);
-  // Let the browser set the multipart boundary for FormData bodies.
-  if (
-    !headers.has("Content-Type") &&
-    init?.body &&
-    !(init.body instanceof FormData)
-  ) {
-    headers.set("Content-Type", "application/json");
-  }
-  const token = readAccessToken();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-  return headers;
-};
-
-const send = async (path: string, init?: RequestInit): Promise<Response> =>
-  fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: buildHeaders(init),
-    credentials: "include",
-  });
-
-const parseBody = async (response: Response): Promise<unknown> => {
-  if (response.status === 204) return undefined;
-  const text = await response.text();
-  if (!text) return undefined;
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
-};
-
 const errorMessage = (body: unknown, fallback: string): string => {
   if (typeof body === "string" && body.length > 0) return body;
   if (body && typeof body === "object" && "message" in body) {
@@ -104,43 +76,56 @@ const errorMessage = (body: unknown, fallback: string): string => {
   return fallback;
 };
 
-const request = async <T>(
-  path: string,
-  init?: RequestInit,
-  options: RequestOptions = {},
-): Promise<T> => {
-  let response = await send(path, init);
+http.interceptors.request.use((config) => {
+  const token = readAccessToken();
+  if (token) {
+    config.headers.set("Authorization", `Bearer ${token}`);
+  }
+  return config;
+});
 
-  if (response.status === 401 && !options.skipAuthRetry) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      response = await send(path, init);
-    } else {
+http.interceptors.response.use(
+  (response) => {
+    // Match fetch's empty-body behaviour (204s parse to undefined, not "").
+    if (response.data === "") {
+      response.data = undefined;
+    }
+    return response;
+  },
+  async (error: AxiosError) => {
+    const { config, response } = error;
+    if (!response) throw error;
+
+    if (response.status === 401 && config && !config.skipAuthRetry) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        return http.request(config);
+      }
       clearAuth();
     }
-  }
 
-  if (!response.ok) {
-    const body = await parseBody(response);
     throw new ApiError(
       response.status,
-      errorMessage(body, response.statusText || "Request failed"),
-      body,
+      errorMessage(response.data, response.statusText || "Request failed"),
+      response.data,
     );
-  }
+  },
+);
 
-  return (await parseBody(response)) as T;
-};
+interface RequestOptions {
+  /** Skip the auto-refresh dance — used by the refresh / login calls themselves. */
+  skipAuthRetry?: boolean;
+}
 
 export const apiClient = {
   get: <T>(path: string, options?: RequestOptions) =>
-    request<T>(path, undefined, options),
+    http.get<T>(path, options).then((res) => res.data),
   post: <T>(path: string, body: unknown, options?: RequestOptions) =>
-    request<T>(path, { method: "POST", body: JSON.stringify(body) }, options),
+    http.post<T>(path, body, options).then((res) => res.data),
   postForm: <T>(path: string, body: FormData, options?: RequestOptions) =>
-    request<T>(path, { method: "POST", body }, options),
+    http.post<T>(path, body, options).then((res) => res.data),
   patch: <T>(path: string, body: unknown, options?: RequestOptions) =>
-    request<T>(path, { method: "PATCH", body: JSON.stringify(body) }, options),
+    http.patch<T>(path, body, options).then((res) => res.data),
   delete: <T>(path: string, options?: RequestOptions) =>
-    request<T>(path, { method: "DELETE" }, options),
+    http.delete<T>(path, options).then((res) => res.data),
 };
