@@ -1,7 +1,6 @@
 import type { UserProfile } from "@types";
 
 const SESSION_KEY = "forgeng.session";
-const ACCESS_TOKEN_KEY = "forgeng.accessToken";
 
 /** Cached snapshot so useSyncExternalStore getSnapshot stays referentially stable. */
 let cachedRaw: string | null | undefined;
@@ -55,27 +54,7 @@ export const subscribeSession = (callback: () => void): (() => void) => {
   };
 };
 
-/**
- * Access token storage. The token also lives in localStorage so a hard reload
- * doesn't bounce the user back to /sign-in before the refresh-cookie round
- * trip — but it is short-lived (15m by default) and rotated via /auth/refresh.
- */
-export const readAccessToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(ACCESS_TOKEN_KEY);
-};
-
-export const writeAccessToken = (token: string | null): void => {
-  if (typeof window === "undefined") return;
-  if (token === null) {
-    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
-  } else {
-    window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
-  }
-};
-
 /** Clear everything — used by signOut and on hard auth failures. */
 export const clearAuth = (): void => {
-  writeAccessToken(null);
   writeSession(null);
 };

@@ -66,6 +66,10 @@ class EnvironmentVariables {
   REFRESH_COOKIE_DOMAIN?: string;
 
   @IsOptional()
+  @IsString()
+  ACCESS_COOKIE_NAME?: string;
+
+  @IsOptional()
   @IsInt()
   EMAIL_VERIFY_TTL_MINUTES?: number;
 

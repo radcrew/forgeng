@@ -16,7 +16,6 @@ import {
 import { Skeleton } from "@components/ui/skeleton";
 import { useCurrentUser } from "@contexts";
 import { getMyApplication, StatusBadge } from "@features/applications";
-import { RoleGuard } from "@lib/auth";
 import { useAsyncResource } from "@hooks/use-async-resource";
 import type { ApplicationStatus } from "@types";
 
@@ -109,10 +108,6 @@ const StatusInner = () => {
   );
 };
 
-const Page = () => (
-  <RoleGuard allowedRoles={["applicant"]}>
-    <StatusInner />
-  </RoleGuard>
-);
+const Page = () => <StatusInner />;
 
 export default Page;

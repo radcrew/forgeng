@@ -14,11 +14,7 @@ import {
   type OAuthProvider,
 } from "@features/auth";
 import { ApiError } from "@lib/api-client";
-import {
-  readAccessToken,
-  readSession,
-  subscribeSession,
-} from "@lib/session";
+import { readSession, subscribeSession } from "@lib/session";
 import type { UserProfile } from "@types";
 
 const getUserSnapshot = (): UserProfile | null => readSession();
@@ -77,16 +73,11 @@ export const CurrentUserProvider = ({
     window.location.assign(oauthStartUrl(provider));
   }, []);
 
-  // First-mount rehydrate: if we have an access token in localStorage, confirm
-  // it's still valid by calling /auth/me. The api-client transparently rotates
-  // via /auth/refresh on a 401, so a successful response also means the
-  // refresh cookie is still good.
+  // First-mount rehydrate: the access token lives in an httpOnly cookie, so
+  // confirm it's still valid by calling /auth/me. The api-client transparently
+  // rotates via /auth/refresh on a 401, so a successful response also means
+  // the refresh cookie is still good.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const hasToken = readAccessToken() !== null;
-    const hasUser = readSession() !== null;
-    if (!hasToken && !hasUser) return;
-
     let cancelled = false;
     void (async () => {
       try {

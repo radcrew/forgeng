@@ -17,6 +17,7 @@ export interface AppConfiguration {
     refreshTtl: string;
     refreshCookieName: string;
     refreshCookieDomain: string | undefined;
+    accessCookieName: string;
     verifyTokenTtlMinutes: number;
     passwordResetTtlMinutes: number;
     oauthSuccessRedirect: string;

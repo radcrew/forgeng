@@ -2,14 +2,9 @@ import axios, {
   type AxiosError,
   type AxiosInstance,
   type AxiosResponse,
-  type InternalAxiosRequestConfig,
 } from "axios";
 import { API_BASE } from "@lib/config";
-import {
-  clearAuth,
-  readAccessToken,
-  writeAccessToken,
-} from "@lib/session";
+import { clearAuth } from "@lib/session";
 
 export class ApiError extends Error {
   constructor(
@@ -20,10 +15,6 @@ export class ApiError extends Error {
     super(message);
     this.name = "ApiError";
   }
-}
-
-interface RefreshSuccess {
-  accessToken: string;
 }
 
 declare module "axios" {
@@ -60,14 +51,13 @@ class ApiClient {
    * Without this guard a burst of parallel calls would each try to refresh,
    * and reuse-detection on the backend would revoke the whole token family.
    */
-  private refreshPromise: Promise<string | null> | null = null;
+  private refreshPromise: Promise<boolean> | null = null;
 
   private constructor() {
     this.http = axios.create({
       baseURL: API_BASE,
       withCredentials: true,
     });
-    this.http.interceptors.request.use(this.attachAuthHeader);
     this.http.interceptors.response.use(this.normalizeEmptyBody, this.handleError);
   }
 
@@ -77,14 +67,6 @@ class ApiClient {
     }
     return ApiClient.instance;
   }
-
-  private attachAuthHeader = (config: InternalAxiosRequestConfig) => {
-    const token = readAccessToken();
-    if (token) {
-      config.headers.set("Authorization", `Bearer ${token}`);
-    }
-    return config;
-  };
 
   private normalizeEmptyBody = (response: AxiosResponse) => {
     // Match fetch's empty-body behaviour (204s parse to undefined, not "").
@@ -113,22 +95,18 @@ class ApiClient {
     );
   };
 
-  private async performRefresh(): Promise<string | null> {
+  private async performRefresh(): Promise<boolean> {
     try {
-      const { data } = await axios.post<Partial<RefreshSuccess>>(
-        `${API_BASE}/auth/refresh`,
-        undefined,
-        { withCredentials: true },
-      );
-      if (typeof data.accessToken !== "string") return null;
-      writeAccessToken(data.accessToken);
-      return data.accessToken;
+      await axios.post(`${API_BASE}/auth/refresh`, undefined, {
+        withCredentials: true,
+      });
+      return true;
     } catch {
-      return null;
+      return false;
     }
   }
 
-  private refreshAccessToken(): Promise<string | null> {
+  private refreshAccessToken(): Promise<boolean> {
     if (!this.refreshPromise) {
       this.refreshPromise = this.performRefresh().finally(() => {
         this.refreshPromise = null;

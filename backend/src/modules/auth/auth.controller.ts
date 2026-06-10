@@ -37,11 +37,6 @@ interface OAuthRequest extends Request {
   user: OAuthProfileDto;
 }
 
-interface ClientTokens {
-  accessToken: string;
-  expiresIn: number;
-}
-
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -69,7 +64,7 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ user: UserDto } & ClientTokens> {
+  ): Promise<{ user: UserDto }> {
     const result = await this.service.login(dto, ctxFromRequest(req));
     return this.respondWithSession(res, result);
   }
@@ -80,11 +75,17 @@ export class AuthController {
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ user: UserDto } & ClientTokens> {
+  ): Promise<{ user: UserDto }> {
     const token = this.readRefreshCookie(req);
     if (!token) throw new BadRequestException('Missing refresh token.');
-    const result = await this.service.refresh(token, ctxFromRequest(req));
-    return this.respondWithSession(res, result);
+    try {
+      const result = await this.service.refresh(token, ctxFromRequest(req));
+      return this.respondWithSession(res, result);
+    } catch (err) {
+      this.clearRefreshCookie(res);
+      this.clearAccessCookie(res);
+      throw err;
+    }
   }
 
   @Public()
@@ -97,6 +98,7 @@ export class AuthController {
     const token = this.readRefreshCookie(req);
     await this.service.logout(token);
     this.clearRefreshCookie(res);
+    this.clearAccessCookie(res);
   }
 
   @Public()
@@ -182,15 +184,15 @@ export class AuthController {
         result.tokens.refreshToken,
         result.tokens.refreshExpiresAt,
       );
-      const target = new URL(
-        this.config.getOrThrow('auth.oauthSuccessRedirect', { infer: true }),
+      this.setAccessCookie(
+        res,
+        result.tokens.accessToken,
+        result.tokens.accessExpiresIn,
       );
-      target.searchParams.set('accessToken', result.tokens.accessToken);
-      target.searchParams.set(
-        'expiresIn',
-        String(result.tokens.accessExpiresIn),
-      );
-      res.redirect(target.toString());
+      const target = this.config.getOrThrow('auth.oauthSuccessRedirect', {
+        infer: true,
+      });
+      res.redirect(target);
     } catch {
       const failureUrl = this.config.getOrThrow('auth.oauthFailureRedirect', {
         infer: true,
@@ -202,17 +204,18 @@ export class AuthController {
   private respondWithSession(
     res: Response,
     result: AuthResult,
-  ): { user: UserDto } & ClientTokens {
+  ): { user: UserDto } {
     this.setRefreshCookie(
       res,
       result.tokens.refreshToken,
       result.tokens.refreshExpiresAt,
     );
-    return {
-      user: result.user,
-      accessToken: result.tokens.accessToken,
-      expiresIn: result.tokens.accessExpiresIn,
-    };
+    this.setAccessCookie(
+      res,
+      result.tokens.accessToken,
+      result.tokens.accessExpiresIn,
+    );
+    return { user: result.user };
   }
 
   private setRefreshCookie(
@@ -231,7 +234,9 @@ export class AuthController {
       secure: isProd,
       sameSite: 'lax',
       domain: domain ?? undefined,
-      path: '/api/auth',
+      // Path "/" (not "/api/auth") so the frontend's proxy.ts receives this
+      // cookie on page navigations and can forward it to /auth/refresh.
+      path: '/',
       expires: expiresAt,
     });
   }
@@ -240,7 +245,35 @@ export class AuthController {
     const cookieName = this.config.getOrThrow('auth.refreshCookieName', {
       infer: true,
     });
-    res.clearCookie(cookieName, { path: '/api/auth' });
+    res.clearCookie(cookieName, { path: '/' });
+  }
+
+  private setAccessCookie(
+    res: Response,
+    token: string,
+    expiresInSeconds: number,
+  ): void {
+    const cookieName = this.config.getOrThrow('auth.accessCookieName', {
+      infer: true,
+    });
+    const domain = this.config.get('auth.refreshCookieDomain', { infer: true });
+    const isProd =
+      this.config.getOrThrow('nodeEnv', { infer: true }) === 'production';
+    res.cookie(cookieName, token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      domain: domain ?? undefined,
+      path: '/',
+      expires: new Date(Date.now() + expiresInSeconds * 1000),
+    });
+  }
+
+  private clearAccessCookie(res: Response): void {
+    const cookieName = this.config.getOrThrow('auth.accessCookieName', {
+      infer: true,
+    });
+    res.clearCookie(cookieName, { path: '/' });
   }
 
   private readRefreshCookie(req: Request): string | undefined {

@@ -12,6 +12,7 @@ const DEFAULT_FRONTEND = 'http://localhost:3000';
 const DEFAULT_ACCESS_TTL = '15m';
 const DEFAULT_REFRESH_TTL = '7d';
 const DEFAULT_REFRESH_COOKIE = 'forgeng_refresh';
+const DEFAULT_ACCESS_COOKIE = 'forgeng_access';
 const DEFAULT_VERIFY_TTL_MINUTES = 60 * 24; // 24h
 const DEFAULT_PASSWORD_RESET_TTL_MINUTES = 60; // 1h — reset links are short-lived
 const DEFAULT_EMAIL_FROM = 'no-reply@forgeng.local';
@@ -93,6 +94,7 @@ export default (): AppConfiguration => {
       refreshCookieName:
         process.env.REFRESH_COOKIE_NAME ?? DEFAULT_REFRESH_COOKIE,
       refreshCookieDomain: process.env.REFRESH_COOKIE_DOMAIN,
+      accessCookieName: process.env.ACCESS_COOKIE_NAME ?? DEFAULT_ACCESS_COOKIE,
       verifyTokenTtlMinutes: parsePort(
         process.env.EMAIL_VERIFY_TTL_MINUTES,
         DEFAULT_VERIFY_TTL_MINUTES,
