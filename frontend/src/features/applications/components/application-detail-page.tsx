@@ -22,6 +22,7 @@ import { APPLICATION_STATUS_OPTIONS } from "@constants/applications";
 import { countryLabel } from "@constants/shared/countries";
 import { useAsyncResource } from "@hooks/use-async-resource";
 import { resolveAssetUrl } from "@lib/config";
+import { isSafeHref } from "@utils";
 import type { ApplicationStatus } from "@types";
 import { getApplication } from "../api";
 import { useUpdateApplicationStatus } from "../hooks";
@@ -179,14 +180,20 @@ export const ApplicationDetailPage = ({ id }: Props) => {
                   ({ key, label }) => (
                     <div key={key} className="flex flex-col gap-0.5">
                       <span className="text-muted-foreground">{label}</span>
-                      <a
-                        href={application[key]!}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs break-all hover:underline"
-                      >
-                        {application[key]}
-                      </a>
+                      {isSafeHref(application[key]!) ? (
+                        <a
+                          href={application[key]!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs break-all hover:underline"
+                        >
+                          {application[key]}
+                        </a>
+                      ) : (
+                        <span className="text-xs break-all">
+                          {application[key]}
+                        </span>
+                      )}
                     </div>
                   ),
                 )}

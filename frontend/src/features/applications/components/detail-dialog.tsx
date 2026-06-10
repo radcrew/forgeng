@@ -23,6 +23,7 @@ import {
 import { Textarea } from "@components/ui/textarea";
 import { APPLICATION_STATUS_OPTIONS } from "@constants/applications";
 import { useCohorts } from "@features/cohorts";
+import { isSafeHref } from "@utils";
 import { useUpdateApplicationStatus } from "../hooks";
 import type { Application, ApplicationStatus } from "@types";
 
@@ -124,7 +125,7 @@ export const DetailDialog = ({
                   { key: "portfolio", label: "Portfolio" },
                 ] as const
               )
-                .filter(({ key }) => !!application[key])
+                .filter(({ key }) => isSafeHref(application[key] ?? ""))
                 .map(({ key, label }) => (
                   <a
                     key={key}
