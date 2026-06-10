@@ -83,7 +83,8 @@ class ApiClient {
     if (response.status === 401 && config && !config.skipAuthRetry) {
       const refreshed = await this.refreshAccessToken();
       if (refreshed) {
-        return this.http.request(config);
+        // Retry once; skipAuthRetry stops a second 401 from looping forever.
+        return this.http.request({ ...config, skipAuthRetry: true });
       }
       clearAuth();
     }
