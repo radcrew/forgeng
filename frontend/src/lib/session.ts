@@ -2,6 +2,30 @@ import type { UserProfile } from "@types";
 
 const SESSION_KEY = "forgeng.session";
 
+/**
+ * Every `forgeng.`-prefixed localStorage key is treated as user-scoped and
+ * removed on sign-out (session, application drafts, …). Keep device-scoped
+ * preferences (e.g. theme) outside this prefix.
+ */
+const USER_SCOPED_KEY_PREFIX = "forgeng.";
+/** Application drafts written before they moved under the prefix above. */
+const LEGACY_DRAFT_KEY_PREFIX = "apprenticeship_application_draft";
+
+const removeUserScopedKeys = (): void => {
+  const keys: string[] = [];
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (
+      key &&
+      (key.startsWith(USER_SCOPED_KEY_PREFIX) ||
+        key.startsWith(LEGACY_DRAFT_KEY_PREFIX))
+    ) {
+      keys.push(key);
+    }
+  }
+  keys.forEach((key) => window.localStorage.removeItem(key));
+};
+
 /** Cached snapshot so useSyncExternalStore getSnapshot stays referentially stable. */
 let cachedRaw: string | null | undefined;
 let cachedUser: UserProfile | null = null;
@@ -30,8 +54,7 @@ export const readSession = (): UserProfile | null => {
 export const writeSession = (user: UserProfile | null): void => {
   if (typeof window === "undefined") return;
   if (user == null) {
-    window.localStorage.removeItem(SESSION_KEY);
-    window.localStorage.removeItem("forgeng.activeUserId");
+    removeUserScopedKeys();
     cachedRaw = null;
     cachedUser = null;
   } else {
