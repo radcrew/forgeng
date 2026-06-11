@@ -170,6 +170,8 @@ export class AuthService {
     profile: OAuthProfileDto,
     ctx: RequestContext,
   ): Promise<AuthResult> {
+    await this.assertRegionAllowed(ctx.ip);
+
     if (!profile.email) {
       throw new BadRequestException(
         `${profile.provider} did not return an email; cannot sign in.`,

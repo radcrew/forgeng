@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -193,12 +194,32 @@ export class AuthController {
         infer: true,
       });
       res.redirect(target);
-    } catch {
+    } catch (err) {
+      const restrictionReason = this.accessRestrictionReason(err);
+      if (restrictionReason) {
+        const frontendUrl = this.config.getOrThrow('frontendUrl', {
+          infer: true,
+        });
+        res.redirect(`${frontendUrl}/unavailable?reason=${restrictionReason}`);
+        return;
+      }
       const failureUrl = this.config.getOrThrow('auth.oauthFailureRedirect', {
         infer: true,
       });
       res.redirect(failureUrl);
     }
+  }
+
+  private accessRestrictionReason(err: unknown): 'region' | 'vpn' | null {
+    if (!(err instanceof ForbiddenException)) return null;
+    const body = err.getResponse();
+    const code =
+      typeof body === 'object' && body !== null
+        ? (body as { code?: string }).code
+        : undefined;
+    if (code === 'VPN_DETECTED') return 'vpn';
+    if (code === 'REGION_BLOCKED') return 'region';
+    return null;
   }
 
   private respondWithSession(
