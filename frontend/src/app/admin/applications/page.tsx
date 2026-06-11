@@ -25,8 +25,12 @@ const Page = () => {
       useData={useApplications}
       filter={filter}
       filterComponent={<StatusTabs value={filter} onChange={setFilter} />}
-      listComponent={(props) => <List applications={props.items} onSelect={props.onSelect} />}
-      onSelectItem={(app) => router.push(`/admin/applications/${app.id}`)}
+      listComponent={({ items }) => (
+        <List
+          applications={items}
+          onSelect={(app) => router.push(`/admin/applications/${app.id}`)}
+        />
+      )}
       emptyMessage="No applications in this category."
       loadingMessage="Loading applications…"
     />

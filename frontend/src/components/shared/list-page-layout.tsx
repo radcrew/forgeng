@@ -13,7 +13,7 @@ import {
     SelectValue,
 } from "@components/ui/select";
 import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
-import { EmptyState, PageContainer, PageHeader } from "./index";
+import { EmptyState, PageContainer, PageHeader, type PageMaxWidth } from "./index";
 
 export interface PaginatedData<T> {
     items: T[];
@@ -47,14 +47,8 @@ export interface ListPageLayoutProps<
     filter: TFilter;
 
 
-    /** List component to render items */
-    listComponent: React.ComponentType<{
-        items: T[];
-        onSelect?: (item: T) => void;
-    }>;
-
-    /** Optional handler when an item is selected */
-    onSelectItem?: (item: T) => void;
+    /** List component to render items (handle selection inside it) */
+    listComponent: React.ComponentType<{ items: T[] }>;
 
     /** Empty state message */
     emptyMessage?: string;
@@ -63,7 +57,7 @@ export interface ListPageLayoutProps<
     loadingMessage?: string;
 
     /** Max container width (default: "5xl") */
-    maxWidth?: string;
+    maxWidth?: PageMaxWidth;
 }
 
 export const ListPageLayout = <
@@ -76,7 +70,6 @@ export const ListPageLayout = <
     filterComponent,
     filter,
     listComponent: ListComponent,
-    onSelectItem,
     emptyMessage = "No items found.",
     loadingMessage = "Loading…",
     maxWidth = "5xl",
@@ -112,7 +105,7 @@ export const ListPageLayout = <
             ) : items.length === 0 ? (
                 <EmptyState message={emptyMessage} />
             ) : (
-                <ListComponent items={items} onSelect={onSelectItem} />
+                <ListComponent items={items} />
             )}
 
             {total > 0 && (
