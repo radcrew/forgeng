@@ -29,6 +29,9 @@ export interface AppConfiguration {
   };
   smtp: SmtpConfig | null;
   emailFrom: string;
+  ipQualityScore: {
+    apiKey: string | undefined;
+  };
 }
 
 export interface OAuthProviderConfig {

@@ -142,6 +142,10 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   EMAIL_FROM?: string;
+
+  @IsOptional()
+  @IsString()
+  IPQUALITYSCORE_API_KEY?: string;
 }
 
 /** Validates `process.env` at startup; fails fast on missing required vars. */

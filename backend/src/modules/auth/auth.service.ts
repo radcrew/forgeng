@@ -16,6 +16,7 @@ import type { LoginDto } from './dto/login.dto';
 import { EmailService } from './services/email.service';
 import { GeoService } from './services/geo.service';
 import { PasswordService } from './services/password.service';
+import { RegionRestrictionService } from './services/region-restriction.service';
 import { TokenService } from './services/token.service';
 import { VerificationService } from './services/verification.service';
 import type { IssuedTokens } from './types/jwt-payload.types';
@@ -40,6 +41,7 @@ export class AuthService {
     private readonly verification: VerificationService,
     private readonly email: EmailService,
     private readonly geo: GeoService,
+    private readonly regionRestriction: RegionRestrictionService,
     private readonly config: ConfigService<AppConfiguration, true>,
   ) {}
 
@@ -47,6 +49,8 @@ export class AuthService {
     dto: RegisterDto,
     ctx: RequestContext,
   ): Promise<{ user: UserDto }> {
+    await this.assertRegionAllowed(ctx.ip);
+
     const email = dto.email.toLowerCase();
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -72,6 +76,8 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, ctx: RequestContext): Promise<AuthResult> {
+    await this.assertRegionAllowed(ctx.ip);
+
     const email = dto.email.toLowerCase();
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || !user.passwordHash) {
@@ -250,5 +256,21 @@ export class AuthService {
     });
     const resetUrl = `${base}?token=${encodeURIComponent(rawToken)}`;
     await this.email.sendPasswordResetEmail(user.email, resetUrl);
+  }
+
+  private async assertRegionAllowed(ip: string | undefined): Promise<void> {
+    const restriction = await this.regionRestriction.check(ip);
+    if (restriction === 'vpn') {
+      throw new ForbiddenException({
+        code: 'VPN_DETECTED',
+        message: 'Please disable your VPN or proxy and try again.',
+      });
+    }
+    if (restriction === 'region') {
+      throw new ForbiddenException({
+        code: 'REGION_BLOCKED',
+        message: 'This service is only available in the United States and Canada.',
+      });
+    }
   }
 }
