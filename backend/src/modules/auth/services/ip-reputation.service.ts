@@ -53,7 +53,9 @@ export class IpReputationService {
         isVpn: Boolean(data.vpn || data.proxy || data.tor),
       };
     } catch (err) {
-      this.logger.warn(`IP reputation lookup failed: ${(err as Error).message}`);
+      this.logger.warn(
+        `IP reputation lookup failed: ${(err as Error).message}`,
+      );
       return EMPTY_RESULT;
     }
   }

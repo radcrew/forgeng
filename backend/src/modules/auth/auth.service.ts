@@ -269,7 +269,8 @@ export class AuthService {
     if (restriction === 'region') {
       throw new ForbiddenException({
         code: 'REGION_BLOCKED',
-        message: 'This service is only available in the United States and Canada.',
+        message:
+          'This service is only available in the United States and Canada.',
       });
     }
   }

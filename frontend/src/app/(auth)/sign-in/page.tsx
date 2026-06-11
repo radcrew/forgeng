@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@contexts";
 import { AuthCard } from "@features/auth";
 import { ApiError } from "@lib/api-client";
-import { homeForRole } from "@utils/auth";
+import { accessRestrictionReason, homeForRole } from "@utils/auth";
 
 const schema = z.object({
   email: z.email("Enter a valid email."),
@@ -27,6 +27,11 @@ const Page = () => {
       toast.success(`Signed in as ${user.name ?? user.email}.`);
       router.push(homeForRole(user.role));
     } catch (err) {
+      const restriction = accessRestrictionReason(err);
+      if (restriction) {
+        router.push(`/unavailable?reason=${restriction}`);
+        return;
+      }
       if (err instanceof ApiError) {
         if (err.status === 403) {
           toast.error(

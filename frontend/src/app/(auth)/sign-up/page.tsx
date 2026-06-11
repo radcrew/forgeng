@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@contexts";
 import { AuthCard } from "@features/auth";
 import { ApiError } from "@lib/api-client";
+import { accessRestrictionReason } from "@utils/auth";
 
 const schema = z.object({
   firstName: z.string().trim().min(1, "First name is required.").max(80),
@@ -39,6 +40,11 @@ const Page = () => {
         `/sign-up/check-email?email=${encodeURIComponent(values.email)}`,
       );
     } catch (err) {
+      const restriction = accessRestrictionReason(err);
+      if (restriction) {
+        router.push(`/unavailable?reason=${restriction}`);
+        return;
+      }
       if (err instanceof ApiError && err.status === 409) {
         toast.error("That email is already registered. Try signing in.");
       } else if (err instanceof ApiError) {
