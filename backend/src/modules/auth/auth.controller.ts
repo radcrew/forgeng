@@ -312,12 +312,11 @@ export class AuthController {
 
 function ctxFromRequest(req: Request): { userAgent?: string; ip?: string } {
   const ua = req.headers['user-agent'];
-  // Prefer X-Forwarded-For (set by reverse proxies); fall back to socket IP.
-  const forwarded = req.headers['x-forwarded-for'];
-  const ip =
-    typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
+  // req.ip is set correctly by Express once `trust proxy` is configured in
+  // main.ts. Do NOT read X-Forwarded-For manually — clients can inject fake
+  // entries into that header when they can reach the server directly.
   return {
     userAgent: typeof ua === 'string' ? ua.slice(0, 255) : undefined,
-    ip,
+    ip: req.ip,
   };
 }

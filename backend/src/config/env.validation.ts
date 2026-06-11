@@ -146,6 +146,11 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   IPQUALITYSCORE_API_KEY?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  TRUST_PROXY?: number;
 }
 
 /** Validates `process.env` at startup; fails fast on missing required vars. */

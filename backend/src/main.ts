@@ -22,6 +22,12 @@ async function bootstrap(): Promise<void> {
   const corsOrigin = config.getOrThrow('corsOrigin', { infer: true });
   const uploadsDir = config.getOrThrow('uploadsDir', { infer: true });
 
+  // Tell Express how many trusted reverse-proxy hops sit in front of this
+  // server. When set, req.ip is derived from X-Forwarded-For correctly and
+  // clients cannot spoof it by injecting a fake XFF header value.
+  const trustProxy = config.getOrThrow('trustProxy', { infer: true });
+  if (trustProxy > 0) app.set('trust proxy', trustProxy);
+
   app.setGlobalPrefix('api');
 
   // Serve uploaded files (avatars, etc.). The global `/api` prefix only applies

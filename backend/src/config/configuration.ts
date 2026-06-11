@@ -131,5 +131,6 @@ export default (): AppConfiguration => {
     ipQualityScore: {
       apiKey: process.env.IPQUALITYSCORE_API_KEY,
     },
+    trustProxy: parsePort(process.env.TRUST_PROXY, 0),
   };
 };
