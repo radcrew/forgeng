@@ -10,7 +10,7 @@ import { createSubmission } from "@features/submissions";
 import { ApiError } from "@lib/api-client";
 import type { Task } from "@types";
 
-export type SubmitDialogProps = {
+export type TaskSubmitDialogProps = {
   task: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -18,12 +18,12 @@ export type SubmitDialogProps = {
   onSubmitted?: () => void;
 };
 
-export const SubmitDialog = ({
+export const TaskSubmitDialog = ({
   task,
   open,
   onOpenChange,
   onSubmitted,
-}: SubmitDialogProps) => {
+}: TaskSubmitDialogProps) => {
   const [content, setContent] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

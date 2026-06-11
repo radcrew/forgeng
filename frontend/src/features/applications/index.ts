@@ -19,15 +19,13 @@ export {
 export { useApplications, useUpdateApplicationStatus } from "./hooks";
 
 export { uploadVideoIntro } from "./api";
-export { StatusTabs } from "./components/status-tabs";
-export type { StatusTabsProps } from "./components/status-tabs";
-export { StatusBadge } from "./components/status-badge";
-export type { StatusBadgeProps } from "./components/status-badge";
-export { Row } from "./components/row";
-export type { RowProps } from "./components/row";
-export { List } from "./components/list";
-export type { ListProps } from "./components/list";
-export { DetailDialog } from "./components/detail-dialog";
-export type { DetailDialogProps } from "./components/detail-dialog";
+export { ApplicationStatusTabs } from "./components/status-tabs";
+export type { ApplicationStatusTabsProps } from "./components/status-tabs";
+export { ApplicationStatusBadge } from "./components/status-badge";
+export type { ApplicationStatusBadgeProps } from "./components/status-badge";
+export { ApplicationRow } from "./components/row";
+export type { ApplicationRowProps } from "./components/row";
+export { ApplicationList } from "./components/list";
+export type { ApplicationListProps } from "./components/list";
 export { Wizard } from "./components/wizard";
 export { WizardStep } from "./components/wizard/step";

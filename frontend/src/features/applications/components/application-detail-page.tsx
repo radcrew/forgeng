@@ -26,7 +26,7 @@ import { isSafeHref } from "@utils";
 import type { ApplicationStatus } from "@types";
 import { getApplication } from "../api";
 import { useUpdateApplicationStatus } from "../hooks";
-import { StatusBadge } from "./status-badge";
+import { ApplicationStatusBadge } from "./status-badge";
 
 const SOCIAL_LINKS = [
   { key: "linkedin" as const, label: "LinkedIn" },
@@ -120,7 +120,7 @@ export const ApplicationDetailPage = ({ id }: Props) => {
           <h1 className="text-2xl font-bold">
             {application.firstName} {application.lastName}
           </h1>
-          <StatusBadge status={application.status} />
+          <ApplicationStatusBadge status={application.status} />
         </div>
         <p className="text-sm text-muted-foreground mt-1">
           {application.email} · Applied{" "}

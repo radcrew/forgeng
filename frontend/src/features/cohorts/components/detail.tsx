@@ -16,7 +16,7 @@ import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import {
   ReviewSheet,
-  StatusBadge,
+  SubmissionStatusBadge,
   useSubmissions,
 } from "@features/submissions";
 import { useTasks } from "@features/tasks";
@@ -371,7 +371,7 @@ const TaskRow = ({
                   {format(new Date(s.createdAt), "MMM d, yyyy")}
                 </p>
               </div>
-              <StatusBadge status={s.status} showIcon={false} />
+              <SubmissionStatusBadge status={s.status} showIcon={false} />
             </ClickableCard>
           ))}
         </div>

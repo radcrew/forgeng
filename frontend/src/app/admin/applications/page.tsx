@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 
 import { ListPageLayout } from "@components/shared";
 import {
-  List,
-  StatusTabs,
+  ApplicationList,
+  ApplicationStatusTabs,
   type Application,
   type ApplicationStatusFilter,
   useApplications,
@@ -24,9 +24,9 @@ const Page = () => {
       }}
       useData={useApplications}
       filter={filter}
-      filterComponent={<StatusTabs value={filter} onChange={setFilter} />}
+      filterComponent={<ApplicationStatusTabs value={filter} onChange={setFilter} />}
       listComponent={({ items }) => (
-        <List
+        <ApplicationList
           applications={items}
           onSelect={(app) => router.push(`/admin/applications/${app.id}`)}
         />

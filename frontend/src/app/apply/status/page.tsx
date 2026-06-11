@@ -15,7 +15,7 @@ import {
 } from "@components/ui/card";
 import { Skeleton } from "@components/ui/skeleton";
 import { useCurrentUser } from "@contexts";
-import { getMyApplication, StatusBadge } from "@features/applications";
+import { getMyApplication, ApplicationStatusBadge } from "@features/applications";
 import { useAsyncResource } from "@hooks/use-async-resource";
 import type { ApplicationStatus } from "@types";
 
@@ -84,7 +84,7 @@ const StatusInner = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-2xl">{copy.title}</CardTitle>
-              <StatusBadge status={data.status} />
+              <ApplicationStatusBadge status={data.status} />
             </div>
             <CardDescription>{copy.body}</CardDescription>
           </div>

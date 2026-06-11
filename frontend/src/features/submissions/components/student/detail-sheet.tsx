@@ -6,7 +6,7 @@ import { MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 import {
-  DetailSheet as BaseDetailSheet,
+  DetailSheet,
   ExternalLinkField,
   FeedbackCard,
   FormField,
@@ -22,9 +22,9 @@ import type { Submission } from "@types";
 
 import { resubmitSubmission } from "../../api";
 import { useSubmissionFeedback } from "../../hooks";
-import { StatusBadge } from "../status-badge";
+import { SubmissionStatusBadge } from "../status-badge";
 
-export type DetailSheetProps = {
+export type SubmissionDetailSheetProps = {
   submission: Submission;
   open: boolean;
   onClose: () => void;
@@ -32,12 +32,12 @@ export type DetailSheetProps = {
   onResubmitted?: () => void;
 };
 
-export const DetailSheet = ({
+export const SubmissionDetailSheet = ({
   submission,
   open,
   onClose,
   onResubmitted,
-}: DetailSheetProps) => {
+}: SubmissionDetailSheetProps) => {
   const { data: feedback = [] } = useSubmissionFeedback(
     open ? submission.id : null,
   );
@@ -68,13 +68,13 @@ export const DetailSheet = ({
   };
 
   return (
-    <BaseDetailSheet
+    <DetailSheet
       open={open}
       onClose={onClose}
       title={submission.task?.title ?? "Submission"}
       subtitle={
         <div className="flex items-center gap-2">
-          <StatusBadge status={submission.status} />
+          <SubmissionStatusBadge status={submission.status} />
           <span className="text-sm text-muted-foreground">
             Submitted {format(new Date(submission.createdAt), "MMM d, yyyy")}
           </span>
@@ -148,6 +148,6 @@ export const DetailSheet = ({
           </div>
         </>
       )}
-    </BaseDetailSheet>
+    </DetailSheet>
   );
 };

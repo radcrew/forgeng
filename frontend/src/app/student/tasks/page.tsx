@@ -19,8 +19,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { StatusBadge } from "@features/submissions";
-import { SubmitDialog } from "@features/tasks";
+import { SubmissionStatusBadge } from "@features/submissions";
+import { TaskSubmitDialog } from "@features/tasks";
 import {
   TASK_PROGRESS_FILTER_TABS,
   TASK_SORT_OPTIONS,
@@ -247,7 +247,7 @@ const Page = () => {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {submission ? (
-                      <StatusBadge status={submission.status} />
+                      <SubmissionStatusBadge status={submission.status} />
                     ) : (
                       <Button size="sm" onClick={() => setSelectedTask(task)}>
                         Submit
@@ -262,7 +262,7 @@ const Page = () => {
       )}
 
       {selectedTask && (
-        <SubmitDialog
+        <TaskSubmitDialog
           task={selectedTask}
           open={!!selectedTask}
           onOpenChange={(open) => {

@@ -1,16 +1,16 @@
 import type { Application } from "@types";
 
-import { Row } from "./row";
+import { ApplicationRow } from "./row";
 
-export type ListProps = {
+export type ApplicationListProps = {
   applications: Application[];
   onSelect: (application: Application) => void;
 };
 
-export const List = ({ applications, onSelect }: ListProps) => (
+export const ApplicationList = ({ applications, onSelect }: ApplicationListProps) => (
   <div className="space-y-3">
     {applications.map((app) => (
-      <Row
+      <ApplicationRow
         key={app.id}
         application={app}
         onSelect={() => onSelect(app)}

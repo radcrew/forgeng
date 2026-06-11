@@ -13,7 +13,7 @@ import {
 } from "@components/ui/select";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
-import { Row, useUsers } from "@features/users";
+import { UserRow, useUsers } from "@features/users";
 
 const Page = () => {
   const [page, setPage] = useState(1);
@@ -48,7 +48,7 @@ const Page = () => {
       ) : (
         <div className="space-y-2">
           {users.map((user) => (
-            <Row key={user.id} user={user} />
+            <UserRow key={user.id} user={user} />
           ))}
         </div>
       )}

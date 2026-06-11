@@ -14,9 +14,9 @@ export {
 } from "./api";
 export { useTasks, useTask } from "./hooks";
 
-export { FormDialog } from "./components/form-dialog";
-export type { FormDialogProps } from "./components/form-dialog";
-export { Row } from "./components/row";
-export type { RowProps } from "./components/row";
-export { SubmitDialog } from "./components/submit-dialog";
-export type { SubmitDialogProps } from "./components/submit-dialog";
+export { TaskFormDialog } from "./components/form-dialog";
+export type { TaskFormDialogProps } from "./components/form-dialog";
+export { TaskRow } from "./components/row";
+export type { TaskRowProps } from "./components/row";
+export { TaskSubmitDialog } from "./components/submit-dialog";
+export type { TaskSubmitDialogProps } from "./components/submit-dialog";

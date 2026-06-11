@@ -12,11 +12,11 @@ export {
 } from "./api";
 export { useCohorts, useCohort, useEnrollments } from "./hooks";
 
-export { FormDialog } from "./components/form-dialog";
-export type { FormDialogProps } from "./components/form-dialog";
+export { CohortFormDialog } from "./components/form-dialog";
+export type { CohortFormDialogProps } from "./components/form-dialog";
 export { Enrollments } from "./components/enrollments";
 export type { EnrollmentsProps } from "./components/enrollments";
-export { Row } from "./components/row";
-export type { RowProps } from "./components/row";
+export { CohortRow } from "./components/row";
+export type { CohortRowProps } from "./components/row";
 export { CohortDetail } from "./components/detail";
 export type { CohortDetailProps } from "./components/detail";

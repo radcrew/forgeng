@@ -11,7 +11,7 @@ import { Card, CardContent } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { useSelectedCohort } from "@contexts";
-import { StatusBadge } from "@features/submissions";
+import { SubmissionStatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useTasks } from "@features/tasks";
@@ -156,7 +156,7 @@ const Page = () => {
                       </p>
                     </div>
                     {submission ? (
-                      <StatusBadge status={submission.status} />
+                      <SubmissionStatusBadge status={submission.status} />
                     ) : (
                       <span className="shrink-0 text-xs text-muted-foreground">
                         Not started
