@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { ForgotPasswordPage } from "./_forgot-password-page";
+import { ForgotPasswordView } from "./forgot-password-view";
 
 export const metadata: Metadata = {
   title: "Reset Your Password",
@@ -11,6 +11,6 @@ export const metadata: Metadata = {
   },
 };
 
-const Page = () => <ForgotPasswordPage />;
+const Page = () => <ForgotPasswordView />;
 
 export default Page;

@@ -20,7 +20,7 @@ const backToSignIn = {
   href: "/sign-in",
 } as const;
 
-export const ForgotPasswordPage = () => {
+export const ForgotPasswordView = () => {
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
 
   const handleSubmit = async (values: FormValues) => {

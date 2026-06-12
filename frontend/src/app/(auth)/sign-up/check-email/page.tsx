@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { CheckEmailPage } from "./_check-email-page";
+import { CheckEmailView } from "./check-email-view";
 
 export const metadata: Metadata = {
   title: "Check Your Email",
@@ -10,6 +10,6 @@ export const metadata: Metadata = {
   },
 };
 
-const Page = () => <CheckEmailPage />;
+const Page = () => <CheckEmailView />;
 
 export default Page;

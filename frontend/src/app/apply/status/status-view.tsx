@@ -35,7 +35,7 @@ const STATUS_COPY: Record<ApplicationStatus, { title: string; body: string }> =
     },
   };
 
-export const ApplicationStatusPage = () => {
+export const ApplicationStatusView = () => {
   const router = useRouter();
   const { refreshUser } = useCurrentUser();
   const { data, isLoading } = useAsyncResource(() => getMyApplication(), []);

@@ -23,7 +23,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export const SignUpPage = () => {
+export const SignUpView = () => {
   const router = useRouter();
   const { register } = useCurrentUser();
 

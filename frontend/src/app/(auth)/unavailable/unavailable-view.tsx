@@ -35,7 +35,7 @@ const UnavailableInner = () => {
   );
 };
 
-export const UnavailablePage = () => (
+export const UnavailableView = () => (
   <Suspense fallback={null}>
     <UnavailableInner />
   </Suspense>

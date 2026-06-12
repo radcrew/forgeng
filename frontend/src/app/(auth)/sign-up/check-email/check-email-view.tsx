@@ -63,7 +63,7 @@ const CheckEmailInner = () => {
   );
 };
 
-export const CheckEmailPage = () => (
+export const CheckEmailView = () => (
   <Suspense fallback={null}>
     <CheckEmailInner />
   </Suspense>

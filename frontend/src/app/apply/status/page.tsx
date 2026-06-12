@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { ApplicationStatusPage } from "./_status-page";
+import { ApplicationStatusView } from "./status-view";
 
 export const metadata: Metadata = {
   title: "Application Status",
@@ -10,6 +10,6 @@ export const metadata: Metadata = {
   },
 };
 
-const Page = () => <ApplicationStatusPage />;
+const Page = () => <ApplicationStatusView />;
 
 export default Page;

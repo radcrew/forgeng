@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { UnavailablePage } from "./_unavailable-page";
+import { UnavailableView } from "./unavailable-view";
 
 export const metadata: Metadata = {
   title: "Unavailable",
@@ -10,6 +10,6 @@ export const metadata: Metadata = {
   },
 };
 
-const Page = () => <UnavailablePage />;
+const Page = () => <UnavailableView />;
 
 export default Page;
