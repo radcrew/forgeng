@@ -1,12 +1,9 @@
-import {
-  ExecutionContext,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import type { Role, User } from '@prisma/client';
 import { PrismaExceptionFilter } from '@common/filters/prisma-exception.filter';
-import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { IS_PUBLIC_KEY } from '@core/auth/public.decorator';
 import type { AuthenticatedRequest } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
 import { AppModule } from '../../src/app.module';
@@ -95,22 +92,39 @@ export async function createE2EApp(): Promise<E2EContext> {
   const prisma = createMockPrisma();
   let currentUser: User | null = null;
 
+  // The global JwtAuthGuard short-circuits to `true` for routes flagged
+  // `@Public()` (via Reflector + IS_PUBLIC_KEY) before passport ever runs.
+  // We wrap the real Reflector so every route reports as public — this makes
+  // the JWT guard a no-op without a signed token, while all other metadata
+  // reads (notably ROLES_KEY) delegate to the real Reflector so the RolesGuard
+  // still genuinely enforces roles against the user we inject below.
+  const realReflector = new Reflector();
+  const publicReflector: Reflector = Object.assign(
+    Object.create(Reflector.prototype) as Reflector,
+    realReflector,
+    {
+      getAllAndOverride<T>(key: unknown, targets: unknown[]): T {
+        if (key === IS_PUBLIC_KEY) return true as T;
+        return realReflector.getAllAndOverride(key as never, targets as never);
+      },
+    },
+  );
+
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
   })
     .overrideProvider(PrismaService)
     .useValue(prisma)
-    .overrideGuard(JwtAuthGuard)
-    .useValue({
-      canActivate: (ctx: ExecutionContext) => {
-        const req = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
-        if (currentUser) req.user = currentUser;
-        return true;
-      },
-    })
+    .overrideProvider(Reflector)
+    .useValue(publicReflector)
     .compile();
 
   const app = moduleRef.createNestApplication();
+  // Authenticate by attaching the configurable user before the guard chain.
+  app.use((req: AuthenticatedRequest, _res: unknown, next: () => void) => {
+    if (currentUser) req.user = currentUser;
+    next();
+  });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
