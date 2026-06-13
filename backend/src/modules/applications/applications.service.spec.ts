@@ -106,9 +106,13 @@ describe('ApplicationsService', () => {
         groupBy: jest.fn(),
       },
     };
-    notifications = { notifyApplicationReceived: jest.fn().mockResolvedValue(undefined) };
+    notifications = {
+      notifyApplicationReceived: jest.fn().mockResolvedValue(undefined),
+    };
     mail = { send: jest.fn().mockResolvedValue(undefined) };
-    const config = { get: jest.fn().mockReturnValue('https://app.example.com') };
+    const config = {
+      get: jest.fn().mockReturnValue('https://app.example.com'),
+    };
 
     service = new ApplicationsService(
       prisma as unknown as PrismaService,
@@ -161,7 +165,9 @@ describe('ApplicationsService', () => {
       prisma.application.findUnique.mockResolvedValue(null);
       prisma.application.create.mockResolvedValue(makeApplicationRow());
 
-      const dto = await service.create(makeUser(), { motivation: 'hi' } as never);
+      const dto = await service.create(makeUser(), {
+        motivation: 'hi',
+      } as never);
 
       expect(dto.id).toBe(10);
       expect(notifications.notifyApplicationReceived).toHaveBeenCalledTimes(1);
@@ -178,7 +184,9 @@ describe('ApplicationsService', () => {
         .spyOn(Logger.prototype, 'error')
         .mockImplementation(() => undefined);
 
-      const dto = await service.create(makeUser(), { motivation: 'hi' } as never);
+      const dto = await service.create(makeUser(), {
+        motivation: 'hi',
+      } as never);
 
       expect(dto.id).toBe(10);
       expect(errorSpy).toHaveBeenCalled();
