@@ -1,4 +1,4 @@
-import { paginationParams } from './pagination';
+import { paginationParams } from '@common/utils/pagination';
 
 describe('paginationParams', () => {
   it('returns skip 0 for the first page', () => {

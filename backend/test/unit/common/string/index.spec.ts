@@ -1,4 +1,4 @@
-import { splitName } from './index';
+import { splitName } from '@common/string';
 
 describe('splitName', () => {
   it('splits a two-part name into first and last', () => {

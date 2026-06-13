@@ -17,7 +17,7 @@ import {
   toSubmissionDto,
   toTaskDto,
   toUserDto,
-} from './index';
+} from '@common/mappers';
 
 const ISO = '2026-01-15T10:30:00.000Z';
 const DATE = new Date(ISO);
