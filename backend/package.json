@@ -96,22 +96,22 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "rootDir": ".",
+    "testRegex": "test/unit/.*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@core/(.*)$": "<rootDir>/core/$1",
-      "^@common/(.*)$": "<rootDir>/common/$1",
-      "^@config$": "<rootDir>/config",
-      "^@config/(.*)$": "<rootDir>/config/$1",
-      "^@modules/(.*)$": "<rootDir>/modules/$1"
+      "^@core/(.*)$": "<rootDir>/src/core/$1",
+      "^@common/(.*)$": "<rootDir>/src/common/$1",
+      "^@config$": "<rootDir>/src/config",
+      "^@config/(.*)$": "<rootDir>/src/config/$1",
+      "^@modules/(.*)$": "<rootDir>/src/modules/$1"
     }
   }
 }

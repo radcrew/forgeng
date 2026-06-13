@@ -3,7 +3,7 @@ import type { Task } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
-import { TasksService } from './tasks.service';
+import { TasksService } from '@modules/tasks/tasks.service';
 
 const DATE = new Date('2026-01-15T10:30:00.000Z');
 

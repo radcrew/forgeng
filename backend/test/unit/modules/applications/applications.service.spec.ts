@@ -4,7 +4,7 @@ import type { User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { MailService } from '@core/mail';
 import { NotificationsService } from '@modules/notifications/notifications.service';
-import { ApplicationsService } from './applications.service';
+import { ApplicationsService } from '@modules/applications/applications.service';
 
 const DATE = new Date('2026-01-15T10:30:00.000Z');
 
