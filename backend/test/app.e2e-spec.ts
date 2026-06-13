@@ -1,37 +1,31 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import type { App } from 'supertest/types';
+import { createE2EApp, type E2EContext } from './utils/e2e-app';
 
 describe('Health (e2e)', () => {
-  let app: INestApplication<App>;
+  let ctx: E2EContext;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
+  beforeAll(async () => {
+    ctx = await createE2EApp();
   });
 
-  it('GET /api/healthz returns 200', () => {
-    return request(app.getHttpServer())
+  afterAll(async () => {
+    await ctx.app.close();
+  });
+
+  it('reports the database up when the probe query succeeds', () => {
+    ctx.prisma.$queryRaw.mockResolvedValue([{ '?column?': 1 }]);
+    return request(ctx.app.getHttpServer() as App)
       .get('/api/healthz')
       .expect(200)
-      .expect((res) => {
-        const body = res.body as { status?: string; database?: string };
-        expect(body.status).toBeDefined();
-        expect(body.database).toBeDefined();
-      });
+      .expect({ status: 'ok', database: 'up' });
   });
 
-  afterEach(async () => {
-    await app.close();
+  it('reports the database down when the probe query throws', () => {
+    ctx.prisma.$queryRaw.mockRejectedValue(new Error('connection refused'));
+    return request(ctx.app.getHttpServer() as App)
+      .get('/api/healthz')
+      .expect(200)
+      .expect({ status: 'degraded', database: 'down' });
   });
 });
