@@ -8,5 +8,13 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     environment: "node",
     globals: true,
+    coverage: {
+      provider: "v8",
+      // Measure the whole app so the report reflects overall coverage, not just
+      // the files currently under test. The number climbs as tests are added.
+      include: ["src/**"],
+      reporter: ["text", "json-summary", "lcov"],
+      reportsDirectory: "coverage",
+    },
   },
 });

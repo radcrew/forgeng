@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
     "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
@@ -43,6 +44,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "png-to-ico": "^3.0.1",
