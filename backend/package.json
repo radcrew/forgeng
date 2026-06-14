@@ -105,6 +105,11 @@
       "src/**/*.(t|j)s"
     ],
     "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "json-summary",
+      "lcov"
+    ],
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^@core/(.*)$": "<rootDir>/src/core/$1",
