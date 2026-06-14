@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix --max-warnings 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
@@ -46,6 +48,7 @@
     "png-to-ico": "^3.0.1",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   }
 }
