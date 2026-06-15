@@ -1,6 +1,6 @@
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { createE2EApp, makeAuthUser, type E2EContext } from './utils/e2e-app';
+import { createE2EApp, makeAuthUser, type E2EContext } from './support/e2e-app';
 
 const DATE = new Date('2026-01-15T10:30:00.000Z');
 
