@@ -1,6 +1,6 @@
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { createE2EApp, makeAuthUser, type E2EContext } from './utils/e2e-app';
+import { createE2EApp, makeAuthUser, type E2EContext } from './support/e2e-app';
 
 /**
  * Exercises the global JWT + Roles guard chain through the tasks module, which

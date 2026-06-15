@@ -1,6 +1,6 @@
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { createE2EApp, type E2EContext } from './utils/e2e-app';
+import { createE2EApp, type E2EContext } from './support/e2e-app';
 
 describe('E2E harness (e2e)', () => {
   let ctx: E2EContext;

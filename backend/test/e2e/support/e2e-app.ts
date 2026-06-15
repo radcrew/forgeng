@@ -6,7 +6,7 @@ import { PrismaExceptionFilter } from '@common/filters/prisma-exception.filter';
 import { IS_PUBLIC_KEY } from '@core/auth/public.decorator';
 import type { AuthenticatedRequest } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
-import { AppModule } from '../../src/app.module';
+import { AppModule } from '../../../src/app.module';
 
 /**
  * A deeply-mocked PrismaService. Every model method is a jest.fn() created on
