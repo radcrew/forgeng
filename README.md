@@ -112,7 +112,7 @@ Frontend deploys to **Vercel**, backend (with managed Postgres) deploys to
 The repo includes a [`render.yaml`](./render.yaml) blueprint so Render
 provisions the backend and the database in one click.
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for the step-by-step guide.
+See [docs/deployment.md](./docs/deployment.md) for the step-by-step guide.
 
 ## Notes
 
