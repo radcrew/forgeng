@@ -25,13 +25,14 @@ export async function GET(req: Request): Promise<NextResponse> {
     return NextResponse.redirect(new URL("/sign-in", origin));
   }
 
+  const { protocol } = new URL(req.url);
   const res = NextResponse.redirect(new URL("/auth/callback", origin));
   res.cookies.set(ACCESS_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: true,
+    secure: protocol === "https:",
     sameSite: "lax",
     path: "/",
-    maxAge: 15 * 60, // match JWT_ACCESS_TTL (15 min)
+    maxAge: 15 * 60,
   });
   return res;
 }
