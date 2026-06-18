@@ -43,6 +43,7 @@ import { Separator } from "@components/ui/separator";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { CURRENCIES } from "@constants/payments";
 import { useUser, useUserEnrollments, useUserPaymentStats, useRecordPayment, useNotifyWalletMissing } from "@features/users/hooks";
+import { useSettings } from "@features/settings";
 import { ApiError } from "@lib/api-client";
 import { resolveAssetUrl } from "@lib/config";
 import { isProfileComplete } from "@utils/user";
@@ -65,6 +66,7 @@ export default function UserDetailPage({
 
   const { record, isPending: submitting } = useRecordPayment();
   const { notify: notifyWallet, isPending: sendingWalletReminder } = useNotifyWalletMissing();
+  const { data: platformSettings } = useSettings();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -409,6 +411,27 @@ export default function UserDetailPage({
                   </SelectContent>
                 </Select>
               </div>
+              {platformSettings && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {[
+                    { label: "Month 1", value: platformSettings.stipendMonth1 },
+                    { label: "Month 2", value: platformSettings.stipendMonth2 },
+                    { label: "Month 3", value: platformSettings.stipendMonth3 },
+                  ].map(({ label, value }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => {
+                        setAmount(value);
+                        setCurrency(platformSettings.stipendCurrency);
+                      }}
+                      className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    >
+                      {label} ({value} {platformSettings.stipendCurrency})
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5">
