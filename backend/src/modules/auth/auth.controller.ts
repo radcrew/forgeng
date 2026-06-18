@@ -175,15 +175,11 @@ export class AuthController {
         result.tokens.refreshToken,
         result.tokens.refreshExpiresAt,
       );
-      const target = new URL(
+      const url = new URL(
         this.config.getOrThrow('auth.oauthSuccessRedirect', { infer: true }),
       );
-      target.searchParams.set('accessToken', result.tokens.accessToken);
-      target.searchParams.set(
-        'expiresIn',
-        String(result.tokens.accessExpiresIn),
-      );
-      res.redirect(target.toString());
+      url.searchParams.set('token', result.tokens.accessToken);
+      res.redirect(url.toString());
     } catch {
       const failureUrl = this.config.getOrThrow('auth.oauthFailureRedirect', {
         infer: true,
