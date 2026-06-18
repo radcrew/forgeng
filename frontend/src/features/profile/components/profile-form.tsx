@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -83,6 +84,20 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
       whatsapp: user.whatsapp ?? "",
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      name: user.name ?? "",
+      bio: user.bio ?? "",
+      linkedin: user.linkedin ?? "",
+      twitter: user.twitter ?? "",
+      facebook: user.facebook ?? "",
+      github: user.github ?? "",
+      portfolio: user.portfolio ?? "",
+      telegram: user.telegram ?? "",
+      whatsapp: user.whatsapp ?? "",
+    });
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = async (data: ProfileFormValues) => {
     const payload: ProfileUpdate = {

@@ -109,36 +109,34 @@ export class AccountController {
     };
     const hasSocials = Object.values(socialFields).some((v) => v !== undefined);
 
+    const SOCIALS_SELECT = {
+      linkedin: true,
+      twitter: true,
+      facebook: true,
+      github: true,
+      portfolio: true,
+      telegram: true,
+      whatsapp: true,
+    } as const;
+
     const [updated, socials] = await Promise.all([
       this.prisma.user.update({ where: { id: user.id }, data: userFields }),
       hasSocials
-        ? this.prisma.application
-            .updateMany({ where: { userId: user.id }, data: socialFields })
-            .then(() =>
-              this.prisma.application.findUnique({
-                where: { userId: user.id },
-                select: {
-                  linkedin: true,
-                  twitter: true,
-                  facebook: true,
-                  github: true,
-                  portfolio: true,
-                  telegram: true,
-                  whatsapp: true,
-                },
-              }),
-            )
+        ? this.prisma.application.upsert({
+            where: { userId: user.id },
+            update: socialFields,
+            create: {
+              userId: user.id,
+              email: user.email,
+              firstName: user.name?.split(' ')[0] ?? '',
+              lastName: user.name?.split(' ').slice(1).join(' ') ?? '',
+              ...socialFields,
+            },
+            select: SOCIALS_SELECT,
+          })
         : this.prisma.application.findUnique({
             where: { userId: user.id },
-            select: {
-              linkedin: true,
-              twitter: true,
-              facebook: true,
-              github: true,
-              portfolio: true,
-              telegram: true,
-              whatsapp: true,
-            },
+            select: SOCIALS_SELECT,
           }),
     ]);
 
