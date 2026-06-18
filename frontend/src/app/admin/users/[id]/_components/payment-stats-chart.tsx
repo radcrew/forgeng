@@ -3,6 +3,7 @@
 import { format, parse } from "date-fns";
 import { CheckCircle2 } from "lucide-react";
 import type { MonthlyPaymentStat } from "@features/users/api";
+import { isSafeHref } from "@utils";
 
 export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
   return (
@@ -54,7 +55,7 @@ export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
                   {stat.payment.amount} {stat.payment.currency} paid
                 </span>
-                {stat.payment.txLink && (
+                {stat.payment.txLink && isSafeHref(stat.payment.txLink) && (
                   <a
                     href={stat.payment.txLink}
                     target="_blank"

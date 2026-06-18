@@ -13,13 +13,13 @@ import { ApiError } from "@lib/api-client";
 import { deleteTask } from "../api";
 import type { Task } from "@types";
 
-export type RowProps = {
+export type TaskRowProps = {
   task: Task;
   onEdit: (task: Task) => void;
   onDeleted?: () => void;
 };
 
-export const Row = ({ task, onEdit, onDeleted }: RowProps) => {
+export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
   const [isDeleting, setIsDeleting] = useState(false);
 

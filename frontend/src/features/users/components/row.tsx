@@ -6,9 +6,9 @@ import Link from "next/link";
 import { Card } from "@components/ui/card";
 import type { UserProfile } from "@types";
 
-export type RowProps = { user: UserProfile };
+export type UserRowProps = { user: UserProfile };
 
-export const Row = ({ user }: RowProps) => {
+export const UserRow = ({ user }: UserRowProps) => {
   return (
     <Card>
       <div className="flex items-center gap-4 p-4">

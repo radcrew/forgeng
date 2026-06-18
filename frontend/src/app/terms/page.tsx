@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@components/legal";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Forgeng",
+  title: "Terms of Service",
   description:
-    "The terms that govern your use of Forgeng's apprenticeship platform.",
+    "The terms that govern your use of Forgeng's website, applications, and software engineering apprenticeship program.",
 };
 
 const TermsPage = () => (

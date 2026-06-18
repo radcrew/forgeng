@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { StatusBadge } from "@features/applications/components/status-badge";
+import { ApplicationStatusBadge as StatusBadge } from "@features/applications/components/status-badge";
 
 describe("application StatusBadge", () => {
   it("renders the humanized status label", () => {

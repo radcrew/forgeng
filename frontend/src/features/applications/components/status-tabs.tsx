@@ -4,12 +4,12 @@ import type { ApplicationStatusFilter } from "@types";
 
 export type { ApplicationStatusFilter };
 
-export type StatusTabsProps = {
+export type ApplicationStatusTabsProps = {
   value: ApplicationStatusFilter;
   onChange: (value: ApplicationStatusFilter) => void;
 };
 
-export const StatusTabs = ({ value, onChange }: StatusTabsProps) => (
+export const ApplicationStatusTabs = ({ value, onChange }: ApplicationStatusTabsProps) => (
   <Tabs
     value={value}
     onValueChange={(v) => onChange(v as ApplicationStatusFilter)}

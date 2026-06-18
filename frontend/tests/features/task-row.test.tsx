@@ -18,7 +18,7 @@ vi.mock("sonner", () => ({
 }));
 
 import type { Task } from "@types";
-import { Row } from "@features/tasks/components/row";
+import { TaskRow as Row } from "@features/tasks/components/row";
 
 function makeTask(overrides: Partial<Task> = {}): Task {
   return {

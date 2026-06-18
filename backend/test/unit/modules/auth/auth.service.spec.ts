@@ -9,6 +9,7 @@ import type { User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { AuthService } from '@modules/auth/auth.service';
 import { EmailService } from '@modules/auth/services/email.service';
+import { RegionRestrictionService } from '@modules/auth/services/region-restriction.service';
 import { TokenService } from '@modules/auth/services/token.service';
 import { VerificationService } from '@modules/auth/services/verification.service';
 
@@ -49,6 +50,7 @@ describe('AuthService', () => {
     sendPasswordResetEmail: jest.Mock;
   };
   let geo: { lookup: jest.Mock };
+  let regionRestriction: { check: jest.Mock };
 
   beforeEach(() => {
     prisma = { user: { findUnique: jest.fn(), create: jest.fn() } };
@@ -66,6 +68,7 @@ describe('AuthService', () => {
       sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
     };
     geo = { lookup: jest.fn().mockReturnValue({ country: 'US', city: 'NYC' }) };
+    regionRestriction = { check: jest.fn().mockResolvedValue(null) };
     const config = {
       getOrThrow: jest.fn().mockReturnValue('https://app/verify'),
     };
@@ -77,6 +80,7 @@ describe('AuthService', () => {
       verification as unknown as VerificationService,
       email as unknown as EmailService,
       geo,
+      regionRestriction as unknown as RegionRestrictionService,
       config as unknown as ConfigService,
     );
   });

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import {
   FormBody,
-  FormDialog as BaseFormDialog,
+  FormDialog,
   FormField,
   FormGrid,
 } from "@components/common";
@@ -25,19 +25,19 @@ import { ApiError } from "@lib/api-client";
 import { createTask, updateTask } from "../api";
 import type { Task, TaskStatus, TaskType } from "@types";
 
-export type FormDialogProps = {
+export type TaskFormDialogProps = {
   task?: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved?: () => void;
 };
 
-export const FormDialog = ({
+export const TaskFormDialog = ({
   task,
   open,
   onOpenChange,
   onSaved,
-}: FormDialogProps) => {
+}: TaskFormDialogProps) => {
   const { data: cohorts = [] } = useCohorts();
   const isEdit = !!task;
   const [title, setTitle] = useState(task?.title ?? "");
@@ -83,7 +83,7 @@ export const FormDialog = ({
   };
 
   return (
-    <BaseFormDialog
+    <FormDialog
       open={open}
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit Task" : "Create Task"}
@@ -169,6 +169,6 @@ export const FormDialog = ({
           </FormField>
         </FormGrid>
       </FormBody>
-    </BaseFormDialog>
+    </FormDialog>
   );
 };

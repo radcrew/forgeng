@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { PageContainer, PageHeader } from "@components/shared";
-import { FormDialog, Row, useTasks } from "@features/tasks";
+import { TaskFormDialog, TaskRow, useTasks } from "@features/tasks";
 import type { Task } from "@types";
 
 const Page = () => {
@@ -34,7 +34,7 @@ const Page = () => {
       <div className="space-y-3">
         {isLoading ? <LoadingState message="Loading tasks…" /> : null}
         {tasks.map((task) => (
-          <Row
+          <TaskRow
             key={task.id}
             task={task}
             onEdit={(t) => {
@@ -46,7 +46,7 @@ const Page = () => {
         ))}
       </div>
 
-      <FormDialog
+      <TaskFormDialog
         key={editTask?.id ?? "new"}
         task={editTask}
         open={formOpen}
