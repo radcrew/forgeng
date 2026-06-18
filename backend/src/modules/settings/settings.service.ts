@@ -7,7 +7,6 @@ export interface SettingsDto {
   stipendMonth1: string;
   stipendMonth2: string;
   stipendMonth3: string;
-  stipendCurrency: string;
 }
 
 @Injectable()
@@ -30,16 +29,12 @@ export class SettingsService {
         ...(dto.stipendMonth1 != null && { stipendMonth1: dto.stipendMonth1 }),
         ...(dto.stipendMonth2 != null && { stipendMonth2: dto.stipendMonth2 }),
         ...(dto.stipendMonth3 != null && { stipendMonth3: dto.stipendMonth3 }),
-        ...(dto.stipendCurrency != null && {
-          stipendCurrency: dto.stipendCurrency,
-        }),
       },
       create: {
         id: 1,
         stipendMonth1: dto.stipendMonth1 ?? 30,
         stipendMonth2: dto.stipendMonth2 ?? 50,
         stipendMonth3: dto.stipendMonth3 ?? 100,
-        stipendCurrency: dto.stipendCurrency ?? 'USDT',
       },
     });
     return this.serialize(row);
@@ -50,7 +45,6 @@ export class SettingsService {
       stipendMonth1: row.stipendMonth1.toString(),
       stipendMonth2: row.stipendMonth2.toString(),
       stipendMonth3: row.stipendMonth3.toString(),
-      stipendCurrency: row.stipendCurrency,
     };
   }
 }

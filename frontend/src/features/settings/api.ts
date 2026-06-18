@@ -5,7 +5,6 @@ export interface UpdateSettingsPayload {
   stipendMonth1?: number;
   stipendMonth2?: number;
   stipendMonth3?: number;
-  stipendCurrency?: string;
 }
 
 export const getSettings = (): Promise<PlatformSettings> =>

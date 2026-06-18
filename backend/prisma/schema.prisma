@@ -312,7 +312,6 @@ model PlatformSetting {
   stipendMonth1   Decimal  @default(30)   @map("stipend_month_1") @db.Decimal(12, 2)
   stipendMonth2   Decimal  @default(50)   @map("stipend_month_2") @db.Decimal(12, 2)
   stipendMonth3   Decimal  @default(100)  @map("stipend_month_3") @db.Decimal(12, 2)
-  stipendCurrency String   @default("USDT") @map("stipend_currency") @db.VarChar(20)
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("platform_settings")

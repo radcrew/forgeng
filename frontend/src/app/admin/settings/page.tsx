@@ -13,16 +13,8 @@ import {
 } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@components/ui/select";
 import { PageContainer, PageHeader } from "@components/shared";
 import { LoadingState } from "@components/common";
-import { CURRENCIES } from "@constants/payments";
 import { useSettings, useUpdateSettings, type PlatformSettings } from "@features/settings";
 import { ApiError } from "@lib/api-client";
 
@@ -37,7 +29,6 @@ const SettingsForm = ({ settings, onSaved }: SettingsFormProps) => {
   const [month1, setMonth1] = useState(settings.stipendMonth1);
   const [month2, setMonth2] = useState(settings.stipendMonth2);
   const [month3, setMonth3] = useState(settings.stipendMonth3);
-  const [currency, setCurrency] = useState(settings.stipendCurrency);
 
   const handleSave = async () => {
     const m1 = parseFloat(month1);
@@ -58,12 +49,7 @@ const SettingsForm = ({ settings, onSaved }: SettingsFormProps) => {
     }
 
     try {
-      await save({
-        stipendMonth1: m1,
-        stipendMonth2: m2,
-        stipendMonth3: m3,
-        stipendCurrency: currency,
-      });
+      await save({ stipendMonth1: m1, stipendMonth2: m2, stipendMonth3: m3 });
       toast.success("Stipend settings saved.");
       onSaved();
     } catch (err) {
@@ -76,7 +62,7 @@ const SettingsForm = ({ settings, onSaved }: SettingsFormProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Monthly Stipend Amounts</CardTitle>
+        <CardTitle className="text-base">Monthly Stipend Amounts (USD)</CardTitle>
         <CardDescription>
           Set the default stipend for each month of a student&apos;s program.
           These appear as presets when recording a payment.
@@ -122,22 +108,6 @@ const SettingsForm = ({ settings, onSaved }: SettingsFormProps) => {
           </div>
         </div>
 
-        <div className="space-y-1.5 max-w-[160px]">
-          <Label htmlFor="currency">Currency</Label>
-          <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger id="currency">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CURRENCIES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         <Button onClick={handleSave} disabled={isPending}>
           {isPending ? "Saving…" : "Save changes"}
         </Button>
@@ -158,7 +128,7 @@ const Page = () => {
       {isLoading || !settings ? (
         <LoadingState message="Loading settings…" />
       ) : (
-        <SettingsForm key={settings.stipendCurrency} settings={settings} onSaved={refetch} />
+        <SettingsForm settings={settings} onSaved={refetch} />
       )}
     </PageContainer>
   );

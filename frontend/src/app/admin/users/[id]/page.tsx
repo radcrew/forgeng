@@ -423,11 +423,11 @@ export default function UserDetailPage({
                       type="button"
                       onClick={() => {
                         setAmount(value);
-                        setCurrency(platformSettings.stipendCurrency);
+                        setCurrency("USD");
                       }}
                       className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     >
-                      {label} ({value} {platformSettings.stipendCurrency})
+                      {label} (${value})
                     </button>
                   ))}
                 </div>
