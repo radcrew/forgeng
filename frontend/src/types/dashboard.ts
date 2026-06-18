@@ -19,6 +19,7 @@ export interface MonthlyPayment {
   approvedThisMonth: number;
   paymentDate: string;
   eligible: boolean;
+  enrollmentMonth: number;
 }
 
 export interface StudentDashboard {

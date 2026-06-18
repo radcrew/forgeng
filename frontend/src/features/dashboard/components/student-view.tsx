@@ -5,6 +5,7 @@ import { Clock } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
+import { useSettings } from "@features/settings";
 import type { StudentDashboard } from "../types";
 import { StudentAnalytics } from "./student-analytics";
 import { PaymentProgress } from "./payment-progress";
@@ -13,6 +14,18 @@ export type StudentViewProps = { dashboard: StudentDashboard };
 
 export const StudentView = ({ dashboard }: StudentViewProps) => {
   const { taskStats, nextDeadline, analytics, monthlyPayment } = dashboard;
+  const { data: settings } = useSettings();
+
+  const { enrollmentMonth } = monthlyPayment;
+  const stipendAmount =
+    settings &&
+    (enrollmentMonth === 1
+      ? settings.stipendMonth1
+      : enrollmentMonth === 2
+        ? settings.stipendMonth2
+        : enrollmentMonth === 3
+          ? settings.stipendMonth3
+          : null);
   const progressPercent =
     taskStats.total > 0
       ? Math.round((taskStats.approved / taskStats.total) * 100)
@@ -81,7 +94,7 @@ export const StudentView = ({ dashboard }: StudentViewProps) => {
         </Card>
       </div>
 
-      <PaymentProgress monthlyPayment={monthlyPayment} />
+      <PaymentProgress monthlyPayment={monthlyPayment} stipendAmount={stipendAmount ?? null} />
 
       <StudentAnalytics analytics={analytics} />
     </>

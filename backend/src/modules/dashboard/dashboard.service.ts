@@ -41,6 +41,7 @@ export interface MonthlyPayment {
   approvedThisMonth: number;
   paymentDate: string;
   eligible: boolean;
+  enrollmentMonth: number;
 }
 
 export interface StudentDashboard {
@@ -118,7 +119,7 @@ export class DashboardService {
           typeBreakdown: [],
           weeklyActivity: this.buildWeeklyActivity([]),
         },
-        monthlyPayment: this.buildMonthlyPayment([], new Set()),
+        monthlyPayment: this.buildMonthlyPayment([], new Set(), new Date()),
       };
     }
 
@@ -214,13 +215,18 @@ export class DashboardService {
         typeBreakdown,
         weeklyActivity: this.buildWeeklyActivity(mySubmissions),
       },
-      monthlyPayment: this.buildMonthlyPayment(tasks, approvedIds),
+      monthlyPayment: this.buildMonthlyPayment(
+        tasks,
+        approvedIds,
+        selected.enrolledAt,
+      ),
     };
   }
 
   private buildMonthlyPayment(
     tasks: { id: number; dueDate: Date | null }[],
     approvedIds: Set<number>,
+    enrolledAt: Date,
   ): MonthlyPayment {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -239,6 +245,9 @@ export class DashboardService {
     const approvedThisMonth = tasksThisMonth.filter((t) =>
       approvedIds.has(t.id),
     ).length;
+    const monthsElapsed =
+      (now.getFullYear() - enrolledAt.getFullYear()) * 12 +
+      (now.getMonth() - enrolledAt.getMonth());
     return {
       tasksThisMonth: tasksThisMonth.length,
       approvedThisMonth,
@@ -246,6 +255,7 @@ export class DashboardService {
       eligible:
         tasksThisMonth.length > 0 &&
         approvedThisMonth === tasksThisMonth.length,
+      enrollmentMonth: monthsElapsed + 1,
     };
   }
 
