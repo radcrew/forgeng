@@ -26,7 +26,7 @@ const Page = () => {
     <PageContainer maxWidth="4xl" spacing="8">
       <PageHeader title="Profile" description="Manage your account details." />
 
-      <ProfileForm key={user.github ?? user.linkedin ?? "empty"} user={user} onSaved={refreshUser} />
+      <ProfileForm user={user} onSaved={refreshUser} />
 
       <WalletManager />
 
