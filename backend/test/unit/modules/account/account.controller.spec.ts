@@ -28,7 +28,11 @@ const user = makeUser();
 describe('AccountController', () => {
   let controller: AccountController;
   let prisma: {
-    application: { findUnique: jest.Mock; updateMany: jest.Mock };
+    application: {
+      findUnique: jest.Mock;
+      updateMany: jest.Mock;
+      upsert: jest.Mock;
+    };
     user: { update: jest.Mock };
     enrollment: { findMany: jest.Mock };
   };
@@ -39,6 +43,7 @@ describe('AccountController', () => {
       application: {
         findUnique: jest.fn().mockResolvedValue(null),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        upsert: jest.fn().mockResolvedValue(null),
       },
       user: { update: jest.fn().mockResolvedValue(makeUser()) },
       enrollment: { findMany: jest.fn().mockResolvedValue([]) },
@@ -102,17 +107,25 @@ describe('AccountController', () => {
       expect(prisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 2 }, data: { name: 'Ada B' } }),
       );
-      // No social field provided, so socials are not written.
-      expect(prisma.application.updateMany).not.toHaveBeenCalled();
+      // No social field provided, so upsert is not called.
+      expect(prisma.application.upsert).not.toHaveBeenCalled();
     });
 
-    it('updates the application socials when a social field is present', async () => {
+    it('upserts the application socials when a social field is present', async () => {
       await controller.updateProfile(user, {
         name: 'Ada',
         github: 'https://github.com/ada',
       });
 
-      expect(prisma.application.updateMany).toHaveBeenCalledTimes(1);
+      expect(prisma.application.upsert).toHaveBeenCalledTimes(1);
+      expect(prisma.application.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 2 },
+          update: expect.objectContaining({
+            github: 'https://github.com/ada',
+          }) as unknown,
+        }),
+      );
     });
   });
 
