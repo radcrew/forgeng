@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { UserProfile } from "@types";
-import { Row } from "@features/users/components/row";
+import { UserRow as Row } from "@features/users/components/row";
 
 function makeUser(overrides: Partial<UserProfile> = {}): UserProfile {
   return {

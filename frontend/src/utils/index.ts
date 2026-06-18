@@ -7,4 +7,5 @@ export {
   writeStorageJson,
 } from "./storage";
 export { formatStatusLabel, initials } from "./string";
+export { isSafeHref } from "./url";
 export { mapUserDto, type UserDto } from "./user";

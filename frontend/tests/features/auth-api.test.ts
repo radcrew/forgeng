@@ -9,11 +9,9 @@ vi.mock("@lib/api-client", () => ({
   },
 }));
 
-const writeAccessToken = vi.fn();
 const writeSession = vi.fn();
 const clearAuth = vi.fn();
 vi.mock("@lib/session", () => ({
-  writeAccessToken: (...args: unknown[]) => writeAccessToken(...args),
   writeSession: (...args: unknown[]) => writeSession(...args),
   clearAuth: (...args: unknown[]) => clearAuth(...args),
 }));
@@ -34,8 +32,6 @@ const SESSION = {
     role: "student",
     createdAt: "2026-01-15T10:30:00.000Z",
   },
-  accessToken: "jwt.token",
-  expiresIn: 900,
 };
 
 beforeEach(() => {
@@ -51,7 +47,6 @@ describe("login", () => {
     const [path, body] = post.mock.calls[0] as [string, { email: string }];
     expect(path).toBe("/auth/login");
     expect(body.email).toBe("ada@example.com");
-    expect(writeAccessToken).toHaveBeenCalledWith("jwt.token");
     expect(writeSession).toHaveBeenCalledTimes(1);
   });
 });

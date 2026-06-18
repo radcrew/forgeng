@@ -66,6 +66,10 @@ class EnvironmentVariables {
   REFRESH_COOKIE_DOMAIN?: string;
 
   @IsOptional()
+  @IsString()
+  ACCESS_COOKIE_NAME?: string;
+
+  @IsOptional()
   @IsInt()
   EMAIL_VERIFY_TTL_MINUTES?: number;
 
@@ -138,6 +142,15 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   EMAIL_FROM?: string;
+
+  @IsOptional()
+  @IsString()
+  IPQUALITYSCORE_API_KEY?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  TRUST_PROXY?: number;
 }
 
 /** Validates `process.env` at startup; fails fast on missing required vars. */

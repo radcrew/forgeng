@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AppConfigModule } from '@config';
 import { CoreModule } from '@core/core.module';
@@ -18,6 +20,9 @@ import { SettingsModule } from '@modules/settings/settings.module';
 @Module({
   imports: [
     AppConfigModule,
+    // Baseline rate limit applied to every route (100 requests/min per IP).
+    // Sensitive auth routes tighten this further via @Throttle.
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     CoreModule,
     AuthModule,
     HealthModule,
@@ -32,5 +37,6 @@ import { SettingsModule } from '@modules/settings/settings.module';
     NotificationsModule,
     SettingsModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

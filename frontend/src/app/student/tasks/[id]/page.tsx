@@ -12,8 +12,8 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { TASK_TYPE_ICON } from "@constants/tasks";
-import { DetailSheet, StatusBadge, useSubmissions } from "@features/submissions";
-import { SubmitDialog, useTask } from "@features/tasks";
+import { SubmissionDetailSheet, SubmissionStatusBadge, useSubmissions } from "@features/submissions";
+import { TaskSubmitDialog, useTask } from "@features/tasks";
 
 const Page = () => {
   const params = useParams<{ id: string }>();
@@ -114,7 +114,7 @@ const Page = () => {
         {submission ? (
           <Card className="flex items-center justify-between gap-4 p-5">
             <div className="flex min-w-0 items-center gap-3">
-              <StatusBadge status={submission.status} />
+              <SubmissionStatusBadge status={submission.status} />
               <span className="text-sm text-muted-foreground">
                 Submitted{" "}
                 {format(new Date(submission.createdAt), "MMM d, yyyy")}
@@ -139,7 +139,7 @@ const Page = () => {
         )}
       </div>
 
-      <SubmitDialog
+      <TaskSubmitDialog
         task={task}
         open={submitOpen}
         onOpenChange={setSubmitOpen}
@@ -147,7 +147,7 @@ const Page = () => {
       />
 
       {submission && (
-        <DetailSheet
+        <SubmissionDetailSheet
           submission={submission}
           open={detailOpen}
           onClose={() => setDetailOpen(false)}

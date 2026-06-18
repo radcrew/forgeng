@@ -23,7 +23,7 @@ vi.mock("sonner", () => ({
 }));
 
 import type { Task } from "@types";
-import { FormDialog } from "@features/tasks/components/form-dialog";
+import { TaskFormDialog as FormDialog } from "@features/tasks/components/form-dialog";
 
 function makeTask(overrides: Partial<Task> = {}): Task {
   return {

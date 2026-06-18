@@ -6,14 +6,14 @@ import { Card } from "@components/ui/card";
 
 import type { Application } from "@types";
 import { isApplicationComplete } from "@utils/user";
-import { StatusBadge } from "./status-badge";
+import { ApplicationStatusBadge } from "./status-badge";
 
-export type RowProps = {
+export type ApplicationRowProps = {
   application: Application;
   onSelect: () => void;
 };
 
-export const Row = ({ application, onSelect }: RowProps) => {
+export const ApplicationRow = ({ application, onSelect }: ApplicationRowProps) => {
   const incomplete = !isApplicationComplete(application);
 
   return (
@@ -38,7 +38,7 @@ export const Row = ({ application, onSelect }: RowProps) => {
           <span className="text-sm text-muted-foreground">
             {format(new Date(application.createdAt), "MMM d, yyyy")}
           </span>
-          <StatusBadge status={application.status} />
+          <ApplicationStatusBadge status={application.status} />
           <Button
             variant="ghost"
             size="sm"

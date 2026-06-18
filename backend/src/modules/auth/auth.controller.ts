@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -13,9 +14,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import type { AppConfiguration } from '@config';
+import { AUTH_THROTTLE } from './auth.constants';
 import { Public } from '@core/auth/public.decorator';
 import type { AuthUser } from '@core/auth/auth.types';
 import { CurrentUser } from '@core/auth/current-user.decorator';
@@ -35,11 +38,6 @@ interface OAuthRequest extends Request {
   user: OAuthProfileDto;
 }
 
-interface ClientTokens {
-  accessToken: string;
-  expiresIn: number;
-}
-
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -49,6 +47,7 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(
@@ -59,13 +58,14 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() dto: LoginDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ user: UserDto } & ClientTokens> {
+  ): Promise<{ user: UserDto }> {
     const result = await this.service.login(dto, ctxFromRequest(req));
     return this.respondWithSession(res, result);
   }
@@ -76,11 +76,17 @@ export class AuthController {
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ user: UserDto } & ClientTokens> {
+  ): Promise<{ user: UserDto }> {
     const token = this.readRefreshCookie(req);
     if (!token) throw new BadRequestException('Missing refresh token.');
-    const result = await this.service.refresh(token, ctxFromRequest(req));
-    return this.respondWithSession(res, result);
+    try {
+      const result = await this.service.refresh(token, ctxFromRequest(req));
+      return this.respondWithSession(res, result);
+    } catch (err) {
+      this.clearRefreshCookie(res);
+      this.clearAccessCookie(res);
+      throw err;
+    }
   }
 
   @Public()
@@ -93,6 +99,7 @@ export class AuthController {
     const token = this.readRefreshCookie(req);
     await this.service.logout(token);
     this.clearRefreshCookie(res);
+    this.clearAccessCookie(res);
   }
 
   @Public()
@@ -105,6 +112,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('resend-verification')
   @HttpCode(HttpStatus.ACCEPTED)
   async resendVerification(@Body() dto: ResendVerificationDto): Promise<void> {
@@ -112,6 +120,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('forgot-password')
   @HttpCode(HttpStatus.ACCEPTED)
   async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<void> {
@@ -119,6 +128,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('reset-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
@@ -175,12 +185,24 @@ export class AuthController {
         result.tokens.refreshToken,
         result.tokens.refreshExpiresAt,
       );
-      const url = new URL(
-        this.config.getOrThrow('auth.oauthSuccessRedirect', { infer: true }),
+      this.setAccessCookie(
+        res,
+        result.tokens.accessToken,
+        result.tokens.accessExpiresIn,
       );
-      url.searchParams.set('token', result.tokens.accessToken);
-      res.redirect(url.toString());
-    } catch {
+      const target = this.config.getOrThrow('auth.oauthSuccessRedirect', {
+        infer: true,
+      });
+      res.redirect(target);
+    } catch (err) {
+      const restrictionReason = this.accessRestrictionReason(err);
+      if (restrictionReason) {
+        const frontendUrl = this.config.getOrThrow('frontendUrl', {
+          infer: true,
+        });
+        res.redirect(`${frontendUrl}/unavailable?reason=${restrictionReason}`);
+        return;
+      }
       const failureUrl = this.config.getOrThrow('auth.oauthFailureRedirect', {
         infer: true,
       });
@@ -188,20 +210,33 @@ export class AuthController {
     }
   }
 
+  private accessRestrictionReason(err: unknown): 'region' | 'vpn' | null {
+    if (!(err instanceof ForbiddenException)) return null;
+    const body = err.getResponse();
+    const code =
+      typeof body === 'object' && body !== null
+        ? (body as { code?: string }).code
+        : undefined;
+    if (code === 'VPN_DETECTED') return 'vpn';
+    if (code === 'REGION_BLOCKED') return 'region';
+    return null;
+  }
+
   private respondWithSession(
     res: Response,
     result: AuthResult,
-  ): { user: UserDto } & ClientTokens {
+  ): { user: UserDto } {
     this.setRefreshCookie(
       res,
       result.tokens.refreshToken,
       result.tokens.refreshExpiresAt,
     );
-    return {
-      user: result.user,
-      accessToken: result.tokens.accessToken,
-      expiresIn: result.tokens.accessExpiresIn,
-    };
+    this.setAccessCookie(
+      res,
+      result.tokens.accessToken,
+      result.tokens.accessExpiresIn,
+    );
+    return { user: result.user };
   }
 
   private setRefreshCookie(
@@ -220,7 +255,9 @@ export class AuthController {
       secure: isProd,
       sameSite: 'lax',
       domain: domain ?? undefined,
-      path: '/api/auth',
+      // Path "/" (not "/api/auth") so the frontend's proxy.ts receives this
+      // cookie on page navigations and can forward it to /auth/refresh.
+      path: '/',
       expires: expiresAt,
     });
   }
@@ -229,7 +266,35 @@ export class AuthController {
     const cookieName = this.config.getOrThrow('auth.refreshCookieName', {
       infer: true,
     });
-    res.clearCookie(cookieName, { path: '/api/auth' });
+    res.clearCookie(cookieName, { path: '/' });
+  }
+
+  private setAccessCookie(
+    res: Response,
+    token: string,
+    expiresInSeconds: number,
+  ): void {
+    const cookieName = this.config.getOrThrow('auth.accessCookieName', {
+      infer: true,
+    });
+    const domain = this.config.get('auth.refreshCookieDomain', { infer: true });
+    const isProd =
+      this.config.getOrThrow('nodeEnv', { infer: true }) === 'production';
+    res.cookie(cookieName, token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'lax',
+      domain: domain ?? undefined,
+      path: '/',
+      expires: new Date(Date.now() + expiresInSeconds * 1000),
+    });
+  }
+
+  private clearAccessCookie(res: Response): void {
+    const cookieName = this.config.getOrThrow('auth.accessCookieName', {
+      infer: true,
+    });
+    res.clearCookie(cookieName, { path: '/' });
   }
 
   private readRefreshCookie(req: Request): string | undefined {
@@ -247,12 +312,11 @@ export class AuthController {
 
 function ctxFromRequest(req: Request): { userAgent?: string; ip?: string } {
   const ua = req.headers['user-agent'];
-  // Prefer X-Forwarded-For (set by reverse proxies); fall back to socket IP.
-  const forwarded = req.headers['x-forwarded-for'];
-  const ip =
-    typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
+  // req.ip is set correctly by Express once `trust proxy` is configured in
+  // main.ts. Do NOT read X-Forwarded-For manually — clients can inject fake
+  // entries into that header when they can reach the server directly.
   return {
     userAgent: typeof ua === 'string' ? ua.slice(0, 255) : undefined,
-    ip,
+    ip: req.ip,
   };
 }

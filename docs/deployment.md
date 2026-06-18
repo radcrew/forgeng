@@ -94,7 +94,42 @@ deploy you'll likely want to upgrade:
 
 Upgrades are a single click in the Render dashboard — no code changes.
 
-## 3. After the first deploy
+## 3. Auth cookies require a shared domain
+
+Auth is implemented with `httpOnly` cookies (`forgeng_access` /
+`forgeng_refresh`) that the backend sets and the frontend's `middleware.ts`
+reads to protect `/admin`, `/student`, and `/apply` routes. Cookies are only
+visible to a server reading them if the cookie's domain matches the request's
+domain.
+
+**This works automatically for local dev** (`localhost:3000` /
+`localhost:3001`) and **for the default Vercel/Render setup is broken** —
+`forgeng-frontend.vercel.app` and `forgeng-backend.onrender.com` are different
+registrable domains, so the frontend's middleware will never see the cookies
+the backend sets, and protected routes will redirect to `/sign-in` even when
+the user just logged in.
+
+To fix this in production, put the frontend and backend on subdomains of the
+same parent domain, e.g.:
+
+- Frontend: `app.example.com` (Vercel custom domain)
+- Backend: `api.example.com` (Render custom domain)
+
+Then set on the backend:
+
+```env
+REFRESH_COOKIE_DOMAIN=.example.com
+ACCESS_COOKIE_NAME=forgeng_access   # default, no change needed
+```
+
+(`ACCESS_COOKIE_NAME`'s cookie reuses `REFRESH_COOKIE_DOMAIN` for its
+`Domain` attribute.) With both cookies scoped to `.example.com`, requests to
+`app.example.com` include them and `middleware.ts` can verify the access
+token. Also set `JWT_ACCESS_SECRET` on Vercel to the same value as the
+backend's `JWT_ACCESS_SECRET`, since `middleware.ts` verifies the token
+itself rather than calling the API.
+
+## 4. After the first deploy
 
 Verify the wiring end-to-end:
 
@@ -111,7 +146,7 @@ open https://<your-vercel-domain>
 If `/api/healthz` returns OK but the frontend can't reach the backend,
 the most common cause is a missing `CORS_ORIGIN` value on Render.
 
-## 4. Optional: GitHub Actions
+## 5. Optional: GitHub Actions
 
 The repo intentionally ships **without** a CI workflow. Vercel and Render
 both run their own build on every push, so any breaking change still gets
@@ -131,7 +166,7 @@ A reasonable starter `ci.yml` (frontend + backend lint + build, parallel
 jobs, pnpm cache, 15-min timeout) takes ~70 lines. Ask whenever you want
 one wired up.
 
-## 5. Local environment files
+## 6. Local environment files
 
 For reference, here's what each environment needs:
 
@@ -140,6 +175,7 @@ For reference, here's what each environment needs:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+JWT_ACCESS_SECRET=dev-access-secret-change-me
 ```
 
 ### `backend/.env`
@@ -148,6 +184,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/forgeng?schema=public
 CORS_ORIGIN=http://localhost:3000
 PORT=3001
+JWT_ACCESS_SECRET=dev-access-secret-change-me
 ```
 
 Vercel and Render hold the production equivalents in their own

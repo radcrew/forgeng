@@ -101,7 +101,8 @@ export const APPLICATION_FORM_SCHEMA = z.object({
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 
-export const APPLICATION_DRAFT_STORAGE_KEY = "apprenticeship_application_draft";
+// Lives under the `forgeng.` prefix so sign-out clears it (see lib/session.ts).
+export const APPLICATION_DRAFT_STORAGE_KEY = "forgeng.applicationDraft";
 
 // Each wizard step has its own URL segment, e.g. /apply/background. The order
 // of this array is the order steps are shown in.
