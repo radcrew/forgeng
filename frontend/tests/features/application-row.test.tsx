@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Application } from "@types";
-import { Row } from "@features/applications/components/row";
+import { ApplicationRow as Row } from "@features/applications/components/row";
 
 function makeApplication(overrides: Partial<Application> = {}): Application {
   return {

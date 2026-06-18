@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { StatusTabs } from "@features/applications/components/status-tabs";
+import { ApplicationStatusTabs as StatusTabs } from "@features/applications/components/status-tabs";
 import { APPLICATION_STATUS_FILTER_TABS } from "@constants/applications";
 
 describe("application StatusTabs", () => {

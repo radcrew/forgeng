@@ -19,7 +19,7 @@ vi.mock("sonner", () => ({
 }));
 
 import type { Cohort } from "@types";
-import { FormDialog } from "@features/cohorts/components/form-dialog";
+import { CohortFormDialog as FormDialog } from "@features/cohorts/components/form-dialog";
 
 function makeCohort(overrides: Partial<Cohort> = {}): Cohort {
   return {
