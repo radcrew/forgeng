@@ -47,7 +47,7 @@ URL automatically.
 
 ## 2. Backend → Render
 
-The repo ships with a [`render.yaml`](./render.yaml) blueprint that
+The repo ships with a [`render.yaml`](../render.yaml) blueprint that
 provisions the web service and the Postgres database in one click.
 
 ### One-time setup

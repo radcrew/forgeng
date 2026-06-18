@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# The coverage comment step needs to write a comment on the PR.
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  backend:
+    name: Backend (lint + unit + e2e)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # corepack activates the pnpm version pinned in package.json#packageManager.
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The Prisma client must exist before lint/typecheck/tests, otherwise
+      # type-aware ESLint sees every model access as `any` and floods errors.
+      - name: Generate Prisma client
+        run: pnpm --filter @forgeng/backend prisma:generate
+
+      - name: Lint
+        run: pnpm --filter @forgeng/backend lint
+
+      # Unit tests run with coverage so the summary below has data to report.
+      - name: Unit tests
+        run: pnpm --filter @forgeng/backend test:cov
+
+      # E2E uses a mocked Prisma client, so no database service is required.
+      - name: E2E tests
+        run: pnpm --filter @forgeng/backend test:e2e
+
+      - name: Coverage report
+        if: always()
+        uses: MishaKav/jest-coverage-comment@v1.0.27
+        with:
+          title: Backend coverage
+          coverage-summary-path: backend/coverage/coverage-summary.json
+          summary-title: Backend coverage
+          unique-id-for-comment: backend
+
+  frontend:
+    name: Frontend (lint + unit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @forgeng/frontend lint
+
+      - name: Unit tests
+        run: pnpm --filter @forgeng/frontend test:cov
+
+      - name: Coverage report
+        if: always()
+        uses: MishaKav/jest-coverage-comment@v1.0.27
+        with:
+          title: Frontend coverage
+          coverage-summary-path: frontend/coverage/coverage-summary.json
+          summary-title: Frontend coverage
+          unique-id-for-comment: frontend
