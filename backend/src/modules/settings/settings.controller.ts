@@ -6,7 +6,6 @@ import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { SettingsService, type SettingsDto } from './settings.service';
 
 @ApiTags('settings')
-@Roles('admin')
 @Controller('settings')
 export class SettingsController {
   constructor(private readonly service: SettingsService) {}
@@ -16,6 +15,7 @@ export class SettingsController {
     return this.service.get();
   }
 
+  @Roles('admin')
   @Patch()
   update(@Body() dto: UpdateSettingsDto): Promise<SettingsDto> {
     return this.service.update(dto);
