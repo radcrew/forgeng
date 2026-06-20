@@ -1,10 +1,6 @@
 import { apiClient } from "@lib/api-client";
 import { API_BASE } from "@lib/config";
-import {
-  clearAuth,
-  writeAccessToken,
-  writeSession,
-} from "@lib/session";
+import { clearAuth, writeSession } from "@lib/session";
 import type { UserProfile } from "@types";
 import { normalizeEmail } from "@utils/auth";
 import { mapUserDto, type UserDto } from "@utils/user";
@@ -13,8 +9,6 @@ export type OAuthProvider = "google" | "github";
 
 interface AuthSessionResponse {
   user: UserDto;
-  accessToken: string;
-  expiresIn: number;
 }
 
 interface UserResponse {
@@ -22,7 +16,6 @@ interface UserResponse {
 }
 
 const persistSession = (response: AuthSessionResponse): UserProfile => {
-  writeAccessToken(response.accessToken);
   const profile = mapUserDto(response.user);
   writeSession(profile);
   return profile;

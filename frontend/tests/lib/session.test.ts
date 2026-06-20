@@ -3,10 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UserProfile } from "@types";
 import {
   clearAuth,
-  readAccessToken,
   readSession,
   subscribeSession,
-  writeAccessToken,
   writeSession,
 } from "@lib/session";
 
@@ -47,27 +45,12 @@ describe("session storage", () => {
   });
 });
 
-describe("access token storage", () => {
-  it("round-trips an access token", () => {
-    writeAccessToken("jwt.token");
-    expect(readAccessToken()).toBe("jwt.token");
-  });
-
-  it("removes the token on writeAccessToken(null)", () => {
-    writeAccessToken("jwt.token");
-    writeAccessToken(null);
-    expect(readAccessToken()).toBeNull();
-  });
-});
-
 describe("clearAuth", () => {
-  it("removes both the token and the session", () => {
-    writeAccessToken("jwt.token");
+  it("clears the session", () => {
     writeSession(USER);
 
     clearAuth();
 
-    expect(readAccessToken()).toBeNull();
     expect(readSession()).toBeNull();
   });
 });

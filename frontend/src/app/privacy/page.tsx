@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@components/legal";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Forgeng",
+  title: "Privacy Policy",
   description:
-    "How Forgeng collects, uses, and protects your personal information.",
+    "How Forgeng collects, uses, and protects your personal information across our website, applications, and apprenticeship programs.",
 };
 
 const PrivacyPage = () => (

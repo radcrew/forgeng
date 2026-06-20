@@ -15,13 +15,13 @@ import { ApiError } from "@lib/api-client";
 import { deleteCohort } from "../api";
 import type { Cohort } from "@types";
 
-export type RowProps = {
+export type CohortRowProps = {
   cohort: Cohort;
   onEdit: (cohort: Cohort) => void;
   onDeleted?: () => void;
 };
 
-export const Row = ({ cohort, onEdit, onDeleted }: RowProps) => {
+export const CohortRow = ({ cohort, onEdit, onDeleted }: CohortRowProps) => {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const detailHref = `/admin/cohorts/${cohort.id}`;

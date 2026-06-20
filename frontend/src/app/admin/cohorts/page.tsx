@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
-import { Row, FormDialog, useCohorts } from "@features/cohorts";
+import { CohortRow, CohortFormDialog, useCohorts } from "@features/cohorts";
 import type { Cohort } from "@types";
 
 const Page = () => {
@@ -38,7 +38,7 @@ const Page = () => {
       ) : (
         <div className="flex flex-col gap-3">
           {cohorts.map((cohort) => (
-            <Row
+            <CohortRow
               key={cohort.id}
               cohort={cohort}
               onEdit={(c) => {
@@ -51,7 +51,7 @@ const Page = () => {
         </div>
       )}
 
-      <FormDialog
+      <CohortFormDialog
         key={editCohort?.id ?? "new"}
         cohort={editCohort}
         open={formOpen}

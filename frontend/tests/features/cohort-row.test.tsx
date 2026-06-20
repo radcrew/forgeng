@@ -22,7 +22,7 @@ vi.mock("sonner", () => ({
 }));
 
 import type { Cohort } from "@types";
-import { Row } from "@features/cohorts/components/row";
+import { CohortRow as Row } from "@features/cohorts/components/row";
 
 function makeCohort(overrides: Partial<Cohort> = {}): Cohort {
   return {

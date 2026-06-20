@@ -116,7 +116,11 @@ describe('DashboardService', () => {
 
     it('aggregates task stats from the student submissions', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
-        { cohortId: 3, cohort: makeCohort({ id: 3, name: 'Spring' }) },
+        {
+          cohortId: 3,
+          cohort: makeCohort({ id: 3, name: 'Spring' }),
+          enrolledAt: DATE,
+        },
       ]);
       prisma.task.findMany.mockResolvedValue([
         makeTask({ id: 1 }),
@@ -149,7 +153,11 @@ describe('DashboardService', () => {
 
     it('counts a task with no submission as todo in the status breakdown', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
-        { cohortId: 3, cohort: makeCohort({ id: 3, name: 'Spring' }) },
+        {
+          cohortId: 3,
+          cohort: makeCohort({ id: 3, name: 'Spring' }),
+          enrolledAt: DATE,
+        },
       ]);
       prisma.task.findMany.mockResolvedValue([
         makeTask({ id: 1 }),
@@ -171,8 +179,16 @@ describe('DashboardService', () => {
 
     it('falls back to the most recent enrollment for an unknown cohortId', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
-        { cohortId: 7, cohort: makeCohort({ id: 7, name: 'Newest' }) },
-        { cohortId: 3, cohort: makeCohort({ id: 3, name: 'Older' }) },
+        {
+          cohortId: 7,
+          cohort: makeCohort({ id: 7, name: 'Newest' }),
+          enrolledAt: DATE,
+        },
+        {
+          cohortId: 3,
+          cohort: makeCohort({ id: 3, name: 'Older' }),
+          enrolledAt: DATE,
+        },
       ]);
       prisma.task.findMany.mockResolvedValue([]);
       prisma.submission.findMany.mockResolvedValue([]);

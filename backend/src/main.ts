@@ -1,6 +1,6 @@
 import 'tsconfig-paths/register';
 
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -21,6 +21,12 @@ async function bootstrap(): Promise<void> {
   const port = config.getOrThrow('port', { infer: true });
   const corsOrigin = config.getOrThrow('corsOrigin', { infer: true });
   const uploadsDir = config.getOrThrow('uploadsDir', { infer: true });
+
+  // Tell Express how many trusted reverse-proxy hops sit in front of this
+  // server. When set, req.ip is derived from X-Forwarded-For correctly and
+  // clients cannot spoof it by injecting a fake XFF header value.
+  const trustProxy = config.getOrThrow('trustProxy', { infer: true });
+  if (trustProxy > 0) app.set('trust proxy', trustProxy);
 
   app.setGlobalPrefix('api');
 
@@ -54,9 +60,11 @@ async function bootstrap(): Promise<void> {
   setupSwagger(app);
 
   await app.listen(port);
-  console.log(`🚀 forgeng API running on http://localhost:${port}/api`);
+
+  const logger = new Logger('Bootstrap');
+  logger.log(`🚀 forgeng API running on http://localhost:${port}/api`);
   if (config.getOrThrow('nodeEnv', { infer: true }) !== 'production') {
-    console.log(`📖 OpenAPI docs at http://localhost:${port}/api/docs`);
+    logger.log(`📖 OpenAPI docs at http://localhost:${port}/api/docs`);
   }
 }
 void bootstrap();

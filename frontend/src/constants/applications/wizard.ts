@@ -29,7 +29,7 @@ export const APPLICATION_WIZARD_COPY = {
     },
     videoIntro: {
       title: "Video Introduction",
-      hint: "You just need to record your video for about 20–30 seconds. No need to make it long — just briefly describe yourself.",
+      hint: "Please record a short video introducing yourself, about 20–30 seconds long. Just say hello and share a little about who you are — there's no need to make it long or formal.",
       allowCameraLabel: "Allow Camera",
       recordLabel: "Start Recording",
       stopLabel: "Stop",

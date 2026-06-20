@@ -80,6 +80,8 @@ describe('AuthController', () => {
         switch (key) {
           case 'auth.refreshCookieName':
             return 'rt';
+          case 'auth.accessCookieName':
+            return 'at';
           case 'nodeEnv':
             return 'test';
           case 'auth.oauthSuccessRedirect':
@@ -99,12 +101,10 @@ describe('AuthController', () => {
   });
 
   describe('register', () => {
-    it('delegates with the dto and a request context (forwarded ip, ua)', async () => {
+    it('delegates with the dto and a request context (ip, ua)', async () => {
       const req = makeReq({
-        headers: {
-          'user-agent': 'jest',
-          'x-forwarded-for': '1.2.3.4, 5.6.7.8',
-        },
+        ip: '1.2.3.4',
+        headers: { 'user-agent': 'jest' },
       } as Partial<Request>);
 
       await controller.register({ email: 'a@b.c' } as never, req);
@@ -117,7 +117,7 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    it('sets the refresh cookie and returns the client tokens', async () => {
+    it('sets httpOnly cookies and returns only the user', async () => {
       const res = makeRes();
       const result = await controller.login(
         { email: 'a@b.c', password: 'pw' },
@@ -128,13 +128,9 @@ describe('AuthController', () => {
       expect(res.cookie).toHaveBeenCalledWith(
         'rt',
         'refresh',
-        expect.objectContaining({ httpOnly: true, path: '/api/auth' }),
+        expect.objectContaining({ httpOnly: true, path: '/' }),
       );
-      expect(result).toEqual({
-        user: AUTH_RESULT.user,
-        accessToken: 'access',
-        expiresIn: 900,
-      });
+      expect(result).toEqual({ user: AUTH_RESULT.user });
     });
   });
 
@@ -166,7 +162,7 @@ describe('AuthController', () => {
       await controller.logout(req, res);
 
       expect(service.logout).toHaveBeenCalledWith('tok');
-      expect(res.clearCookie).toHaveBeenCalledWith('rt', { path: '/api/auth' });
+      expect(res.clearCookie).toHaveBeenCalledWith('rt', { path: '/' });
     });
   });
 
@@ -199,7 +195,7 @@ describe('AuthController', () => {
   });
 
   describe('OAuth callback', () => {
-    it('redirects to the success URL with tokens on success', async () => {
+    it('redirects to the success URL and sets cookies on success', async () => {
       const req = makeReq({ user: { provider: 'google' } } as never);
       const res = makeRes();
 
@@ -207,9 +203,7 @@ describe('AuthController', () => {
 
       expect(res.cookie).toHaveBeenCalled();
       const [target] = res.redirect.mock.calls[0] as [string];
-      expect(target).toContain('https://app/oauth');
-      expect(target).toContain('accessToken=access');
-      expect(target).toContain('expiresIn=900');
+      expect(target).toBe('https://app/oauth');
     });
 
     it('redirects to the failure URL when sign-in throws', async () => {

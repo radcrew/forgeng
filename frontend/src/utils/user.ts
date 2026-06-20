@@ -43,9 +43,6 @@ export interface UserDto {
   portfolio: string | null;
   telegram: string | null;
   whatsapp: string | null;
-  registrationIp: string | null;
-  registrationCountry: string | null;
-  registrationCity: string | null;
 }
 
 export const mapUserDto = (dto: UserDto): UserProfile => ({
@@ -65,7 +62,4 @@ export const mapUserDto = (dto: UserDto): UserProfile => ({
   portfolio: dto.portfolio,
   telegram: dto.telegram,
   whatsapp: dto.whatsapp,
-  registrationIp: dto.registrationIp,
-  registrationCountry: dto.registrationCountry,
-  registrationCity: dto.registrationCity,
 });

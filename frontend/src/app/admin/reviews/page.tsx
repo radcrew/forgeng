@@ -11,7 +11,7 @@ import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { SUBMISSION_STATUS_FILTER_TABS } from "@constants/submissions";
 import {
   ReviewSheet,
-  StatusBadge,
+  SubmissionStatusBadge,
   useSubmissions,
   type SubmissionStatusFilter,
 } from "@features/submissions";
@@ -69,7 +69,7 @@ const Page = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
-                <StatusBadge status={sub.status} showIcon={false} />
+                <SubmissionStatusBadge status={sub.status} showIcon={false} />
                 <Button variant="ghost" size="sm">
                   Review
                 </Button>

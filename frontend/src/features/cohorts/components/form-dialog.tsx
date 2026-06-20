@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import {
   FormBody,
-  FormDialog as BaseFormDialog,
+  FormDialog,
   FormField,
   FormGrid,
 } from "@components/common";
@@ -24,19 +24,19 @@ import { ApiError } from "@lib/api-client";
 import { createCohort, updateCohort } from "../api";
 import type { Cohort, CohortStatus } from "@types";
 
-export type FormDialogProps = {
+export type CohortFormDialogProps = {
   cohort?: Cohort;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved?: () => void;
 };
 
-export const FormDialog = ({
+export const CohortFormDialog = ({
   cohort,
   open,
   onOpenChange,
   onSaved,
-}: FormDialogProps) => {
+}: CohortFormDialogProps) => {
   const isEdit = !!cohort;
   const [name, setName] = useState(cohort?.name ?? "");
   const [description, setDescription] = useState(cohort?.description ?? "");
@@ -83,7 +83,7 @@ export const FormDialog = ({
   };
 
   return (
-    <BaseFormDialog
+    <FormDialog
       open={open}
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit Cohort" : "Create Cohort"}
@@ -151,6 +151,6 @@ export const FormDialog = ({
           </FormField>
         </FormGrid>
       </FormBody>
-    </BaseFormDialog>
+    </FormDialog>
   );
 };

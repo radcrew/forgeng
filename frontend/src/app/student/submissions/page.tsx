@@ -8,8 +8,8 @@ import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
-  DetailSheet,
-  StatusBadge,
+  SubmissionDetailSheet,
+  SubmissionStatusBadge,
   useSubmissions,
 } from "@features/submissions";
 
@@ -53,7 +53,7 @@ const Page = () => {
                     {sub.feedbackCount}
                   </span>
                 )}
-                <StatusBadge status={sub.status} />
+                <SubmissionStatusBadge status={sub.status} />
                 <Button variant="ghost" size="sm">
                   View
                 </Button>
@@ -64,7 +64,7 @@ const Page = () => {
       )}
 
       {selected && (
-        <DetailSheet
+        <SubmissionDetailSheet
           submission={selected}
           open={!!selectedId}
           onClose={() => setSelectedId(null)}

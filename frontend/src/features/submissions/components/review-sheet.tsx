@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 import {
-  DetailSheet as BaseDetailSheet,
+  DetailSheet,
   ExternalLinkField,
   FeedbackCard,
   FormField,
@@ -21,7 +21,7 @@ import type { FeedbackVerdict, Submission } from "@types";
 
 import { createFeedback } from "../api";
 import { useSubmissionFeedback } from "../hooks";
-import { StatusBadge } from "./status-badge";
+import { SubmissionStatusBadge } from "./status-badge";
 
 export type ReviewSheetProps = {
   submission: Submission;
@@ -66,7 +66,7 @@ export const ReviewSheet = ({
   };
 
   return (
-    <BaseDetailSheet
+    <DetailSheet
       open={open}
       onClose={onClose}
       title={submission.task?.title ?? "Review"}
@@ -80,7 +80,7 @@ export const ReviewSheet = ({
           <span className="text-sm text-muted-foreground">
             {format(new Date(submission.createdAt), "MMM d, yyyy")}
           </span>
-          <StatusBadge status={submission.status} showIcon={false} />
+          <SubmissionStatusBadge status={submission.status} showIcon={false} />
         </div>
       }
     >
@@ -135,6 +135,6 @@ export const ReviewSheet = ({
           </Button>
         </div>
       )}
-    </BaseDetailSheet>
+    </DetailSheet>
   );
 };

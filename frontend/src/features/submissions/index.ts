@@ -22,10 +22,10 @@ export {
 } from "./api";
 export type { SubmissionStatusFilter, UseSubmissionsOptions } from "./hooks";
 export { useSubmissions, useSubmissionFeedback } from "./hooks";
-export { StatusBadge } from "./components/status-badge";
-export type { StatusBadgeProps } from "./components/status-badge";
+export { SubmissionStatusBadge } from "./components/status-badge";
+export type { SubmissionStatusBadgeProps } from "./components/status-badge";
 
-export { DetailSheet } from "./components/student/detail-sheet";
-export type { DetailSheetProps } from "./components/student/detail-sheet";
+export { SubmissionDetailSheet } from "./components/student/detail-sheet";
+export type { SubmissionDetailSheetProps } from "./components/student/detail-sheet";
 export { ReviewSheet } from "./components/review-sheet";
 export type { ReviewSheetProps } from "./components/review-sheet";

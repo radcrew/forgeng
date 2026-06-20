@@ -306,6 +306,17 @@ model Payment {
   @@map("payments")
 }
 
+// Singleton platform-wide configuration. There is always exactly one row (id=1).
+model PlatformSetting {
+  id              Int      @id @default(1)
+  stipendMonth1   Decimal  @default(30)   @map("stipend_month_1") @db.Decimal(12, 2)
+  stipendMonth2   Decimal  @default(50)   @map("stipend_month_2") @db.Decimal(12, 2)
+  stipendMonth3   Decimal  @default(100)  @map("stipend_month_3") @db.Decimal(12, 2)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("platform_settings")
+}
+
 // Per-student delivery settings, one row per user. A missing row means every
 // channel is on (see the defaults below) — rows are created lazily on first edit.
 model NotificationPreference {

@@ -6,9 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { RadialProgress } from "@components/common";
 import type { MonthlyPayment } from "@types";
 
-export type PaymentProgressProps = { monthlyPayment: MonthlyPayment };
+export type PaymentProgressProps = {
+  monthlyPayment: MonthlyPayment;
+  stipendAmount: string | null;
+};
 
-export const PaymentProgress = ({ monthlyPayment }: PaymentProgressProps) => {
+export const PaymentProgress = ({ monthlyPayment, stipendAmount }: PaymentProgressProps) => {
   const { tasksThisMonth, approvedThisMonth, paymentDate, eligible } =
     monthlyPayment;
 
@@ -52,6 +55,11 @@ export const PaymentProgress = ({ monthlyPayment }: PaymentProgressProps) => {
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Coins className="h-4 w-4" />
             Monthly Stipend
+            {stipendAmount && (
+              <span className="text-xs font-semibold text-foreground">
+                ${stipendAmount} USD
+              </span>
+            )}
           </CardTitle>
           {eligible && (
             <span className="flex items-center gap-1 text-xs font-medium text-primary">

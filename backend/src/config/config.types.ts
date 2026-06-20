@@ -17,6 +17,7 @@ export interface AppConfiguration {
     refreshTtl: string;
     refreshCookieName: string;
     refreshCookieDomain: string | undefined;
+    accessCookieName: string;
     verifyTokenTtlMinutes: number;
     passwordResetTtlMinutes: number;
     oauthSuccessRedirect: string;
@@ -28,6 +29,15 @@ export interface AppConfiguration {
   };
   smtp: SmtpConfig | null;
   emailFrom: string;
+  ipQualityScore: {
+    apiKey: string | undefined;
+  };
+  /**
+   * Number of trusted reverse-proxy hops in front of the server.
+   * Set to 1 when behind a single nginx/load-balancer, 2 for two hops, etc.
+   * 0 = no proxy (default, req.ip is the socket IP).
+   */
+  trustProxy: number;
 }
 
 export interface OAuthProviderConfig {
