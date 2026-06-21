@@ -1,0 +1,27 @@
+# Forgeng
+
+> Forgeng is an apprenticeship platform. Applicants apply, accepted students
+> join a cohort, work through tasks, submit their work, and receive feedback
+> from admins/mentors.
+
+Forgeng is a TypeScript monorepo: a Next.js frontend and a NestJS + Prisma +
+PostgreSQL backend. This file points AI tools at the project's primary
+documentation. Technical/code-coupled docs live in the repo under `docs/`;
+conceptual and process docs live in the GitHub wiki.
+
+## Docs
+
+- [Developer docs index](https://github.com/radcrew/forgeng/tree/main/docs): entry point for the in-repo technical documentation
+- [Deployment guide](https://github.com/radcrew/forgeng/blob/main/docs/deployment.md): how the frontend (Vercel) and backend (Render + Postgres) deploy
+- [Project README](https://github.com/radcrew/forgeng/blob/main/README.md): setup, prerequisites, and useful scripts
+
+## Wiki
+
+- [Product Overview](https://github.com/radcrew/forgeng/wiki/Product-Overview): what Forgeng is and the journeys it supports
+- [Glossary](https://github.com/radcrew/forgeng/wiki/Glossary): domain terms (applicant, student, cohort, task, submission, feedback)
+- [Contributing](https://github.com/radcrew/forgeng/wiki/Contributing): branch, commit, and PR workflow
+
+## Optional
+
+- [Roadmap](https://github.com/radcrew/forgeng/wiki/Roadmap): where the product is headed
+- [FAQ](https://github.com/radcrew/forgeng/wiki/FAQ): common questions from students, mentors, and contributors
