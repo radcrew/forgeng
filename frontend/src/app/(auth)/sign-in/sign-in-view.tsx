@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
@@ -19,7 +20,18 @@ type FormValues = z.infer<typeof schema>;
 
 export const SignInView = () => {
   const router = useRouter();
-  const { login } = useCurrentUser();
+  const { login, user } = useCurrentUser();
+
+  // OAuth (Google/GitHub) lands back here via a server-side redirect chain
+  // (/api/auth/exchange -> /auth/callback) that can bounce to /sign-in if its
+  // own cookie check misses, even though the session is actually valid. The
+  // rehydrate in CurrentUserProvider then confirms it via /account/me, which
+  // updates `user` — so once that happens, finish the job client-side.
+  useEffect(() => {
+    if (user) {
+      router.replace(homeForRole(user.role));
+    }
+  }, [user, router]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
