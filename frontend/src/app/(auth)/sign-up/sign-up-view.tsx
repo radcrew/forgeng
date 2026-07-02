@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -8,7 +7,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@contexts";
 import { AuthCard } from "@features/auth";
 import { ApiError } from "@lib/api-client";
-import { accessRestrictionReason, homeForRole } from "@utils/auth";
+import { accessRestrictionReason } from "@utils/auth";
 
 const schema = z.object({
   firstName: z.string().trim().min(1, "First name is required.").max(80),
@@ -26,15 +25,7 @@ type FormValues = z.infer<typeof schema>;
 
 export const SignUpView = () => {
   const router = useRouter();
-  const { register, user } = useCurrentUser();
-
-  // Same OAuth-bounce case as sign-in: land here authenticated (email/pass
-  // register never sets `user` mid-flow, so this only ever fires post-OAuth).
-  useEffect(() => {
-    if (user) {
-      router.replace(homeForRole(user.role));
-    }
-  }, [user, router]);
+  const { register } = useCurrentUser();
 
   const handleSubmit = async (values: FormValues) => {
     try {
