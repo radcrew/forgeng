@@ -41,6 +41,12 @@ describe('UpdateProfileDto', () => {
       'name',
     );
   });
+
+  it('accepts a portfolio URL with incidental surrounding whitespace', () => {
+    expect(
+      failingProps(UpdateProfileDto, { portfolio: '  https://ada.dev  ' }),
+    ).toEqual([]);
+  });
 });
 
 describe('UpdateWalletsDto', () => {

@@ -13,7 +13,7 @@ import {
   ValidationArguments,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 import { APPLICATION_COUNTRY_CODES } from '@common/constants/countries';
 import {
@@ -130,6 +130,11 @@ export class CreateApplicationDto {
   github!: string;
 
   @IsOptional()
+  // Leading/trailing whitespace (e.g. from a copy-paste) parses fine as a URL
+  // but fails @IsUrl(), which doesn't tolerate it — trim before validating.
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsUrl()
   @MaxLength(500)
   portfolio?: string;
