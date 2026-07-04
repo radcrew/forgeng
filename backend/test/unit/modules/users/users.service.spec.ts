@@ -40,6 +40,7 @@ describe('UsersService', () => {
       update: jest.Mock;
       count: jest.Mock;
     };
+    application: { findUnique: jest.Mock };
     payment: { create: jest.Mock };
   };
   let mail: { send: jest.Mock };
@@ -52,6 +53,7 @@ describe('UsersService', () => {
         update: jest.fn(),
         count: jest.fn(),
       },
+      application: { findUnique: jest.fn().mockResolvedValue(null) },
       payment: { create: jest.fn() },
     };
     mail = { send: jest.fn().mockResolvedValue(undefined) };
@@ -78,6 +80,42 @@ describe('UsersService', () => {
       prisma.user.findUnique.mockResolvedValue(makeUser());
       const dto = await service.getById(1);
       expect(dto.id).toBe(1);
+    });
+
+    it('includes social profile fields from the application record', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.application.findUnique.mockResolvedValue({
+        linkedin: 'https://linkedin.com/in/ada',
+        twitter: 'https://x.com/ada',
+        facebook: 'https://facebook.com/ada',
+        github: 'https://github.com/ada',
+        portfolio: 'https://ada.dev',
+        telegram: '@ada',
+        whatsapp: '+14155552671',
+      });
+
+      const dto = await service.getById(1);
+
+      expect(dto.linkedin).toBe('https://linkedin.com/in/ada');
+      expect(dto.twitter).toBe('https://x.com/ada');
+      expect(dto.facebook).toBe('https://facebook.com/ada');
+      expect(dto.github).toBe('https://github.com/ada');
+      expect(dto.portfolio).toBe('https://ada.dev');
+      expect(dto.telegram).toBe('@ada');
+      expect(dto.whatsapp).toBe('+14155552671');
+      expect(prisma.application.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { userId: 1 } }),
+      );
+    });
+
+    it('defaults social fields to null when no application exists', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.application.findUnique.mockResolvedValue(null);
+
+      const dto = await service.getById(1);
+
+      expect(dto.linkedin).toBeNull();
+      expect(dto.whatsapp).toBeNull();
     });
   });
 

@@ -74,9 +74,23 @@ export class UsersService {
   }
 
   async getById(id: number): Promise<UserDto> {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const [user, socials] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id } }),
+      this.prisma.application.findUnique({
+        where: { userId: id },
+        select: {
+          linkedin: true,
+          twitter: true,
+          facebook: true,
+          github: true,
+          portfolio: true,
+          telegram: true,
+          whatsapp: true,
+        },
+      }),
+    ]);
     if (!user) throw new NotFoundException('User not found.');
-    return toUserDto(user);
+    return toUserDto(user, socials);
   }
 
   async recordPayment(id: number, dto: RecordPaymentDto): Promise<PaymentDto> {
