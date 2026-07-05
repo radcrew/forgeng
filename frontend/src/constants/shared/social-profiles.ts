@@ -47,9 +47,15 @@ export const SOCIAL_PROFILE_MESSAGES = {
 export const optionalMatching = (re: RegExp, message: string) =>
   z.string().refine((val) => !val || re.test(val), message);
 
-/** A string field that is allowed to be blank but, if filled, must be a URL. */
+/**
+ * A string field that is allowed to be blank but, if filled, must be a URL.
+ * Trims first: the WHATWG URL parser silently accepts leading/trailing
+ * whitespace (so untrimmed input still passes this check), but the backend's
+ * validator does not — trimming here keeps the value valid end-to-end.
+ */
 export const optionalUrl = z
   .string()
+  .trim()
   .refine(
     (val) => !val || z.string().url().safeParse(val).success,
     "Enter a valid URL (e.g. https://...)",

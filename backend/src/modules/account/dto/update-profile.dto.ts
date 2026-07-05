@@ -5,6 +5,7 @@ import {
   Matches,
   MaxLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 import {
   FACEBOOK_PROFILE_REGEX,
@@ -56,6 +57,11 @@ export class UpdateProfileDto {
   github?: string;
 
   @IsOptional()
+  // Leading/trailing whitespace (e.g. from a copy-paste) parses fine as a URL
+  // but fails @IsUrl(), which doesn't tolerate it — trim before validating.
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsUrl()
   @MaxLength(500)
   portfolio?: string;

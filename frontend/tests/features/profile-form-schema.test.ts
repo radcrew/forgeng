@@ -63,4 +63,13 @@ describe("PROFILE_FORM_SCHEMA", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts and trims a portfolio URL with surrounding whitespace", () => {
+    const result = PROFILE_FORM_SCHEMA.safeParse({
+      ...blank,
+      portfolio: "  https://ada.dev  ",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.portfolio).toBe("https://ada.dev");
+  });
 });

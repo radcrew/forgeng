@@ -47,6 +47,18 @@ describe('CreateApplicationDto', () => {
     );
   });
 
+  it('accepts a portfolio URL with incidental surrounding whitespace', () => {
+    expect(
+      failingProps({ ...VALID, portfolio: '  https://ada.dev  ' }),
+    ).toEqual([]);
+  });
+
+  it('rejects a portfolio value that is not a URL once trimmed', () => {
+    expect(failingProps({ ...VALID, portfolio: '  not a url  ' })).toContain(
+      'portfolio',
+    );
+  });
+
   it('accepts a valid EVM wallet address', () => {
     expect(
       failingProps({

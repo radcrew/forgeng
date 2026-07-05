@@ -82,6 +82,15 @@ describe("APPLICATION_FORM_SCHEMA", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("accepts and trims a portfolio URL with surrounding whitespace", () => {
+    const result = APPLICATION_FORM_SCHEMA.safeParse({
+      ...VALID,
+      portfolio: "  https://ada.dev  ",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.portfolio).toBe("https://ada.dev");
+  });
 });
 
 describe("isApplicationStepSlug", () => {
