@@ -1,4 +1,4 @@
-# Render Blueprint — provisions the Forgeng backend service and its database.
+# Render Blueprint — provisions the Forgeng backend service.
 # Render reads this file when you connect a repo via "New > Blueprint" and
 # creates everything in a single click.
 #
@@ -6,24 +6,25 @@
 # Docs: https://render.com/docs/blueprint-spec
 #
 # Environment variables the backend reads at runtime:
-#   - DATABASE_URL    auto-wired below from the `forgeng-db` database
+#   - DATABASE_URL    MUST be set manually in the Render dashboard — pooled
+#                     (PgBouncer, port 6543) Supabase connection string
+#   - DIRECT_URL      MUST be set manually in the Render dashboard — direct
+#                     (port 5432) Supabase connection string, used only by
+#                     `prisma migrate deploy` since pooled connections don't
+#                     support the advisory locks migrations need
 #   - PORT            auto-set by Render (NestJS listens on process.env.PORT)
 #   - NODE_ENV        set below to "production"
 #   - CORS_ORIGIN     MUST be set manually in the Render dashboard, e.g.
 #                     "https://forgeng.vercel.app" (comma-separated for many)
+#
+# The database is hosted on Supabase, not Render — there is no `databases:`
+# block here.
 #
 # Scaling assumption:
 #   This blueprint runs ONE backend instance. The startCommand applies Prisma
 #   migrations on every boot, which is safe with a single instance but RACES
 #   if you scale to numInstances > 1. To scale safely, upgrade to Starter+
 #   and move `prisma migrate deploy` into a preDeployCommand instead.
-
-databases:
-  - name: forgeng-db
-    plan: free # Upgrade to "starter" ($7/mo) for production — free tier
-    # destroys the database after 30 days.
-    databaseName: forgeng
-    user: forgeng
 
 services:
   - type: web
@@ -53,11 +54,14 @@ services:
       # See https://render.com/docs/node-version
       - key: NODE_VERSION
         value: "24"
-      # Wired to the managed Postgres above. Render fills this in.
+      # Supabase pooled connection string (port 6543, PgBouncer). Set manually
+      # in the Render dashboard.
       - key: DATABASE_URL
-        fromDatabase:
-          name: forgeng-db
-          property: connectionString
+        sync: false
+      # Supabase direct connection string (port 5432), used only for
+      # `prisma migrate deploy`. Set manually in the Render dashboard.
+      - key: DIRECT_URL
+        sync: false
       # Set this in the Render dashboard once you know your Vercel URL.
       # Comma-separated list, e.g.
       #   https://forgeng.vercel.app,https://forgeng-staging.vercel.app
