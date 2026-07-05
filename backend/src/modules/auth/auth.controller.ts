@@ -193,7 +193,7 @@ export class AuthController {
       const target = this.config.getOrThrow('auth.oauthSuccessRedirect', {
         infer: true,
       });
-      res.redirect(target);
+      res.redirect(this.withExchangeToken(target, result.tokens.accessToken));
     } catch (err) {
       const restrictionReason = this.accessRestrictionReason(err);
       if (restrictionReason) {
@@ -208,6 +208,21 @@ export class AuthController {
       });
       res.redirect(failureUrl);
     }
+  }
+
+  /**
+   * The frontend's /api/auth/exchange bridge can't read the httpOnly cookie
+   * we just set on this (backend) origin, so when the success redirect
+   * points there it needs the access token passed explicitly to mint its
+   * own same-site cookie. Every other target already got the cookie above,
+   * so leave it untouched (no reason to put a live token in a URL/log).
+   */
+  private withExchangeToken(target: string, accessToken: string): string {
+    const url = new URL(target);
+    if (url.pathname.endsWith('/api/auth/exchange')) {
+      url.searchParams.set('token', accessToken);
+    }
+    return url.toString();
   }
 
   private accessRestrictionReason(err: unknown): 'region' | 'vpn' | null {

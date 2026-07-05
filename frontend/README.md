@@ -33,6 +33,10 @@ pnpm --filter @forgeng/frontend icons:generate
 
 Copy `frontend/.env.example` to `frontend/.env.local` and set
 `NEXT_PUBLIC_API_URL` to your API origin (default `http://localhost:3001`).
+Also set `JWT_ACCESS_SECRET` to the same value as the backend's — the OAuth
+callback and `middleware.ts` verify the access-token cookie locally, so a
+missing/mismatched secret here breaks Google/GitHub sign-in (the callback
+silently redirects to `/sign-in` even though the login succeeded).
 
 Sign in at `/sign-in` with an email that exists in the database (run
 `backend/prisma/seed.ts` for sample users). The client stores your profile in
