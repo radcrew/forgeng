@@ -2,7 +2,7 @@ import { buildApiBase } from "@utils/api";
 
 /** NestJS server origin (no trailing slash). */
 export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_URL ?? "https://forgeng-backend.onrender.com";
 
 /** Global API prefix from `backend/src/main.ts`. */
 export const API_BASE = buildApiBase(API_URL);
