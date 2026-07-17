@@ -8,7 +8,7 @@ import {
 import { homeForRole } from "@utils/auth";
 import type { UserRole } from "@types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://forgeng-backend.onrender.com";
 
 const PROTECTED_ROUTES: { prefix: string; roles: UserRole[] }[] = [
   { prefix: "/admin", roles: ["admin"] },
