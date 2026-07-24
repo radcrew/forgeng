@@ -254,6 +254,35 @@ export class AuthController {
     return { user: result.user };
   }
 
+  /**
+   * Shared attributes for the auth cookies. Both set and clear must use these
+   * exact values or the browser refuses to overwrite/delete the cookie.
+   *
+   * In prod the frontend (Vercel) and API (Render) are different sites, so the
+   * browser only sends these cookies on cross-site XHR when they're
+   * SameSite=None. None requires Secure, which holds in prod. Dev is http and
+   * same-site (localhost), so it stays Lax. Path "/" (not "/api/auth") lets the
+   * frontend's proxy.ts receive the refresh cookie on page navigations.
+   */
+  private authCookieOptions(): {
+    httpOnly: true;
+    secure: boolean;
+    sameSite: 'none' | 'lax';
+    domain: string | undefined;
+    path: '/';
+  } {
+    const domain = this.config.get('auth.refreshCookieDomain', { infer: true });
+    const isProd =
+      this.config.getOrThrow('nodeEnv', { infer: true }) === 'production';
+    return {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      domain: domain ?? undefined,
+      path: '/',
+    };
+  }
+
   private setRefreshCookie(
     res: Response,
     token: string,
@@ -262,17 +291,8 @@ export class AuthController {
     const cookieName = this.config.getOrThrow('auth.refreshCookieName', {
       infer: true,
     });
-    const domain = this.config.get('auth.refreshCookieDomain', { infer: true });
-    const isProd =
-      this.config.getOrThrow('nodeEnv', { infer: true }) === 'production';
     res.cookie(cookieName, token, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
-      domain: domain ?? undefined,
-      // Path "/" (not "/api/auth") so the frontend's proxy.ts receives this
-      // cookie on page navigations and can forward it to /auth/refresh.
-      path: '/',
+      ...this.authCookieOptions(),
       expires: expiresAt,
     });
   }
@@ -281,7 +301,7 @@ export class AuthController {
     const cookieName = this.config.getOrThrow('auth.refreshCookieName', {
       infer: true,
     });
-    res.clearCookie(cookieName, { path: '/' });
+    res.clearCookie(cookieName, this.authCookieOptions());
   }
 
   private setAccessCookie(
@@ -292,15 +312,8 @@ export class AuthController {
     const cookieName = this.config.getOrThrow('auth.accessCookieName', {
       infer: true,
     });
-    const domain = this.config.get('auth.refreshCookieDomain', { infer: true });
-    const isProd =
-      this.config.getOrThrow('nodeEnv', { infer: true }) === 'production';
     res.cookie(cookieName, token, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
-      domain: domain ?? undefined,
-      path: '/',
+      ...this.authCookieOptions(),
       expires: new Date(Date.now() + expiresInSeconds * 1000),
     });
   }
@@ -309,7 +322,7 @@ export class AuthController {
     const cookieName = this.config.getOrThrow('auth.accessCookieName', {
       infer: true,
     });
-    res.clearCookie(cookieName, { path: '/' });
+    res.clearCookie(cookieName, this.authCookieOptions());
   }
 
   private readRefreshCookie(req: Request): string | undefined {
