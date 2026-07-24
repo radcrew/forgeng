@@ -162,7 +162,15 @@ describe('AuthController', () => {
       await controller.logout(req, res);
 
       expect(service.logout).toHaveBeenCalledWith('tok');
-      expect(res.clearCookie).toHaveBeenCalledWith('rt', { path: '/' });
+      // Clear must carry the same attributes as set, or the browser won't
+      // delete the cookie. Test env is non-prod, so sameSite=lax / secure=false.
+      expect(res.clearCookie).toHaveBeenCalledWith('rt', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        domain: undefined,
+        path: '/',
+      });
     });
   });
 
