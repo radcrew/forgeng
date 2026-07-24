@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   MaxFileSizeValidator,
   ParseFilePipe,
   Patch,
@@ -35,7 +36,11 @@ export class AccountController {
     private readonly avatar: AvatarService,
   ) {}
 
+  // no-store so the browser never revalidates with If-None-Match. A 304 here
+  // makes the frontend's auth check (getMe) fail, which stalls the post-login
+  // redirect. Authenticated user data should not be cached anyway.
   @Get('me')
+  @Header('Cache-Control', 'no-store')
   async getMe(@CurrentUser() user: AuthUser): Promise<UserDto> {
     const socials = await this.prisma.application.findUnique({
       where: { userId: user.id },
