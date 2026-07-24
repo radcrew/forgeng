@@ -4,6 +4,7 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Post,
@@ -135,7 +136,9 @@ export class AuthController {
     await this.service.resetPassword(dto.token, dto.password);
   }
 
+  // no-store so a conditional request never yields a 304; see AccountController.
   @Get('me')
+  @Header('Cache-Control', 'no-store')
   me(@CurrentUser() user: AuthUser): UserDto {
     return toUserDto(user);
   }
