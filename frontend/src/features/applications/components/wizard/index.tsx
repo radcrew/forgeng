@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -42,7 +43,7 @@ interface WizardProps {
 export const Wizard = ({ children }: WizardProps) => {
   const router = useRouter();
   const params = useParams<{ step: string }>();
-  const { user, refreshUser } = useCurrentUser();
+  const { user, refreshUser, logout } = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // The current step is taken from the URL segment; an unknown slug falls back
@@ -199,16 +200,41 @@ export const Wizard = ({ children }: WizardProps) => {
     }
   };
 
+  // The draft is keyed by user id, so it survives for whoever signs back in.
+  const handleSignOut = async () => {
+    await logout();
+    router.push("/");
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="mb-8">
-          <Link
-            href="/"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground mb-4 inline-block"
-          >
-            {APPLICATION_WIZARD_COPY.backToHome}
-          </Link>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <Link
+              href="/"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              {APPLICATION_WIZARD_COPY.backToHome}
+            </Link>
+            <div className="flex items-center gap-3">
+              {user?.email && (
+                <span className="hidden sm:inline text-sm text-muted-foreground">
+                  {user.email}
+                </span>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                {APPLICATION_WIZARD_COPY.signOut}
+              </Button>
+            </div>
+          </div>
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold">
               {APPLICATION_WIZARD_COPY.pageTitle}
