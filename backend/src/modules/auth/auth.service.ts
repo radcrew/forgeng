@@ -269,7 +269,16 @@ export class AuthService {
       infer: true,
     });
     const resetUrl = `${base}?token=${encodeURIComponent(rawToken)}`;
-    await this.email.sendPasswordResetEmail(user.email, resetUrl);
+    // Detached for the same reason as the verification email above: the caller
+    // deliberately reports nothing about the address, so a delivery failure has
+    // no bearing on the response either way.
+    void this.email
+      .sendPasswordResetEmail(user.email, resetUrl)
+      .catch((err: Error) => {
+        this.logger.error(
+          `Failed to send password reset email to ${user.email}: ${err.message}`,
+        );
+      });
   }
 
   private async assertRegionAllowed(ip: string | undefined): Promise<void> {
