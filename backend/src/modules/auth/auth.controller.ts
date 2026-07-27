@@ -261,16 +261,19 @@ export class AuthController {
    * Shared attributes for the auth cookies. Both set and clear must use these
    * exact values or the browser refuses to overwrite/delete the cookie.
    *
-   * In prod the frontend (Vercel) and API (Render) are different sites, so the
-   * browser only sends these cookies on cross-site XHR when they're
-   * SameSite=None. None requires Secure, which holds in prod. Dev is http and
-   * same-site (localhost), so it stays Lax. Path "/" (not "/api/auth") lets the
-   * frontend's proxy.ts receive the refresh cookie on page navigations.
+   * SameSite=Lax: the frontend reaches the API through its own origin (a
+   * same-origin rewrite in next.config.ts), so from the browser these cookies
+   * are first-party and Lax is sent on the top-level navigations proxy.ts
+   * guards. SameSite=None would mark them cross-site, and browsers block those
+   * as third-party cookies (most visibly in incognito), so the cookie is stored
+   * but never sent and every protected route bounces to /sign-in. This matches
+   * the OAuth bridge, which already sets its cookie Lax. Path "/" (not
+   * "/api/auth") lets proxy.ts receive the refresh cookie on page navigations.
    */
   private authCookieOptions(): {
     httpOnly: true;
     secure: boolean;
-    sameSite: 'none' | 'lax';
+    sameSite: 'lax';
     domain: string | undefined;
     path: '/';
   } {
@@ -280,7 +283,7 @@ export class AuthController {
     return {
       httpOnly: true,
       secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
+      sameSite: 'lax',
       domain: domain ?? undefined,
       path: '/',
     };
