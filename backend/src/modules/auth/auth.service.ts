@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -34,6 +35,8 @@ interface RequestContext {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly password: PasswordService,
@@ -245,7 +248,16 @@ export class AuthService {
       infer: true,
     });
     const verifyUrl = `${base}?token=${encodeURIComponent(rawToken)}`;
-    await this.email.sendVerificationEmail(user.email, verifyUrl);
+    // Delivery takes seconds on a good day and stalls indefinitely on a blocked
+    // SMTP port, so don't hold the response open for it. The token is already
+    // persisted, and the check-email page offers a resend if nothing arrives.
+    void this.email
+      .sendVerificationEmail(user.email, verifyUrl)
+      .catch((err: Error) => {
+        this.logger.error(
+          `Failed to send verification email to ${user.email}: ${err.message}`,
+        );
+      });
   }
 
   private async sendPasswordResetEmail(user: User): Promise<void> {
