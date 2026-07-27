@@ -114,6 +114,19 @@ describe('AuthService', () => {
       expect(email.sendVerificationEmail).toHaveBeenCalledTimes(1);
       expect(result.user.email).toBe('ada@example.com');
     });
+
+    it('still registers when the verification email fails to send', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue(makeUser({ emailVerified: false }));
+      email.sendVerificationEmail.mockRejectedValue(new Error('ETIMEDOUT'));
+
+      const result = await service.register(
+        { email: 'ada@example.com', password: 'pw' },
+        {},
+      );
+
+      expect(result.user.email).toBe('ada@example.com');
+    });
   });
 
   describe('login', () => {
@@ -203,6 +216,15 @@ describe('AuthService', () => {
       prisma.user.findUnique.mockResolvedValue(makeUser());
       await service.requestPasswordReset('ada@example.com');
       expect(email.sendPasswordResetEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('resolves when the reset email fails to send', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      email.sendPasswordResetEmail.mockRejectedValue(new Error('ETIMEDOUT'));
+
+      await expect(
+        service.requestPasswordReset('ada@example.com'),
+      ).resolves.toBeUndefined();
     });
   });
 

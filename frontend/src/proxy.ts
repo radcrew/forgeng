@@ -125,5 +125,7 @@ function applySetCookies(res: NextResponse, setCookieHeaders: string[]): void {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // `api` is excluded so the rewrite to the backend isn't wrapped in a proxy
+  // pass on every request; nothing under /api is a protected page anyway.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

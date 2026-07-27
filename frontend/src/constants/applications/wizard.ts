@@ -1,6 +1,7 @@
 /** User-facing copy for the multi-step apply wizard. */
 export const APPLICATION_WIZARD_COPY = {
   backToHome: "← Back to Home",
+  signOut: "Sign Out",
   pageTitle: "Apply to Forgeng",
   stepIndicator: (step: number, total: number) => `Step ${step} of ${total}`,
   steps: {

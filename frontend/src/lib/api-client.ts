@@ -29,6 +29,9 @@ interface RequestOptions {
   skipAuthRetry?: boolean;
 }
 
+/** Without this a stalled backend leaves submit buttons spinning forever. */
+const REQUEST_TIMEOUT_MS = 30_000;
+
 const errorMessage = (body: unknown, fallback: string): string => {
   if (typeof body === "string" && body.length > 0) return body;
   if (body && typeof body === "object" && "message" in body) {
@@ -57,6 +60,7 @@ class ApiClient {
     this.http = axios.create({
       baseURL: API_BASE,
       withCredentials: true,
+      timeout: REQUEST_TIMEOUT_MS,
     });
     this.http.interceptors.response.use(this.normalizeEmptyBody, this.handleError);
   }
@@ -77,7 +81,11 @@ class ApiClient {
   };
 
   private handleError = async (error: AxiosError) => {
-    const { config, response } = error;
+    const { code, config, response } = error;
+    if (code === "ECONNABORTED" || code === "ETIMEDOUT") {
+      // Status 0 keeps this out of the 401/403/409 branches call sites check.
+      throw new ApiError(0, "The server took too long to respond. Try again.");
+    }
     if (!response) throw error;
 
     if (response.status === 401 && config && !config.skipAuthRetry) {
