@@ -8,7 +8,15 @@ import {
 import { homeForRole } from "@utils/auth";
 import type { UserRole } from "@types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://forgeng-backend.onrender.com";
+// `??` is wrong here: deployments set NEXT_PUBLIC_API_URL="" so the browser
+// calls same-origin /api/... (see lib/config.ts), and an empty string is not
+// nullish, so it would win and leave this server-side fetch with a relative
+// URL it cannot parse. `||` keeps the absolute fallback. BACKEND_ORIGIN is the
+// same rewrite target next.config.ts uses.
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.BACKEND_ORIGIN ||
+  "https://forgeng-backend.onrender.com";
 
 const PROTECTED_ROUTES: { prefix: string; roles: UserRole[] }[] = [
   { prefix: "/admin", roles: ["admin"] },

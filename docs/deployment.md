@@ -29,8 +29,19 @@ GitHub repo (main branch)
 
    | Name                   | Value                                  |
    | ---------------------- | -------------------------------------- |
-   | `NEXT_PUBLIC_API_URL`  | `https://forgeng-backend.onrender.com` |
+   | `NEXT_PUBLIC_API_URL`  | `` (empty)                             |
+   | `BACKEND_ORIGIN`       | `https://forgeng-backend.onrender.com` |
    | `NEXT_PUBLIC_SITE_URL` | `https://<your-vercel-domain>`         |
+   | `JWT_ACCESS_SECRET`    | same value as the backend's            |
+
+   `NEXT_PUBLIC_API_URL` must stay empty: the browser then calls relative
+   `/api/...`, which `next.config.ts` rewrites to `BACKEND_ORIGIN`, so the
+   API's auth cookies are first-party to the Vercel domain. Point it at the
+   Render URL instead and the cookies are set on a different registrable
+   domain, never sent back, and every sign-in bounces to `/sign-in`.
+   `proxy.ts` verifies the access-token cookie itself, so it needs
+   `JWT_ACCESS_SECRET` too; without it every protected route falls back to a
+   refresh on each navigation.
 
 5. Click **Deploy**.
 
@@ -70,8 +81,8 @@ provisions the web service and the Postgres database in one click.
 
    Hit **Save Changes** — Render redeploys with the new value.
 
-7. Back in Vercel, set `NEXT_PUBLIC_API_URL` to the Render URL (step 1.4
-   above) and redeploy the frontend.
+7. Back in Vercel, set `BACKEND_ORIGIN` to the Render URL (step 1.4 above)
+   and redeploy the frontend.
 
 ### How updates work
 
@@ -97,7 +108,7 @@ Upgrades are a single click in the Render dashboard — no code changes.
 ## 3. Auth cookies require a shared domain
 
 Auth is implemented with `httpOnly` cookies (`forgeng_access` /
-`forgeng_refresh`) that the backend sets and the frontend's `middleware.ts`
+`forgeng_refresh`) that the backend sets and the frontend's `proxy.ts`
 reads to protect `/admin`, `/student`, and `/apply` routes. Cookies are only
 visible to a server reading them if the cookie's domain matches the request's
 domain.
@@ -124,9 +135,9 @@ ACCESS_COOKIE_NAME=forgeng_access   # default, no change needed
 
 (`ACCESS_COOKIE_NAME`'s cookie reuses `REFRESH_COOKIE_DOMAIN` for its
 `Domain` attribute.) With both cookies scoped to `.example.com`, requests to
-`app.example.com` include them and `middleware.ts` can verify the access
+`app.example.com` include them and `proxy.ts` can verify the access
 token. Also set `JWT_ACCESS_SECRET` on Vercel to the same value as the
-backend's `JWT_ACCESS_SECRET`, since `middleware.ts` verifies the token
+backend's `JWT_ACCESS_SECRET`, since `proxy.ts` verifies the token
 itself rather than calling the API.
 
 ## 4. After the first deploy

@@ -1,6 +1,6 @@
 import { apiClient } from "@lib/api-client";
 import { API_BASE } from "@lib/config";
-import { clearAuth, writeSession } from "@lib/session";
+import { clearAuth, sessionVersion, writeSession } from "@lib/session";
 import type { UserProfile } from "@types";
 import { normalizeEmail } from "@utils/auth";
 import { mapUserDto, type UserDto } from "@utils/user";
@@ -90,6 +90,7 @@ export const resetPassword = async (
 };
 
 export const refresh = async (): Promise<UserProfile | null> => {
+  const startedAt = sessionVersion();
   try {
     const response = await apiClient.post<AuthSessionResponse>(
       "/auth/refresh",
@@ -98,7 +99,8 @@ export const refresh = async (): Promise<UserProfile | null> => {
     );
     return persistSession(response);
   } catch {
-    clearAuth();
+    // Only clear if no sign-in landed while this was in flight.
+    if (startedAt === sessionVersion()) clearAuth();
     return null;
   }
 };

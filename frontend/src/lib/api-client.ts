@@ -2,9 +2,10 @@ import axios, {
   type AxiosError,
   type AxiosInstance,
   type AxiosResponse,
+  type InternalAxiosRequestConfig,
 } from "axios";
 import { API_BASE } from "@lib/config";
-import { clearAuth } from "@lib/session";
+import { clearAuth, sessionVersion } from "@lib/session";
 
 export class ApiError extends Error {
   constructor(
@@ -21,6 +22,8 @@ declare module "axios" {
   export interface AxiosRequestConfig {
     /** Skip the auto-refresh dance — used by the refresh / login calls themselves. */
     skipAuthRetry?: boolean;
+    /** Session version when the request went out; see handleError. */
+    sessionVersion?: number;
   }
 }
 
@@ -62,6 +65,7 @@ class ApiClient {
       withCredentials: true,
       timeout: REQUEST_TIMEOUT_MS,
     });
+    this.http.interceptors.request.use(this.stampSessionVersion);
     this.http.interceptors.response.use(this.normalizeEmptyBody, this.handleError);
   }
 
@@ -71,6 +75,11 @@ class ApiClient {
     }
     return ApiClient.instance;
   }
+
+  private stampSessionVersion = (config: InternalAxiosRequestConfig) => {
+    config.sessionVersion = sessionVersion();
+    return config;
+  };
 
   private normalizeEmptyBody = (response: AxiosResponse) => {
     // Match fetch's empty-body behaviour (204s parse to undefined, not "").
@@ -94,7 +103,12 @@ class ApiClient {
         // Retry once; skipAuthRetry stops a second 401 from looping forever.
         return this.http.request({ ...config, skipAuthRetry: true });
       }
-      clearAuth();
+      // The rehydrate fired on a signed-out page 401s and refreshes; if the
+      // user signed in while that was in flight, clearing here would wipe the
+      // session login just wrote and strand them on /sign-in.
+      if (config.sessionVersion === sessionVersion()) {
+        clearAuth();
+      }
     }
 
     throw new ApiError(
