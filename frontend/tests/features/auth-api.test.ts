@@ -14,6 +14,7 @@ const clearAuth = vi.fn();
 vi.mock("@lib/session", () => ({
   writeSession: (...args: unknown[]) => writeSession(...args),
   clearAuth: (...args: unknown[]) => clearAuth(...args),
+  sessionVersion: () => 0,
 }));
 
 import {

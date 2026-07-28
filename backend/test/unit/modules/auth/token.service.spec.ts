@@ -78,11 +78,11 @@ describe('TokenService', () => {
       );
     });
 
-    it('revokes all tokens and rejects a reused (already-revoked) token', async () => {
+    it('revokes all tokens and rejects a token reused after the grace window', async () => {
       prisma.refreshToken.findUnique.mockResolvedValue({
         id: 1,
         userId: 2,
-        revokedAt: new Date(),
+        revokedAt: new Date(Date.now() - 60_000),
         expiresAt: new Date(Date.now() + 60_000),
         user: makeUser({ id: 2 }),
       });
@@ -94,6 +94,23 @@ describe('TokenService', () => {
       expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { userId: 2, revokedAt: null } }),
       );
+    });
+
+    it('serves a token replayed inside the grace window instead of revoking', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        id: 1,
+        userId: 2,
+        revokedAt: new Date(Date.now() - 1_000),
+        expiresAt: new Date(Date.now() + 60_000),
+        user: makeUser({ id: 2 }),
+      });
+
+      const result = await service.rotate('tok');
+
+      expect(result.refreshToken).toEqual(expect.any(String));
+      expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+      // The original rotation's replacedByHash stays pointing at the winner.
+      expect(prisma.refreshToken.update).not.toHaveBeenCalled();
     });
 
     it('rejects an expired token', async () => {

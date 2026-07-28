@@ -30,6 +30,15 @@ const removeUserScopedKeys = (): void => {
 let cachedRaw: string | null | undefined;
 let cachedUser: UserProfile | null = null;
 
+/**
+ * Bumped on every write. A request that started before a sign-in can only
+ * settle after it, and its failure handler must not clear the session that
+ * sign-in just wrote — comparing versions tells it the session moved on.
+ */
+let version = 0;
+
+export const sessionVersion = (): number => version;
+
 export const readSession = (): UserProfile | null => {
   if (typeof window === "undefined") return null;
   const raw = window.localStorage.getItem(SESSION_KEY);
@@ -64,6 +73,7 @@ export const writeSession = (user: UserProfile | null): void => {
     cachedRaw = raw;
     cachedUser = user;
   }
+  version += 1;
   window.dispatchEvent(new Event("forgeng:session-change"));
 };
 

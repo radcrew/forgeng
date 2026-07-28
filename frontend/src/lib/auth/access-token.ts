@@ -15,7 +15,15 @@ export const verifyAccessToken = async (
   token: string,
 ): Promise<AccessTokenPayload | null> => {
   const secret = process.env.JWT_ACCESS_SECRET;
-  if (!secret) return null;
+  if (!secret) {
+    // Without this the misconfiguration is invisible: every access token fails
+    // to verify, so proxy.ts refreshes on every protected navigation and the
+    // OAuth callback bounces to /sign-in with a perfectly valid session.
+    console.error(
+      "JWT_ACCESS_SECRET is not set; access-token cookies cannot be verified.",
+    );
+    return null;
+  }
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
     if (

@@ -9,6 +9,9 @@ import { PrismaService } from '@core/database/prisma.service';
 import { hashToken } from '@common/crypto';
 import type { IssuedTokens, JwtPayload } from '../types/jwt-payload.types';
 
+/** How long after a rotation the old token may be replayed by a racing client. */
+const REUSE_GRACE_MS = 15_000;
+
 interface RefreshContext {
   userAgent?: string;
   ip?: string;
@@ -52,7 +55,16 @@ export class TokenService {
 
     // Reuse detection: if a previously-rotated token shows up again, revoke
     // every refresh token for that user — someone likely stole an old one.
-    if (record.revokedAt) {
+    // Inside the grace window it is a race instead: the Next proxy refreshes
+    // server-side on navigations (including prefetches, which Next 16 does not
+    // let it distinguish) while the browser retries its own 401, so both
+    // present the same cookie within milliseconds. Signing the user out there
+    // is a false positive, so serve those from the same chain.
+    const rotatedRecently =
+      record.revokedAt !== null &&
+      Date.now() - record.revokedAt.getTime() <= REUSE_GRACE_MS;
+
+    if (record.revokedAt && !rotatedRecently) {
       await this.prisma.refreshToken.updateMany({
         where: { userId: record.userId, revokedAt: null },
         data: { revokedAt: new Date() },
@@ -65,10 +77,12 @@ export class TokenService {
     }
 
     const next = await this.createRefreshToken(record.userId, ctx);
-    await this.prisma.refreshToken.update({
-      where: { id: record.id },
-      data: { revokedAt: new Date(), replacedByHash: hashToken(next.token) },
-    });
+    if (!rotatedRecently) {
+      await this.prisma.refreshToken.update({
+        where: { id: record.id },
+        data: { revokedAt: new Date(), replacedByHash: hashToken(next.token) },
+      });
+    }
 
     const access = await this.signAccess(record.user);
     return {
