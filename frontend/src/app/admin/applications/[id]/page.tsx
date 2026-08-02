@@ -7,7 +7,7 @@ import { ApplicationDetailPage } from "@features/applications/components/applica
 const Page = () => {
   const params = useParams<{ id: string }>();
   return (
-    <PageContainer maxWidth="5xl">
+    <PageContainer>
       <ApplicationDetailPage id={Number(params?.id)} />
     </PageContainer>
   );

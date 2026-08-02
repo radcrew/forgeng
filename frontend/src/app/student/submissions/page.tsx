@@ -20,7 +20,7 @@ const Page = () => {
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Submissions"
         description="Your submission history and feedback."

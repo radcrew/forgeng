@@ -122,7 +122,7 @@ export default function UserDetailPage({
 
   if (isLoading || !user) {
     return (
-      <PageContainer maxWidth="5xl">
+      <PageContainer>
         <LoadingState message="Loading user…" />
       </PageContainer>
     );
@@ -132,7 +132,7 @@ export default function UserDetailPage({
   const profileIncomplete = !isProfileComplete(user);
 
   return (
-    <PageContainer maxWidth="5xl">
+    <PageContainer>
       <div className="space-y-6">
         {/* Back */}
         <Link

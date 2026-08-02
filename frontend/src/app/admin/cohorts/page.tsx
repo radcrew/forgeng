@@ -16,7 +16,7 @@ const Page = () => {
   const [editCohort, setEditCohort] = useState<Cohort | undefined>(undefined);
 
   return (
-    <PageContainer maxWidth="5xl">
+    <PageContainer>
       <PageHeader
         title="Cohorts"
         description="Manage cohorts and student enrollment."

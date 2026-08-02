@@ -88,7 +88,7 @@ const Page = () => {
   // switcher) don't flash back to the loading state.
   if (!dashboard) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer>
         <PageHeader title="Tasks" description="Loading…" />
       </PageContainer>
     );
@@ -96,7 +96,7 @@ const Page = () => {
 
   if (!dashboard.cohort) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer>
         <PageHeader
           title="Tasks"
           description="Enroll in a cohort to see your assignments."
@@ -110,7 +110,7 @@ const Page = () => {
   const hasTasks = !tasksLoading && tasks.length > 0;
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Tasks"
         description={

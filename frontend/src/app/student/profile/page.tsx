@@ -17,14 +17,14 @@ const Page = () => {
 
   if (!isHydrated || !user) {
     return (
-      <PageContainer maxWidth="4xl" spacing="8">
+      <PageContainer maxWidth="reading" spacing="8">
         <PageHeader title="Profile" description="Loading…" />
       </PageContainer>
     );
   }
 
   return (
-    <PageContainer maxWidth="4xl" spacing="8">
+    <PageContainer maxWidth="reading" spacing="8">
       <PageHeader title="Profile" description="Manage your account details." />
 
       <ProfileForm user={user} onSaved={refreshUser} />

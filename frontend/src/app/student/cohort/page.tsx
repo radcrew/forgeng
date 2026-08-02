@@ -54,7 +54,7 @@ const Page = () => {
   // (and the switcher) don't flash back to the loading state.
   if (!dashboard) {
     return (
-      <PageContainer maxWidth="4xl" spacing="8">
+      <PageContainer spacing="8">
         <PageHeader title="Cohort" description="Loading…" />
       </PageContainer>
     );
@@ -62,7 +62,7 @@ const Page = () => {
 
   if (!cohort) {
     return (
-      <PageContainer maxWidth="4xl" spacing="8">
+      <PageContainer spacing="8">
         <PageHeader title="Cohort" description="Your cohort overview." />
         <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
       </PageContainer>
@@ -77,7 +77,7 @@ const Page = () => {
   const range = dateRange(cohort.startDate, cohort.endDate);
 
   return (
-    <PageContainer maxWidth="4xl" spacing="8">
+    <PageContainer spacing="8">
       <PageHeader
         title={cohort.name}
         description="Your cohort overview."

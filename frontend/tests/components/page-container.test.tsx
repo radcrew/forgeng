@@ -13,25 +13,25 @@ describe("PageContainer", () => {
     expect(screen.getByText("content")).toBeInTheDocument();
   });
 
-  it("applies the default 6xl max width and spacing-6", () => {
+  it("defaults to the wide container and spacing-6", () => {
     render(
       <PageContainer>
         <p>content</p>
       </PageContainer>,
     );
     const container = screen.getByText("content").parentElement;
-    expect(container).toHaveClass("max-w-6xl");
+    expect(container).toHaveClass("max-w-[88rem]");
     expect(container).toHaveClass("space-y-6");
   });
 
-  it("applies a chosen max width and spacing-8", () => {
+  it("constrains the measure when asked to read, with spacing-8", () => {
     render(
-      <PageContainer maxWidth="4xl" spacing="8">
+      <PageContainer maxWidth="reading" spacing="8">
         <p>content</p>
       </PageContainer>,
     );
     const container = screen.getByText("content").parentElement;
-    expect(container).toHaveClass("max-w-4xl");
+    expect(container).toHaveClass("max-w-3xl");
     expect(container).toHaveClass("space-y-8");
   });
 

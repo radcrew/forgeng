@@ -42,7 +42,7 @@ const Page = () => {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="4xl" spacing="6">
+      <PageContainer maxWidth="reading" spacing="6">
         {backLink}
         <LoadingState message="Loading task…" />
       </PageContainer>
@@ -51,7 +51,7 @@ const Page = () => {
 
   if (error || !task) {
     return (
-      <PageContainer maxWidth="4xl" spacing="6">
+      <PageContainer maxWidth="reading" spacing="6">
         {backLink}
         <EmptyState
           message="Task not found, or you don't have access to it."
@@ -64,7 +64,7 @@ const Page = () => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
 
   return (
-    <PageContainer maxWidth="4xl" spacing="8">
+    <PageContainer maxWidth="reading" spacing="8">
       {backLink}
 
       <PageHeader

@@ -27,7 +27,7 @@ const Page = () => {
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Review Queue"
         description="Review student submissions and leave feedback."

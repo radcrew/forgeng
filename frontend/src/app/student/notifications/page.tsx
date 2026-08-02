@@ -82,7 +82,7 @@ const Page = () => {
   };
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Notifications"
         description="Updates on your feedback and new tasks."

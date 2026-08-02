@@ -53,7 +53,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="5xl" spacing="6">
+      <PageContainer spacing="6">
         {backLink}
         <LoadingState message="Loading cohort…" />
       </PageContainer>
@@ -62,7 +62,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
 
   if (error || !cohort) {
     return (
-      <PageContainer maxWidth="5xl" spacing="6">
+      <PageContainer spacing="6">
         {backLink}
         <EmptyState message="Cohort not found." art={APP_ART.notFoundItem} />
       </PageContainer>
@@ -70,7 +70,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
   }
 
   return (
-    <PageContainer maxWidth="5xl" spacing="8">
+    <PageContainer spacing="8">
       {backLink}
 
       <PageHeader

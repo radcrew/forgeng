@@ -77,7 +77,7 @@ export const ListPageLayout = <
     emptyMessage = "No items found.",
     emptyArt,
     loadingMessage = "Loading…",
-    maxWidth = "5xl",
+    maxWidth = "wide",
 }: ListPageLayoutProps<T, TFilter, TData>) => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);

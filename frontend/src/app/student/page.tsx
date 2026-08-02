@@ -19,7 +19,7 @@ const Page = () => {
   // (and the switcher) don't flash back to the loading state.
   if (!dashboard) {
     return (
-      <PageContainer maxWidth="6xl" spacing="8">
+      <PageContainer spacing="8">
         <PageHeader title="Student Dashboard" description="Loading…" />
       </PageContainer>
     );
@@ -30,7 +30,7 @@ const Page = () => {
   const profileIncomplete = user && !isProfileComplete(user);
 
   return (
-    <PageContainer maxWidth="6xl" spacing="8">
+    <PageContainer spacing="8">
       <PageHeader
         title="Student Dashboard"
         description={

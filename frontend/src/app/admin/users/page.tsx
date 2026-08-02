@@ -32,7 +32,7 @@ const Page = () => {
   };
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Students"
         description="Manage students and their roles."
