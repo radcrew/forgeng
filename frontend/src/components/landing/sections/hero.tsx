@@ -1,10 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { HeroScene } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
-import { PHOTOS } from "@constants/landing";
 
 export function Hero() {
   return (
@@ -52,20 +51,10 @@ export function Hero() {
           </p>
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
-          <Image
-            src={PHOTOS.hero.src}
-            alt={PHOTOS.hero.alt}
-            fill
-            sizes="(min-width: 1152px) 576px, (min-width: 768px) 50vw, 100vw"
-            placeholder="blur"
-            blurDataURL={PHOTOS.hero.blurDataURL}
-            preload
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg aspect-[4/3]">
+          <HeroScene />
           <div className="absolute bottom-4 left-4 right-4">
-            <div className="bg-background/90 backdrop-blur rounded-xl p-3 flex items-center gap-3 shadow">
+            <div className="bg-background/95 backdrop-blur rounded-xl border border-border/60 p-3 flex items-center gap-3 shadow-md">
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
                 S
               </div>

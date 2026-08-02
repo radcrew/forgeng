@@ -3,7 +3,7 @@ import {
   Faq,
   Features,
   Footer,
-  Gallery,
+  DailyRhythm,
   Header,
   Hero,
   HowItWorks,
@@ -22,7 +22,7 @@ const Page = () => (
       <Hero />
       <Stats />
       <WhoWeAre />
-      <Gallery />
+      <DailyRhythm />
       <HowItWorks />
       <TaskTypes />
       <Features />

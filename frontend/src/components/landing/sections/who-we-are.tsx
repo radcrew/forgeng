@@ -1,24 +1,14 @@
-import Image from "next/image";
-
+import { MissionScene } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
-import { PHOTOS, VALUES } from "@constants/landing";
+import { VALUES } from "@constants/landing";
 
 export function WhoWeAre() {
   return (
     <section id="who-we-are" className="px-6 py-24">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/5] order-2 md:order-1">
-          <Image
-            src={PHOTOS.mission.src}
-            alt={PHOTOS.mission.alt}
-            fill
-            sizes="(min-width: 1152px) 576px, (min-width: 768px) 50vw, 100vw"
-            placeholder="blur"
-            blurDataURL={PHOTOS.mission.blurDataURL}
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-          <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-lg border border-border/40">
+        <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg aspect-[4/5] order-2 md:order-1">
+          <MissionScene />
+          <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-md border border-border/60">
             <p className="text-[11px] font-bold tracking-widest text-primary">
               OUR MISSION
             </p>

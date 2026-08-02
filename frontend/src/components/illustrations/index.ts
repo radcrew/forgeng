@@ -13,3 +13,20 @@ export {
   VerdictArt,
   type SpotIllustration,
 } from "./spot-art";
+
+export {
+  CtaFieldScene,
+  FeedbackScene,
+  HeroScene,
+  MissionScene,
+  RoleAdminScene,
+  RoleApplicantScene,
+  RoleStudentScene,
+  StepApplyScene,
+  StepCohortScene,
+  StepFeedbackScene,
+  StepLevelUpScene,
+  StepStipendScene,
+  StepTasksScene,
+  type SceneIllustration,
+} from "./scenes";

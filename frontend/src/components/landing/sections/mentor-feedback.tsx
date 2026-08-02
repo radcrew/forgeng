@@ -1,12 +1,11 @@
-import Image from "next/image";
 import { CheckCircle2, Star } from "lucide-react";
 
+import { FeedbackScene } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import {
   FEEDBACK_BULLETS,
   FEEDBACK_TESTIMONIAL,
-  PHOTOS,
   SAMPLE_FEEDBACK,
 } from "@constants/landing";
 
@@ -14,22 +13,13 @@ export function MentorFeedback() {
   return (
     <section className="border-y border-border bg-muted/30 px-6 py-20">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-        <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
-          <Image
-            src={PHOTOS.codeReview.src}
-            alt={PHOTOS.codeReview.alt}
-            fill
-            sizes="(min-width: 1152px) 576px, (min-width: 1024px) 50vw, 100vw"
-            placeholder="blur"
-            blurDataURL={PHOTOS.codeReview.blurDataURL}
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-5 left-5 right-5">
-            <blockquote className="text-white text-sm leading-relaxed italic">
+        <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg aspect-[4/3]">
+          <FeedbackScene />
+          <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-md border border-border/60">
+            <blockquote className="text-sm leading-relaxed italic">
               &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
             </blockquote>
-            <p className="text-white/70 text-xs mt-2 font-medium">
+            <p className="text-muted-foreground text-xs mt-2 font-medium">
               {FEEDBACK_TESTIMONIAL.attribution}
             </p>
           </div>

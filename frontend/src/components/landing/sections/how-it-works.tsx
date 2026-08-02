@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { Badge } from "@components/ui/badge";
 import { STEPS } from "@constants/landing";
 
@@ -29,6 +27,7 @@ export function HowItWorks() {
         <div className="space-y-16">
           {STEPS.map((step, i) => {
             const Icon = step.icon;
+            const Scene = step.scene;
             const isEven = i % 2 === 0;
             return (
               <div
@@ -38,20 +37,11 @@ export function HowItWorks() {
                 }`}
               >
                 <div
-                  className={`relative rounded-2xl overflow-hidden shadow-lg aspect-[16/10] ${
+                  className={`relative rounded-2xl overflow-hidden border border-border shadow-sm aspect-[16/10] ${
                     isEven ? "" : "md:[direction:ltr]"
                   }`}
                 >
-                  <Image
-                    src={step.photo.src}
-                    alt={step.photo.alt}
-                    fill
-                    sizes="(min-width: 1024px) 512px, 100vw"
-                    placeholder="blur"
-                    blurDataURL={step.photo.blurDataURL}
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent mix-blend-multiply" />
+                  <Scene />
                 </div>
 
                 <div

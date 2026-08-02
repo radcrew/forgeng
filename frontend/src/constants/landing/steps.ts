@@ -8,15 +8,22 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { PHOTOS } from "@constants/landing/photos";
-import type { Photo } from "@constants/shared/photo";
+import {
+  StepApplyScene,
+  StepCohortScene,
+  StepFeedbackScene,
+  StepLevelUpScene,
+  StepStipendScene,
+  StepTasksScene,
+  type SceneIllustration,
+} from "@components/illustrations";
 
 export interface Step {
   number: string;
   title: string;
   description: string;
   icon: LucideIcon;
-  photo: Photo;
+  scene: SceneIllustration;
 }
 
 export const STEPS: Step[] = [
@@ -26,7 +33,7 @@ export const STEPS: Step[] = [
     description:
       "Submit a short application telling us about your background, goals, and motivation. No CS degree required — we care about drive.",
     icon: ClipboardList,
-    photo: PHOTOS.stepApply,
+    scene: StepApplyScene,
   },
   {
     number: "02",
@@ -34,7 +41,7 @@ export const STEPS: Step[] = [
     description:
       "Accepted applicants are placed into a cohort with a dedicated mentor and peers at the same stage.",
     icon: Users,
-    photo: PHOTOS.stepCohort,
+    scene: StepCohortScene,
   },
   {
     number: "03",
@@ -42,7 +49,7 @@ export const STEPS: Step[] = [
     description:
       "Work through structured coding assignments, reading modules, and projects inside your cohort timeline.",
     icon: Code2,
-    photo: PHOTOS.stepTasks,
+    scene: StepTasksScene,
   },
   {
     number: "04",
@@ -50,7 +57,7 @@ export const STEPS: Step[] = [
     description:
       "Mentors review every submission. You receive detailed feedback with a clear verdict — approved or needs work.",
     icon: MessageSquare,
-    photo: PHOTOS.stepFeedback,
+    scene: StepFeedbackScene,
   },
   {
     number: "05",
@@ -58,7 +65,7 @@ export const STEPS: Step[] = [
     description:
       "Finish every task due that month and receive your monthly stipend — automatic and no negotiation needed. Complete the work, get the money.",
     icon: Banknote,
-    photo: PHOTOS.stepStipend,
+    scene: StepStipendScene,
   },
   {
     number: "06",
@@ -66,6 +73,6 @@ export const STEPS: Step[] = [
     description:
       "Track your progress, build a portfolio of real work, and graduate with evidence of what you can actually do.",
     icon: Award,
-    photo: PHOTOS.stepLevelUp,
+    scene: StepLevelUpScene,
   },
 ];

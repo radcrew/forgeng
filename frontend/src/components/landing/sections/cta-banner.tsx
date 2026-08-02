@@ -1,22 +1,15 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { CtaFieldScene } from "@components/illustrations";
 import { Button } from "@components/ui/button";
-import { PHOTOS } from "@constants/landing";
 
 export function CtaBanner() {
   return (
     <section className="relative overflow-hidden px-6 py-20 bg-primary text-primary-foreground text-center">
-      <div className="absolute inset-0">
-        <Image
-          src={PHOTOS.cohortEnergy.src}
-          alt=""
-          aria-hidden="true"
-          fill
-          sizes="100vw"
-          className="object-cover opacity-10"
-        />
+      {/* Inherits `text-primary-foreground` from the band via `stroke-current`. */}
+      <div className="absolute inset-0 opacity-15">
+        <CtaFieldScene />
       </div>
       <div className="relative z-10 max-w-3xl mx-auto space-y-6">
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
