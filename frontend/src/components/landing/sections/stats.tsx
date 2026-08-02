@@ -1,18 +1,23 @@
+import { Reveal } from "@components/landing/primitives";
 import { STATS } from "@constants/landing";
 
 export function Stats() {
   return (
-    <section className="border-y border-border bg-muted/30">
-      <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        {STATS.map((stat) => (
-          <div key={stat.label}>
-            <div className="text-3xl md:text-4xl font-extrabold text-primary">
-              {stat.value}
+    <section className="bg-ink text-paper">
+      {/* Hairline grid drawn with gap-px over the band colour, so the numbers
+          sit in a register rather than floating in centred columns. */}
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px bg-white/10 md:grid-cols-4">
+        {STATS.map((stat, i) => (
+          <Reveal key={stat.label} delay={i * 70} className="bg-ink">
+            <div className="h-full px-6 py-12">
+              <div className="u-display u-tight text-5xl text-paper lg:text-6xl">
+                {stat.value}
+              </div>
+              <div className="u-tech mt-4 text-[0.625rem] leading-relaxed text-white/60">
+                {stat.label}
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground mt-1">
-              {stat.label}
-            </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>

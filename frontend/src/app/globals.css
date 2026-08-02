@@ -43,6 +43,27 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
+  /* Landing-page faces, applied by utility so the app is unaffected. */
+  --font-display: var(--font-archivo), var(--font-geist-sans), sans-serif;
+  --font-editorial: var(--font-newsreader), Georgia, serif;
+  --font-tech: var(--font-jetbrains), var(--font-geist-mono), monospace;
+
+  /* Landing palette. `quench` is the existing brand cyan at full strength —
+     it means Approved. `ember` means Needs Work. Both map to real verdicts
+     in the product rather than being decorative accents. */
+  --color-ink: #0b0c0e;
+  --color-paper: #fcfcfa;
+  --color-steel: #6a7178;
+  --color-quench: #10b5cb;
+  --color-ember: #f0531c;
+  --color-rule: #e4e4de;
+
+  /* The brand cyan is 2.4:1 on paper — fine on ink, unreadable as text on
+     light. These are the same hues darkened to clear AA, used for text and
+     borders on the paper sections only. */
+  --color-quench-deep: #0b7684;
+  --color-ember-deep: #b03a0c;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -157,5 +178,101 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Landing page
+   Scoped under `.landing` so the signed-in app keeps its own visual system.
+   --------------------------------------------------------------------------- */
+
+.landing {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* Default leading suits the many small display usages (labels, card titles).
+   `.u-tight` opts the big headlines into display leading — a class rather than
+   a Tailwind `leading-*` utility, because `.landing .u-display` outranks
+   single-class utilities and would otherwise win. */
+.landing .u-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  line-height: 1.08;
+}
+
+.landing .u-tight {
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+}
+
+.landing .u-tech {
+  font-family: var(--font-tech);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.landing .u-editorial {
+  font-family: var(--font-editorial);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* The verdict stamp: the page's signature. Hard 2px border, squared corners,
+   no shadow — it should read as something pressed onto the page. */
+.landing .u-stamp {
+  font-family: var(--font-tech);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3125rem 0.625rem;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* Staggered entrance for the hero, and a scroll reveal for everything below.
+   Both collapse to "already visible" under reduced motion. */
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.landing .u-rise {
+  animation: landing-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing .u-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing .u-reveal[data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing .u-rise,
+  .landing .u-reveal {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
   }
 }

@@ -1,9 +1,9 @@
 import {
   CtaBanner,
+  DailyRhythm,
   Faq,
   Features,
   Footer,
-  DailyRhythm,
   Header,
   Hero,
   HowItWorks,
@@ -14,17 +14,22 @@ import {
   WhoWeAre,
 } from "@components/landing";
 
+/**
+ * `landing` scopes the marketing type and palette so the signed-in app keeps
+ * its own system. The ink bands (Stats, DailyRhythm, CtaBanner) are spaced
+ * apart deliberately so the page alternates weight rather than clustering it.
+ */
 const Page = () => (
-  <div className="min-h-screen bg-background flex flex-col text-foreground">
+  <div className="landing flex min-h-screen flex-col">
     <Header />
 
     <main className="flex-1">
       <Hero />
       <Stats />
       <WhoWeAre />
-      <DailyRhythm />
-      <HowItWorks />
       <TaskTypes />
+      <HowItWorks />
+      <DailyRhythm />
       <Features />
       <MentorFeedback />
       <Roles />

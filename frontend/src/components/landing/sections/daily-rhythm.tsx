@@ -1,45 +1,39 @@
-import { Badge } from "@components/ui/badge";
+import { Reveal, SectionHead } from "@components/landing/primitives";
 import { DAILY_RHYTHM } from "@constants/landing";
 
 export function DailyRhythm() {
   return (
-    <section id="life-in-program" className="border-t border-border px-6 py-24">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-14 space-y-3">
-          <Badge
-            variant="outline"
-            className="text-xs font-semibold tracking-wide"
-          >
-            Life in the Program
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            What the Day-to-Day Looks Like
-          </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Mentoring sessions, code reviews, cohort syncs, pair programming —
-            this is what real learning looks like.
-          </p>
-        </div>
-
-        <ul className="relative grid gap-10 md:grid-cols-5 md:gap-6">
-          {/* Runs behind the markers to tie the week together. Hidden on the
-              stacked mobile layout, where there is no shared baseline. */}
-          <div
-            aria-hidden="true"
-            className="hidden md:block absolute left-0 right-0 top-2 h-px bg-border"
+    <section
+      id="life-in-program"
+      className="border-b border-rule bg-ink px-6 py-24 text-paper lg:py-32"
+    >
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <SectionHead
+            tone="ink"
+            label="A typical week"
+            title="What the work actually looks like"
+            lead="These repeat. They are the texture of the program, not a sequence you graduate out of."
           />
+        </Reveal>
 
-          {DAILY_RHYTHM.map((item) => (
-            <li key={item.label} className="relative space-y-3">
-              <span
-                aria-hidden="true"
-                className="relative z-10 block h-4 w-4 rounded-full border-2 border-primary bg-background"
-              />
-              <p className="font-semibold">{item.label}</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {item.description}
-              </p>
-            </li>
+        <ul className="mt-16 grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
+          {DAILY_RHYTHM.map((item, i) => (
+            <Reveal
+              key={item.label}
+              delay={i * 60}
+              as="li"
+              className="flex h-full flex-col gap-4 bg-ink p-6 lg:p-7"
+            >
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 rounded-full bg-quench"
+                />
+                <p className="u-display text-base text-paper">{item.label}</p>
+                <p className="text-sm leading-relaxed text-white/55">
+                  {item.description}
+                </p>
+            </Reveal>
           ))}
         </ul>
       </div>

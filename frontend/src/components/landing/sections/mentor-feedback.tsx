@@ -1,123 +1,96 @@
-import { CheckCircle2, Star } from "lucide-react";
+import { Check } from "lucide-react";
 
-import { Illustration } from "@components/illustrations";
-import { Badge } from "@components/ui/badge";
-import { Card, CardContent } from "@components/ui/card";
+import { Reveal, SectionHead, Verdict } from "@components/landing/primitives";
 import {
   FEEDBACK_BULLETS,
-  LANDING_ART,
   FEEDBACK_TESTIMONIAL,
   SAMPLE_FEEDBACK,
 } from "@constants/landing";
 
 export function MentorFeedback() {
   return (
-    <section className="border-y border-border bg-muted/30 px-6 py-20">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-        <div className="relative rounded-2xl overflow-hidden border border-border bg-muted/30 shadow-lg aspect-[4/3]">
-          <Illustration art={LANDING_ART.feedback} className="p-5 pb-28" />
-          <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-md border border-border/60">
-            <blockquote className="text-sm leading-relaxed italic">
-              &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
-            </blockquote>
-            <p className="text-muted-foreground text-xs mt-2 font-medium">
-              {FEEDBACK_TESTIMONIAL.attribution}
-            </p>
-          </div>
-        </div>
+    <section className="border-b border-rule px-6 py-24 lg:py-32">
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <SectionHead
+            label="Review"
+            title={
+              <>
+                Two verdicts.
+                <br />
+                No hedging.
+              </>
+            }
+            lead="Generic “looks good” is a missed opportunity. Every submission comes back with a written explanation and one of two outcomes."
+          />
+        </Reveal>
 
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <Badge
-              variant="outline"
-              className="text-xs font-semibold tracking-wide"
-            >
-              Mentor Feedback
-            </Badge>
-            <h2 className="text-3xl font-bold tracking-tight">
-              Code Review That Actually Teaches You
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Generic &ldquo;looks good&rdquo; isn&apos;t feedback —
-              it&apos;s a missed opportunity. Every submission gets a
-              detailed verdict with concrete suggestions, explained in plain
-              language by a working engineer.
-            </p>
-            <ul className="space-y-2.5">
+        <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+          <Reveal delay={80}>
+            <ul className="border-t border-rule">
               {FEEDBACK_BULLETS.map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                  <span>{item}</span>
+                <li
+                  key={item}
+                  className="flex items-center gap-4 border-b border-rule py-4 text-sm text-ink"
+                >
+                  <Check
+                    className="h-3.5 w-3.5 shrink-0 text-quench-deep"
+                    strokeWidth={3}
+                    aria-hidden="true"
+                  />
+                  {item}
                 </li>
               ))}
             </ul>
-          </div>
 
-          <div className="space-y-3">
-            {SAMPLE_FEEDBACK.map((sample) => {
-              const isApproved = sample.verdict === "approved";
-              return (
-                <Card
-                  key={sample.mentorName}
-                  className={
-                    isApproved
-                      ? "border-primary/30 shadow"
-                      : "border-destructive/20"
-                  }
-                >
-                  <CardContent className="p-4 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                            isApproved
-                              ? "bg-primary/10 text-primary"
-                              : "bg-orange-100 text-orange-700"
-                          }`}
-                        >
-                          {sample.mentorInitial}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">
-                            {sample.mentorName}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {sample.mentorTitle}
-                          </p>
-                        </div>
+            <figure className="mt-12 border-l-2 border-quench-deep pl-6">
+              <blockquote className="u-editorial text-xl leading-snug text-ink sm:text-2xl">
+                &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
+              </blockquote>
+              <figcaption className="u-tech mt-5 text-[0.625rem] text-steel">
+                {FEEDBACK_TESTIMONIAL.attribution.replace("— ", "")}
+              </figcaption>
+            </figure>
+          </Reveal>
+
+          <Reveal delay={160}>
+            <div className="space-y-5">
+              {SAMPLE_FEEDBACK.map((sample) => {
+                const approved = sample.verdict === "approved";
+                return (
+                  <article
+                    key={sample.mentorName}
+                    className={`rounded-[3px] border-l-2 bg-white ${
+                      approved ? "border-l-quench-deep" : "border-l-ember-deep"
+                    } border-y border-r border-rule`}
+                  >
+                    <header className="flex items-center justify-between gap-4 border-b border-rule px-6 py-4">
+                      <div>
+                        <p className="u-display text-sm text-ink">
+                          {sample.mentorName.replace("Mentor ", "")}
+                        </p>
+                        <p className="u-tech mt-1 text-[0.5625rem] text-steel">
+                          {sample.mentorTitle}
+                        </p>
                       </div>
-                      {isApproved ? (
-                        <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                          Approved
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive" className="text-xs">
-                          Needs Work
-                        </Badge>
+                      <Verdict verdict={sample.verdict} />
+                    </header>
+
+                    <div className="px-6 py-6">
+                      <p className="u-editorial text-base leading-relaxed text-ink">
+                        &ldquo;{sample.comment}&rdquo;
+                      </p>
+                      {sample.taskFooter && (
+                        <p className="u-tech mt-5 text-[0.5625rem] text-steel">
+                          {sample.taskFooter}
+                        </p>
                       )}
                     </div>
-                    <p
-                      className={`text-sm text-muted-foreground leading-relaxed border-l-2 pl-3 ${
-                        isApproved
-                          ? "border-primary/30"
-                          : "border-destructive/30"
-                      }`}
-                    >
-                      &ldquo;{sample.comment}&rdquo;
-                    </p>
-                    {sample.taskFooter && (
-                      <div className="flex items-center gap-2">
-                        <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-                        <span className="text-xs text-muted-foreground">
-                          {sample.taskFooter}
-                        </span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>

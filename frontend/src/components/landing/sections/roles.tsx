@@ -1,62 +1,52 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import { Badge } from "@components/ui/badge";
-import { Button } from "@components/ui/button";
 import { Illustration } from "@components/illustrations";
-import { Card, CardContent } from "@components/ui/card";
+import { Reveal, SectionHead } from "@components/landing/primitives";
 import { ROLES } from "@constants/landing";
 
 export function Roles() {
   return (
-    <section id="roles" className="px-6 py-24 max-w-5xl mx-auto">
-      <div className="text-center mb-16 space-y-3">
-        <Badge
-          variant="outline"
-          className="text-xs font-semibold tracking-wide"
-        >
-          Who Is This For
-        </Badge>
-        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Find Your Place on the Platform
-        </h2>
-        <p className="text-muted-foreground max-w-xl mx-auto">
-          Whether you&apos;re learning, teaching, or managing — there&apos;s a
-          role designed for you.
-        </p>
-      </div>
+    <section id="roles" className="border-b border-rule px-6 py-24 lg:py-32">
+      <div className="mx-auto max-w-6xl">
+        <Reveal>
+          <SectionHead
+            label="Find your place"
+            title="Three ways in"
+            lead="Whether you are applying, already building, or running a cohort, the platform is the same one."
+          />
+        </Reveal>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {ROLES.map((role) => (
-          <Card
-            key={role.role}
-            className="border-border/60 flex flex-col hover:shadow-md transition-shadow overflow-hidden"
-          >
-            <CardContent className="p-0 flex flex-col flex-1">
-              <div className="relative h-36 overflow-hidden border-b border-border bg-muted/30">
-                <Illustration art={role.art} className="p-3" />
-              </div>
-              <div className="p-6 flex flex-col flex-1 space-y-4">
-                <Badge
-                  className={`self-start text-xs font-semibold ${role.color} border-0`}
-                >
-                  {role.role}
-                </Badge>
-                <div className="flex-1 space-y-2">
-                  <h3 className="font-bold text-lg">{role.headline}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+        <div className="mt-16 grid gap-px bg-rule md:grid-cols-3">
+          {ROLES.map((role, i) => (
+            <Reveal key={role.role} delay={i * 70} className="bg-paper">
+              <article className="group flex h-full flex-col">
+                <div className="relative aspect-[16/9] overflow-hidden border-b border-rule bg-white">
+                  <Illustration art={role.art} className="p-5" />
+                </div>
+
+                <div className="flex flex-1 flex-col p-7">
+                  <p className="u-tech text-[0.625rem] text-quench-deep">
+                    {role.role}
+                  </p>
+                  <h3 className="u-display mt-4 text-2xl text-ink">
+                    {role.headline}
+                  </h3>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-steel">
                     {role.description}
                   </p>
-                </div>
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link href={role.href}>
-                    {role.cta} <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                  <Link
+                    href={role.href}
+                    className="u-tech mt-7 inline-flex items-center gap-2 text-[0.625rem] text-ink transition-colors hover:text-quench-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                  >
+                    {role.cta}
+                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                   </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </div>
+              </article>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );

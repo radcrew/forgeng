@@ -1,44 +1,50 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { CtaFieldArt } from "@components/illustrations";
-import { Button } from "@components/ui/button";
+import { Reveal } from "@components/landing/primitives";
 
 export function CtaBanner() {
   return (
-    <section className="relative overflow-hidden px-6 py-20 bg-primary text-primary-foreground text-center">
-      {/* Inherits `text-primary-foreground` from the band via `stroke-current`. */}
-      <div className="absolute inset-0 opacity-15">
-        <CtaFieldArt />
-      </div>
-      <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-          Ready to become a real engineer?
-        </h2>
-        <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto">
-          Applications take under 10 minutes. We review every one personally
-          and get back to you within a week.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <Button
-            asChild
-            size="lg"
-            variant="secondary"
-            className="h-12 px-8 text-base font-semibold w-full sm:w-auto"
-          >
-            <Link href="/sign-up">
-              Apply Now — It&apos;s Free <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="ghost"
-            className="h-12 px-8 text-base font-semibold text-primary-foreground hover:bg-primary-foreground/10 w-full sm:w-auto"
-          >
-            <Link href="/sign-in">Already a member? Sign In</Link>
-          </Button>
-        </div>
+    <section className="border-t border-ink bg-ink text-paper">
+      <div className="mx-auto max-w-6xl px-6 py-24 lg:py-32">
+        <Reveal>
+          <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+            <div>
+              <p className="u-tech text-[0.6875rem] text-quench">
+                Intake is open
+              </p>
+              <h2 className="u-display u-tight mt-6 text-[2.75rem] text-paper sm:text-6xl lg:text-[4rem]">
+                Ten minutes to
+                <br />
+                apply. One week
+                <br />
+                to hear back.
+              </h2>
+            </div>
+
+            <div className="lg:pb-3">
+              <p className="text-base leading-relaxed text-white/60">
+                We read every application ourselves. No fee, no prerequisites,
+                no automated screen deciding whether you are worth a look.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/sign-up"
+                  className="group inline-flex h-12 items-center justify-center gap-2 rounded-[3px] bg-quench px-7 text-sm font-semibold text-ink transition-colors hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-quench"
+                >
+                  Start an application
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  href="/sign-in"
+                  className="inline-flex h-12 items-center justify-center rounded-[3px] border-2 border-white/20 px-7 text-sm font-semibold text-paper transition-colors hover:border-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-quench"
+                >
+                  Sign in
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

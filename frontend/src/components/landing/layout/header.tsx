@@ -1,40 +1,43 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 import { Logo } from "@components/brand/logo";
-import { Button } from "@components/ui/button";
 import { NAV_LINKS } from "@constants/landing";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border px-6 py-4 flex items-center justify-between">
-      <Link href="/" className="flex items-center gap-2">
-        <Logo size={28} priority />
-        <span className="font-bold text-lg tracking-tight">Forgeng</span>
-      </Link>
-      <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-        {NAV_LINKS.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            className="hover:text-foreground transition-colors"
-          >
-            {link.label}
-          </a>
-        ))}
-      </nav>
-      <div className="flex items-center gap-3">
-        <Link
-          href="/sign-in"
-          className="text-sm font-medium hover:text-primary transition-colors hidden sm:block"
-        >
-          Sign In
+    <header className="sticky top-0 z-50 border-b border-rule bg-paper/85 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
+        <Link href="/" className="flex items-center gap-2.5">
+          <Logo size={26} priority />
+          <span className="u-display text-lg">Forgeng</span>
         </Link>
-        <Button asChild size="sm" className="font-semibold">
-          <Link href="/sign-up">
-            Get started <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+
+        <nav className="hidden items-center gap-7 lg:flex">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="u-tech text-[0.625rem] text-steel transition-colors hover:text-ink"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-5">
+          <Link
+            href="/sign-in"
+            className="u-tech hidden text-[0.625rem] text-steel transition-colors hover:text-ink sm:block"
+          >
+            Sign in
           </Link>
-        </Button>
+          <Link
+            href="/sign-up"
+            className="inline-flex h-9 items-center rounded-[3px] bg-ink px-4 text-xs font-semibold text-paper transition-colors hover:bg-quench hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            Apply
+          </Link>
+        </div>
       </div>
     </header>
   );
