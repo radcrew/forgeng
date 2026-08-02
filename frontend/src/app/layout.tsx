@@ -21,6 +21,9 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  // Only used for a handful of wallet/id strings deep in the admin UI, so it
+  // does not belong on the critical path of every page.
+  preload: false,
 });
 
 // Landing-page faces. Scoped by utility class, so the signed-in app keeps
@@ -31,11 +34,12 @@ const archivo = Archivo({
   subsets: ["latin"],
 });
 
-// Used sparingly: the mission lead and the apprentice quote only.
+// Used sparingly: the mission lead and the apprentice quote only. Upright
+// only — nothing on the page sets italic.
 const newsreader = Newsreader({
   variable: "--font-newsreader",
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  preload: false,
 });
 
 // Anything the system asserts — verdicts, counts, dates, section indices.

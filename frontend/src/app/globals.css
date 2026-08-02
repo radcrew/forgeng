@@ -189,6 +189,12 @@
 .landing {
   background: var(--color-paper);
   color: var(--color-ink);
+  /* Body copy had no family of its own and fell through to the app default,
+     pulling a fourth typeface onto the page. Archivo covers text as well as
+     display, so the landing runs on one grotesque. */
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.006em;
 }
 
 /* Default leading suits the many small display usages (labels, card titles).
