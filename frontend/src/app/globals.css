@@ -40,13 +40,14 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
-  /* Landing-page faces, applied by utility so the app is unaffected. */
-  --font-display: var(--font-archivo), var(--font-geist-sans), sans-serif;
+  /* Display and body are the same grotesque at different weights; the
+     editorial serif is reserved for pull quotes. */
+  --font-display: var(--font-sans);
   --font-editorial: var(--font-newsreader), Georgia, serif;
-  --font-tech: var(--font-jetbrains), var(--font-geist-mono), monospace;
+  --font-tech: var(--font-mono);
 
   /* Landing palette. `quench` is the existing brand cyan at full strength —
      it means Approved. `ember` means Needs Work. Both map to real verdicts
@@ -92,82 +93,88 @@
 }
 
 :root {
-  --background: 220 33% 98%;
-  --foreground: 222 47% 11%;
+  /* Paper and ink, matching the landing palette. */
+  --background: 60 33% 98%;
+  --foreground: 220 12% 5%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 187 85% 43%;
+  --border: 60 10% 88%;
+  --input: 60 10% 88%;
+  --ring: 187 85% 28%;
 
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 220 12% 5%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 220 12% 5%;
 
-  --primary: 187 85% 43%;
+  /* The brand cyan darkened until it clears AA against white. The previous
+     value was 2.4:1 behind white button text. */
+  --primary: 187 85% 28%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 222 47% 11%;
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 220 12% 5%;
+  --secondary-foreground: 60 33% 98%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted: 60 14% 95%;
+  --muted-foreground: 210 6% 44%;
 
-  --accent: 30 100% 60%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent drives hover states on ghost and outline controls, so it has to be
+     a quiet neutral rather than a colour. */
+  --accent: 60 14% 95%;
+  --accent-foreground: 220 12% 5%;
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 17 89% 37%;
+  --destructive-foreground: 0 0% 100%;
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 0 0% 100%;
-  --sidebar-border: 222 47% 8%;
+  --sidebar: 220 12% 5%;
+  --sidebar-foreground: 60 33% 98%;
+  --sidebar-border: 220 12% 12%;
   --sidebar-primary: 187 85% 43%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-primary-foreground: 220 12% 5%;
+  --sidebar-accent: 220 12% 12%;
+  --sidebar-accent-foreground: 60 33% 98%;
   --sidebar-ring: 187 85% 43%;
 
-  --radius: 0.5rem;
+  --radius: 0.25rem;
 }
 
 .dark {
-  --background: 222 47% 8%;
-  --foreground: 210 40% 98%;
+  --background: 220 12% 5%;
+  --foreground: 60 33% 98%;
 
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
+  --border: 220 10% 16%;
+  --input: 220 10% 16%;
   --ring: 187 85% 43%;
 
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
+  --card: 220 12% 8%;
+  --card-foreground: 60 33% 98%;
 
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
+  --popover: 220 12% 8%;
+  --popover-foreground: 60 33% 98%;
 
+  /* On ink the brand cyan is 7.9:1, so the full-strength value is used here. */
   --primary: 187 85% 43%;
-  --primary-foreground: 222 47% 11%;
+  --primary-foreground: 220 12% 5%;
 
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 220 10% 16%;
+  --secondary-foreground: 60 33% 98%;
 
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20.2% 65.1%;
+  --muted: 220 10% 16%;
+  --muted-foreground: 210 8% 65%;
 
-  --accent: 30 100% 60%;
-  --accent-foreground: 222 47% 11%;
+  --accent: 220 10% 16%;
+  --accent-foreground: 60 33% 98%;
 
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 17 80% 52%;
+  --destructive-foreground: 220 12% 5%;
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217 33% 17%;
+  --sidebar: 220 12% 8%;
+  --sidebar-foreground: 60 33% 98%;
+  --sidebar-border: 220 10% 16%;
   --sidebar-primary: 187 85% 43%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-primary-foreground: 220 12% 5%;
+  --sidebar-accent: 220 10% 16%;
+  --sidebar-accent-foreground: 60 33% 98%;
   --sidebar-ring: 187 85% 43%;
 }
 
@@ -178,49 +185,39 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    letter-spacing: -0.006em;
   }
 }
 
 /* ---------------------------------------------------------------------------
-   Landing page
-   Scoped under `.landing` so the signed-in app keeps its own visual system.
+   Type system
+   Shared by the marketing pages and the signed-in app.
    --------------------------------------------------------------------------- */
-
-.landing {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  /* Body copy had no family of its own and fell through to the app default,
-     pulling a fourth typeface onto the page. Archivo covers text as well as
-     display, so the landing runs on one grotesque. */
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.006em;
-}
 
 /* Default leading suits the many small display usages (labels, card titles).
    `.u-tight` opts the big headlines into display leading — a class rather than
-   a Tailwind `leading-*` utility, because `.landing .u-display` outranks
+   a Tailwind `leading-*` utility, because `.u-display` outranks
    single-class utilities and would otherwise win. */
-.landing .u-display {
+.u-display {
   font-family: var(--font-display);
   font-weight: 800;
   letter-spacing: -0.022em;
   line-height: 1.08;
 }
 
-.landing .u-tight {
+.u-tight {
   letter-spacing: -0.035em;
   line-height: 0.94;
 }
 
-.landing .u-tech {
+.u-tech {
   font-family: var(--font-tech);
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.landing .u-editorial {
+.u-editorial {
   font-family: var(--font-editorial);
   font-weight: 400;
   line-height: 1.5;
@@ -228,7 +225,7 @@
 
 /* The verdict stamp: the page's signature. Hard 2px border, squared corners,
    no shadow — it should read as something pressed onto the page. */
-.landing .u-stamp {
+.u-stamp {
   font-family: var(--font-tech);
   font-weight: 700;
   font-size: 0.8125rem;
@@ -256,12 +253,12 @@
   }
 }
 
-.landing .u-rise {
+.u-rise {
   animation: landing-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing .u-rise {
+  .u-rise {
     animation: none;
     transition: none;
     opacity: 1;
@@ -273,21 +270,21 @@
    heights it pushed the call to action below the fold. Trim its vertical space
    and display size rather than letting the buttons disappear. */
 @media (max-height: 920px) {
-  .landing .u-hero {
+  .u-hero {
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
   }
 
-  .landing .u-hero-title {
+  .u-hero-title {
     font-size: clamp(2.5rem, 5.6vw, 5rem);
   }
 
-  .landing .u-hero-split {
+  .u-hero-split {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
   }
 
-  .landing .u-hero-quote {
+  .u-hero-quote {
     font-size: 1.25rem;
   }
 }

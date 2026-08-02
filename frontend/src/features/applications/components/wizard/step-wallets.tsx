@@ -40,7 +40,7 @@ export const StepWallets = ({ control }: Props) => {
   return (
     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
       <div>
-        <h2 className="text-xl font-semibold">{COPY.title}</h2>
+        <h2 className="u-display text-xl">{COPY.title}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{COPY.hint}</p>
         <p className="mt-1 text-xs text-muted-foreground">
           {COPY.atLeastOneHint}

@@ -9,11 +9,13 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <h1 className="text-3xl font-bold tracking-tight break-words">{title}</h1>
+        <h1 className="u-display u-tight text-4xl break-words">{title}</h1>
         {description && (
-          <p className="text-muted-foreground mt-1">{description}</p>
+          <p className="mt-3 leading-relaxed text-muted-foreground">
+            {description}
+          </p>
         )}
       </div>
       {actions && <div className="shrink-0">{actions}</div>}

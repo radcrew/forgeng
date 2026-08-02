@@ -14,13 +14,8 @@ import {
   WhoWeAre,
 } from "@components/landing";
 
-/**
- * `landing` scopes the marketing type and palette so the signed-in app keeps
- * its own system. The ink bands (Stats, DailyRhythm, CtaBanner) are spaced
- * apart deliberately so the page alternates weight rather than clustering it.
- */
 const Page = () => (
-  <div className="landing flex min-h-screen flex-col">
+  <div className="flex min-h-screen flex-col">
     <Header />
 
     <main className="flex-1">

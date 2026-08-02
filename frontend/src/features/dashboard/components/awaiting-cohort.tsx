@@ -23,7 +23,7 @@ export function AwaitingCohort({ profileIncomplete }: AwaitingCohortProps) {
 
         {profileIncomplete ? (
           <>
-            <h2 className="text-xl font-bold tracking-tight">
+            <h2 className="u-display text-xl">
               Finish your profile to get placed.
             </h2>
             <p className="max-w-md text-sm text-muted-foreground leading-relaxed">
@@ -36,7 +36,7 @@ export function AwaitingCohort({ profileIncomplete }: AwaitingCohortProps) {
           </>
         ) : (
           <>
-            <h2 className="text-xl font-bold tracking-tight">
+            <h2 className="u-display text-xl">
               You&apos;re in. Your cohort is next.
             </h2>
             <p className="max-w-md text-sm text-muted-foreground leading-relaxed">

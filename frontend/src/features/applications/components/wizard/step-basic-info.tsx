@@ -22,7 +22,7 @@ interface Props {
 
 export const StepBasicInfo = ({ control, user }: Props) => (
   <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-    <h2 className="text-xl font-semibold">{COPY.title}</h2>
+    <h2 className="u-display text-xl">{COPY.title}</h2>
     <p className="text-sm text-muted-foreground">{COPY.accountHint}</p>
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <FormField

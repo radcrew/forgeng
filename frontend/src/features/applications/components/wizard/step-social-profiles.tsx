@@ -49,7 +49,7 @@ interface Props {
 
 export const StepSocialProfiles = ({ control }: Props) => (
   <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-    <h2 className="text-xl font-semibold">{COPY.title}</h2>
+    <h2 className="u-display text-xl">{COPY.title}</h2>
     <p className="text-sm text-muted-foreground">{COPY.hint}</p>
 
     <FormField

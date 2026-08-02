@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Archivo,
-  Geist,
-  Geist_Mono,
-  JetBrains_Mono,
-  Newsreader,
-} from "next/font/google";
+import { Archivo, JetBrains_Mono, Newsreader } from "next/font/google";
 
 import { NavigationLoader } from "@components/common";
 import { Toaster } from "@components/ui/sonner";
@@ -13,22 +7,9 @@ import { AppProviders } from "@providers";
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  // Only used for a handful of wallet/id strings deep in the admin UI, so it
-  // does not belong on the critical path of every page.
-  preload: false,
-});
-
-// Landing-page faces. Scoped by utility class, so the signed-in app keeps
-// Geist. Archivo is an industrial grotesque built for signage — it carries the
-// workshop register that a default UI sans cannot.
+// The product runs on one grotesque. Archivo is built for signage but reads
+// well at text sizes, so it covers both display and body and replaces the
+// default UI sans the app previously used.
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],
@@ -42,7 +23,7 @@ const newsreader = Newsreader({
   preload: false,
 });
 
-// Anything the system asserts — verdicts, counts, dates, section indices.
+// Anything the system asserts — verdicts, counts, dates, ids, section labels.
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
@@ -112,7 +93,7 @@ const RootLayout = ({
 }>) => (
   <html
     lang="en"
-    className={`${geistSans.variable} ${geistMono.variable} ${archivo.variable} ${newsreader.variable} ${jetbrainsMono.variable} h-full antialiased`}
+    className={`${archivo.variable} ${newsreader.variable} ${jetbrainsMono.variable} h-full antialiased`}
   >
     <body className="min-h-full">
       <AppProviders>

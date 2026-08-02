@@ -127,7 +127,7 @@ const Page = () => {
       </Card>
 
       <div>
-        <h2 className="mb-4 text-xl font-semibold">Schedule</h2>
+        <h2 className="u-display mb-4 text-xl">Schedule</h2>
         {tasksLoading ? (
           <LoadingState message="Loading schedule…" />
         ) : schedule.length === 0 ? (

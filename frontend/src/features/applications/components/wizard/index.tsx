@@ -236,7 +236,7 @@ export const Wizard = ({ children }: WizardProps) => {
             </div>
           </div>
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold">
+            <h1 className="u-display u-tight text-3xl">
               {APPLICATION_WIZARD_COPY.pageTitle}
             </h1>
             <span className="text-sm font-medium text-muted-foreground">

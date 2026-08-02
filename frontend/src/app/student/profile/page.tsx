@@ -32,7 +32,7 @@ const Page = () => {
       <WalletManager />
 
       <div>
-        <h2 className="mb-4 text-xl font-semibold">Enrollment History</h2>
+        <h2 className="u-display mb-4 text-xl">Enrollment History</h2>
         {isLoading ? (
           <LoadingState message="Loading enrollments…" />
         ) : enrollments.length === 0 ? (
