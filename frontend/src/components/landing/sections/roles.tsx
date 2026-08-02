@@ -12,7 +12,7 @@ export function Roles() {
       className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28"
     >
       <div className="mx-auto max-w-[88rem]">
-        <SectionHead label="Roles" title="Three ways in" />
+        <SectionHead title="Three ways in" />
 
         <div className="m-enter mt-16 grid gap-px border border-rule bg-rule md:grid-cols-3">
           {ROLES.map((role) => (

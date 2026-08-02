@@ -19,8 +19,7 @@ export function Faq() {
           {/* `self-start` matters: a stretched grid item fills the row, which
               leaves a sticky element no distance to travel. */}
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <p className="u-tech text-[0.8125rem] text-steel">Questions</p>
-            <h2 className="u-display u-tight mt-5 text-[3rem] text-ink sm:text-6xl lg:text-[4.25rem]">
+            <h2 className="u-display u-tight text-[3rem] text-ink sm:text-6xl lg:text-[4.25rem]">
               Before you
               <br />
               apply

@@ -9,7 +9,6 @@ export function Features() {
     >
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
-          label="What you get"
           title="The feedback loop, not the lecture hall"
         />
 

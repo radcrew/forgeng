@@ -10,7 +10,6 @@ export function HowItWorks() {
     >
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
-          label="Process"
           title="Applicant to engineer, in six moves"
         />
 

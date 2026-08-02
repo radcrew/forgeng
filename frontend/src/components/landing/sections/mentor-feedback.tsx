@@ -12,7 +12,6 @@ export function MentorFeedback() {
     <section className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
-          label="Review"
           title={
             <>
               Two verdicts.

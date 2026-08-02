@@ -7,10 +7,7 @@ export function CtaBanner() {
       <div className="mx-auto max-w-[88rem] px-8 py-24 lg:px-12 lg:py-28">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div>
-            <p className="u-tech text-[0.8125rem] text-quench">
-              Intake is open
-            </p>
-            <h2 className="u-display u-tight mt-6 text-[3rem] text-paper sm:text-6xl lg:text-[4.25rem]">
+            <h2 className="u-display u-tight text-[3rem] text-paper sm:text-6xl lg:text-[4.25rem]">
               Ten minutes to
               <br />
               apply. One week

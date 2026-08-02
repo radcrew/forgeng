@@ -10,7 +10,6 @@ export function DailyRhythm() {
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
           tone="ink"
-          label="The week"
           title="What the work actually looks like"
         />
 

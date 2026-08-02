@@ -10,7 +10,6 @@ export function WhoWeAre() {
     >
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
-          label="Who we are"
           title={
             <>
               Built by engineers,
