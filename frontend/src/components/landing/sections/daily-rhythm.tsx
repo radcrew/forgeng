@@ -16,15 +16,18 @@ export function DailyRhythm() {
 
         <ul className="mt-16 grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
           {DAILY_RHYTHM.map((item) => (
-            <li key={item.label} className="flex h-full flex-col gap-4 bg-ink p-8 lg:p-9">
-                <span
-                  aria-hidden="true"
-                  className="h-2 w-2 rounded-full bg-quench"
-                />
-                <p className="u-display text-lg text-paper">{item.label}</p>
-                <p className="text-base leading-relaxed text-white/55">
-                  {item.description}
-                </p>
+            <li
+              key={item.label}
+              className="flex h-full flex-col gap-4 bg-ink p-8 lg:p-9"
+            >
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 rounded-full bg-quench"
+              />
+              <p className="u-display text-lg text-paper">{item.label}</p>
+              <p className="text-base leading-relaxed text-white/55">
+                {item.description}
+              </p>
             </li>
           ))}
         </ul>

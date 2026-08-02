@@ -3,7 +3,10 @@ import { FEATURES } from "@constants/landing";
 
 export function Features() {
   return (
-    <section id="features" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
+    <section
+      id="features"
+      className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28"
+    >
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
           label="What you get"
@@ -14,19 +17,22 @@ export function Features() {
           {FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (
-              <li key={feature.title} className="flex h-full gap-5 border-b border-rule py-7">
-                  <Icon
-                    className="mt-1 h-4 w-4 shrink-0 text-quench-deep"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <h3 className="u-display text-xl text-ink">
-                      {feature.title}
-                    </h3>
-                    <p className="mt-2 text-base leading-relaxed text-steel">
-                      {feature.description}
-                    </p>
-                  </div>
+              <li
+                key={feature.title}
+                className="flex h-full gap-5 border-b border-rule py-7"
+              >
+                <Icon
+                  className="mt-1 h-4 w-4 shrink-0 text-quench-deep"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 className="u-display text-xl text-ink">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-2 text-base leading-relaxed text-steel">
+                    {feature.description}
+                  </p>
+                </div>
               </li>
             );
           })}

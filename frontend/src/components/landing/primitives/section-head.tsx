@@ -22,7 +22,12 @@ export function SectionHead({
 }: SectionHeadProps) {
   const onInk = tone === "ink";
   return (
-    <div className={cn("grid gap-x-12 gap-y-6 md:grid-cols-[13rem_1fr]", className)}>
+    <div
+      className={cn(
+        "grid gap-x-12 gap-y-6 md:grid-cols-[13rem_1fr]",
+        className,
+      )}
+    >
       <div className="flex items-center gap-3 pt-2 md:pt-3">
         <span
           aria-hidden="true"

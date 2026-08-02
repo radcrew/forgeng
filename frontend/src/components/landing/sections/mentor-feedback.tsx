@@ -61,7 +61,7 @@ export function MentorFeedback() {
                       approved ? "border-l-quench-deep" : "border-l-ember-deep"
                     } border-y border-r border-rule`}
                   >
-                    <header className="flex items-center justify-between gap-4 border-b border-rule px-8 py-5 lg:px-12">
+                    <header className="flex items-center justify-between gap-4 border-b border-rule px-7 py-5">
                       <div>
                         <p className="u-display text-base text-ink">
                           {sample.mentorName.replace("Mentor ", "")}

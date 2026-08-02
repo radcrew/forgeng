@@ -15,11 +15,7 @@ interface VerdictProps {
  * product's central idea. Cyan is the quench — work that held. Ember is heat —
  * work still on the anvil.
  */
-export function Verdict({
-  verdict,
-  tone = "paper",
-  className,
-}: VerdictProps) {
+export function Verdict({ verdict, tone = "paper", className }: VerdictProps) {
   const approved = verdict === "approved";
   const Icon = approved ? Check : Minus;
   const onInk = tone === "ink";

@@ -4,16 +4,19 @@ import { LANDING_ART, VALUES } from "@constants/landing";
 
 export function WhoWeAre() {
   return (
-    <section id="who-we-are" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
+    <section
+      id="who-we-are"
+      className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28"
+    >
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
-            label="Who we are"
-            title={
-              <>
-                Built by engineers,
-                <br />
-                for engineers.
-              </>
+          label="Who we are"
+          title={
+            <>
+              Built by engineers,
+              <br />
+              for engineers.
+            </>
           }
         />
 
@@ -33,7 +36,10 @@ export function WhoWeAre() {
 
             <dl className="mt-10 divide-y divide-rule border-y border-rule">
               {VALUES.map((value) => (
-                <div key={value.title} className="grid gap-2 py-5 sm:grid-cols-[1fr_1.4fr] sm:gap-8">
+                <div
+                  key={value.title}
+                  className="grid gap-2 py-5 sm:grid-cols-[1fr_1.4fr] sm:gap-8"
+                >
                   <dt className="u-display text-xl text-ink">{value.title}</dt>
                   <dd className="text-base leading-relaxed text-steel">
                     {value.description}

@@ -22,8 +22,7 @@ export function Hero() {
         >
           Engineers aren&apos;t
           <br />
-          taught. They&apos;re{" "}
-          <span className="text-quench-deep">forged.</span>
+          taught. They&apos;re <span className="text-quench-deep">forged.</span>
         </h1>
 
         <div className="u-hero-split mt-8 grid gap-10 border-t border-rule pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
