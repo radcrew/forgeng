@@ -20,12 +20,12 @@ export function Faq() {
               leaves a sticky element no distance to travel. */}
           <div className="lg:sticky lg:top-28 lg:self-start">
             <p className="u-tech text-[0.8125rem] text-steel">Questions</p>
-            <h2 className="u-display u-tight mt-5 text-[3rem] text-ink sm:text-6xl">
+            <h2 className="u-display u-tight mt-5 text-[3rem] text-ink sm:text-6xl lg:text-[4.25rem]">
               Before you
               <br />
               apply
             </h2>
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-steel">
+            <p className="mt-6 max-w-md text-base leading-relaxed text-steel">
               Not seeing yours? Email us — a person reads every message.
             </p>
             <Link

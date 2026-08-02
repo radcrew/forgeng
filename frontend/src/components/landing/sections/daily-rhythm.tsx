@@ -18,7 +18,7 @@ export function DailyRhythm() {
           {DAILY_RHYTHM.map((item) => (
             <li
               key={item.label}
-              className="flex h-full flex-col gap-4 bg-ink p-8 lg:p-9"
+              className="flex h-full flex-col gap-4 bg-ink p-8"
             >
               <span
                 aria-hidden="true"

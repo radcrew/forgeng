@@ -66,7 +66,7 @@ export function MentorFeedback() {
                         <p className="u-display text-base text-ink">
                           {sample.mentorName.replace("Mentor ", "")}
                         </p>
-                        <p className="u-tech mt-1 text-[0.6875rem] text-steel">
+                        <p className="u-tech mt-1 text-[0.75rem] text-steel">
                           {sample.mentorTitle}
                         </p>
                       </div>
@@ -74,11 +74,11 @@ export function MentorFeedback() {
                     </header>
 
                     <div className="px-7 py-7">
-                      <p className="u-editorial text-lg leading-relaxed text-ink">
+                      <p className="u-editorial text-base leading-relaxed text-ink">
                         &ldquo;{sample.comment}&rdquo;
                       </p>
                       {sample.taskFooter && (
-                        <p className="u-tech mt-5 text-[0.6875rem] text-steel">
+                        <p className="u-tech mt-5 text-[0.75rem] text-steel">
                           {sample.taskFooter}
                         </p>
                       )}

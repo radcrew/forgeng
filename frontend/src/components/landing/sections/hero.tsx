@@ -69,14 +69,14 @@ export function Hero() {
               className="u-rise relative self-start rounded-[3px] bg-ink text-paper"
               style={{ animationDelay: "180ms" }}
             >
-              <div className="flex items-center justify-between gap-4 border-b border-white/10 px-8 py-4">
+              <div className="flex items-center justify-between gap-4 border-b border-white/10 px-7 py-5">
                 <span className="u-tech text-[0.75rem] text-white/60">
                   Sample review
                 </span>
                 <Verdict verdict="approved" tone="ink" />
               </div>
 
-              <div className="px-8 py-6">
+              <div className="px-7 py-7">
                 <p className="u-tech text-[0.75rem] text-white/60">
                   {approved.taskFooter?.replace("Task: ", "")}
                 </p>
@@ -85,7 +85,7 @@ export function Hero() {
                 </blockquote>
               </div>
 
-              <figcaption className="flex items-center justify-between gap-4 border-t border-white/10 px-8 py-4">
+              <figcaption className="flex items-center justify-between gap-4 border-t border-white/10 px-7 py-5">
                 <span className="u-tech text-[0.75rem] text-white/70">
                   {approved.mentorName.replace("Mentor ", "")} ·{" "}
                   {approved.mentorTitle}

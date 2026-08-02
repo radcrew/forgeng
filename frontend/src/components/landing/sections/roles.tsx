@@ -17,7 +17,7 @@ export function Roles() {
         <div className="mt-16 grid gap-px border border-rule bg-rule md:grid-cols-3">
           {ROLES.map((role) => (
             <div key={role.role} className="bg-paper">
-              <article className="group flex h-full flex-col">
+              <article className="flex h-full flex-col">
                 <div className="relative aspect-[16/9] overflow-hidden border-b border-rule bg-white">
                   <Illustration art={role.art} className="p-5" />
                 </div>
@@ -34,7 +34,7 @@ export function Roles() {
                   </p>
                   <Link
                     href={role.href}
-                    className="u-tech mt-7 inline-flex items-center gap-2 text-[0.75rem] text-ink transition-colors hover:text-quench-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                    className="group u-tech mt-7 inline-flex items-center gap-2 text-[0.75rem] text-ink transition-colors hover:text-quench-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                   >
                     {role.cta}
                     <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />

@@ -20,14 +20,14 @@ export function WhoWeAre() {
           }
         />
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
+        <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
             {/* The one place the serif is allowed to speak at length. */}
             <p className="u-editorial text-[1.75rem] leading-snug text-ink sm:text-[2.125rem]">
               Too many programs teach students to pass interviews instead of
               teaching them to ship.
             </p>
-            <p className="mt-7 text-lg leading-relaxed text-steel">
+            <p className="mt-7 text-base leading-relaxed text-steel">
               We are a small team of working software engineers who learned the
               craft the way it is actually learned — through mentorship from
               people who had built real systems. We rebuilt that experience into

@@ -2,7 +2,7 @@ import { TASK_TYPES } from "@constants/landing";
 
 export function TaskTypes() {
   return (
-    <section className="border-b border-rule px-8 py-20 lg:px-12">
+    <section className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
         <div className="grid gap-x-12 gap-y-10 md:grid-cols-[14rem_1fr] md:items-baseline">
           <p className="u-tech text-[0.8125rem] text-steel">

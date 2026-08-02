@@ -10,7 +10,7 @@ export function CtaBanner() {
             <p className="u-tech text-[0.8125rem] text-quench">
               Intake is open
             </p>
-            <h2 className="u-display u-tight mt-6 text-[3.25rem] text-paper sm:text-7xl lg:text-[5rem]">
+            <h2 className="u-display u-tight mt-6 text-[3rem] text-paper sm:text-6xl lg:text-[4.25rem]">
               Ten minutes to
               <br />
               apply. One week
@@ -20,7 +20,7 @@ export function CtaBanner() {
           </div>
 
           <div className="lg:pb-3">
-            <p className="text-lg leading-relaxed text-white/60">
+            <p className="text-xl leading-relaxed text-white/60">
               We read every application ourselves. No fee, no prerequisites, no
               automated screen deciding whether you are worth a look.
             </p>

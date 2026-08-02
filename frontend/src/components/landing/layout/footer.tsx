@@ -13,7 +13,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-ink px-8 py-24 lg:px-12 text-paper">
+    <footer className="bg-ink px-8 py-24 text-paper lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
         <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div>
@@ -27,7 +27,7 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="u-tech text-[0.6875rem] text-white/60">Explore</p>
+            <p className="u-tech text-[0.75rem] text-white/60">Explore</p>
             <ul className="mt-5 space-y-3">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
@@ -43,7 +43,7 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="u-tech text-[0.6875rem] text-white/60">Legal</p>
+            <p className="u-tech text-[0.75rem] text-white/60">Legal</p>
             <ul className="mt-5 space-y-3">
               {LEGAL.map((link) => (
                 <li key={link.href}>
@@ -59,7 +59,7 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="u-tech text-[0.6875rem] text-white/60">Contact</p>
+            <p className="u-tech text-[0.75rem] text-white/60">Contact</p>
             <ul className="mt-5 space-y-3">
               <li>
                 <a
@@ -86,7 +86,7 @@ export function Footer() {
         </div>
 
         <div className="mt-16 border-t border-white/10 pt-6">
-          <p className="u-tech text-[0.6875rem] text-white/55">
+          <p className="u-tech text-[0.75rem] text-white/55">
             © {year} Forgeng
           </p>
         </div>
