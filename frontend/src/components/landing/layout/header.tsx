@@ -33,7 +33,7 @@ export function Header() {
           </Link>
           <Link
             href="/sign-up"
-            className="inline-flex h-9 items-center rounded-[3px] bg-ink px-4 text-sm font-semibold text-paper transition-colors hover:bg-quench hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            className="m-press inline-flex h-9 items-center rounded-[3px] bg-ink px-4 text-sm font-semibold text-paper transition-colors hover:bg-quench hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Apply
           </Link>

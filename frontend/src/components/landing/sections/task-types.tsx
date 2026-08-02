@@ -9,7 +9,7 @@ export function TaskTypes() {
             Four kinds of work
           </p>
 
-          <ul className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="m-enter grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
             {TASK_TYPES.map((task) => {
               const Icon = task.icon;
               return (

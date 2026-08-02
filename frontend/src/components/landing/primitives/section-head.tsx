@@ -32,7 +32,7 @@ export function SectionHead({
         <span
           aria-hidden="true"
           className={cn(
-            "h-px w-6 shrink-0 md:w-full md:max-w-[2.5rem]",
+            "m-line h-px w-6 shrink-0 md:w-full md:max-w-[2.5rem]",
             onInk ? "bg-white/25" : "bg-ink/20",
           )}
         />

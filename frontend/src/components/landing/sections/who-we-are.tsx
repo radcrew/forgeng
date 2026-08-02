@@ -20,7 +20,7 @@ export function WhoWeAre() {
           }
         />
 
-        <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
+        <div className="m-enter mt-16 grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
             {/* The one place the serif is allowed to speak at length. */}
             <p className="u-editorial text-[1.75rem] leading-snug text-ink sm:text-[2.125rem]">

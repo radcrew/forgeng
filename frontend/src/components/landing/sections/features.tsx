@@ -13,7 +13,7 @@ export function Features() {
           title="The feedback loop, not the lecture hall"
         />
 
-        <ul className="mt-16 grid border-t border-rule md:grid-cols-2 md:gap-x-16">
+        <ul className="m-enter mt-16 grid border-t border-rule md:grid-cols-2 md:gap-x-16">
           {FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (

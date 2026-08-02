@@ -288,3 +288,75 @@
     font-size: 1.25rem;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Motion
+   Scroll-driven, so there is no observer and no JS state to get stuck in.
+   Everything sits behind @supports: where `animation-timeline` is missing the
+   elements simply render finished. Motion is never load-bearing for
+   visibility, which is what made the earlier JS reveal fragile.
+   --------------------------------------------------------------------------- */
+
+@keyframes m-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+
+/* The page is laid out as a ledger, so its rules draw themselves in. */
+@keyframes m-rule {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* The verdict is a stamp. It lands; it does not fade. */
+@keyframes m-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .m-enter {
+      animation: m-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 26%;
+    }
+
+    .m-line {
+      transform-origin: left center;
+      animation: m-rule linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+  }
+
+  .m-stamp {
+    animation: m-stamp 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    animation-delay: 0.45s;
+  }
+
+  /* Tactile press, on things that are actually clickable. */
+  .m-press {
+    transition:
+      transform 0.12s ease,
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .m-press:active {
+    transform: translateY(1px);
+  }
+}

@@ -22,7 +22,7 @@ export function MentorFeedback() {
           }
         />
 
-        <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+        <div className="m-enter mt-16 grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
           <div>
             <ul className="border-t border-rule">
               {FEEDBACK_BULLETS.map((item) => (
