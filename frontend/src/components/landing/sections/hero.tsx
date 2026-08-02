@@ -9,7 +9,7 @@ const approved = SAMPLE_FEEDBACK.find((f) => f.verdict === "approved");
 export function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-rule">
-      <div className="mx-auto max-w-[88rem] px-8 py-24 lg:px-12 lg:py-32">
+      <div className="u-hero mx-auto max-w-[88rem] px-8 py-12 lg:px-12 lg:py-16">
         <p className="u-rise u-tech text-[0.8125rem] text-steel">
           Applications open
         </p>
@@ -17,7 +17,7 @@ export function Hero() {
         {/* The headline runs the full container rather than sharing a column,
             which is what lets it sit at a confident size. */}
         <h1
-          className="u-rise u-display u-tight mt-10 text-[3.25rem] sm:text-[5rem] md:text-[6rem] lg:text-[7rem]"
+          className="u-rise u-display u-tight u-hero-title mt-8 text-[3.25rem] sm:text-[5rem] md:text-[6rem] lg:text-[7rem]"
           style={{ animationDelay: "60ms" }}
         >
           Engineers aren&apos;t
@@ -26,7 +26,7 @@ export function Hero() {
           <span className="text-quench-deep">forged.</span>
         </h1>
 
-        <div className="mt-16 grid gap-14 border-t border-rule pt-14 lg:grid-cols-[1.1fr_1fr] lg:gap-24">
+        <div className="u-hero-split mt-8 grid gap-10 border-t border-rule pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
           <div>
             <p
               className="u-rise max-w-2xl text-xl leading-relaxed text-steel"
@@ -57,7 +57,7 @@ export function Hero() {
             </div>
 
             <p
-              className="u-rise u-tech mt-10 text-[0.75rem] leading-relaxed text-steel"
+              className="u-rise u-tech mt-8 text-[0.75rem] leading-relaxed text-steel"
               style={{ animationDelay: "300ms" }}
             >
               Free to apply · Monthly stipend · No CS degree
@@ -70,23 +70,23 @@ export function Hero() {
               className="u-rise relative self-start rounded-[3px] bg-ink text-paper"
               style={{ animationDelay: "180ms" }}
             >
-              <div className="flex items-center justify-between gap-4 border-b border-white/10 px-8 py-5">
+              <div className="flex items-center justify-between gap-4 border-b border-white/10 px-8 py-4">
                 <span className="u-tech text-[0.75rem] text-white/60">
                   Sample review
                 </span>
                 <Verdict verdict="approved" tone="ink" />
               </div>
 
-              <div className="px-8 py-9">
+              <div className="px-8 py-6">
                 <p className="u-tech text-[0.75rem] text-white/60">
                   {approved.taskFooter?.replace("Task: ", "")}
                 </p>
-                <blockquote className="u-editorial mt-6 text-2xl leading-relaxed text-paper sm:text-[1.625rem]">
+                <blockquote className="u-editorial u-hero-quote mt-5 text-2xl leading-relaxed text-paper sm:text-[1.625rem]">
                   &ldquo;{approved.comment}&rdquo;
                 </blockquote>
               </div>
 
-              <figcaption className="flex items-center justify-between gap-4 border-t border-white/10 px-8 py-5">
+              <figcaption className="flex items-center justify-between gap-4 border-t border-white/10 px-8 py-4">
                 <span className="u-tech text-[0.75rem] text-white/70">
                   {approved.mentorName.replace("Mentor ", "")} ·{" "}
                   {approved.mentorTitle}

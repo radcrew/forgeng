@@ -262,3 +262,26 @@
     transform: none;
   }
 }
+
+/* Short viewports: the hero is sized for a tall desktop window, so on laptop
+   heights it pushed the call to action below the fold. Trim its vertical space
+   and display size rather than letting the buttons disappear. */
+@media (max-height: 920px) {
+  .landing .u-hero {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .landing .u-hero-title {
+    font-size: clamp(2.5rem, 5.6vw, 5rem);
+  }
+
+  .landing .u-hero-split {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .landing .u-hero-quote {
+    font-size: 1.25rem;
+  }
+}
