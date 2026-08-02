@@ -5,7 +5,7 @@ export function Features() {
   return (
     <section
       id="features"
-      className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28"
+      className="border-b border-rule bg-paper-sunk px-8 py-24 lg:px-12 lg:py-28"
     >
       <div className="mx-auto max-w-[88rem]">
         <SectionHead
@@ -25,10 +25,10 @@ export function Features() {
                   aria-hidden="true"
                 />
                 <div>
-                  <h3 className="u-display text-xl text-ink">
+                  <h3 className="u-title text-xl text-ink">
                     {feature.title}
                   </h3>
-                  <p className="mt-2 text-base leading-relaxed text-steel">
+                  <p className="mt-2 text-base leading-relaxed text-graphite">
                     {feature.description}
                   </p>
                 </div>

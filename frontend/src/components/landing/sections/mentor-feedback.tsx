@@ -62,7 +62,7 @@ export function MentorFeedback() {
                   >
                     <header className="flex items-center justify-between gap-4 border-b border-rule px-7 py-5">
                       <div>
-                        <p className="u-display text-base text-ink">
+                        <p className="u-title text-base text-ink">
                           {sample.mentorName.replace("Mentor ", "")}
                         </p>
                         <p className="u-tech mt-1 text-[0.75rem] text-steel">

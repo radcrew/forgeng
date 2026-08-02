@@ -24,7 +24,7 @@ export function HowItWorks() {
                 className="grid items-center gap-6 border-b border-rule py-8 md:grid-cols-[5rem_1fr_16rem] md:gap-12 md:py-12 lg:grid-cols-[7rem_1fr_22rem]"
               >
                 <div className="flex items-center gap-4 md:block">
-                  <span className="u-display block text-5xl text-ink/20 lg:text-6xl">
+                  <span className="u-display u-nums block text-5xl text-ink/20 lg:text-6xl">
                     {step.number}
                   </span>
                 </div>
@@ -35,11 +35,11 @@ export function HowItWorks() {
                       className="h-4 w-4 text-quench-deep"
                       aria-hidden="true"
                     />
-                    <h3 className="u-display text-[1.75rem] text-ink lg:text-[2.125rem]">
+                    <h3 className="u-title text-[1.75rem] text-ink lg:text-[2.125rem]">
                       {step.title}
                     </h3>
                   </div>
-                  <p className="mt-3 max-w-2xl text-base leading-relaxed text-steel">
+                  <p className="mt-3 max-w-2xl text-base leading-relaxed text-graphite">
                     {step.description}
                   </p>
                 </div>

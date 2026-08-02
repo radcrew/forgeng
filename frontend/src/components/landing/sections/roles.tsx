@@ -9,7 +9,7 @@ export function Roles() {
   return (
     <section
       id="roles"
-      className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28"
+      className="border-b border-rule bg-paper-sunk px-8 py-24 lg:px-12 lg:py-28"
     >
       <div className="mx-auto max-w-[88rem]">
         <SectionHead title="Three ways in" />
@@ -35,10 +35,10 @@ export function Roles() {
                 <p className="u-tech text-[0.75rem] text-quench-deep">
                   {role.role}
                 </p>
-                <h3 className="u-display mt-4 text-[1.75rem] text-ink">
+                <h3 className="u-title mt-4 text-[1.75rem] text-ink">
                   {role.headline}
                 </h3>
-                <p className="mt-3 flex-1 text-base leading-relaxed text-steel">
+                <p className="mt-3 flex-1 text-base leading-relaxed text-graphite">
                   {role.description}
                 </p>
                 <span className="u-tech mt-7 inline-flex items-center gap-2 text-[0.75rem] text-ink transition-colors group-hover:text-quench-deep">

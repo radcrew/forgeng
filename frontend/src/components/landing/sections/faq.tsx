@@ -24,7 +24,7 @@ export function Faq() {
               <br />
               apply
             </h2>
-            <p className="mt-6 max-w-md text-base leading-relaxed text-steel">
+            <p className="mt-6 max-w-md text-base leading-relaxed text-graphite">
               Not seeing yours? Email us — a person reads every message.
             </p>
             <Link
@@ -47,10 +47,10 @@ export function Faq() {
                   value={`item-${i}`}
                   className="border-b border-rule"
                 >
-                  <AccordionTrigger className="u-display py-6 text-xl text-ink hover:no-underline hover:text-quench-deep">
+                  <AccordionTrigger className="u-title py-6 text-xl text-ink hover:no-underline hover:text-quench-deep">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="max-w-3xl pb-7 text-base leading-relaxed text-steel">
+                  <AccordionContent className="max-w-3xl pb-7 text-base leading-relaxed text-graphite">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>

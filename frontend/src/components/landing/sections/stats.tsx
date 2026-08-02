@@ -9,7 +9,7 @@ export function Stats() {
         <div className="grid grid-cols-2 gap-px bg-white/10 md:grid-cols-4">
           {STATS.map((stat) => (
             <div key={stat.label} className="bg-ink px-8 py-16">
-              <div className="u-display u-tight text-6xl text-paper lg:text-7xl">
+              <div className="u-display u-tight u-nums text-6xl text-paper lg:text-7xl">
                 {stat.value}
               </div>
               <div className="u-tech mt-4 text-[0.75rem] leading-relaxed text-white/60">

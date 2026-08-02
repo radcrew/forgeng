@@ -26,7 +26,7 @@ export function WhoWeAre() {
               Too many programs teach students to pass interviews instead of
               teaching them to ship.
             </p>
-            <p className="mt-7 text-base leading-relaxed text-steel">
+            <p className="mt-7 text-base leading-relaxed text-graphite">
               We are a small team of working software engineers who learned the
               craft the way it is actually learned — through mentorship from
               people who had built real systems. We rebuilt that experience into
@@ -39,8 +39,8 @@ export function WhoWeAre() {
                   key={value.title}
                   className="grid gap-2 py-5 sm:grid-cols-[1fr_1.4fr] sm:gap-8"
                 >
-                  <dt className="u-display text-xl text-ink">{value.title}</dt>
-                  <dd className="text-base leading-relaxed text-steel">
+                  <dt className="u-title text-xl text-ink">{value.title}</dt>
+                  <dd className="text-base leading-relaxed text-graphite">
                     {value.description}
                   </dd>
                 </div>

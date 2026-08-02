@@ -65,6 +65,15 @@
   --color-quench-deep: #0b7684;
   --color-ember-deep: #b03a0c;
 
+  /* Text ladder. Headings take ink, body takes graphite, meta takes steel.
+     Body copy previously used steel, which is a caption tone at 4.8:1 and
+     tiring over paragraphs. */
+  --color-graphite: #39414b;
+
+  /* A second light ground. Four identical paper sections ran back to back;
+     alternating them gives the page rhythm between the ink bands. */
+  --color-paper-sunk: #f7f7f2;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -359,4 +368,35 @@
   .m-press:active {
     transform: translateY(1px);
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Tonal ladders
+   Two text colours and one background were doing every job, which reads flat
+   however consistent it is. These add the missing middle steps.
+   --------------------------------------------------------------------------- */
+
+/* Sub-headings sit between body and display. Archivo is variable, so weight
+   and tracking are compensated optically: small type at the display weight
+   looks clotted, and display tracking closes up counters at 20px. */
+.u-title {
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+}
+
+/* Figures line up in columns and against each other. */
+.u-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Headings set their own line breaks rather than orphaning the last word. */
+.u-display,
+.u-title {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }

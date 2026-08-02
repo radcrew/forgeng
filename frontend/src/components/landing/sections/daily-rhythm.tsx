@@ -23,7 +23,7 @@ export function DailyRhythm() {
                 aria-hidden="true"
                 className="h-2 w-2 rounded-full bg-quench"
               />
-              <p className="u-display text-lg text-paper">{item.label}</p>
+              <p className="u-title text-lg text-paper">{item.label}</p>
               <p className="text-base leading-relaxed text-white/55">
                 {item.description}
               </p>

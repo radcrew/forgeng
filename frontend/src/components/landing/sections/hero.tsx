@@ -28,7 +28,7 @@ export function Hero() {
         <div className="u-hero-split mt-8 grid gap-10 border-t border-rule pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
           <div>
             <p
-              className="u-rise max-w-2xl text-xl leading-relaxed text-steel"
+              className="u-rise max-w-2xl text-xl leading-relaxed text-graphite"
               style={{ animationDelay: "140ms" }}
             >
               A mentor-led apprenticeship. You ship real tasks, a working
@@ -56,7 +56,7 @@ export function Hero() {
             </div>
 
             <p
-              className="u-rise u-tech mt-8 text-[0.75rem] leading-relaxed text-steel"
+              className="u-rise u-tech mt-8 text-[0.75rem] leading-relaxed text-graphite"
               style={{ animationDelay: "300ms" }}
             >
               Free to apply · Monthly stipend · No CS degree

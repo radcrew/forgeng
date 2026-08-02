@@ -19,7 +19,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2.5">
               <Logo size={24} />
-              <span className="u-display text-lg text-paper">Forgeng</span>
+              <span className="u-title text-lg text-paper">Forgeng</span>
             </div>
             <p className="mt-5 max-w-sm text-base leading-relaxed text-white/60">
               A mentor-led apprenticeship where you earn while you learn.
