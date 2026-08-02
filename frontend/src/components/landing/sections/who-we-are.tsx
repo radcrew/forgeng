@@ -51,12 +51,18 @@ export function WhoWeAre() {
         </div>
 
         <div className="m-enter lg:pt-24">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[3px] bg-ink lg:sticky lg:top-28">
-            <Illustration
-              art={LANDING_ART.mission}
-              className="p-7 pb-32 opacity-95"
-            />
-            <div className="absolute inset-x-6 bottom-6 border-t border-white/15 pt-5">
+          {/* Caption stacks under the art instead of floating over it. The
+              overlay needed the reserved padding to stay ahead of the caption's
+              own height, and that balance broke as soon as the text rewrapped
+              on a narrow column. Stacking cannot collide at any width. */}
+          <div className="overflow-hidden rounded-[3px] bg-ink lg:sticky lg:top-28">
+            <div className="relative aspect-[4/3]">
+              <Illustration
+                art={LANDING_ART.mission}
+                className="p-7 opacity-95"
+              />
+            </div>
+            <div className="mx-7 border-t border-white/15 pb-7 pt-5">
               <p className="u-tech text-[0.75rem] text-quench">Our mission</p>
               <p className="u-editorial mt-3 text-xl leading-snug text-paper">
                 Make the path from learning to code to shipping
