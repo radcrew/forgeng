@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { CtaFieldScene } from "@components/illustrations";
+import { CtaFieldArt } from "@components/illustrations";
 import { Button } from "@components/ui/button";
 
 export function CtaBanner() {
@@ -9,7 +9,7 @@ export function CtaBanner() {
     <section className="relative overflow-hidden px-6 py-20 bg-primary text-primary-foreground text-center">
       {/* Inherits `text-primary-foreground` from the band via `stroke-current`. */}
       <div className="absolute inset-0 opacity-15">
-        <CtaFieldScene />
+        <CtaFieldArt />
       </div>
       <div className="relative z-10 max-w-3xl mx-auto space-y-6">
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">

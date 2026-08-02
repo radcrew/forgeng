@@ -18,11 +18,6 @@ import {
 } from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { LoadingState } from "@components/common";
-import {
-  CohortSeatsArt,
-  NoResultsArt,
-  TaskListArt,
-} from "@components/illustrations";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { SubmissionStatusBadge } from "@features/submissions";
 import { TaskSubmitDialog } from "@features/tasks";
@@ -34,6 +29,7 @@ import {
   type TaskProgressFilter,
   type TaskSort,
 } from "@constants/tasks";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
@@ -105,7 +101,7 @@ const Page = () => {
           title="Tasks"
           description="Enroll in a cohort to see your assignments."
         />
-        <EmptyState message="You are not enrolled in a cohort yet." illustration={CohortSeatsArt} />
+        <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
       </PageContainer>
     );
   }
@@ -192,10 +188,10 @@ const Page = () => {
       ) : tasks.length === 0 ? (
         <EmptyState
           message="No tasks have been published for your cohort yet."
-          illustration={TaskListArt}
+          art={APP_ART.tasks}
         />
       ) : visibleTasks.length === 0 ? (
-        <EmptyState message="No tasks match your filters." illustration={NoResultsArt} />
+        <EmptyState message="No tasks match your filters." art={APP_ART.noResults} />
       ) : (
         <div className="space-y-3">
           {visibleTasks.map((task) => {

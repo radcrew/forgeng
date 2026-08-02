@@ -1,13 +1,13 @@
-import { MissionScene } from "@components/illustrations";
+import { Illustration } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
-import { VALUES } from "@constants/landing";
+import { LANDING_ART, VALUES } from "@constants/landing";
 
 export function WhoWeAre() {
   return (
     <section id="who-we-are" className="px-6 py-24">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg aspect-[4/5] order-2 md:order-1">
-          <MissionScene />
+        <div className="relative rounded-2xl overflow-hidden border border-border bg-muted/30 shadow-lg aspect-[4/5] order-2 md:order-1">
+          <Illustration art={LANDING_ART.mission} className="p-6 pb-36" />
           <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-md border border-border/60">
             <p className="text-[11px] font-bold tracking-widest text-primary">
               OUR MISSION

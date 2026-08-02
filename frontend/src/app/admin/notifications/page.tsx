@@ -7,10 +7,10 @@ import { CheckCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ClickableCard, LoadingState } from "@components/common";
-import { NotificationsArt } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { cn } from "@utils";
 import type { Notification } from "@types";
 import {
@@ -123,7 +123,7 @@ const Page = () => {
           </Button>
         </EmptyState>
       ) : data.length === 0 ? (
-        <EmptyState message="You have no notifications yet." illustration={NotificationsArt} />
+        <EmptyState message="You have no notifications yet." art={APP_ART.notifications} />
       ) : (
         <div className="space-y-3">
           {data.map((notification) => {

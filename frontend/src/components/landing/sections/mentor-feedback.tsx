@@ -1,10 +1,11 @@
 import { CheckCircle2, Star } from "lucide-react";
 
-import { FeedbackScene } from "@components/illustrations";
+import { Illustration } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import {
   FEEDBACK_BULLETS,
+  LANDING_ART,
   FEEDBACK_TESTIMONIAL,
   SAMPLE_FEEDBACK,
 } from "@constants/landing";
@@ -13,8 +14,8 @@ export function MentorFeedback() {
   return (
     <section className="border-y border-border bg-muted/30 px-6 py-20">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-        <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg aspect-[4/3]">
-          <FeedbackScene />
+        <div className="relative rounded-2xl overflow-hidden border border-border bg-muted/30 shadow-lg aspect-[4/3]">
+          <Illustration art={LANDING_ART.feedback} className="p-5 pb-28" />
           <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-md border border-border/60">
             <blockquote className="text-sm leading-relaxed italic">
               &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;

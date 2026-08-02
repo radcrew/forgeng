@@ -5,9 +5,9 @@ import { format } from "date-fns";
 import { Clock, MessageSquare } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
-import { SubmitArt } from "@components/illustrations";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import {
   SubmissionDetailSheet,
   SubmissionStatusBadge,
@@ -31,7 +31,7 @@ const Page = () => {
       ) : submissions.length === 0 ? (
         <EmptyState
           message="No submissions yet. Head to Tasks to start submitting your work."
-          illustration={SubmitArt}
+          art={APP_ART.submissions}
         />
       ) : (
         <div className="space-y-3">

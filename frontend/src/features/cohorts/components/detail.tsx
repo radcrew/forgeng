@@ -6,15 +6,11 @@ import { format } from "date-fns";
 import { Users } from "lucide-react";
 
 import { LoadingState } from "@components/common";
-import {
-  CohortSeatsArt,
-  NotFoundArt,
-  TaskListArt,
-} from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { ReviewSheet, useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
@@ -68,7 +64,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
     return (
       <PageContainer maxWidth="5xl" spacing="6">
         {backLink}
-        <EmptyState message="Cohort not found." illustration={NotFoundArt} />
+        <EmptyState message="Cohort not found." art={APP_ART.notFoundItem} />
       </PageContainer>
     );
   }
@@ -130,7 +126,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
         enrollments.length === 0 ? (
           <EmptyState
             message="No students enrolled in this cohort yet."
-            illustration={CohortSeatsArt}
+            art={APP_ART.cohort}
           />
         ) : (
           <div className="space-y-3">
@@ -144,7 +140,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
           </div>
         )
       ) : tasks.length === 0 ? (
-        <EmptyState message="No tasks in this cohort yet." illustration={TaskListArt} />
+        <EmptyState message="No tasks in this cohort yet." art={APP_ART.tasks} />
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => {

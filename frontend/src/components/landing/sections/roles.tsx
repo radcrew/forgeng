@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
+import { Illustration } from "@components/illustrations";
 import { Card, CardContent } from "@components/ui/card";
 import { ROLES } from "@constants/landing";
 
@@ -26,16 +27,14 @@ export function Roles() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {ROLES.map((role) => {
-          const Scene = role.scene;
-          return (
+        {ROLES.map((role) => (
           <Card
             key={role.role}
             className="border-border/60 flex flex-col hover:shadow-md transition-shadow overflow-hidden"
           >
             <CardContent className="p-0 flex flex-col flex-1">
-              <div className="relative h-36 overflow-hidden border-b border-border">
-                <Scene />
+              <div className="relative h-36 overflow-hidden border-b border-border bg-muted/30">
+                <Illustration art={role.art} className="p-3" />
               </div>
               <div className="p-6 flex flex-col flex-1 space-y-4">
                 <Badge
@@ -57,8 +56,7 @@ export function Roles() {
               </div>
             </CardContent>
           </Card>
-          );
-        })}
+        ))}
       </div>
     </section>
   );

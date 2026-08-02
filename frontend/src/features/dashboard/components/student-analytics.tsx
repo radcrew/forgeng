@@ -1,12 +1,13 @@
 "use client";
 
-import { ProgressArt, TaskListArt } from "@components/illustrations";
+import { Illustration } from "@components/illustrations";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@components/ui/card";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import type { StudentAnalytics as Analytics } from "@types";
 
@@ -38,7 +39,7 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
         <CardContent className="space-y-4">
           {statusTotal === 0 ? (
             <div className="flex flex-col items-center gap-2 py-3 text-center">
-              <ProgressArt className="h-12 w-12" />
+              <Illustration art={APP_ART.progress} className="h-20 w-auto" />
               <p className="text-sm text-muted-foreground">No tasks yet.</p>
             </div>
           ) : (
@@ -84,7 +85,7 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
         <CardContent className="space-y-3">
           {typeBreakdown.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-3 text-center">
-              <TaskListArt className="h-12 w-12" />
+              <Illustration art={APP_ART.tasks} className="h-20 w-auto" />
               <p className="text-sm text-muted-foreground">No tasks yet.</p>
             </div>
           ) : (

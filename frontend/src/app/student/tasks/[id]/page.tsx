@@ -7,11 +7,11 @@ import { format } from "date-fns";
 import { Clock, Code2, MessageSquare } from "lucide-react";
 
 import { LoadingState, ProseBlock, SectionTitle } from "@components/common";
-import { NotFoundArt, SubmitArt } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { SubmissionDetailSheet, SubmissionStatusBadge, useSubmissions } from "@features/submissions";
 import { TaskSubmitDialog, useTask } from "@features/tasks";
@@ -55,7 +55,7 @@ const Page = () => {
         {backLink}
         <EmptyState
           message="Task not found, or you don't have access to it."
-          illustration={NotFoundArt}
+          art={APP_ART.notFoundItem}
         />
       </PageContainer>
     );
@@ -141,7 +141,7 @@ const Page = () => {
         ) : (
           <EmptyState
             message="You haven't submitted work for this task yet."
-            illustration={SubmitArt}
+            art={APP_ART.submissions}
           />
         )}
       </div>

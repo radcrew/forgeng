@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { HeroScene } from "@components/illustrations";
+import { Illustration } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
+import { LANDING_ART } from "@constants/landing";
 
 export function Hero() {
   return (
@@ -51,8 +52,9 @@ export function Hero() {
           </p>
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg aspect-[4/3]">
-          <HeroScene />
+        <div className="relative rounded-2xl overflow-hidden border border-border bg-muted/30 shadow-lg aspect-[4/3]">
+          {/* Extra bottom padding keeps the art clear of the overlay card. */}
+          <Illustration art={LANDING_ART.hero} className="p-5 pb-24" />
           <div className="absolute bottom-4 left-4 right-4">
             <div className="bg-background/95 backdrop-blur rounded-xl border border-border/60 p-3 flex items-center gap-3 shadow-md">
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">

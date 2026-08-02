@@ -1,9 +1,5 @@
-import {
-  RoleAdminScene,
-  RoleApplicantScene,
-  RoleStudentScene,
-  type SceneIllustration,
-} from "@components/illustrations";
+import { LANDING_ART } from "@constants/landing/illustrations";
+import type { Illustration } from "@constants/shared/illustration";
 
 export interface RoleCard {
   role: string;
@@ -13,7 +9,7 @@ export interface RoleCard {
   description: string;
   cta: string;
   href: string;
-  scene: SceneIllustration;
+  art: Illustration;
 }
 
 export const ROLES: RoleCard[] = [
@@ -25,7 +21,7 @@ export const ROLES: RoleCard[] = [
       "Fill out a 3-step application, tell us what drives you, and we'll get back to you. No fees, no prerequisites.",
     cta: "Apply Now",
     href: "/apply",
-    scene: RoleApplicantScene,
+    art: LANDING_ART.roleApplicant,
   },
   {
     role: "Student",
@@ -35,7 +31,7 @@ export const ROLES: RoleCard[] = [
       "Browse your cohort's task list, submit your work with notes, and read feedback on every submission.",
     cta: "Sign In",
     href: "/sign-in",
-    scene: RoleStudentScene,
+    art: LANDING_ART.roleStudent,
   },
   {
     role: "Admin",
@@ -45,6 +41,6 @@ export const ROLES: RoleCard[] = [
       "Review applications, manage cohorts and tasks, and leave structured feedback on student submissions.",
     cta: "Sign In",
     href: "/sign-in",
-    scene: RoleAdminScene,
+    art: LANDING_ART.roleAdmin,
   },
 ];

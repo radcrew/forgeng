@@ -1,3 +1,4 @@
+export * from "./illustrations";
 export * from "./nav-links";
 export * from "./stats";
 export * from "./values";

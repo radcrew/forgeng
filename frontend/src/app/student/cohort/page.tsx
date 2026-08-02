@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { CalendarDays, Code2, Users } from "lucide-react";
 
 import { LoadingState } from "@components/common";
-import { CohortSeatsArt, TaskListArt } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
@@ -16,6 +15,7 @@ import { SubmissionStatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useTasks } from "@features/tasks";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 
 const dateRange = (start: string | null, end: string | null): string | null => {
@@ -64,7 +64,7 @@ const Page = () => {
     return (
       <PageContainer maxWidth="4xl" spacing="8">
         <PageHeader title="Cohort" description="Your cohort overview." />
-        <EmptyState message="You are not enrolled in a cohort yet." illustration={CohortSeatsArt} />
+        <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
       </PageContainer>
     );
   }
@@ -133,7 +133,7 @@ const Page = () => {
         ) : schedule.length === 0 ? (
           <EmptyState
             message="No tasks have been published for your cohort yet."
-            illustration={TaskListArt}
+            art={APP_ART.tasks}
           />
         ) : (
           <div className="space-y-3">

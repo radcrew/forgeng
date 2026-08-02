@@ -1,3 +1,4 @@
+import { Illustration } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { STEPS } from "@constants/landing";
 
@@ -27,7 +28,6 @@ export function HowItWorks() {
         <div className="space-y-16">
           {STEPS.map((step, i) => {
             const Icon = step.icon;
-            const Scene = step.scene;
             const isEven = i % 2 === 0;
             return (
               <div
@@ -37,11 +37,11 @@ export function HowItWorks() {
                 }`}
               >
                 <div
-                  className={`relative rounded-2xl overflow-hidden border border-border shadow-sm aspect-[16/10] ${
+                  className={`relative rounded-2xl overflow-hidden border border-border bg-muted/30 shadow-sm aspect-[16/10] ${
                     isEven ? "" : "md:[direction:ltr]"
                   }`}
                 >
-                  <Scene />
+                  <Illustration art={step.art} className="p-6" />
                 </div>
 
                 <div

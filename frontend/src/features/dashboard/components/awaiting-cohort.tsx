@@ -1,8 +1,9 @@
 import Link from "next/link";
 
-import { CohortSeatsArt } from "@components/illustrations";
+import { Illustration } from "@components/illustrations";
 import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
+import { APP_ART } from "@constants/shared/app-illustrations";
 
 export interface AwaitingCohortProps {
   /** When true, the profile still needs filling in before enrollment. */
@@ -18,7 +19,7 @@ export function AwaitingCohort({ profileIncomplete }: AwaitingCohortProps) {
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
-        <CohortSeatsArt className="h-24 w-24" />
+        <Illustration art={APP_ART.onboarding} className="h-44 w-auto max-w-sm" />
 
         {profileIncomplete ? (
           <>

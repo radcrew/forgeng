@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { LoadingState } from "@components/common";
-import type { SpotIllustration } from "@components/illustrations";
+import type { Illustration } from "@constants/shared/illustration";
 import { Button } from "@components/ui/button";
 import {
     Select,
@@ -54,8 +54,8 @@ export interface ListPageLayoutProps<
     /** Empty state message */
     emptyMessage?: string;
 
-    /** Spot art shown above the empty state message */
-    emptyIllustration?: SpotIllustration;
+    /** Illustration shown above the empty state message */
+    emptyArt?: Illustration;
 
     /** Loading message */
     loadingMessage?: string;
@@ -75,7 +75,7 @@ export const ListPageLayout = <
     filter,
     listComponent: ListComponent,
     emptyMessage = "No items found.",
-    emptyIllustration,
+    emptyArt,
     loadingMessage = "Loading…",
     maxWidth = "5xl",
 }: ListPageLayoutProps<T, TFilter, TData>) => {
@@ -108,7 +108,7 @@ export const ListPageLayout = <
             {isLoading ? (
                 <LoadingState message={loadingMessage} />
             ) : items.length === 0 ? (
-                <EmptyState message={emptyMessage} illustration={emptyIllustration} />
+                <EmptyState message={emptyMessage} art={emptyArt} />
             ) : (
                 <ListComponent items={items} />
             )}

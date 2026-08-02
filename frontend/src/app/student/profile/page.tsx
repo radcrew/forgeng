@@ -4,10 +4,10 @@ import { format } from "date-fns";
 import { Calendar } from "lucide-react";
 
 import { LoadingState } from "@components/common";
-import { TimelineArt } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { useCurrentUser } from "@contexts";
 import { ProfileForm, WalletManager, useEnrollments } from "@features/profile";
 
@@ -38,7 +38,7 @@ const Page = () => {
         ) : enrollments.length === 0 ? (
           <EmptyState
             message="You are not enrolled in any cohorts yet."
-            illustration={TimelineArt}
+            art={APP_ART.history}
           />
         ) : (
           <div className="space-y-3">

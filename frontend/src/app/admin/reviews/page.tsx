@@ -5,10 +5,10 @@ import { format } from "date-fns";
 import { Clock } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
-import { VerdictArt } from "@components/illustrations";
 import { Button } from "@components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { SUBMISSION_STATUS_FILTER_TABS } from "@constants/submissions";
 import {
   ReviewSheet,
@@ -49,7 +49,7 @@ const Page = () => {
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
       ) : submissions.length === 0 ? (
-        <EmptyState message="No submissions in this category." illustration={VerdictArt} />
+        <EmptyState message="No submissions in this category." art={APP_ART.reviews} />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (

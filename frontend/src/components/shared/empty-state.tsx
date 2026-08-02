@@ -1,12 +1,13 @@
-import type { SpotIllustration } from "@components/illustrations";
+import { Illustration } from "@components/illustrations";
 import { Card, CardContent } from "@components/ui/card";
+import type { Illustration as IllustrationAsset } from "@constants/shared/illustration";
 import { cn } from "@utils";
 
 interface EmptyStateProps {
   /** Simple centered message. Ignored when `children` is provided. */
   message?: string;
-  /** Spot art above the message, drawn from the product's own vocabulary. */
-  illustration?: SpotIllustration;
+  /** Spot illustration above the message. */
+  art?: IllustrationAsset;
   children?: React.ReactNode;
   /** `default` = p-12 (lists). `compact` = p-8 (dashboard sections). */
   size?: "default" | "compact";
@@ -15,7 +16,7 @@ interface EmptyStateProps {
 
 export function EmptyState({
   message,
-  illustration: Illustration,
+  art,
   children,
   size = "default",
   className,
@@ -26,13 +27,16 @@ export function EmptyState({
         className={cn(
           "text-center text-muted-foreground",
           size === "compact" ? "p-8" : "p-12",
-          (children || Illustration) &&
-            "flex flex-col items-center justify-center",
+          (children || art) && "flex flex-col items-center justify-center",
         )}
       >
-        {Illustration && (
+        {art && (
           <Illustration
-            className={cn(size === "compact" ? "h-14 w-14 mb-3" : "h-20 w-20 mb-4")}
+            art={art}
+            className={cn(
+              size === "compact" ? "h-24 mb-4" : "h-36 mb-6",
+              "w-auto max-w-[220px]",
+            )}
           />
         )}
         {children ?? message}
