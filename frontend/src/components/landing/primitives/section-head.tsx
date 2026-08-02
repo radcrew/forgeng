@@ -4,7 +4,6 @@ interface SectionHeadProps {
   /** Left-gutter label. Short — it names the section, it does not sell it. */
   label: string;
   title: React.ReactNode;
-  lead?: React.ReactNode;
   /** Set on dark bands so the rule and label read against ink. */
   tone?: "ink" | "paper";
   className?: string;
@@ -18,7 +17,6 @@ interface SectionHeadProps {
 export function SectionHead({
   label,
   title,
-  lead,
   tone = "paper",
   className,
 }: SectionHeadProps) {
@@ -52,16 +50,6 @@ export function SectionHead({
         >
           {title}
         </h2>
-        {lead && (
-          <p
-            className={cn(
-              "mt-5 text-lg leading-relaxed sm:text-xl",
-              onInk ? "text-white/65" : "text-steel",
-            )}
-          >
-            {lead}
-          </p>
-        )}
       </div>
     </div>
   );

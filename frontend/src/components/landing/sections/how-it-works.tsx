@@ -9,13 +9,10 @@ export function HowItWorks() {
       className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28"
     >
       <div className="mx-auto max-w-[88rem]">
-        <div>
-          <SectionHead
-            label="Process"
-            title="Applicant to engineer, in six moves"
-            lead="This one is a sequence. Each step depends on the one before it, and a mentor is beside you for all of them."
-          />
-        </div>
+        <SectionHead
+          label="Process"
+          title="Applicant to engineer, in six moves"
+        />
 
         {/* A ledger, not a zigzag: one consistent row rhythm with the step
             index held in a fixed left gutter. */}

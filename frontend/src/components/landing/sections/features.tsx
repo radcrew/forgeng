@@ -5,13 +5,10 @@ export function Features() {
   return (
     <section id="features" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
-        <div>
-          <SectionHead
-            label="What you get"
-            title="The feedback loop, not the lecture hall"
-            lead="Everything here exists to shorten the distance between writing something and finding out whether it was any good."
-          />
-        </div>
+        <SectionHead
+          label="What you get"
+          title="The feedback loop, not the lecture hall"
+        />
 
         <ul className="mt-16 grid border-t border-rule md:grid-cols-2 md:gap-x-16">
           {FEATURES.map((feature) => {

@@ -6,8 +6,7 @@ export function WhoWeAre() {
   return (
     <section id="who-we-are" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
-        <div>
-          <SectionHead
+        <SectionHead
             label="Who we are"
             title={
               <>
@@ -15,11 +14,10 @@ export function WhoWeAre() {
                 <br />
                 for engineers.
               </>
-            }
-          />
-        </div>
+          }
+        />
 
-        <div className="mt-16 grid gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
             {/* The one place the serif is allowed to speak at length. */}
             <p className="u-editorial text-[1.75rem] leading-snug text-ink sm:text-[2.125rem]">
@@ -33,9 +31,9 @@ export function WhoWeAre() {
               something anyone driven enough can access.
             </p>
 
-            <dl className="mt-12 divide-y divide-rule border-y border-rule">
+            <dl className="mt-10 divide-y divide-rule border-y border-rule">
               {VALUES.map((value) => (
-                <div key={value.title} className="grid gap-2 py-6 sm:grid-cols-[1fr_1.4fr] sm:gap-8">
+                <div key={value.title} className="grid gap-2 py-5 sm:grid-cols-[1fr_1.4fr] sm:gap-8">
                   <dt className="u-display text-xl text-ink">{value.title}</dt>
                   <dd className="text-base leading-relaxed text-steel">
                     {value.description}
@@ -46,10 +44,10 @@ export function WhoWeAre() {
           </div>
 
           <div>
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[3px] bg-ink">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[3px] bg-ink">
               <Illustration
                 art={LANDING_ART.mission}
-                className="p-8 pb-36 opacity-95"
+                className="p-7 pb-32 opacity-95"
               />
               <div className="absolute inset-x-6 bottom-6 border-t border-white/15 pt-5">
                 <p className="u-tech text-[0.75rem] text-quench">Our mission</p>

@@ -8,14 +8,11 @@ export function DailyRhythm() {
       className="border-b border-rule bg-ink px-8 py-24 text-paper lg:px-12 lg:py-28"
     >
       <div className="mx-auto max-w-[88rem]">
-        <div>
-          <SectionHead
-            tone="ink"
-            label="The week"
-            title="What the work actually looks like"
-            lead="These repeat. They are the texture of the program, not a sequence you graduate out of."
-          />
-        </div>
+        <SectionHead
+          tone="ink"
+          label="The week"
+          title="What the work actually looks like"
+        />
 
         <ul className="mt-16 grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
           {DAILY_RHYTHM.map((item) => (

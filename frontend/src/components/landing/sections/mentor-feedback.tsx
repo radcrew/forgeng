@@ -11,19 +11,16 @@ export function MentorFeedback() {
   return (
     <section className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
-        <div>
-          <SectionHead
-            label="Review"
-            title={
-              <>
-                Two verdicts.
-                <br />
-                No hedging.
-              </>
-            }
-            lead="Generic “looks good” is a missed opportunity. Every submission comes back with a written explanation and one of two outcomes."
-          />
-        </div>
+        <SectionHead
+          label="Review"
+          title={
+            <>
+              Two verdicts.
+              <br />
+              No hedging.
+            </>
+          }
+        />
 
         <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
           <div>
