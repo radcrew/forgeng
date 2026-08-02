@@ -10,19 +10,19 @@ import {
 export function MentorFeedback() {
   return (
     <section className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
-      <div className="mx-auto max-w-[88rem]">
-        <SectionHead
-          title={
-            <>
-              Two verdicts.
-              <br />
-              No hedging.
-            </>
-          }
-        />
-
-        <div className="m-enter mt-16 grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
-          <div>
+      {/* Heading rides in the left column with the claims it introduces. */}
+      <div className="m-enter mx-auto grid max-w-[88rem] gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+        <div>
+          <SectionHead
+            title={
+              <>
+                Two verdicts.
+                <br />
+                No hedging.
+              </>
+            }
+            className="mb-12"
+          />
             <ul className="border-t border-rule">
               {FEEDBACK_BULLETS.map((item) => (
                 <li
@@ -86,7 +86,6 @@ export function MentorFeedback() {
                 );
               })}
             </div>
-          </div>
         </div>
       </div>
     </section>

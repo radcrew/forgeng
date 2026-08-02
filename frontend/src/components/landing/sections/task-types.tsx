@@ -1,15 +1,19 @@
-import { SectionHead } from "@components/landing/primitives";
 import { TASK_TYPES } from "@constants/landing";
 
 export function TaskTypes() {
   return (
     <section className="border-b border-rule bg-paper-sunk px-8 py-24 lg:px-12 lg:py-28">
-      <div className="mx-auto max-w-[88rem]">
-        {/* This was the only section whose heading was a gutter label rather
-            than a heading, which is why it sat at a different weight. */}
-        <SectionHead title="Four kinds of work" />
+      {/* A run-in strip: the heading sits beside its items rather than above
+          them, so this reads as an aside between two full sections instead of
+          repeating the same opening beat. */}
+      <div className="mx-auto grid max-w-[88rem] gap-10 md:grid-cols-[16rem_1fr] md:gap-16">
+        <h2 className="u-display u-tight self-start text-[2.125rem] text-ink">
+          Four kinds
+          <br />
+          of work
+        </h2>
 
-        <ul className="m-stagger mt-16 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="m-stagger grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
           {TASK_TYPES.map((task) => {
             const Icon = task.icon;
             return (

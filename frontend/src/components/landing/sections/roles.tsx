@@ -24,10 +24,10 @@ export function Roles() {
               href={role.href}
               className="group m-press flex flex-col bg-paper focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink"
             >
-              <div className="relative aspect-[16/9] overflow-hidden border-b border-rule bg-white">
+              <div className="relative aspect-[16/9] overflow-hidden bg-ink">
                 <Illustration
                   art={role.art}
-                  className="p-5 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                  className="p-6 opacity-95 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                 />
               </div>
 

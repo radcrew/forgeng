@@ -44,8 +44,11 @@ export function HowItWorks() {
                   </p>
                 </div>
 
-                <div className="relative aspect-[16/10] overflow-hidden rounded-[3px] border border-rule bg-white">
-                  <Illustration art={step.art} className="p-5" />
+                {/* Ink ground, matching the mission panel. On white these read
+                    as clip art dropped in a box; against ink they read as
+                    plates and give the ledger a spine down its right edge. */}
+                <div className="relative aspect-[16/10] overflow-hidden rounded-[3px] bg-ink">
+                  <Illustration art={step.art} className="p-6 opacity-95" />
                 </div>
               </li>
             );
