@@ -1,12 +1,12 @@
 import { Illustration } from "@components/illustrations";
-import { Reveal, SectionHead } from "@components/landing/primitives";
+import { SectionHead } from "@components/landing/primitives";
 import { LANDING_ART, VALUES } from "@constants/landing";
 
 export function WhoWeAre() {
   return (
-    <section id="who-we-are" className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+    <section id="who-we-are" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
-        <Reveal>
+        <div>
           <SectionHead
             label="Who we are"
             title={
@@ -17,10 +17,10 @@ export function WhoWeAre() {
               </>
             }
           />
-        </Reveal>
+        </div>
 
         <div className="mt-16 grid gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
-          <Reveal delay={80}>
+          <div>
             {/* The one place the serif is allowed to speak at length. */}
             <p className="u-editorial text-[1.75rem] leading-snug text-ink sm:text-[2.125rem]">
               Too many programs teach students to pass interviews instead of
@@ -43,9 +43,9 @@ export function WhoWeAre() {
                 </div>
               ))}
             </dl>
-          </Reveal>
+          </div>
 
-          <Reveal delay={160}>
+          <div>
             <div className="relative aspect-[4/5] overflow-hidden rounded-[3px] bg-ink">
               <Illustration
                 art={LANDING_ART.mission}
@@ -59,7 +59,7 @@ export function WhoWeAre() {
                 </p>
               </div>
             </div>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

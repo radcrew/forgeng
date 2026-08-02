@@ -237,8 +237,8 @@
   white-space: nowrap;
 }
 
-/* Staggered entrance for the hero, and a scroll reveal for everything below.
-   Both collapse to "already visible" under reduced motion. */
+/* A single staggered entrance for the hero. Nothing else animates in:
+   section-by-section fades read as templated. */
 @keyframes landing-rise {
   from {
     opacity: 0;
@@ -254,22 +254,8 @@
   animation: landing-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.landing .u-reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition:
-    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.landing .u-reveal[data-shown="true"] {
-  opacity: 1;
-  transform: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .landing .u-rise,
-  .landing .u-reveal {
+  .landing .u-rise {
     animation: none;
     transition: none;
     opacity: 1;

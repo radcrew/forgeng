@@ -1,34 +1,29 @@
 import { Illustration } from "@components/illustrations";
-import { Reveal, SectionHead } from "@components/landing/primitives";
+import { SectionHead } from "@components/landing/primitives";
 import { STEPS } from "@constants/landing";
 
 export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44"
+      className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28"
     >
       <div className="mx-auto max-w-[88rem]">
-        <Reveal>
+        <div>
           <SectionHead
             label="Process"
             title="Applicant to engineer, in six moves"
             lead="This one is a sequence. Each step depends on the one before it, and a mentor is beside you for all of them."
           />
-        </Reveal>
+        </div>
 
         {/* A ledger, not a zigzag: one consistent row rhythm with the step
             index held in a fixed left gutter. */}
         <ol className="mt-16 border-t border-rule">
-          {STEPS.map((step, i) => {
+          {STEPS.map((step) => {
             const Icon = step.icon;
             return (
-              <Reveal
-                key={step.number}
-                delay={i * 50}
-                as="li"
-                className="group grid items-center gap-6 border-b border-rule py-8 md:grid-cols-[5rem_1fr_16rem] md:gap-12 md:py-12 lg:grid-cols-[7rem_1fr_22rem]"
-              >
+              <li key={step.number} className="group grid items-center gap-6 border-b border-rule py-8 md:grid-cols-[5rem_1fr_16rem] md:gap-12 md:py-12 lg:grid-cols-[7rem_1fr_22rem]">
                   <div className="flex items-center gap-4 md:block">
                     <span className="u-display block text-5xl text-ink/20 transition-colors group-hover:text-quench-deep lg:text-6xl">
                       {step.number}
@@ -53,7 +48,7 @@ export function HowItWorks() {
                   <div className="relative aspect-[16/10] overflow-hidden rounded-[3px] border border-rule bg-white">
                     <Illustration art={step.art} className="p-4" />
                   </div>
-              </Reveal>
+              </li>
             );
           })}
         </ol>

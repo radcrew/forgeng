@@ -6,15 +6,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@components/ui/accordion";
-import { Reveal } from "@components/landing/primitives";
 import { FAQS } from "@constants/landing";
 
 export function Faq() {
   return (
-    <section id="faq" className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+    <section id="faq" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
         <div className="grid gap-14 lg:grid-cols-[1fr_1.5fr] lg:gap-20">
-          <Reveal>
+          <div>
             <div className="lg:sticky lg:top-28">
               <p className="u-tech text-[0.8125rem] text-steel">Questions</p>
               <h2 className="u-display u-tight mt-5 text-[3rem] text-ink sm:text-6xl">
@@ -32,9 +31,9 @@ export function Faq() {
                 Start an application
               </Link>
             </div>
-          </Reveal>
+          </div>
 
-          <Reveal delay={100}>
+          <div>
             <Accordion type="single" collapsible className="w-full border-t border-rule">
               {FAQS.map((faq, i) => (
                 <AccordionItem
@@ -51,7 +50,7 @@ export function Faq() {
                 </AccordionItem>
               ))}
             </Accordion>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

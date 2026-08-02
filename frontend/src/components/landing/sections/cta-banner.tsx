@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { Reveal } from "@components/landing/primitives";
 
 export function CtaBanner() {
   return (
     <section className="border-t border-ink bg-ink text-paper">
-      <div className="mx-auto max-w-[88rem] px-8 py-32 lg:px-12 lg:py-44">
-        <Reveal>
+      <div className="mx-auto max-w-[88rem] px-8 py-24 lg:px-12 lg:py-28">
+        <div>
           <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:items-end">
             <div>
               <p className="u-tech text-[0.8125rem] text-quench">
@@ -44,7 +43,7 @@ export function CtaBanner() {
               </div>
             </div>
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

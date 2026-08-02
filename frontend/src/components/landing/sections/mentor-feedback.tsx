@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 
-import { Reveal, SectionHead, Verdict } from "@components/landing/primitives";
+import { SectionHead, Verdict } from "@components/landing/primitives";
 import {
   FEEDBACK_BULLETS,
   FEEDBACK_TESTIMONIAL,
@@ -9,9 +9,9 @@ import {
 
 export function MentorFeedback() {
   return (
-    <section className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+    <section className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
-        <Reveal>
+        <div>
           <SectionHead
             label="Review"
             title={
@@ -23,10 +23,10 @@ export function MentorFeedback() {
             }
             lead="Generic “looks good” is a missed opportunity. Every submission comes back with a written explanation and one of two outcomes."
           />
-        </Reveal>
+        </div>
 
         <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
-          <Reveal delay={80}>
+          <div>
             <ul className="border-t border-rule">
               {FEEDBACK_BULLETS.map((item) => (
                 <li
@@ -51,9 +51,9 @@ export function MentorFeedback() {
                 {FEEDBACK_TESTIMONIAL.attribution.replace("— ", "")}
               </figcaption>
             </figure>
-          </Reveal>
+          </div>
 
-          <Reveal delay={160}>
+          <div>
             <div className="space-y-5">
               {SAMPLE_FEEDBACK.map((sample) => {
                 const approved = sample.verdict === "approved";
@@ -90,7 +90,7 @@ export function MentorFeedback() {
                 );
               })}
             </div>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

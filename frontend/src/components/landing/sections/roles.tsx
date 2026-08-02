@@ -2,24 +2,24 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { Illustration } from "@components/illustrations";
-import { Reveal, SectionHead } from "@components/landing/primitives";
+import { SectionHead } from "@components/landing/primitives";
 import { ROLES } from "@constants/landing";
 
 export function Roles() {
   return (
-    <section id="roles" className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+    <section id="roles" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
-        <Reveal>
+        <div>
           <SectionHead
-            label="Find your place"
+            label="Roles"
             title="Three ways in"
             lead="Whether you are applying, already building, or running a cohort, the platform is the same one."
           />
-        </Reveal>
+        </div>
 
-        <div className="mt-16 grid gap-px bg-rule md:grid-cols-3">
-          {ROLES.map((role, i) => (
-            <Reveal key={role.role} delay={i * 70} className="bg-paper">
+        <div className="mt-16 grid gap-px border border-rule bg-rule md:grid-cols-3">
+          {ROLES.map((role) => (
+            <div key={role.role} className="bg-paper">
               <article className="group flex h-full flex-col">
                 <div className="relative aspect-[16/9] overflow-hidden border-b border-rule bg-white">
                   <Illustration art={role.art} className="p-5" />
@@ -44,7 +44,7 @@ export function Roles() {
                   </Link>
                 </div>
               </article>
-            </Reveal>
+            </div>
           ))}
         </div>
       </div>

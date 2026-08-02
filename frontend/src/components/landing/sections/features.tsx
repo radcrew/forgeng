@@ -1,28 +1,23 @@
-import { Reveal, SectionHead } from "@components/landing/primitives";
+import { SectionHead } from "@components/landing/primitives";
 import { FEATURES } from "@constants/landing";
 
 export function Features() {
   return (
-    <section id="features" className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+    <section id="features" className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
       <div className="mx-auto max-w-[88rem]">
-        <Reveal>
+        <div>
           <SectionHead
             label="What you get"
             title="The feedback loop, not the lecture hall"
             lead="Everything here exists to shorten the distance between writing something and finding out whether it was any good."
           />
-        </Reveal>
+        </div>
 
         <ul className="mt-16 grid border-t border-rule md:grid-cols-2 md:gap-x-16">
-          {FEATURES.map((feature, i) => {
+          {FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (
-              <Reveal
-                key={feature.title}
-                delay={(i % 2) * 60}
-                as="li"
-                className="flex h-full gap-5 border-b border-rule py-7"
-              >
+              <li key={feature.title} className="flex h-full gap-5 border-b border-rule py-7">
                   <Icon
                     className="mt-1 h-4 w-4 shrink-0 text-quench-deep"
                     aria-hidden="true"
@@ -35,7 +30,7 @@ export function Features() {
                       {feature.description}
                     </p>
                   </div>
-              </Reveal>
+              </li>
             );
           })}
         </ul>
