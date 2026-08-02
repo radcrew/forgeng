@@ -42,21 +42,21 @@ export function Hero() {
             >
               <Link
                 href="/sign-up"
-                className="group m-press inline-flex h-14 items-center justify-center gap-2.5 rounded-[3px] bg-ink px-8 text-base font-semibold text-paper transition-colors hover:bg-quench hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                className="group m-press inline-flex h-14 items-center justify-center gap-2.5 rounded-[3px] bg-ink px-8 text-base font-semibold text-paper transition-colors hover:bg-quench hover:text-ink"
               >
                 Start an application
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <a
                 href="#how-it-works"
-                className="m-press inline-flex h-14 items-center justify-center rounded-[3px] border-2 border-ink/15 px-8 text-base font-semibold text-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                className="m-press inline-flex h-14 items-center justify-center rounded-[3px] border-2 border-ink/15 px-8 text-base font-semibold text-ink transition-colors hover:border-ink"
               >
                 See how it works
               </a>
             </div>
 
             <p
-              className="u-rise u-tech mt-8 text-[0.75rem] leading-relaxed text-graphite"
+              className="u-rise u-tech mt-8 text-[0.75rem] leading-relaxed text-steel"
               style={{ animationDelay: "300ms" }}
             >
               Free to apply · Monthly stipend · No CS degree

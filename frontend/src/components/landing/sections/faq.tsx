@@ -29,7 +29,7 @@ export function Faq() {
             </p>
             <Link
               href="/apply"
-              className="u-tech mt-7 inline-block border-b-2 border-quench-deep pb-1 text-[0.75rem] text-ink transition-colors hover:text-quench-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              className="u-tech mt-7 inline-block border-b-2 border-quench-deep pb-1 text-[0.75rem] text-ink transition-colors hover:text-quench-deep"
             >
               Start an application
             </Link>

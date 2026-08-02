@@ -22,7 +22,7 @@ export function Roles() {
             <Link
               key={role.role}
               href={role.href}
-              className="group m-press flex flex-col bg-paper focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink"
+              className="group m-press flex flex-col bg-paper"
             >
               <div className="relative aspect-[16/9] overflow-hidden bg-ink">
                 <Illustration

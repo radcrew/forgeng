@@ -24,14 +24,14 @@ export function CtaBanner() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/sign-up"
-                className="group m-press inline-flex h-12 items-center justify-center gap-2 rounded-[3px] bg-quench px-7 text-base font-semibold text-ink transition-colors hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-quench"
+                className="group m-press inline-flex h-12 items-center justify-center gap-2 rounded-[3px] bg-quench px-7 text-base font-semibold text-ink transition-colors hover:bg-paper"
               >
                 Start an application
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href="/sign-in"
-                className="m-press inline-flex h-12 items-center justify-center rounded-[3px] border-2 border-white/20 px-7 text-base font-semibold text-paper transition-colors hover:border-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-quench"
+                className="m-press inline-flex h-12 items-center justify-center rounded-[3px] border-2 border-white/20 px-7 text-base font-semibold text-paper transition-colors hover:border-paper"
               >
                 Sign in
               </Link>

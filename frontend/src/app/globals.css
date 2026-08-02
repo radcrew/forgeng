@@ -196,6 +196,16 @@
     @apply bg-background text-foreground font-sans antialiased;
     letter-spacing: -0.006em;
   }
+
+  /* One focus treatment for everything, so plain links stop falling back to
+     the browser default while buttons get a designed ring. This colour is the
+     only one that clears 3:1 on all three grounds — paper 5.19, sunk 4.96,
+     ink 3.67. It lives in `base`, so components that define their own
+     focus-visible ring still win. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 /* ---------------------------------------------------------------------------
