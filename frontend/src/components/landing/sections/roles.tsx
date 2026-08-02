@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { Illustration } from "@components/illustrations";
-import { SectionHead } from "@components/landing/primitives";
+import { ArtPanel, SectionHead } from "@components/landing/primitives";
 import { ROLES } from "@constants/landing";
 
 export function Roles() {
@@ -24,12 +23,11 @@ export function Roles() {
               href={role.href}
               className="group m-press flex flex-col bg-paper"
             >
-              <div className="relative aspect-[16/9] overflow-hidden bg-ink">
-                <Illustration
-                  art={role.art}
-                  className="p-6 opacity-95 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-                />
-              </div>
+              <ArtPanel
+                art={role.art}
+                aspect="aspect-[16/9]"
+                artClassName="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              />
 
               <div className="flex flex-1 flex-col p-8">
                 <p className="u-tech text-[0.75rem] text-quench-deep">

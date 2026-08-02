@@ -1,6 +1,7 @@
 import { Illustration } from "@components/illustrations";
-import { SectionHead } from "@components/landing/primitives";
+import { SectionHead, TINT_PANEL } from "@components/landing/primitives";
 import { LANDING_ART, VALUES } from "@constants/landing";
+import { cn } from "@utils";
 
 export function WhoWeAre() {
   return (
@@ -55,16 +56,22 @@ export function WhoWeAre() {
               overlay needed the reserved padding to stay ahead of the caption's
               own height, and that balance broke as soon as the text rewrapped
               on a narrow column. Stacking cannot collide at any width. */}
-          <div className="overflow-hidden rounded-[3px] bg-ink lg:sticky lg:top-28">
+          <div
+            className={cn(
+              "overflow-hidden rounded-[3px] lg:sticky lg:top-28",
+              TINT_PANEL.violet,
+            )}
+          >
             <div className="relative aspect-[4/3]">
-              <Illustration
-                art={LANDING_ART.mission}
-                className="p-7 opacity-95"
-              />
+              <Illustration art={LANDING_ART.mission} className="p-7" />
             </div>
-            <div className="mx-7 border-t border-white/15 pb-7 pt-5">
-              <p className="u-tech text-[0.75rem] text-quench">Our mission</p>
-              <p className="u-editorial mt-3 text-xl leading-snug text-paper">
+            {/* Label takes the deep cyan, not the brand cyan: on a light panel
+                the brand value is 2.4:1. */}
+            <div className="mx-7 border-t border-ink/10 pb-7 pt-5">
+              <p className="u-tech text-[0.75rem] text-quench-deep">
+                Our mission
+              </p>
+              <p className="u-editorial mt-3 text-xl leading-snug text-ink">
                 Make the path from learning to code to shipping
                 production-quality work repeatable, structured, and humane.
               </p>

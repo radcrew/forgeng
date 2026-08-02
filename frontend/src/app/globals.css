@@ -74,6 +74,18 @@
      alternating them gives the page rhythm between the ink bands. */
   --color-paper-sunk: #f7f7f2;
 
+  /* Illustration panels. Each marketing illustration is retinted to one hue
+     and sits on the matching tint here, so the art and its ground are the same
+     colour idea. Kept at 94% lightness: bright enough to carry the colour,
+     light enough that the ink caption on top still clears AA. */
+  --color-tint-cyan: hsl(190 54% 94%);
+  --color-tint-violet: hsl(262 54% 95%);
+  --color-tint-blue: hsl(222 60% 95%);
+  --color-tint-mint: hsl(165 48% 93%);
+  --color-tint-amber: hsl(42 78% 93%);
+  --color-tint-rose: hsl(330 62% 95%);
+  --color-tint-coral: hsl(14 72% 94%);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

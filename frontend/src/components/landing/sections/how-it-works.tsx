@@ -1,5 +1,4 @@
-import { Illustration } from "@components/illustrations";
-import { SectionHead } from "@components/landing/primitives";
+import { ArtPanel, SectionHead } from "@components/landing/primitives";
 import { STEPS } from "@constants/landing";
 
 export function HowItWorks() {
@@ -44,12 +43,13 @@ export function HowItWorks() {
                   </p>
                 </div>
 
-                {/* Ink ground, matching the mission panel. On white these read
-                    as clip art dropped in a box; against ink they read as
-                    plates and give the ledger a spine down its right edge. */}
-                <div className="relative aspect-[16/10] overflow-hidden rounded-[3px] bg-ink">
-                  <Illustration art={step.art} className="p-6 opacity-95" />
-                </div>
+                {/* Each step carries its own tint, so the ledger runs through
+                    six colours top to bottom instead of six identical plates. */}
+                <ArtPanel
+                  art={step.art}
+                  aspect="aspect-[16/10]"
+                  className="rounded-[3px]"
+                />
               </li>
             );
           })}
