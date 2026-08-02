@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { CalendarDays, Code2, Users } from "lucide-react";
 
 import { LoadingState } from "@components/common";
+import { CohortSeatsArt, TaskListArt } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
@@ -63,7 +64,7 @@ const Page = () => {
     return (
       <PageContainer maxWidth="4xl" spacing="8">
         <PageHeader title="Cohort" description="Your cohort overview." />
-        <EmptyState message="You are not enrolled in a cohort yet." />
+        <EmptyState message="You are not enrolled in a cohort yet." illustration={CohortSeatsArt} />
       </PageContainer>
     );
   }
@@ -130,7 +131,10 @@ const Page = () => {
         {tasksLoading ? (
           <LoadingState message="Loading schedule…" />
         ) : schedule.length === 0 ? (
-          <EmptyState message="No tasks have been published for your cohort yet." />
+          <EmptyState
+            message="No tasks have been published for your cohort yet."
+            illustration={TaskListArt}
+          />
         ) : (
           <div className="space-y-3">
             {schedule.map((task) => {

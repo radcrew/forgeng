@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { CohortLayersArt, ProgressArt } from "@components/illustrations";
 import {
   Card,
   CardContent,
@@ -20,7 +21,12 @@ const SegmentedBar = ({ segments }: { segments: Segment[] }) => {
   const total = segments.reduce((n, s) => n + s.value, 0);
 
   if (total === 0) {
-    return <p className="text-sm text-muted-foreground">No data yet.</p>;
+    return (
+      <div className="flex flex-col items-center gap-2 py-3 text-center">
+        <ProgressArt className="h-12 w-12" />
+        <p className="text-sm text-muted-foreground">No data yet.</p>
+      </div>
+    );
   }
 
   return (
@@ -125,7 +131,10 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
         </CardHeader>
         <CardContent>
           {cohortStats.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No cohorts yet.</p>
+            <div className="flex flex-col items-center gap-2 py-3 text-center">
+              <CohortLayersArt className="h-12 w-12" />
+              <p className="text-sm text-muted-foreground">No cohorts yet.</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

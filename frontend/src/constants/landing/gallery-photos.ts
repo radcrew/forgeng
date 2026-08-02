@@ -1,8 +1,8 @@
 import { PHOTOS } from "@constants/landing/photos";
+import type { Photo } from "@constants/shared/photo";
 
 export interface GalleryPhoto {
-  src: string;
-  alt: string;
+  photo: Photo;
   label: string;
 }
 
@@ -10,30 +10,25 @@ export interface GalleryPhoto {
  * Featured gallery item — rendered larger (2x2) than the rest of the grid.
  */
 export const GALLERY_FEATURED: GalleryPhoto = {
-  src: PHOTOS.mentoring,
-  alt: "A senior engineer mentoring a junior developer at a desk",
+  photo: PHOTOS.galleryMentoring,
   label: "1-on-1 Mentoring",
 };
 
 export const GALLERY_PHOTOS: GalleryPhoto[] = [
   {
-    src: PHOTOS.codeReview,
-    alt: "Two engineers collaborating on a code review",
+    photo: PHOTOS.galleryReview,
     label: "Code Review",
   },
   {
-    src: PHOTOS.interview,
-    alt: "Technical discussion in an interview setting",
+    photo: PHOTOS.galleryIntake,
     label: "Intake Interview",
   },
   {
-    src: PHOTOS.teamMeeting,
-    alt: "Cohort group meeting and discussion",
+    photo: PHOTOS.gallerySync,
     label: "Cohort Sync",
   },
   {
-    src: PHOTOS.pairProgramming,
-    alt: "Developer pair programming at a laptop",
+    photo: PHOTOS.galleryPairing,
     label: "Pair Programming",
   },
 ];

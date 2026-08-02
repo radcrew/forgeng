@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Clock, Code2, MessageSquare } from "lucide-react";
 
 import { LoadingState, ProseBlock, SectionTitle } from "@components/common";
+import { NotFoundArt, SubmitArt } from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
@@ -52,7 +53,10 @@ const Page = () => {
     return (
       <PageContainer maxWidth="4xl" spacing="6">
         {backLink}
-        <EmptyState message="Task not found, or you don't have access to it." />
+        <EmptyState
+          message="Task not found, or you don't have access to it."
+          illustration={NotFoundArt}
+        />
       </PageContainer>
     );
   }
@@ -135,7 +139,10 @@ const Page = () => {
             </Button>
           </Card>
         ) : (
-          <EmptyState message="You haven't submitted work for this task yet." />
+          <EmptyState
+            message="You haven't submitted work for this task yet."
+            illustration={SubmitArt}
+          />
         )}
       </div>
 

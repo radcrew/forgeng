@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { CheckCircle2, Star } from "lucide-react";
 
 import { Badge } from "@components/ui/badge";
@@ -14,11 +15,14 @@ export function MentorFeedback() {
     <section className="border-y border-border bg-muted/30 px-6 py-20">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PHOTOS.codeReview}
-            alt="Two engineers sitting side-by-side doing a code review"
-            className="w-full h-full object-cover"
+          <Image
+            src={PHOTOS.codeReview.src}
+            alt={PHOTOS.codeReview.alt}
+            fill
+            sizes="(min-width: 1152px) 576px, (min-width: 1024px) 50vw, 100vw"
+            placeholder="blur"
+            blurDataURL={PHOTOS.codeReview.blurDataURL}
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute bottom-5 left-5 right-5">

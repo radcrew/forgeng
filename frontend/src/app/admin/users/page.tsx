@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { CohortSeatsArt } from "@components/illustrations";
 import { Button } from "@components/ui/button";
 import {
   Select,
@@ -44,7 +45,7 @@ const Page = () => {
       </p>
 
       {!isLoading && users.length === 0 ? (
-        <EmptyState message="No students yet." />
+        <EmptyState message="No students yet." illustration={CohortSeatsArt} />
       ) : (
         <div className="space-y-2">
           {users.map((user) => (

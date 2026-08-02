@@ -2,6 +2,7 @@
 
 import { PageContainer, PageHeader } from "@components/shared";
 import {
+  AwaitingCohort,
   CohortSwitcher,
   StudentView,
   useStudentDashboard,
@@ -57,16 +58,9 @@ const Page = () => {
       />
 
       {profileIncomplete ? (
-        <p className="text-sm text-muted-foreground">
-          Your profile is incomplete. Please complete all profile fields to take
-          part in a cohort and receive tasks.
-        </p>
+        <AwaitingCohort profileIncomplete />
       ) : !cohort ? (
-        <p className="text-sm text-muted-foreground">
-          Your account is ready, but you haven&apos;t been added to a cohort yet.
-          Once an instructor enrolls you, your tasks, schedule, and progress will
-          show up here.
-        </p>
+        <AwaitingCohort />
       ) : (
         <StudentView dashboard={dashboard} />
       )}

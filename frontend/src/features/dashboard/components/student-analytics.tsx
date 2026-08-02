@@ -1,5 +1,6 @@
 "use client";
 
+import { ProgressArt, TaskListArt } from "@components/illustrations";
 import {
   Card,
   CardContent,
@@ -36,7 +37,10 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           {statusTotal === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            <div className="flex flex-col items-center gap-2 py-3 text-center">
+              <ProgressArt className="h-12 w-12" />
+              <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            </div>
           ) : (
             <>
               <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
@@ -79,7 +83,10 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
         </CardHeader>
         <CardContent className="space-y-3">
           {typeBreakdown.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            <div className="flex flex-col items-center gap-2 py-3 text-center">
+              <TaskListArt className="h-12 w-12" />
+              <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            </div>
           ) : (
             typeBreakdown.map((t) => {
               const Icon = TASK_TYPE_ICON[t.type];

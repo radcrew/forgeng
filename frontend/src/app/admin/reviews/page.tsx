@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Clock } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
+import { VerdictArt } from "@components/illustrations";
 import { Button } from "@components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
@@ -48,7 +49,7 @@ const Page = () => {
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
       ) : submissions.length === 0 ? (
-        <EmptyState message="No submissions in this category." />
+        <EmptyState message="No submissions in this category." illustration={VerdictArt} />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (

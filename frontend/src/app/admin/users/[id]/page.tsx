@@ -20,6 +20,7 @@ import {
   SectionTitle,
 } from "@components/common";
 import { PageContainer } from "@components/shared";
+import { Avatar } from "@components/ui/avatar";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
@@ -45,7 +46,6 @@ import { CURRENCIES } from "@constants/payments";
 import { useUser, useUserEnrollments, useUserPaymentStats, useRecordPayment, useNotifyWalletMissing } from "@features/users/hooks";
 import { useSettings } from "@features/settings";
 import { ApiError } from "@lib/api-client";
-import { resolveAssetUrl } from "@lib/config";
 import { isProfileComplete } from "@utils/user";
 
 import { PaymentStatsChart } from "./_components/payment-stats-chart";
@@ -144,18 +144,12 @@ export default function UserDetailPage({
 
         {/* Header */}
         <div className="flex items-start gap-4">
-          {user.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={resolveAssetUrl(user.avatarUrl)}
-              alt={displayName}
-              className="h-16 w-16 rounded-full object-cover shrink-0"
-            />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-xl font-semibold text-primary shrink-0">
-              {displayName[0]?.toUpperCase() ?? "?"}
-            </div>
-          )}
+          <Avatar
+            src={user.avatarUrl}
+            name={user.name}
+            email={user.email}
+            size={64}
+          />
           <div className="space-y-1.5 min-w-0">
             <h1 className="text-xl font-semibold truncate">{displayName}</h1>
             <span className="flex items-center gap-1.5 text-sm text-muted-foreground">

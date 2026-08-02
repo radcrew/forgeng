@@ -6,6 +6,11 @@ import { format } from "date-fns";
 import { Users } from "lucide-react";
 
 import { LoadingState } from "@components/common";
+import {
+  CohortSeatsArt,
+  NotFoundArt,
+  TaskListArt,
+} from "@components/illustrations";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
@@ -63,7 +68,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
     return (
       <PageContainer maxWidth="5xl" spacing="6">
         {backLink}
-        <EmptyState message="Cohort not found." />
+        <EmptyState message="Cohort not found." illustration={NotFoundArt} />
       </PageContainer>
     );
   }
@@ -123,7 +128,10 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
 
       {tab === "students" ? (
         enrollments.length === 0 ? (
-          <EmptyState message="No students enrolled in this cohort yet." />
+          <EmptyState
+            message="No students enrolled in this cohort yet."
+            illustration={CohortSeatsArt}
+          />
         ) : (
           <div className="space-y-3">
             {progress.map((p) => (
@@ -136,7 +144,7 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
           </div>
         )
       ) : tasks.length === 0 ? (
-        <EmptyState message="No tasks in this cohort yet." />
+        <EmptyState message="No tasks in this cohort yet." illustration={TaskListArt} />
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => {

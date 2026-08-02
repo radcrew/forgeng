@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { Badge } from "@components/ui/badge";
 import { GALLERY_FEATURED, GALLERY_PHOTOS } from "@constants/landing";
 
@@ -26,11 +28,14 @@ export function Gallery() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[480px]">
           <div className="relative rounded-2xl overflow-hidden col-span-2 row-span-2 group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={GALLERY_FEATURED.src}
-              alt={GALLERY_FEATURED.alt}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            <Image
+              src={GALLERY_FEATURED.photo.src}
+              alt={GALLERY_FEATURED.photo.alt}
+              fill
+              sizes="(min-width: 1152px) 576px, 50vw"
+              placeholder="blur"
+              blurDataURL={GALLERY_FEATURED.photo.blurDataURL}
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute bottom-4 left-4">
@@ -43,13 +48,18 @@ export function Gallery() {
           {GALLERY_PHOTOS.map((photo) => (
             <div
               key={photo.label}
-              className="relative rounded-2xl overflow-hidden group"
+              // `fill` images are absolutely positioned, so the tile itself has
+              // to carry the mobile height the <img> used to provide.
+              className="relative rounded-2xl overflow-hidden group min-h-[180px] md:min-h-0"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 min-h-[180px] md:min-h-0"
+              <Image
+                src={photo.photo.src}
+                alt={photo.photo.alt}
+                fill
+                sizes="(min-width: 1152px) 288px, (min-width: 768px) 25vw, 50vw"
+                placeholder="blur"
+                blurDataURL={photo.photo.blurDataURL}
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
               <div className="absolute bottom-3 left-3">

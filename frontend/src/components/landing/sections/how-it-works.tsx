@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { Badge } from "@components/ui/badge";
 import { STEPS } from "@constants/landing";
 
@@ -40,11 +42,14 @@ export function HowItWorks() {
                     isEven ? "" : "md:[direction:ltr]"
                   }`}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={step.photo}
-                    alt={step.photoAlt}
-                    className="w-full h-full object-cover"
+                  <Image
+                    src={step.photo.src}
+                    alt={step.photo.alt}
+                    fill
+                    sizes="(min-width: 1024px) 512px, 100vw"
+                    placeholder="blur"
+                    blurDataURL={step.photo.blurDataURL}
+                    className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent mix-blend-multiply" />
                 </div>

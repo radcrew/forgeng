@@ -18,6 +18,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { Logo } from "@components/brand/logo";
+import { Avatar } from "@components/ui/avatar";
 import { Button } from "@components/ui/button";
 import {
   Sidebar,
@@ -130,12 +131,20 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           </SidebarContent>
 
           <SidebarFooter className="p-4 border-t border-sidebar-border">
-            <div className="flex items-center justify-between mb-4 px-2">
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">
+            <div className="flex items-center gap-3 mb-4 px-2">
+              {user && (
+                <Avatar
+                  src={user.avatarUrl}
+                  name={user.name}
+                  email={user.email}
+                  size={32}
+                />
+              )}
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium truncate">
                   {user?.name ?? "User"}
                 </span>
-                <span className="text-xs text-sidebar-foreground/70">
+                <span className="text-xs text-sidebar-foreground/70 truncate">
                   {user?.email}
                 </span>
               </div>

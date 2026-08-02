@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { Badge } from "@components/ui/badge";
 import { PHOTOS, VALUES } from "@constants/landing";
 
@@ -6,11 +8,14 @@ export function WhoWeAre() {
     <section id="who-we-are" className="px-6 py-24">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
         <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/5] order-2 md:order-1">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PHOTOS.pairProgramming}
-            alt="Two engineers pair-programming side by side"
-            className="w-full h-full object-cover"
+          <Image
+            src={PHOTOS.mission.src}
+            alt={PHOTOS.mission.alt}
+            fill
+            sizes="(min-width: 1152px) 576px, (min-width: 768px) 50vw, 100vw"
+            placeholder="blur"
+            blurDataURL={PHOTOS.mission.blurDataURL}
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           <div className="absolute bottom-5 left-5 right-5 bg-background/95 backdrop-blur rounded-xl p-4 shadow-lg border border-border/40">

@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Clock, MessageSquare } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
+import { SubmitArt } from "@components/illustrations";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import {
@@ -28,7 +29,10 @@ const Page = () => {
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
       ) : submissions.length === 0 ? (
-        <EmptyState message="No submissions yet. Head to Tasks to start submitting your work." />
+        <EmptyState
+          message="No submissions yet. Head to Tasks to start submitting your work."
+          illustration={SubmitArt}
+        />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (

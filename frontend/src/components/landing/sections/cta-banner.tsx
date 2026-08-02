@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -8,12 +9,13 @@ export function CtaBanner() {
   return (
     <section className="relative overflow-hidden px-6 py-20 bg-primary text-primary-foreground text-center">
       <div className="absolute inset-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={PHOTOS.teamMeeting}
+        <Image
+          src={PHOTOS.cohortEnergy.src}
           alt=""
           aria-hidden="true"
-          className="w-full h-full object-cover opacity-10"
+          fill
+          sizes="100vw"
+          className="object-cover opacity-10"
         />
       </div>
       <div className="relative z-10 max-w-3xl mx-auto space-y-6">

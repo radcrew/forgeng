@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -52,11 +53,15 @@ export function Hero() {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PHOTOS.hero}
-            alt="Two professionals collaborating on code in a modern office"
-            className="w-full h-full object-cover"
+          <Image
+            src={PHOTOS.hero.src}
+            alt={PHOTOS.hero.alt}
+            fill
+            sizes="(min-width: 1152px) 576px, (min-width: 768px) 50vw, 100vw"
+            placeholder="blur"
+            blurDataURL={PHOTOS.hero.blurDataURL}
+            preload
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">

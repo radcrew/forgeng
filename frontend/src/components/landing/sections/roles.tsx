@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -32,12 +33,15 @@ export function Roles() {
             className="border-border/60 flex flex-col hover:shadow-md transition-shadow overflow-hidden"
           >
             <CardContent className="p-0 flex flex-col flex-1">
-              <div className="h-36 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={role.photo}
-                  alt={`${role.role} scenario`}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              <div className="relative h-36 overflow-hidden">
+                <Image
+                  src={role.photo.src}
+                  alt={role.photo.alt}
+                  fill
+                  sizes="(min-width: 1024px) 341px, (min-width: 768px) 33vw, 100vw"
+                  placeholder="blur"
+                  blurDataURL={role.photo.blurDataURL}
+                  className="object-cover hover:scale-105 transition-transform duration-500"
                 />
               </div>
               <div className="p-6 flex flex-col flex-1 space-y-4">

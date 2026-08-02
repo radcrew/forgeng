@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { ApplicationsArt } from "@components/illustrations";
 import { ListPageLayout } from "@components/shared";
 import {
   ApplicationList,
@@ -32,6 +33,7 @@ const Page = () => {
         />
       )}
       emptyMessage="No applications in this category."
+      emptyIllustration={ApplicationsArt}
       loadingMessage="Loading applications…"
     />
   );

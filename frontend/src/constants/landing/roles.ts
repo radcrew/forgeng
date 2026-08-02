@@ -1,4 +1,5 @@
 import { PHOTOS } from "@constants/landing/photos";
+import type { Photo } from "@constants/shared/photo";
 
 export interface RoleCard {
   role: string;
@@ -8,7 +9,7 @@ export interface RoleCard {
   description: string;
   cta: string;
   href: string;
-  photo: string;
+  photo: Photo;
 }
 
 export const ROLES: RoleCard[] = [
@@ -20,7 +21,7 @@ export const ROLES: RoleCard[] = [
       "Fill out a 3-step application, tell us what drives you, and we'll get back to you. No fees, no prerequisites.",
     cta: "Apply Now",
     href: "/apply",
-    photo: PHOTOS.interview,
+    photo: PHOTOS.roleApplicant,
   },
   {
     role: "Student",
@@ -30,7 +31,7 @@ export const ROLES: RoleCard[] = [
       "Browse your cohort's task list, submit your work with notes, and read feedback on every submission.",
     cta: "Sign In",
     href: "/sign-in",
-    photo: PHOTOS.coding,
+    photo: PHOTOS.roleStudent,
   },
   {
     role: "Admin",
@@ -40,6 +41,6 @@ export const ROLES: RoleCard[] = [
       "Review applications, manage cohorts and tasks, and leave structured feedback on student submissions.",
     cta: "Sign In",
     href: "/sign-in",
-    photo: PHOTOS.mentoring,
+    photo: PHOTOS.roleAdmin,
   },
 ];
