@@ -7,8 +7,8 @@ import { ROLES } from "@constants/landing";
 
 export function Roles() {
   return (
-    <section id="roles" className="border-b border-rule px-6 py-24 lg:py-32">
-      <div className="mx-auto max-w-6xl">
+    <section id="roles" className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+      <div className="mx-auto max-w-[88rem]">
         <Reveal>
           <SectionHead
             label="Find your place"
@@ -25,19 +25,19 @@ export function Roles() {
                   <Illustration art={role.art} className="p-5" />
                 </div>
 
-                <div className="flex flex-1 flex-col p-7">
-                  <p className="u-tech text-[0.625rem] text-quench-deep">
+                <div className="flex flex-1 flex-col p-8">
+                  <p className="u-tech text-[0.75rem] text-quench-deep">
                     {role.role}
                   </p>
-                  <h3 className="u-display mt-4 text-2xl text-ink">
+                  <h3 className="u-display mt-4 text-[1.75rem] text-ink">
                     {role.headline}
                   </h3>
-                  <p className="mt-3 flex-1 text-sm leading-relaxed text-steel">
+                  <p className="mt-3 flex-1 text-base leading-relaxed text-steel">
                     {role.description}
                   </p>
                   <Link
                     href={role.href}
-                    className="u-tech mt-7 inline-flex items-center gap-2 text-[0.625rem] text-ink transition-colors hover:text-quench-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                    className="u-tech mt-7 inline-flex items-center gap-2 text-[0.75rem] text-ink transition-colors hover:text-quench-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                   >
                     {role.cta}
                     <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />

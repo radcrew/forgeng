@@ -13,27 +13,27 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-ink px-6 py-16 text-paper">
-      <div className="mx-auto max-w-6xl">
+    <footer className="bg-ink px-8 py-24 lg:px-12 text-paper">
+      <div className="mx-auto max-w-[88rem]">
         <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
               <Logo size={24} />
-              <span className="u-display text-base text-paper">Forgeng</span>
+              <span className="u-display text-lg text-paper">Forgeng</span>
             </div>
-            <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/60">
+            <p className="mt-5 max-w-sm text-base leading-relaxed text-white/60">
               A mentor-led apprenticeship where you earn while you learn.
             </p>
           </div>
 
           <div>
-            <p className="u-tech text-[0.5625rem] text-white/60">Explore</p>
+            <p className="u-tech text-[0.6875rem] text-white/60">Explore</p>
             <ul className="mt-5 space-y-3">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="text-sm text-white/70 transition-colors hover:text-quench"
+                    className="text-base text-white/70 transition-colors hover:text-quench"
                   >
                     {link.label}
                   </a>
@@ -43,13 +43,13 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="u-tech text-[0.5625rem] text-white/60">Legal</p>
+            <p className="u-tech text-[0.6875rem] text-white/60">Legal</p>
             <ul className="mt-5 space-y-3">
               {LEGAL.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/70 transition-colors hover:text-quench"
+                    className="text-base text-white/70 transition-colors hover:text-quench"
                   >
                     {link.label}
                   </Link>
@@ -59,12 +59,12 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="u-tech text-[0.5625rem] text-white/60">Contact</p>
+            <p className="u-tech text-[0.6875rem] text-white/60">Contact</p>
             <ul className="mt-5 space-y-3">
               <li>
                 <a
                   href="mailto:hello@forgeng.com"
-                  className="text-sm text-white/70 transition-colors hover:text-quench"
+                  className="text-base text-white/70 transition-colors hover:text-quench"
                 >
                   hello@forgeng.com
                 </a>
@@ -75,7 +75,7 @@ export function Footer() {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-white/70 transition-colors hover:text-quench"
+                    className="text-base text-white/70 transition-colors hover:text-quench"
                   >
                     {label}
                   </a>
@@ -86,7 +86,7 @@ export function Footer() {
         </div>
 
         <div className="mt-16 border-t border-white/10 pt-6">
-          <p className="u-tech text-[0.5625rem] text-white/55">
+          <p className="u-tech text-[0.6875rem] text-white/55">
             © {year} Forgeng
           </p>
         </div>

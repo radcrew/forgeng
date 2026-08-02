@@ -24,18 +24,18 @@ export function SectionHead({
 }: SectionHeadProps) {
   const onInk = tone === "ink";
   return (
-    <div className={cn("grid gap-x-10 gap-y-5 md:grid-cols-[10rem_1fr]", className)}>
+    <div className={cn("grid gap-x-12 gap-y-6 md:grid-cols-[14rem_1fr]", className)}>
       <div className="flex items-center gap-3 pt-2 md:pt-3">
         <span
           aria-hidden="true"
           className={cn(
-            "h-px w-6 shrink-0 md:w-full md:max-w-[3.5rem]",
+            "h-px w-6 shrink-0 md:w-full md:max-w-[5rem]",
             onInk ? "bg-white/25" : "bg-ink/20",
           )}
         />
         <span
           className={cn(
-            "u-tech text-[0.6875rem]",
+            "u-tech text-[0.8125rem]",
             onInk ? "text-white/55" : "text-steel",
           )}
         >
@@ -43,10 +43,10 @@ export function SectionHead({
         </span>
       </div>
 
-      <div className="max-w-2xl">
+      <div className="max-w-3xl">
         <h2
           className={cn(
-            "u-display u-tight text-[2.5rem] sm:text-5xl lg:text-[3.5rem]",
+            "u-display u-tight text-[3rem] sm:text-6xl lg:text-[4.25rem]",
             onInk ? "text-white" : "text-ink",
           )}
         >
@@ -55,7 +55,7 @@ export function SectionHead({
         {lead && (
           <p
             className={cn(
-              "mt-5 text-base leading-relaxed sm:text-lg",
+              "mt-5 text-lg leading-relaxed sm:text-xl",
               onInk ? "text-white/65" : "text-steel",
             )}
           >

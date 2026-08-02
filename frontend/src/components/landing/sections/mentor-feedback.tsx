@@ -9,8 +9,8 @@ import {
 
 export function MentorFeedback() {
   return (
-    <section className="border-b border-rule px-6 py-24 lg:py-32">
-      <div className="mx-auto max-w-6xl">
+    <section className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+      <div className="mx-auto max-w-[88rem]">
         <Reveal>
           <SectionHead
             label="Review"
@@ -31,7 +31,7 @@ export function MentorFeedback() {
               {FEEDBACK_BULLETS.map((item) => (
                 <li
                   key={item}
-                  className="flex items-center gap-4 border-b border-rule py-4 text-sm text-ink"
+                  className="flex items-center gap-4 border-b border-rule py-4 text-base text-ink"
                 >
                   <Check
                     className="h-3.5 w-3.5 shrink-0 text-quench-deep"
@@ -44,10 +44,10 @@ export function MentorFeedback() {
             </ul>
 
             <figure className="mt-12 border-l-2 border-quench-deep pl-6">
-              <blockquote className="u-editorial text-xl leading-snug text-ink sm:text-2xl">
+              <blockquote className="u-editorial text-2xl leading-snug text-ink sm:text-[1.75rem]">
                 &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
               </blockquote>
-              <figcaption className="u-tech mt-5 text-[0.625rem] text-steel">
+              <figcaption className="u-tech mt-5 text-[0.75rem] text-steel">
                 {FEEDBACK_TESTIMONIAL.attribution.replace("— ", "")}
               </figcaption>
             </figure>
@@ -64,24 +64,24 @@ export function MentorFeedback() {
                       approved ? "border-l-quench-deep" : "border-l-ember-deep"
                     } border-y border-r border-rule`}
                   >
-                    <header className="flex items-center justify-between gap-4 border-b border-rule px-6 py-4">
+                    <header className="flex items-center justify-between gap-4 border-b border-rule px-8 py-5 lg:px-12">
                       <div>
-                        <p className="u-display text-sm text-ink">
+                        <p className="u-display text-base text-ink">
                           {sample.mentorName.replace("Mentor ", "")}
                         </p>
-                        <p className="u-tech mt-1 text-[0.5625rem] text-steel">
+                        <p className="u-tech mt-1 text-[0.6875rem] text-steel">
                           {sample.mentorTitle}
                         </p>
                       </div>
                       <Verdict verdict={sample.verdict} />
                     </header>
 
-                    <div className="px-6 py-6">
-                      <p className="u-editorial text-base leading-relaxed text-ink">
+                    <div className="px-7 py-7">
+                      <p className="u-editorial text-lg leading-relaxed text-ink">
                         &ldquo;{sample.comment}&rdquo;
                       </p>
                       {sample.taskFooter && (
-                        <p className="u-tech mt-5 text-[0.5625rem] text-steel">
+                        <p className="u-tech mt-5 text-[0.6875rem] text-steel">
                           {sample.taskFooter}
                         </p>
                       )}

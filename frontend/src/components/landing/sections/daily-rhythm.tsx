@@ -5,9 +5,9 @@ export function DailyRhythm() {
   return (
     <section
       id="life-in-program"
-      className="border-b border-rule bg-ink px-6 py-24 text-paper lg:py-32"
+      className="border-b border-rule bg-ink px-8 py-32 lg:px-12 text-paper lg:py-44"
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[88rem]">
         <Reveal>
           <SectionHead
             tone="ink"
@@ -23,14 +23,14 @@ export function DailyRhythm() {
               key={item.label}
               delay={i * 60}
               as="li"
-              className="flex h-full flex-col gap-4 bg-ink p-6 lg:p-7"
+              className="flex h-full flex-col gap-4 bg-ink p-8 lg:p-9"
             >
                 <span
                   aria-hidden="true"
                   className="h-2 w-2 rounded-full bg-quench"
                 />
-                <p className="u-display text-base text-paper">{item.label}</p>
-                <p className="text-sm leading-relaxed text-white/55">
+                <p className="u-display text-lg text-paper">{item.label}</p>
+                <p className="text-base leading-relaxed text-white/55">
                   {item.description}
                 </p>
             </Reveal>

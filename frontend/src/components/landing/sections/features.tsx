@@ -3,8 +3,8 @@ import { FEATURES } from "@constants/landing";
 
 export function Features() {
   return (
-    <section id="features" className="border-b border-rule px-6 py-24 lg:py-32">
-      <div className="mx-auto max-w-6xl">
+    <section id="features" className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44">
+      <div className="mx-auto max-w-[88rem]">
         <Reveal>
           <SectionHead
             label="What you get"
@@ -28,10 +28,10 @@ export function Features() {
                     aria-hidden="true"
                   />
                   <div>
-                    <h3 className="u-display text-lg text-ink">
+                    <h3 className="u-display text-xl text-ink">
                       {feature.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-steel">
+                    <p className="mt-2 text-base leading-relaxed text-steel">
                       {feature.description}
                     </p>
                   </div>

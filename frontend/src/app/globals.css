@@ -225,13 +225,13 @@
 .landing .u-stamp {
   font-family: var(--font-tech);
   font-weight: 700;
-  font-size: 0.6875rem;
-  letter-spacing: 0.16em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.3125rem 0.625rem;
+  padding: 0.4375rem 0.75rem;
   border: 2px solid currentColor;
   border-radius: 2px;
   white-space: nowrap;

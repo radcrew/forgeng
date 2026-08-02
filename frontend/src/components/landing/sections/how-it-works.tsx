@@ -6,9 +6,9 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="border-b border-rule px-6 py-24 lg:py-32"
+      className="border-b border-rule px-8 py-32 lg:px-12 lg:py-44"
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[88rem]">
         <Reveal>
           <SectionHead
             label="Process"
@@ -27,10 +27,10 @@ export function HowItWorks() {
                 key={step.number}
                 delay={i * 50}
                 as="li"
-                className="group grid items-center gap-6 border-b border-rule py-8 md:grid-cols-[4rem_1fr_13rem] md:gap-10 md:py-10 lg:grid-cols-[5rem_1fr_16rem]"
+                className="group grid items-center gap-6 border-b border-rule py-8 md:grid-cols-[5rem_1fr_16rem] md:gap-12 md:py-12 lg:grid-cols-[7rem_1fr_22rem]"
               >
                   <div className="flex items-center gap-4 md:block">
-                    <span className="u-display block text-4xl text-ink/20 transition-colors group-hover:text-quench-deep lg:text-5xl">
+                    <span className="u-display block text-5xl text-ink/20 transition-colors group-hover:text-quench-deep lg:text-6xl">
                       {step.number}
                     </span>
                   </div>
@@ -41,11 +41,11 @@ export function HowItWorks() {
                         className="h-4 w-4 text-quench-deep"
                         aria-hidden="true"
                       />
-                      <h3 className="u-display text-2xl text-ink lg:text-[1.75rem]">
+                      <h3 className="u-display text-[1.75rem] text-ink lg:text-[2.125rem]">
                         {step.title}
                       </h3>
                     </div>
-                    <p className="mt-3 max-w-xl text-sm leading-relaxed text-steel">
+                    <p className="mt-3 max-w-2xl text-base leading-relaxed text-steel">
                       {step.description}
                     </p>
                   </div>
