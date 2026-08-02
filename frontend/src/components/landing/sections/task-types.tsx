@@ -9,7 +9,7 @@ export function TaskTypes() {
             than a heading, which is why it sat at a different weight. */}
         <SectionHead title="Four kinds of work" />
 
-        <ul className="m-enter mt-16 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="m-stagger mt-16 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
           {TASK_TYPES.map((task) => {
             const Icon = task.icon;
             return (

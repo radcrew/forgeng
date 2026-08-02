@@ -13,7 +13,7 @@ export function DailyRhythm() {
           title="What the work actually looks like"
         />
 
-        <ul className="m-enter mt-16 grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="m-stagger mt-16 grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
           {DAILY_RHYTHM.map((item) => (
             <li
               key={item.label}

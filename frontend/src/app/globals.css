@@ -349,6 +349,34 @@
       animation-timeline: view();
       animation-range: entry 10% cover 30%;
     }
+
+    /* Stagger. `animation-delay` is time-based and is ignored on a scroll
+       timeline, so the usual CSS cascade trick does nothing here — the offset
+       has to go on `animation-range` instead, walking each child's window
+       further down the scroll. */
+    .m-stagger > * {
+      animation: m-rise linear both;
+      animation-timeline: view();
+    }
+
+    .m-stagger > *:nth-child(1) {
+      animation-range: entry 4% cover 22%;
+    }
+    .m-stagger > *:nth-child(2) {
+      animation-range: entry 7% cover 25%;
+    }
+    .m-stagger > *:nth-child(3) {
+      animation-range: entry 10% cover 28%;
+    }
+    .m-stagger > *:nth-child(4) {
+      animation-range: entry 13% cover 31%;
+    }
+    .m-stagger > *:nth-child(5) {
+      animation-range: entry 16% cover 34%;
+    }
+    .m-stagger > *:nth-child(n + 6) {
+      animation-range: entry 19% cover 37%;
+    }
   }
 
   .m-stamp {
@@ -356,13 +384,14 @@
     animation-delay: 0.45s;
   }
 
-  /* Tactile press, on things that are actually clickable. */
+  /* Tactile press, on things that are actually clickable. Spring-weighted
+     rather than linear so the release settles instead of stopping dead. */
   .m-press {
     transition:
-      transform 0.12s ease,
-      background-color 0.18s ease,
-      border-color 0.18s ease,
-      color 0.18s ease;
+      transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+      background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .m-press:active {

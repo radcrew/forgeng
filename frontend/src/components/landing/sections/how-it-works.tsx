@@ -15,7 +15,7 @@ export function HowItWorks() {
 
         {/* A ledger, not a zigzag: one consistent row rhythm with the step
             index held in a fixed left gutter. */}
-        <ol className="mt-16 border-t border-rule">
+        <ol className="m-stagger mt-16 border-t border-rule">
           {STEPS.map((step) => {
             const Icon = step.icon;
             return (

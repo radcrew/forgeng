@@ -14,7 +14,7 @@ export function Roles() {
       <div className="mx-auto max-w-[88rem]">
         <SectionHead title="Three ways in" />
 
-        <div className="m-enter mt-16 grid gap-px border border-rule bg-rule md:grid-cols-3">
+        <div className="m-stagger mt-16 grid gap-px border border-rule bg-rule md:grid-cols-3">
           {ROLES.map((role) => (
             // The whole card is the target, so the hover state describes
             // something you can actually click. The visible cue stays a span:
