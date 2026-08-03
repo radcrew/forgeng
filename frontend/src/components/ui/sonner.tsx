@@ -1,14 +1,17 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
-
+  // Pinned to light because the app is: no ThemeProvider is mounted, so
+  // nothing ever puts `.dark` on <html>. This previously read `useTheme()`
+  // from next-themes, which without a provider returns {} and fell back to
+  // "system" — so on a dark-mode OS sonner styled itself dark while the
+  // toast's own classes still resolved --background and --foreground to the
+  // light values.
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme="light"
       className="toaster group"
       toastOptions={{
         classNames: {
