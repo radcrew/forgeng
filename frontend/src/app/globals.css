@@ -360,6 +360,20 @@
   mask-image: radial-gradient(115% 85% at 80% 8%, #000 0%, transparent 70%);
 }
 
+/* A wash of the brand cyan behind the review card, so the hero's right side
+   has depth instead of flat paper. Kept under 8% alpha: at these levels it
+   reads as light, not as a coloured shape, and text contrast is unaffected. */
+.u-hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    42rem 26rem at 76% 34%,
+    hsl(187 85% 43% / 0.07),
+    transparent 70%
+  );
+}
+
 /* Short viewports: the hero is sized for a tall desktop window, so on laptop
    heights it pushed the call to action below the fold. Trim its vertical space
    and display size rather than letting the buttons disappear. Gated on width

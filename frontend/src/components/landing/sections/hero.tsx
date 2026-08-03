@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 
 import { Verdict } from "@components/landing/primitives";
 import { SAMPLE_FEEDBACK } from "@constants/landing";
 
 const approved = SAMPLE_FEEDBACK.find((f) => f.verdict === "approved");
+
+const ASSURANCES = ["Free to apply", "Monthly stipend", "No CS degree"];
 
 export function Hero() {
   return (
@@ -12,10 +14,19 @@ export function Hero() {
     // at the fold instead of showing a strip of itself above it.
     <section className="relative flex min-h-[calc(100svh-var(--header-h))] flex-col justify-center overflow-hidden border-b border-rule">
       <span aria-hidden="true" className="u-hero-field" />
+      <span aria-hidden="true" className="u-hero-glow" />
 
       <div className="u-hero relative mx-auto w-full max-w-[88rem] px-8 py-12 lg:px-12 lg:py-16">
-        <p className="u-rise u-tech text-[0.8125rem] text-steel">
-          Applications open
+        {/* Status pill rather than a bare eyebrow line: the live dot gives
+            the page a pulse the moment it loads. */}
+        <p className="u-rise inline-flex items-center gap-2.5 rounded-full border border-rule bg-white/70 px-4 py-2">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-quench opacity-60 motion-reduce:hidden" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-quench-deep" />
+          </span>
+          <span className="u-tech text-[0.75rem] text-graphite">
+            Applications open
+          </span>
         </p>
 
         {/* The headline runs the full container rather than sharing a column,
@@ -66,51 +77,82 @@ export function Hero() {
               </a>
             </div>
 
-            <p
-              className="u-rise u-tech mt-8 text-[0.75rem] leading-relaxed text-steel"
+            {/* Checks, not a dotted line: the same three assurances read as
+                terms that hold rather than fine print. */}
+            <ul
+              className="u-rise mt-9 flex flex-wrap items-center gap-x-7 gap-y-3"
               style={{ animationDelay: "300ms" }}
             >
-              Free to apply · Monthly stipend · No CS degree
-            </p>
+              {ASSURANCES.map((item) => (
+                <li
+                  key={item}
+                  className="u-tech flex items-center gap-2 text-[0.75rem] text-steel"
+                >
+                  <Check
+                    className="h-3.5 w-3.5 text-quench-deep"
+                    strokeWidth={3}
+                    aria-hidden="true"
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* The thesis: what actually comes back when you submit work. */}
+          {/* The thesis, staged with depth: the review that comes back when
+              you submit work, sitting on the stack of reviews behind it. */}
           {approved && (
-            // Fills the column rather than sitting short against it: the quote
-            // block takes the slack, so the header and the byline hold the top
-            // and bottom edges of the row.
-            <figure
-              className="u-rise relative flex flex-col rounded-[3px] bg-ink text-paper"
+            <div
+              className="u-rise relative self-start"
               style={{ animationDelay: "180ms" }}
             >
-              <div className="flex items-center justify-between gap-4 border-b border-white/10 px-7 py-5">
-                <span className="u-tech text-[0.75rem] text-white/60">
-                  Sample review
-                </span>
-                {/* Lands last in the hero sequence: the review arrives, then
-                    the verdict is stamped on it. */}
-                <Verdict verdict="approved" tone="ink" className="m-stamp" />
-              </div>
+              {/* The next card in the pile. An empty ember-edged slab is
+                  enough to say "there are more of these"; text on it would
+                  compete with the real one. */}
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 translate-x-3.5 translate-y-3.5 rotate-[1.1deg] rounded-[4px] border-l-2 border-l-ember-deep bg-ink/85"
+              />
 
-              <div className="flex flex-1 flex-col justify-center px-7 py-7">
-                <p className="u-tech text-[0.75rem] text-white/60">
-                  {approved.taskFooter?.replace("Task: ", "")}
-                </p>
-                <blockquote className="u-editorial u-hero-quote mt-5 text-2xl leading-relaxed text-paper sm:text-[1.625rem]">
-                  &ldquo;{approved.comment}&rdquo;
-                </blockquote>
-              </div>
+              <figure className="relative flex flex-col rounded-[4px] bg-ink text-paper shadow-[0_32px_64px_-32px_rgba(11,12,14,0.55)]">
+                <div className="flex items-center justify-between gap-4 border-b border-white/10 px-7 py-5">
+                  <span className="u-tech text-[0.75rem] text-white/60">
+                    Sample review
+                  </span>
+                  {/* Lands last in the hero sequence: the review arrives, then
+                      the verdict is stamped on it. */}
+                  <Verdict verdict="approved" tone="ink" className="m-stamp" />
+                </div>
 
-              <figcaption className="flex items-center justify-between gap-4 border-t border-white/10 px-7 py-5">
-                <span className="u-tech text-[0.75rem] text-white/70">
-                  {approved.mentorName.replace("Mentor ", "")} ·{" "}
-                  {approved.mentorTitle}
-                </span>
-                <span className="u-tech text-[0.75rem] text-quench">
+                <div className="flex flex-1 flex-col justify-center px-7 py-7">
+                  <p className="u-tech text-[0.75rem] text-white/60">
+                    {approved.taskFooter?.replace("Task: ", "")}
+                  </p>
+                  <blockquote className="u-editorial u-hero-quote mt-5 text-2xl leading-relaxed text-paper sm:text-[1.625rem]">
+                    &ldquo;{approved.comment}&rdquo;
+                  </blockquote>
+                </div>
+
+                <figcaption className="flex items-center justify-between gap-4 border-t border-white/10 px-7 py-5">
+                  <span className="u-tech text-[0.75rem] text-white/70">
+                    {approved.mentorName.replace("Mentor ", "")} ·{" "}
+                    {approved.mentorTitle}
+                  </span>
+                </figcaption>
+              </figure>
+
+              {/* Turnaround chip breaking the card's edge — the one number
+                  that answers "and then I wait how long?" */}
+              <p className="absolute -left-3 bottom-9 inline-flex items-center gap-2 rounded-[3px] border border-rule bg-paper px-3.5 py-2.5 shadow-[0_12px_24px_-12px_rgba(11,12,14,0.35)]">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 rounded-full bg-quench-deep"
+                />
+                <span className="u-tech text-[0.7rem] text-ink">
                   Reviewed in 31h
                 </span>
-              </figcaption>
-            </figure>
+              </p>
+            </div>
           )}
         </div>
       </div>
