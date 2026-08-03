@@ -360,18 +360,25 @@
   mask-image: radial-gradient(115% 85% at 80% 8%, #000 0%, transparent 70%);
 }
 
-/* A wash of the brand cyan behind the review card, so the hero's right side
-   has depth instead of flat paper. Kept under 8% alpha: at these levels it
-   reads as light, not as a coloured shape, and text contrast is unaffected. */
+/* Two washes of the brand hues: quench behind the review window, a fainter
+   ember rising from the opposite corner. Kept under 8% alpha: at these levels
+   they read as light, not as coloured shapes, and text contrast is
+   unaffected. */
 .u-hero-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    42rem 26rem at 76% 34%,
-    hsl(187 85% 43% / 0.07),
-    transparent 70%
-  );
+  background:
+    radial-gradient(
+      42rem 26rem at 78% 32%,
+      hsl(187 85% 43% / 0.08),
+      transparent 70%
+    ),
+    radial-gradient(
+      38rem 24rem at 8% 88%,
+      hsl(17 89% 45% / 0.05),
+      transparent 70%
+    );
 }
 
 /* Short viewports: the hero is sized for a tall desktop window, so on laptop

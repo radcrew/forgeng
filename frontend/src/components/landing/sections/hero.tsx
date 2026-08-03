@@ -44,7 +44,12 @@ export function Hero() {
               start of a line the space collapses, so the desktop break is
               unaffected. */}
           <br />{" "}
-          They&apos;re <span className="text-quench-deep">forged.</span>
+          {/* Quench word, ember full stop: the two verdict hues in four
+              letters and a dot. */}
+          They&apos;re{" "}
+          <span className="text-quench-deep">
+            forged<span className="text-ember-deep">.</span>
+          </span>
         </h1>
 
         <div className="u-hero-split mt-8 grid gap-10 border-t border-rule pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
@@ -99,56 +104,74 @@ export function Hero() {
             </ul>
           </div>
 
-          {/* The thesis, staged with depth: the review that comes back when
-              you submit work, sitting on the stack of reviews behind it. */}
+          {/* The thesis as a product window: the review that comes back when
+              you submit work, framed like the app that sends it. Light, on a
+              tinted mat — the ink slab it replaces was the last dark holdout
+              after the rest of the page moved onto the bright tint system. */}
           {approved && (
             <div
               className="u-rise relative self-start"
               style={{ animationDelay: "180ms" }}
             >
-              {/* The next card in the pile. An empty ember-edged slab is
-                  enough to say "there are more of these"; text on it would
-                  compete with the real one. */}
+              {/* The mat: a rotated wash of the brand tint behind the window,
+                  same family as the illustration panels, so the hero speaks
+                  the page's colour language. */}
               <span
                 aria-hidden="true"
-                className="absolute inset-0 translate-x-3.5 translate-y-3.5 rotate-[1.1deg] rounded-[4px] border-l-2 border-l-ember-deep bg-ink/85"
+                className="absolute -inset-2 rotate-[-1.4deg] rounded-lg bg-tint-cyan"
               />
 
-              <figure className="relative flex flex-col rounded-[4px] bg-ink text-paper shadow-[0_32px_64px_-32px_rgba(11,12,14,0.55)]">
-                <div className="flex items-center justify-between gap-4 border-b border-white/10 px-7 py-5">
-                  <span className="u-tech text-[0.75rem] text-white/60">
-                    Sample review
+              <figure className="relative flex flex-col overflow-hidden rounded-lg border border-rule bg-white shadow-[0_32px_64px_-36px_rgba(11,12,14,0.35)]">
+                {/* Window chrome: enough to read as software, not enough to
+                    read as a screenshot. */}
+                <div className="flex items-center justify-between gap-4 border-b border-rule bg-paper-sunk px-5 py-3.5">
+                  <span aria-hidden="true" className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
                   </span>
-                  {/* Lands last in the hero sequence: the review arrives, then
-                      the verdict is stamped on it. */}
-                  <Verdict verdict="approved" tone="ink" className="m-stamp" />
+                  <span className="u-tech text-[0.7rem] text-steel">
+                    Submission review
+                  </span>
                 </div>
 
-                <div className="flex flex-1 flex-col justify-center px-7 py-7">
-                  <p className="u-tech text-[0.75rem] text-white/60">
+                <div className="px-7 py-6">
+                  <p className="u-tech text-[0.75rem] text-quench-deep">
                     {approved.taskFooter?.replace("Task: ", "")}
                   </p>
-                  <blockquote className="u-editorial u-hero-quote mt-5 text-2xl leading-relaxed text-paper sm:text-[1.625rem]">
+                  <blockquote className="u-editorial u-hero-quote mt-4 text-2xl leading-relaxed text-ink sm:text-[1.625rem]">
                     &ldquo;{approved.comment}&rdquo;
                   </blockquote>
                 </div>
 
-                <figcaption className="flex items-center justify-between gap-4 border-t border-white/10 px-7 py-5">
-                  <span className="u-tech text-[0.75rem] text-white/70">
-                    {approved.mentorName.replace("Mentor ", "")} ·{" "}
-                    {approved.mentorTitle}
+                <figcaption className="flex items-center justify-between gap-4 border-t border-rule px-7 py-4">
+                  <span className="flex items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-quench-deep/10 text-sm font-semibold text-quench-deep"
+                    >
+                      {approved.mentorInitial}
+                    </span>
+                    <span className="u-tech text-[0.75rem] text-steel">
+                      {approved.mentorName.replace("Mentor ", "")} ·{" "}
+                      {approved.mentorTitle}
+                    </span>
                   </span>
+                  {/* Lands last in the hero sequence: the review arrives, then
+                      the verdict is stamped on it. */}
+                  <Verdict verdict="approved" className="m-stamp" />
                 </figcaption>
               </figure>
 
-              {/* Turnaround chip breaking the card's edge — the one number
-                  that answers "and then I wait how long?" */}
-              <p className="absolute -left-3 bottom-9 inline-flex items-center gap-2 rounded-[3px] border border-rule bg-paper px-3.5 py-2.5 shadow-[0_12px_24px_-12px_rgba(11,12,14,0.35)]">
+              {/* Turnaround chip breaking the window's edge — the one number
+                  that answers "and then I wait how long?" Ink, so it carries
+                  against the light card. */}
+              <p className="absolute -left-3 top-16 inline-flex items-center gap-2 rounded-[3px] bg-ink px-3.5 py-2.5 shadow-[0_12px_24px_-12px_rgba(11,12,14,0.5)]">
                 <span
                   aria-hidden="true"
-                  className="h-1.5 w-1.5 rounded-full bg-quench-deep"
+                  className="h-1.5 w-1.5 rounded-full bg-quench"
                 />
-                <span className="u-tech text-[0.7rem] text-ink">
+                <span className="u-tech text-[0.7rem] text-paper">
                   Reviewed in 31h
                 </span>
               </p>
