@@ -10,61 +10,32 @@ import {
 export function MentorFeedback() {
   return (
     <section className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
-      {/* The heading keeps the left column but takes a row of its own, so the
-          sample cards start below it rather than beside it. Placing it inside
-          the left column meant the right column began at the same line as the
-          title. Row and column gaps are set separately: the column gap is the
-          gutter between the two halves, the row gap is the space under the
-          heading. */}
-      <div className="m-enter mx-auto grid max-w-[88rem] gap-x-12 gap-y-12 lg:grid-cols-[1fr_1.1fr] lg:gap-x-16">
-        <div className="lg:col-start-1 lg:row-start-1">
-          <SectionHead
-            title={
-              <>
-                Two verdicts.
-                <br />
-                No hedging.
-              </>
-            }
-          />
-        </div>
+      <div className="mx-auto max-w-[88rem]">
+        <SectionHead
+          title={
+            <>
+              Two verdicts.
+              <br />
+              No hedging.
+            </>
+          }
+        />
 
-        <div className="lg:col-start-1 lg:row-start-2">
-          <ul className="border-t border-rule">
-            {FEEDBACK_BULLETS.map((item) => (
-              <li
-                key={item}
-                className="flex items-center gap-4 border-b border-rule py-4 text-base text-ink"
-              >
-                <Check
-                  className="h-3.5 w-3.5 shrink-0 text-quench-deep"
-                  strokeWidth={3}
-                  aria-hidden="true"
-                />
-                {item}
-              </li>
-            ))}
-          </ul>
-
-          <figure className="mt-12 border-l-2 border-quench-deep pl-6">
-            <blockquote className="u-editorial text-2xl leading-snug text-ink sm:text-[1.75rem]">
-              &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
-            </blockquote>
-            <figcaption className="u-tech mt-5 text-[0.75rem] text-steel">
-              {FEEDBACK_TESTIMONIAL.attribution.replace("— ", "")}
-            </figcaption>
-          </figure>
-        </div>
-
-        <div className="space-y-5 lg:col-start-2 lg:row-start-2">
+        {/* The pair is the argument. Side by side they read as the two
+            outcomes the heading promises; stacked in a narrow column they
+            were just two quotes. Sized to their content rather than stretched
+            to match: only one sample carries a task line, so equal heights
+            left a void under the shorter card. Their tops align, which is the
+            edge that matters for a comparison. */}
+        <div className="m-stagger mt-16 grid items-start gap-6 lg:grid-cols-2 lg:gap-8">
           {SAMPLE_FEEDBACK.map((sample) => {
             const approved = sample.verdict === "approved";
             return (
               <article
                 key={sample.mentorName}
-                className={`rounded-[3px] border-l-2 bg-white ${
+                className={`rounded-[3px] border-y border-r border-l-2 border-rule bg-white ${
                   approved ? "border-l-quench-deep" : "border-l-ember-deep"
-                } border-y border-r border-rule`}
+                }`}
               >
                 <header className="flex items-center justify-between gap-4 border-b border-rule px-7 py-5">
                   <div>
@@ -79,11 +50,11 @@ export function MentorFeedback() {
                 </header>
 
                 <div className="px-7 py-7">
-                  <p className="u-editorial text-base leading-relaxed text-ink">
+                  <p className="u-editorial text-lg leading-relaxed text-ink">
                     &ldquo;{sample.comment}&rdquo;
                   </p>
                   {sample.taskFooter && (
-                    <p className="u-tech mt-5 text-[0.75rem] text-steel">
+                    <p className="u-tech mt-6 text-[0.75rem] text-steel">
                       {sample.taskFooter}
                     </p>
                   )}
@@ -92,6 +63,37 @@ export function MentorFeedback() {
             );
           })}
         </div>
+
+        {/* What holds for every submission, not just these two. A rule-bound
+            strip rather than a bulleted column: these are terms, and reading
+            across suits them better than reading down. */}
+        <ul className="mt-16 grid border-t border-rule sm:grid-cols-2 lg:grid-cols-4">
+          {FEEDBACK_BULLETS.map((item) => (
+            <li
+              key={item}
+              className="flex items-start gap-3 border-b border-rule py-5 pr-6 text-base text-ink lg:border-r lg:last:border-r-0"
+            >
+              <Check
+                className="mt-1 h-3.5 w-3.5 shrink-0 text-quench-deep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        {/* A different voice from everything above it — a graduate, not the
+            product — so it gets its own width and centre rather than being
+            stacked under the terms wearing the same left rule as the cards. */}
+        <figure className="mx-auto mt-24 max-w-4xl text-center">
+          <blockquote className="u-editorial text-[1.75rem] leading-snug text-ink sm:text-[2.125rem]">
+            &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
+          </blockquote>
+          <figcaption className="u-tech mt-8 text-[0.75rem] text-steel">
+            {FEEDBACK_TESTIMONIAL.attribution.replace("— ", "")}
+          </figcaption>
+        </figure>
       </div>
     </section>
   );
