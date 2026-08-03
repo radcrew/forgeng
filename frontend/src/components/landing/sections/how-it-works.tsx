@@ -52,21 +52,22 @@ export function HowItWorks() {
                     onLeft ? "md:col-start-1" : "md:col-start-2",
                   )}
                 >
-                  {/* Centred in its half rather than pushed against the spine.
-                      Pushing it collected all the slack on the outer edge, so
-                      the left side read as a deep left margin and the right
-                      side as a deep right one. */}
-                  <div className="max-w-md md:mx-auto">
-                    <div className="flex items-center gap-2.5">
+                  {/* Fills its half rather than sitting capped and centred
+                      inside it, so there is no slack left to pool at the
+                      edges. The type steps up with the width: at the full half
+                      the old 16px description ran to about 77 characters a
+                      line, which is past a comfortable measure. */}
+                  <div>
+                    <div className="flex items-center gap-3">
                       <Icon
-                        className="h-4 w-4 shrink-0 text-quench-deep"
+                        className="h-5 w-5 shrink-0 text-quench-deep"
                         aria-hidden="true"
                       />
-                      <h3 className="u-title text-2xl text-ink lg:text-[1.75rem]">
+                      <h3 className="u-title text-[1.75rem] text-ink lg:text-[2.125rem]">
                         {step.title}
                       </h3>
                     </div>
-                    <p className="mt-3 text-base leading-relaxed text-graphite">
+                    <p className="mt-4 text-lg leading-relaxed text-graphite lg:text-xl">
                       {step.description}
                     </p>
                   </div>
@@ -78,13 +79,14 @@ export function HowItWorks() {
                     onLeft ? "md:col-start-2" : "md:col-start-1",
                   )}
                 >
-                  {/* Same cap and the same centring as the copy, so the two
-                      halves mirror about the spine. */}
+                  {/* Spans the full half, like the copy opposite it. The 28rem
+                      cap held the panel to roughly two thirds of the column,
+                      which is what kept the illustration small. */}
                   <ArtPanel
                     art={step.art}
                     aspect="aspect-[2/1]"
-                    className="w-full max-w-md rounded-[3px] md:mx-auto"
-                    artClassName="p-5"
+                    className="w-full rounded-[3px]"
+                    artClassName="p-6"
                   />
                 </div>
               </li>
