@@ -168,6 +168,11 @@
   --sidebar-ring: 187 85% 43%;
 
   --radius: 0.25rem;
+
+  /* The sticky header is in flow, so the hero has to subtract it to fill
+     exactly one screen. Measured at every breakpoint: it is 77px throughout,
+     because the logo and the nav row are the same height at all widths. */
+  --header-h: 4.8125rem;
 }
 
 .dark {
@@ -311,17 +316,63 @@
   }
 }
 
+/* The headline breaks by hand after "taught." so the sentence lands whole on
+   line one. Holding that on a phone would force the type down to ~27px, which
+   is not a hero, so below 40rem the break is dropped and the line wraps on its
+   own at a size worth reading. */
+.u-hero-title {
+  font-size: clamp(2.5rem, 11vw, 3.5rem);
+}
+
+@media (max-width: 39.9375rem) {
+  .u-hero-title br {
+    display: none;
+  }
+}
+
+/* From 40rem up there is room for the single line. At this face it renders
+   11.14x its font-size against a container of the viewport less the hero
+   padding, so ~7vw keeps it on one line, and the 7rem ceiling holds it there
+   once the container stops growing at 88rem. */
+@media (min-width: 40rem) {
+  .u-hero-title {
+    font-size: clamp(2.75rem, 7vw, 7rem);
+  }
+}
+
+/* A faint engineering grid behind the hero, fading out from the top right so
+   it sits under the review card and never reaches the headline. Static: it is
+   texture, not motion, so there is nothing for reduced-motion to turn off. */
+.u-hero-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(to right, var(--color-rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-rule) 1px, transparent 1px);
+  background-size: 5.5rem 5.5rem;
+  -webkit-mask-image: radial-gradient(
+    115% 85% at 80% 8%,
+    #000 0%,
+    transparent 70%
+  );
+  mask-image: radial-gradient(115% 85% at 80% 8%, #000 0%, transparent 70%);
+}
+
 /* Short viewports: the hero is sized for a tall desktop window, so on laptop
    heights it pushed the call to action below the fold. Trim its vertical space
-   and display size rather than letting the buttons disappear. */
-@media (max-height: 920px) {
+   and display size rather than letting the buttons disappear. Gated on width
+   too — a phone is short as well as narrow, and without the gate this rule was
+   shrinking the mobile headline to 22px. */
+@media (min-width: 64rem) and (max-height: 920px) {
   .u-hero {
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
   }
 
   .u-hero-title {
-    font-size: clamp(2.5rem, 5.6vw, 5rem);
+    font-size: clamp(2.75rem, 5.6vw, 5rem);
   }
 
   .u-hero-split {

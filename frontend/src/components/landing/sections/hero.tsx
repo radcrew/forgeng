@@ -8,21 +8,32 @@ const approved = SAMPLE_FEEDBACK.find((f) => f.verdict === "approved");
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-rule">
-      <div className="u-hero mx-auto max-w-[88rem] px-8 py-12 lg:px-12 lg:py-16">
+    // Exactly one screen less the sticky header, so the ink band below starts
+    // at the fold instead of showing a strip of itself above it.
+    <section className="relative flex min-h-[calc(100svh-var(--header-h))] flex-col justify-center overflow-hidden border-b border-rule">
+      <span aria-hidden="true" className="u-hero-field" />
+
+      <div className="u-hero relative mx-auto w-full max-w-[88rem] px-8 py-12 lg:px-12 lg:py-16">
         <p className="u-rise u-tech text-[0.8125rem] text-steel">
           Applications open
         </p>
 
         {/* The headline runs the full container rather than sharing a column,
-            which is what lets it sit at a confident size. */}
+            which is what lets it sit at a confident size. The break is placed
+            by hand so the sentence lands whole on line one; `u-hero-title`
+            sizes it to keep that true down to 320px. */}
         <h1
-          className="u-rise u-display u-tight u-hero-title mt-8 text-[3.25rem] sm:text-[5rem] md:text-[6rem] lg:text-[7rem]"
+          className="u-rise u-display u-tight u-hero-title mt-8"
           style={{ animationDelay: "60ms" }}
         >
-          Engineers aren&apos;t
-          <br />
-          taught. They&apos;re <span className="text-quench-deep">forged.</span>
+          Engineers aren&apos;t taught.
+          {/* The explicit space matters: below 40rem the break is hidden, and
+              JSX strips the whitespace around an element boundary, so without
+              it the two sentences run together as "taught.They're". At the
+              start of a line the space collapses, so the desktop break is
+              unaffected. */}
+          <br />{" "}
+          They&apos;re <span className="text-quench-deep">forged.</span>
         </h1>
 
         <div className="u-hero-split mt-8 grid gap-10 border-t border-rule pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
@@ -65,8 +76,11 @@ export function Hero() {
 
           {/* The thesis: what actually comes back when you submit work. */}
           {approved && (
+            // Fills the column rather than sitting short against it: the quote
+            // block takes the slack, so the header and the byline hold the top
+            // and bottom edges of the row.
             <figure
-              className="u-rise relative self-start rounded-[3px] bg-ink text-paper"
+              className="u-rise relative flex flex-col rounded-[3px] bg-ink text-paper"
               style={{ animationDelay: "180ms" }}
             >
               <div className="flex items-center justify-between gap-4 border-b border-white/10 px-7 py-5">
@@ -78,7 +92,7 @@ export function Hero() {
                 <Verdict verdict="approved" tone="ink" className="m-stamp" />
               </div>
 
-              <div className="px-7 py-7">
+              <div className="flex flex-1 flex-col justify-center px-7 py-7">
                 <p className="u-tech text-[0.75rem] text-white/60">
                   {approved.taskFooter?.replace("Task: ", "")}
                 </p>
