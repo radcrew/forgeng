@@ -44,12 +44,7 @@ export function Hero() {
               start of a line the space collapses, so the desktop break is
               unaffected. */}
           <br />{" "}
-          {/* Quench word, ember full stop: the two verdict hues in four
-              letters and a dot. */}
-          They&apos;re{" "}
-          <span className="text-quench-deep">
-            forged<span className="text-ember-deep">.</span>
-          </span>
+          They&apos;re <span className="text-quench-deep">forged.</span>
         </h1>
 
         <div className="u-hero-split mt-8 grid gap-10 border-t border-rule pt-8 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
@@ -162,19 +157,6 @@ export function Hero() {
                   <Verdict verdict="approved" className="m-stamp" />
                 </figcaption>
               </figure>
-
-              {/* Turnaround chip breaking the window's edge — the one number
-                  that answers "and then I wait how long?" Ink, so it carries
-                  against the light card. */}
-              <p className="absolute -left-3 top-16 inline-flex items-center gap-2 rounded-[3px] bg-ink px-3.5 py-2.5 shadow-[0_12px_24px_-12px_rgba(11,12,14,0.5)]">
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-1.5 rounded-full bg-quench"
-                />
-                <span className="u-tech text-[0.7rem] text-paper">
-                  Reviewed in 31h
-                </span>
-              </p>
             </div>
           )}
         </div>
