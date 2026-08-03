@@ -360,24 +360,31 @@
   mask-image: radial-gradient(115% 85% at 80% 8%, #000 0%, transparent 70%);
 }
 
-/* Two washes of the brand hues: quench behind the review window, a fainter
-   ember rising from the opposite corner. Kept under 8% alpha: at these levels
-   they read as light, not as coloured shapes, and text contrast is
-   unaffected. */
+/* Soft radial atmosphere in cool brand hues: quench light behind the review
+   window, a violet whisper low on the left, and a lift of white behind the
+   headline so the field brightens toward the type instead of tinting it. The
+   earlier 8%/5% version was too faint to register as design; these peaks stay
+   under 15%, so ink text loses almost nothing of its 16.7:1. Warm hues are
+   deliberately absent — at wash alphas ember reads as a brown stain. */
 .u-hero-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
     radial-gradient(
-      42rem 26rem at 78% 32%,
-      hsl(187 85% 43% / 0.08),
+      46rem 30rem at 80% 30%,
+      hsl(187 85% 43% / 0.14),
       transparent 70%
     ),
     radial-gradient(
-      38rem 24rem at 8% 88%,
-      hsl(17 89% 45% / 0.05),
+      40rem 28rem at 6% 78%,
+      hsl(262 60% 60% / 0.08),
       transparent 70%
+    ),
+    radial-gradient(
+      50rem 30rem at 22% 8%,
+      hsl(0 0% 100% / 0.6),
+      transparent 65%
     );
 }
 
