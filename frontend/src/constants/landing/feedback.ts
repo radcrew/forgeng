@@ -34,6 +34,7 @@ export const SAMPLE_FEEDBACK: FeedbackSample[] = [
     verdict: "needs-work",
     comment:
       "The core logic is right but error handling is missing. What happens on a 500? Add a try/catch and surface a user-friendly message.",
+    taskFooter: "Task: Build a REST API Endpoint",
   },
 ];
 

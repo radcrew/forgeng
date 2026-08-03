@@ -23,17 +23,16 @@ export function MentorFeedback() {
 
         {/* The pair is the argument. Side by side they read as the two
             outcomes the heading promises; stacked in a narrow column they
-            were just two quotes. Sized to their content rather than stretched
-            to match: only one sample carries a task line, so equal heights
-            left a void under the shorter card. Their tops align, which is the
-            edge that matters for a comparison. */}
-        <div className="m-stagger mt-16 grid items-start gap-6 lg:grid-cols-2 lg:gap-8">
+            were just two quotes. Stretched to equal height, with the task
+            line pushed to the bottom so both cards close on the same edge
+            even though one comment runs a line longer. */}
+        <div className="m-stagger mt-16 grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
           {SAMPLE_FEEDBACK.map((sample) => {
             const approved = sample.verdict === "approved";
             return (
               <article
                 key={sample.mentorName}
-                className={`rounded-[3px] border-y border-r border-l-2 border-rule bg-white ${
+                className={`flex flex-col rounded-[3px] border-y border-r border-l-2 border-rule bg-white ${
                   approved ? "border-l-quench-deep" : "border-l-ember-deep"
                 }`}
               >
@@ -49,12 +48,12 @@ export function MentorFeedback() {
                   <Verdict verdict={sample.verdict} />
                 </header>
 
-                <div className="px-7 py-7">
+                <div className="flex flex-1 flex-col px-7 py-7">
                   <p className="u-editorial text-lg leading-relaxed text-ink">
                     &ldquo;{sample.comment}&rdquo;
                   </p>
                   {sample.taskFooter && (
-                    <p className="u-tech mt-6 text-[0.75rem] text-steel">
+                    <p className="u-tech mt-auto pt-6 text-[0.75rem] text-steel">
                       {sample.taskFooter}
                     </p>
                   )}
@@ -71,7 +70,10 @@ export function MentorFeedback() {
           {FEEDBACK_BULLETS.map((item) => (
             <li
               key={item}
-              className="flex items-start gap-3 border-b border-rule py-5 pr-6 text-base text-ink lg:border-r lg:last:border-r-0"
+              // Padding only where the dividers are, so the text is not flush
+              // against them. The outer edges stay flush with the container so
+              // the strip still lines up with the heading above it.
+              className="flex items-start gap-3 border-b border-rule py-5 pr-6 text-base text-ink lg:border-r lg:px-6 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0"
             >
               <Check
                 className="mt-1 h-3.5 w-3.5 shrink-0 text-quench-deep"
