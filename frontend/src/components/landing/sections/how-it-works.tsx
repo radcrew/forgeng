@@ -39,57 +39,50 @@ export function HowItWorks() {
                   </span>
                 </span>
 
+                {/* Copy and art take opposite halves, so each step reads
+                    across the spine rather than stacking on one side of it.
+                    Both are pinned to row 1: with only a column set, the grid
+                    would drop the second one into a row of its own. */}
                 <div
                   className={cn(
-                    "pl-16 md:pl-0",
+                    "pl-16 md:row-start-1 md:pl-0",
                     onLeft ? "md:col-start-1" : "md:col-start-2",
                   )}
                 >
-                  {/* Art always hugs the spine: reversed on the left so the
-                      tile sits against the centre on both sides. */}
-                  {/* Stacked on mobile. Beside the copy there, the tile left
-                      the text about 146px — three or four words a line. The
-                      row only forms at md, where the two sides split. Exactly
-                      one direction utility is emitted per item, since
-                      flex-row and flex-row-reverse have equal specificity and
-                      the winner would otherwise depend on stylesheet order. */}
-                  <div
-                    className={cn(
-                      "flex flex-col gap-4 md:items-start md:gap-5",
-                      // Only the row direction mirrors, so the tile stays
-                      // against the spine on both sides. The copy itself
-                      // stays left aligned throughout: mirroring it would put
-                      // a ragged left edge on half the steps, which costs the
-                      // reader the return point on every line.
-                      onLeft ? "md:flex-row-reverse" : "md:flex-row",
-                    )}
-                  >
-                    <ArtPanel
-                      art={step.art}
-                      aspect="aspect-square"
-                      className="w-24 shrink-0 rounded-[3px] sm:w-28"
-                      artClassName="p-3"
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      className="h-4 w-4 shrink-0 text-quench-deep"
+                      aria-hidden="true"
                     />
-
-                    {/* Capped measure: the half-column is 604px, and letting
-                        the description use all of it pushed lines past 70
-                        characters. At 28rem the text plus the tile fills the
-                        side almost exactly. */}
-                    <div className="min-w-0 max-w-md">
-                      <div className="flex items-center gap-2.5">
-                        <Icon
-                          className="h-4 w-4 shrink-0 text-quench-deep"
-                          aria-hidden="true"
-                        />
-                        <h3 className="u-title text-2xl text-ink lg:text-[1.75rem]">
-                          {step.title}
-                        </h3>
-                      </div>
-                      <p className="mt-2.5 text-base leading-relaxed text-graphite">
-                        {step.description}
-                      </p>
-                    </div>
+                    <h3 className="u-title text-2xl text-ink lg:text-[1.75rem]">
+                      {step.title}
+                    </h3>
                   </div>
+                  {/* Capped measure: the half-column is 604px, and letting the
+                      description use all of it pushed lines past 70
+                      characters. */}
+                  <p className="mt-2.5 max-w-md text-base leading-relaxed text-graphite">
+                    {step.description}
+                  </p>
+                </div>
+
+                {/* The tile hugs the spine from its own side, so the pair reads
+                    as one row across the centre. On the left half that means
+                    pushing it to the column's right edge. */}
+                <div
+                  className={cn(
+                    "mt-5 pl-16 md:mt-0 md:row-start-1 md:pl-0",
+                    onLeft
+                      ? "md:col-start-2"
+                      : "md:col-start-1 md:flex md:justify-end",
+                  )}
+                >
+                  <ArtPanel
+                    art={step.art}
+                    aspect="aspect-square"
+                    className="w-24 rounded-[3px] sm:w-28"
+                    artClassName="p-3"
+                  />
                 </div>
               </li>
             );
