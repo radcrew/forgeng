@@ -52,9 +52,11 @@ export function HowItWorks() {
                     onLeft ? "md:col-start-1" : "md:col-start-2",
                   )}
                 >
-                  {/* Whatever sits in the left column is pushed to its right
-                      edge, which is what puts both blocks against the spine. */}
-                  <div className={cn("max-w-md", onLeft && "md:ml-auto")}>
+                  {/* Centred in its half rather than pushed against the spine.
+                      Pushing it collected all the slack on the outer edge, so
+                      the left side read as a deep left margin and the right
+                      side as a deep right one. */}
+                  <div className="max-w-md md:mx-auto">
                     <div className="flex items-center gap-2.5">
                       <Icon
                         className="h-4 w-4 shrink-0 text-quench-deep"
@@ -76,15 +78,12 @@ export function HowItWorks() {
                     onLeft ? "md:col-start-2" : "md:col-start-1",
                   )}
                 >
-                  {/* Same cap as the copy, so the two halves mirror about the
-                      spine instead of one block dwarfing the other. */}
+                  {/* Same cap and the same centring as the copy, so the two
+                      halves mirror about the spine. */}
                   <ArtPanel
                     art={step.art}
                     aspect="aspect-[2/1]"
-                    className={cn(
-                      "w-full max-w-md rounded-[3px]",
-                      !onLeft && "md:ml-auto",
-                    )}
+                    className="w-full max-w-md rounded-[3px] md:mx-auto"
                     artClassName="p-5"
                   />
                 </div>
