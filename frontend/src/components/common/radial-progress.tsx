@@ -37,7 +37,7 @@ export function RadialProgress({ percent, label, active }: RadialProgressProps) 
         strokeLinecap="round"
         strokeDasharray={CIRCUMFERENCE}
         strokeDashoffset={offset}
-        className={`transition-all duration-700 ${active ? "stroke-primary" : "stroke-primary/60"}`}
+        className={`transition-all duration-700 ${active ? "stroke-primary-strong" : "stroke-primary-strong/60"}`}
       />
       <text
         x="50%"

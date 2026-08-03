@@ -18,6 +18,7 @@
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-strong: hsl(var(--primary-strong));
 
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
@@ -40,8 +41,51 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* Display and body are the same grotesque at different weights; the
+     editorial serif is reserved for pull quotes. */
+  --font-display: var(--font-sans);
+  --font-editorial: var(--font-newsreader), Georgia, serif;
+  --font-tech: var(--font-mono);
+
+  /* Landing palette. `quench` is the existing brand cyan at full strength —
+     it means Approved. `ember` means Needs Work. Both map to real verdicts
+     in the product rather than being decorative accents. */
+  --color-ink: #0b0c0e;
+  --color-paper: #fcfcfa;
+  --color-steel: #6a7178;
+  --color-quench: #10b5cb;
+  --color-ember: #f0531c;
+  --color-rule: #e4e4de;
+
+  /* The brand cyan is 2.4:1 on paper — fine on ink, unreadable as text on
+     light. These are the same hues darkened to clear AA, used for text and
+     borders on the paper sections only. */
+  --color-quench-deep: #0b7684;
+  --color-ember-deep: #b03a0c;
+
+  /* Text ladder. Headings take ink, body takes graphite, meta takes steel.
+     Body copy previously used steel, which is a caption tone at 4.8:1 and
+     tiring over paragraphs. */
+  --color-graphite: #39414b;
+
+  /* A second light ground. Four identical paper sections ran back to back;
+     alternating them gives the page rhythm between the ink bands. */
+  --color-paper-sunk: #f7f7f2;
+
+  /* Illustration panels. Each marketing illustration is retinted to one hue
+     and sits on the matching tint here, so the art and its ground are the same
+     colour idea. Kept at 94% lightness: bright enough to carry the colour,
+     light enough that the ink caption on top still clears AA. */
+  --color-tint-cyan: hsl(190 54% 94%);
+  --color-tint-violet: hsl(262 54% 95%);
+  --color-tint-blue: hsl(222 60% 95%);
+  --color-tint-mint: hsl(165 48% 93%);
+  --color-tint-amber: hsl(42 78% 93%);
+  --color-tint-rose: hsl(330 62% 95%);
+  --color-tint-coral: hsl(14 72% 94%);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -71,82 +115,106 @@
 }
 
 :root {
-  --background: 220 33% 98%;
-  --foreground: 222 47% 11%;
+  /* Paper and ink, matching the landing palette. */
+  --background: 60 33% 98%;
+  --foreground: 220 12% 5%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 187 85% 43%;
+  --border: 60 10% 88%;
+  --input: 60 10% 88%;
+  --ring: 187 85% 28%;
 
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 220 12% 5%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 220 12% 5%;
 
+  /* The brand splits in two, because one value cannot do both jobs on a light
+     ground.
+
+     `primary` is the brand cyan at full strength and is only ever a SURFACE —
+     something with text on top of it. It pairs with ink, not white: ink on
+     cyan is 7.9:1, white on cyan is 2.5:1. Pairing it with white is what
+     forced this token dark in the first place.
+
+     `primary-strong` is the same hue darkened, and is the MARK — text, icons,
+     borders, progress fills, chart bars: anything that has to carry meaning
+     against paper on its own. 5.3:1 on card white, 5.2:1 on paper. */
   --primary: 187 85% 43%;
-  --primary-foreground: 0 0% 100%;
+  --primary-foreground: 220 12% 5%;
+  --primary-strong: 187 85% 28%;
 
-  --secondary: 222 47% 11%;
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 220 12% 5%;
+  --secondary-foreground: 60 33% 98%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted: 60 14% 95%;
+  --muted-foreground: 210 6% 44%;
 
-  --accent: 30 100% 60%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent drives hover states on ghost and outline controls, so it has to be
+     a quiet neutral rather than a colour. */
+  --accent: 60 14% 95%;
+  --accent-foreground: 220 12% 5%;
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 17 89% 37%;
+  --destructive-foreground: 0 0% 100%;
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 0 0% 100%;
-  --sidebar-border: 222 47% 8%;
+  --sidebar: 220 12% 5%;
+  --sidebar-foreground: 60 33% 98%;
+  --sidebar-border: 220 12% 12%;
   --sidebar-primary: 187 85% 43%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-primary-foreground: 220 12% 5%;
+  --sidebar-accent: 220 12% 12%;
+  --sidebar-accent-foreground: 60 33% 98%;
   --sidebar-ring: 187 85% 43%;
 
-  --radius: 0.5rem;
+  --radius: 0.25rem;
+
+  /* The sticky header is in flow, so the hero has to subtract it to fill
+     exactly one screen. Measured at every breakpoint: it is 77px throughout,
+     because the logo and the nav row are the same height at all widths. */
+  --header-h: 4.8125rem;
 }
 
 .dark {
-  --background: 222 47% 8%;
-  --foreground: 210 40% 98%;
+  --background: 220 12% 5%;
+  --foreground: 60 33% 98%;
 
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
+  --border: 220 10% 16%;
+  --input: 220 10% 16%;
   --ring: 187 85% 43%;
 
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
+  --card: 220 12% 8%;
+  --card-foreground: 60 33% 98%;
 
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
+  --popover: 220 12% 8%;
+  --popover-foreground: 60 33% 98%;
 
+  /* On ink the brand cyan is 7.9:1, so the full-strength value is used here —
+     and the mark takes it too, since the darkened tone drops to 3.7:1 against
+     ink and would fail as text. On dark the two roles collapse into one. */
   --primary: 187 85% 43%;
-  --primary-foreground: 222 47% 11%;
+  --primary-foreground: 220 12% 5%;
+  --primary-strong: 187 85% 43%;
 
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 220 10% 16%;
+  --secondary-foreground: 60 33% 98%;
 
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20.2% 65.1%;
+  --muted: 220 10% 16%;
+  --muted-foreground: 210 8% 65%;
 
-  --accent: 30 100% 60%;
-  --accent-foreground: 222 47% 11%;
+  --accent: 220 10% 16%;
+  --accent-foreground: 60 33% 98%;
 
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 17 80% 52%;
+  --destructive-foreground: 220 12% 5%;
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217 33% 17%;
+  --sidebar: 220 12% 8%;
+  --sidebar-foreground: 60 33% 98%;
+  --sidebar-border: 220 10% 16%;
   --sidebar-primary: 187 85% 43%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-primary-foreground: 220 12% 5%;
+  --sidebar-accent: 220 10% 16%;
+  --sidebar-accent-foreground: 60 33% 98%;
   --sidebar-ring: 187 85% 43%;
 }
 
@@ -157,5 +225,322 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    letter-spacing: -0.006em;
   }
+
+  /* One focus treatment for everything, so plain links stop falling back to
+     the browser default while buttons get a designed ring. This colour is the
+     only one that clears 3:1 on all three grounds — paper 5.19, sunk 4.96,
+     ink 3.67. It lives in `base`, so components that define their own
+     focus-visible ring still win. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Type system
+   Shared by the marketing pages and the signed-in app.
+   --------------------------------------------------------------------------- */
+
+/* Default leading suits the many small display usages (labels, card titles).
+   `.u-tight` opts the big headlines into display leading — a class rather than
+   a Tailwind `leading-*` utility, because `.u-display` outranks
+   single-class utilities and would otherwise win. */
+.u-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  line-height: 1.08;
+}
+
+.u-tight {
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+}
+
+.u-tech {
+  font-family: var(--font-tech);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.u-editorial {
+  font-family: var(--font-editorial);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* The verdict stamp: the page's signature. Hard 2px border, squared corners,
+   no shadow — it should read as something pressed onto the page. */
+.u-stamp {
+  font-family: var(--font-tech);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4375rem 0.75rem;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* A single staggered entrance for the hero. Nothing else animates in:
+   section-by-section fades read as templated. */
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.u-rise {
+  animation: landing-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u-rise {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The headline breaks by hand after "taught." so the sentence lands whole on
+   line one. Holding that on a phone would force the type down to ~27px, which
+   is not a hero, so below 40rem the break is dropped and the line wraps on its
+   own at a size worth reading. */
+.u-hero-title {
+  font-size: clamp(2.5rem, 11vw, 3.5rem);
+}
+
+@media (max-width: 39.9375rem) {
+  .u-hero-title br {
+    display: none;
+  }
+}
+
+/* From 40rem up there is room for the single line. At this face it renders
+   11.14x its font-size against a container of the viewport less the hero
+   padding, so ~7vw keeps it on one line, and the 7rem ceiling holds it there
+   once the container stops growing at 88rem. */
+@media (min-width: 40rem) {
+  .u-hero-title {
+    font-size: clamp(2.75rem, 7vw, 7rem);
+  }
+}
+
+/* A faint engineering grid behind the hero, fading out from the top right so
+   it sits under the review card and never reaches the headline. Static: it is
+   texture, not motion, so there is nothing for reduced-motion to turn off. */
+.u-hero-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(to right, var(--color-rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-rule) 1px, transparent 1px);
+  background-size: 5.5rem 5.5rem;
+  -webkit-mask-image: radial-gradient(
+    115% 85% at 80% 8%,
+    #000 0%,
+    transparent 70%
+  );
+  mask-image: radial-gradient(115% 85% at 80% 8%, #000 0%, transparent 70%);
+}
+
+/* Soft radial atmosphere in cool brand hues: quench light behind the review
+   window, a violet whisper low on the left, and a lift of white behind the
+   headline so the field brightens toward the type instead of tinting it. The
+   earlier 8%/5% version was too faint to register as design; these peaks stay
+   under 15%, so ink text loses almost nothing of its 16.7:1. Warm hues are
+   deliberately absent — at wash alphas ember reads as a brown stain. */
+.u-hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      46rem 30rem at 80% 30%,
+      hsl(187 85% 43% / 0.14),
+      transparent 70%
+    ),
+    radial-gradient(
+      40rem 28rem at 6% 78%,
+      hsl(262 60% 60% / 0.08),
+      transparent 70%
+    ),
+    radial-gradient(
+      50rem 30rem at 22% 8%,
+      hsl(0 0% 100% / 0.6),
+      transparent 65%
+    );
+}
+
+/* Short viewports: the hero is sized for a tall desktop window, so on laptop
+   heights it pushed the call to action below the fold. Trim its vertical space
+   and display size rather than letting the buttons disappear. Gated on width
+   too — a phone is short as well as narrow, and without the gate this rule was
+   shrinking the mobile headline to 22px. */
+@media (min-width: 64rem) and (max-height: 920px) {
+  .u-hero {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .u-hero-title {
+    font-size: clamp(2.75rem, 5.6vw, 5rem);
+  }
+
+  .u-hero-split {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .u-hero-quote {
+    font-size: 1.25rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+   Scroll-driven, so there is no observer and no JS state to get stuck in.
+   Everything sits behind @supports: where `animation-timeline` is missing the
+   elements simply render finished. Motion is never load-bearing for
+   visibility, which is what made the earlier JS reveal fragile.
+   --------------------------------------------------------------------------- */
+
+@keyframes m-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+
+/* The page is laid out as a ledger, so its rules draw themselves in. */
+@keyframes m-rule {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* The verdict is a stamp. It lands; it does not fade. */
+@keyframes m-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .m-enter {
+      animation: m-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 26%;
+    }
+
+    .m-line {
+      transform-origin: left center;
+      animation: m-rule linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+
+    /* Stagger. `animation-delay` is time-based and is ignored on a scroll
+       timeline, so the usual CSS cascade trick does nothing here — the offset
+       has to go on `animation-range` instead, walking each child's window
+       further down the scroll. */
+    .m-stagger > * {
+      animation: m-rise linear both;
+      animation-timeline: view();
+    }
+
+    .m-stagger > *:nth-child(1) {
+      animation-range: entry 4% cover 22%;
+    }
+    .m-stagger > *:nth-child(2) {
+      animation-range: entry 7% cover 25%;
+    }
+    .m-stagger > *:nth-child(3) {
+      animation-range: entry 10% cover 28%;
+    }
+    .m-stagger > *:nth-child(4) {
+      animation-range: entry 13% cover 31%;
+    }
+    .m-stagger > *:nth-child(5) {
+      animation-range: entry 16% cover 34%;
+    }
+    .m-stagger > *:nth-child(n + 6) {
+      animation-range: entry 19% cover 37%;
+    }
+  }
+
+  .m-stamp {
+    animation: m-stamp 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    animation-delay: 0.45s;
+  }
+
+  /* Tactile press, on things that are actually clickable. Spring-weighted
+     rather than linear so the release settles instead of stopping dead. */
+  .m-press {
+    transition:
+      transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+      background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .m-press:active {
+    transform: translateY(1px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Tonal ladders
+   Two text colours and one background were doing every job, which reads flat
+   however consistent it is. These add the missing middle steps.
+   --------------------------------------------------------------------------- */
+
+/* Sub-headings sit between body and display. Archivo is variable, so weight
+   and tracking are compensated optically: small type at the display weight
+   looks clotted, and display tracking closes up counters at 20px. */
+.u-title {
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+}
+
+/* Figures line up in columns and against each other. */
+.u-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Headings set their own line breaks rather than orphaning the last word. */
+.u-display,
+.u-title {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }

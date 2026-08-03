@@ -3,10 +3,9 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { Avatar } from "@components/ui/avatar";
 import { Button } from "@components/ui/button";
 import { ApiError } from "@lib/api-client";
-import { resolveAssetUrl } from "@lib/config";
-import { initials } from "@utils";
 import type { UserProfile } from "@types";
 
 import { uploadAvatar } from "../api";
@@ -59,18 +58,12 @@ export const ProfileAvatarUpload = ({
 
   return (
     <div className="flex items-center gap-4">
-      {avatarUrl.trim() ? (
-        // eslint-disable-next-line @next/next/no-img-element -- user avatar served by the API, not a static asset
-        <img
-          src={resolveAssetUrl(avatarUrl)}
-          alt=""
-          className="h-16 w-16 rounded-full object-cover bg-muted"
-        />
-      ) : (
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
-          {initials(user.name, user.email)}
-        </div>
-      )}
+      <Avatar
+        src={avatarUrl}
+        name={user.name}
+        email={user.email}
+        size={64}
+      />
       <div className="min-w-0 space-y-2">
         <div className="min-w-0">
           <p className="font-medium">{user.name ?? "Unnamed"}</p>

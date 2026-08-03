@@ -29,6 +29,7 @@ import {
   type TaskProgressFilter,
   type TaskSort,
 } from "@constants/tasks";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
@@ -87,7 +88,7 @@ const Page = () => {
   // switcher) don't flash back to the loading state.
   if (!dashboard) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer>
         <PageHeader title="Tasks" description="Loading…" />
       </PageContainer>
     );
@@ -95,12 +96,12 @@ const Page = () => {
 
   if (!dashboard.cohort) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer>
         <PageHeader
           title="Tasks"
           description="Enroll in a cohort to see your assignments."
         />
-        <EmptyState message="You are not enrolled in a cohort yet." />
+        <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
       </PageContainer>
     );
   }
@@ -109,7 +110,7 @@ const Page = () => {
   const hasTasks = !tasksLoading && tasks.length > 0;
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Tasks"
         description={
@@ -185,9 +186,12 @@ const Page = () => {
       {tasksLoading ? (
         <LoadingState message="Loading tasks…" />
       ) : tasks.length === 0 ? (
-        <EmptyState message="No tasks have been published for your cohort yet." />
+        <EmptyState
+          message="No tasks have been published for your cohort yet."
+          art={APP_ART.tasks}
+        />
       ) : visibleTasks.length === 0 ? (
-        <EmptyState message="No tasks match your filters." />
+        <EmptyState message="No tasks match your filters." art={APP_ART.noResults} />
       ) : (
         <div className="space-y-3">
           {visibleTasks.map((task) => {
@@ -207,7 +211,7 @@ const Page = () => {
                 )}
               >
                 <div className="flex items-center gap-4 p-5">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary-strong shrink-0">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">

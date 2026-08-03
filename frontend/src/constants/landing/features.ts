@@ -4,6 +4,7 @@ import {
   Banknote,
   FolderGit2,
   MessageSquare,
+  RefreshCw,
   Users,
   Zap,
   type LucideIcon,
@@ -39,6 +40,12 @@ export const FEATURES: Feature[] = [
     title: "Mentor Feedback",
     description:
       "Every submission is reviewed by a working engineer who explains exactly what to improve and why.",
+  },
+  {
+    icon: RefreshCw,
+    title: "Revise and Resubmit",
+    description:
+      "Work marked needs work goes back to you, not into a grade book. Fix it, resubmit against the same task, and get reviewed again.",
   },
   {
     icon: BarChart3,

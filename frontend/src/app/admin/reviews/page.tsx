@@ -8,6 +8,7 @@ import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { SUBMISSION_STATUS_FILTER_TABS } from "@constants/submissions";
 import {
   ReviewSheet,
@@ -26,7 +27,7 @@ const Page = () => {
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Review Queue"
         description="Review student submissions and leave feedback."
@@ -48,7 +49,7 @@ const Page = () => {
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
       ) : submissions.length === 0 ? (
-        <EmptyState message="No submissions in this category." />
+        <EmptyState message="No submissions in this category." art={APP_ART.reviews} />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (

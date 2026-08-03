@@ -8,15 +8,15 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { PHOTOS } from "@constants/landing/photos";
+import { LANDING_ART } from "@constants/landing/illustrations";
+import type { Illustration } from "@constants/shared/illustration";
 
 export interface Step {
   number: string;
   title: string;
   description: string;
   icon: LucideIcon;
-  photo: string;
-  photoAlt: string;
+  art: Illustration;
 }
 
 export const STEPS: Step[] = [
@@ -26,8 +26,7 @@ export const STEPS: Step[] = [
     description:
       "Submit a short application telling us about your background, goals, and motivation. No CS degree required — we care about drive.",
     icon: ClipboardList,
-    photo: PHOTOS.interview,
-    photoAlt: "Applicant in a one-on-one discussion with a reviewer",
+    art: LANDING_ART.stepApply,
   },
   {
     number: "02",
@@ -35,8 +34,7 @@ export const STEPS: Step[] = [
     description:
       "Accepted applicants are placed into a cohort with a dedicated mentor and peers at the same stage.",
     icon: Users,
-    photo: PHOTOS.teamMeeting,
-    photoAlt: "Cohort meeting around a table",
+    art: LANDING_ART.stepCohort,
   },
   {
     number: "03",
@@ -44,8 +42,7 @@ export const STEPS: Step[] = [
     description:
       "Work through structured coding assignments, reading modules, and projects inside your cohort timeline.",
     icon: Code2,
-    photo: PHOTOS.coding,
-    photoAlt: "Developer writing code at their computer",
+    art: LANDING_ART.stepTasks,
   },
   {
     number: "04",
@@ -53,8 +50,7 @@ export const STEPS: Step[] = [
     description:
       "Mentors review every submission. You receive detailed feedback with a clear verdict — approved or needs work.",
     icon: MessageSquare,
-    photo: PHOTOS.codeReview,
-    photoAlt: "Two engineers doing a code review together",
+    art: LANDING_ART.stepFeedback,
   },
   {
     number: "05",
@@ -62,8 +58,7 @@ export const STEPS: Step[] = [
     description:
       "Finish every task due that month and receive your monthly stipend — automatic and no negotiation needed. Complete the work, get the money.",
     icon: Banknote,
-    photo: PHOTOS.pairProgramming,
-    photoAlt: "Developer reviewing progress on screen",
+    art: LANDING_ART.stepStipend,
   },
   {
     number: "06",
@@ -71,7 +66,6 @@ export const STEPS: Step[] = [
     description:
       "Track your progress, build a portfolio of real work, and graduate with evidence of what you can actually do.",
     icon: Award,
-    photo: PHOTOS.mentoring,
-    photoAlt: "Mentor celebrating a student's achievement",
+    art: LANDING_ART.stepLevelUp,
   },
 ];

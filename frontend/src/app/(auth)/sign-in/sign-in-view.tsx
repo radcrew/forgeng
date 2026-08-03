@@ -95,7 +95,7 @@ export const SignInView = () => {
             labelAction: (
               <Link
                 href="/forgot-password"
-                className="text-sm text-primary font-medium hover:underline"
+                className="text-sm text-primary-strong font-medium hover:underline"
               >
                 Forgot password?
               </Link>

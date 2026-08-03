@@ -8,7 +8,7 @@ const Page = () => {
 
   if (isLoading || !dashboard) {
     return (
-      <PageContainer maxWidth="6xl" spacing="8">
+      <PageContainer spacing="8">
         <PageHeader
           title="Admin Dashboard"
           description="Platform overview and recent activity."
@@ -19,7 +19,7 @@ const Page = () => {
   }
 
   return (
-    <PageContainer maxWidth="6xl" spacing="8">
+    <PageContainer spacing="8">
       <PageHeader
         title="Admin Dashboard"
         description="Platform overview and recent activity."

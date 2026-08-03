@@ -18,7 +18,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@components/ui/card";
 import {
   Form,
@@ -60,12 +59,15 @@ const Header = ({ title, description, icon: Icon }: HeaderProps) => (
   <CardHeader className="space-y-4">
     <Brand centered={!!Icon} />
     {Icon && (
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
         <Icon className="h-6 w-6" />
       </div>
     )}
     <div>
-      <CardTitle className="text-2xl">{title}</CardTitle>
+      {/* A real heading, not a styled div: these cards are the whole page, so
+          the title is its h1. CardTitle renders a div, which left the auth
+          screens with no heading at all. */}
+      <h1 className="u-display text-2xl">{title}</h1>
       <CardDescription>{description}</CardDescription>
     </div>
   </CardHeader>

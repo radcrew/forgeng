@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { CohortRow, CohortFormDialog, useCohorts } from "@features/cohorts";
 import type { Cohort } from "@types";
 
@@ -15,7 +16,7 @@ const Page = () => {
   const [editCohort, setEditCohort] = useState<Cohort | undefined>(undefined);
 
   return (
-    <PageContainer maxWidth="5xl">
+    <PageContainer>
       <PageHeader
         title="Cohorts"
         description="Manage cohorts and student enrollment."
@@ -34,7 +35,10 @@ const Page = () => {
       {isLoading ? (
         <LoadingState message="Loading cohorts…" />
       ) : cohorts.length === 0 ? (
-        <EmptyState message="No cohorts yet. Create your first cohort to get started." />
+        <EmptyState
+          message="No cohorts yet. Create your first cohort to get started."
+          art={APP_ART.cohorts}
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {cohorts.map((cohort) => (

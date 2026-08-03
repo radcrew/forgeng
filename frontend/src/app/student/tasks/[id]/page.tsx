@@ -11,6 +11,7 @@ import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { SubmissionDetailSheet, SubmissionStatusBadge, useSubmissions } from "@features/submissions";
 import { TaskSubmitDialog, useTask } from "@features/tasks";
@@ -41,7 +42,7 @@ const Page = () => {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="4xl" spacing="6">
+      <PageContainer maxWidth="reading" spacing="6">
         {backLink}
         <LoadingState message="Loading task…" />
       </PageContainer>
@@ -50,9 +51,12 @@ const Page = () => {
 
   if (error || !task) {
     return (
-      <PageContainer maxWidth="4xl" spacing="6">
+      <PageContainer maxWidth="reading" spacing="6">
         {backLink}
-        <EmptyState message="Task not found, or you don't have access to it." />
+        <EmptyState
+          message="Task not found, or you don't have access to it."
+          art={APP_ART.notFoundItem}
+        />
       </PageContainer>
     );
   }
@@ -60,7 +64,7 @@ const Page = () => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
 
   return (
-    <PageContainer maxWidth="4xl" spacing="8">
+    <PageContainer maxWidth="reading" spacing="8">
       {backLink}
 
       <PageHeader
@@ -91,7 +95,7 @@ const Page = () => {
 
       <Card className="p-6">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary-strong shrink-0">
             <Icon className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -135,7 +139,10 @@ const Page = () => {
             </Button>
           </Card>
         ) : (
-          <EmptyState message="You haven't submitted work for this task yet." />
+          <EmptyState
+            message="You haven't submitted work for this task yet."
+            art={APP_ART.submissions}
+          />
         )}
       </div>
 

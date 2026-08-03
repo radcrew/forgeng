@@ -7,7 +7,7 @@ export { Stats } from "./stats";
 
 // 2. Story — who we are and what daily life looks like
 export { WhoWeAre } from "./who-we-are";
-export { Gallery } from "./gallery";
+export { DailyRhythm } from "./daily-rhythm";
 
 // 3. Product — how the program works and what it includes
 export { HowItWorks } from "./how-it-works";

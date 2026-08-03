@@ -43,7 +43,7 @@ export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
   return (
     <Card>
       <div className="flex items-center gap-4 p-5">
-        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary-strong shrink-0">
           <Icon className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">

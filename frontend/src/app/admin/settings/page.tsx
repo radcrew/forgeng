@@ -120,7 +120,7 @@ const Page = () => {
   const { data: settings, isLoading, refetch } = useSettings();
 
   return (
-    <PageContainer maxWidth="4xl" spacing="8">
+    <PageContainer maxWidth="reading" spacing="8">
       <PageHeader
         title="Settings"
         description="Platform-wide configuration for stipend payouts."

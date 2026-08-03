@@ -1,9 +1,9 @@
 import {
   CtaBanner,
+  DailyRhythm,
   Faq,
   Features,
   Footer,
-  Gallery,
   Header,
   Hero,
   HowItWorks,
@@ -15,16 +15,16 @@ import {
 } from "@components/landing";
 
 const Page = () => (
-  <div className="min-h-screen bg-background flex flex-col text-foreground">
+  <div className="flex min-h-screen flex-col">
     <Header />
 
     <main className="flex-1">
       <Hero />
       <Stats />
       <WhoWeAre />
-      <Gallery />
-      <HowItWorks />
       <TaskTypes />
+      <HowItWorks />
+      <DailyRhythm />
       <Features />
       <MentorFeedback />
       <Roles />

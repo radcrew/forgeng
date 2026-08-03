@@ -16,7 +16,7 @@ export const CohortStudentProgressRow = ({
     <Card>
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <div className="flex flex-1 items-center gap-3 min-w-0">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary-strong">
             {progress.name[0]?.toUpperCase() ?? "?"}
           </div>
           <div className="min-w-0">

@@ -15,7 +15,7 @@ const Page = () => {
   const [editTask, setEditTask] = useState<Task | undefined>(undefined);
 
   return (
-    <PageContainer maxWidth="5xl">
+    <PageContainer>
       <PageHeader
         title="Tasks"
         description="Author and manage tasks across cohorts."

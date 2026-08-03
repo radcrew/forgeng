@@ -7,6 +7,7 @@ import { Clock, MessageSquare } from "lucide-react";
 import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import {
   SubmissionDetailSheet,
   SubmissionStatusBadge,
@@ -19,7 +20,7 @@ const Page = () => {
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Submissions"
         description="Your submission history and feedback."
@@ -28,7 +29,10 @@ const Page = () => {
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
       ) : submissions.length === 0 ? (
-        <EmptyState message="No submissions yet. Head to Tasks to start submitting your work." />
+        <EmptyState
+          message="No submissions yet. Head to Tasks to start submitting your work."
+          art={APP_ART.submissions}
+        />
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (

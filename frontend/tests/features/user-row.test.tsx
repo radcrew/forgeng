@@ -28,14 +28,14 @@ describe("user Row", () => {
     expect(screen.getByText("—")).toBeInTheDocument();
   });
 
-  it("derives the avatar initial from the name", () => {
+  it("derives the avatar initials from the name", () => {
     render(<Row user={makeUser({ name: "Grace" })} />);
-    expect(screen.getByText("G")).toBeInTheDocument();
+    expect(screen.getByText("GR")).toBeInTheDocument();
   });
 
-  it("falls back to the email initial when the name is null", () => {
+  it("falls back to the email initials when the name is null", () => {
     render(<Row user={makeUser({ name: null, email: "zoe@example.com" })} />);
-    expect(screen.getByText("Z")).toBeInTheDocument();
+    expect(screen.getByText("ZO")).toBeInTheDocument();
   });
 
   it("renders the github url when present", () => {

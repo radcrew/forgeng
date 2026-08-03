@@ -1,41 +1,32 @@
-import { Card, CardContent } from "@components/ui/card";
 import { TASK_TYPES } from "@constants/landing";
 
 export function TaskTypes() {
   return (
-    <section className="border-y border-border bg-muted/30 px-6 py-16">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold tracking-tight">
-            Four Types of Work
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Every assignment is purpose-built to grow a specific skill.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <section className="border-b border-rule bg-paper-sunk px-8 py-24 lg:px-12 lg:py-28">
+      {/* A run-in strip: the heading sits beside its items rather than above
+          them, so this reads as an aside between two full sections instead of
+          repeating the same opening beat. */}
+      <div className="mx-auto grid max-w-[88rem] gap-10 md:grid-cols-[16rem_1fr] md:gap-16">
+        <h2 className="u-display u-tight self-start text-[2.125rem] text-ink">
+          Four kinds
+          <br />
+          of work
+        </h2>
+
+        <ul className="m-stagger grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
           {TASK_TYPES.map((task) => {
             const Icon = task.icon;
             return (
-              <Card
-                key={task.label}
-                className="text-center hover:shadow-md transition-shadow border-border/60"
-              >
-                <CardContent className="p-6 space-y-3">
-                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{task.label}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {task.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <li key={task.label} className="border-t-2 border-ink pt-4">
+                <Icon className="h-4 w-4 text-quench-deep" aria-hidden="true" />
+                <p className="u-title mt-3 text-2xl text-ink">{task.label}</p>
+                <p className="mt-1.5 text-base leading-relaxed text-graphite">
+                  {task.description}
+                </p>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
     </section>
   );

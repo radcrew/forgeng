@@ -19,14 +19,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(dirname, "..", ".."),
   },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
-  },
   // Returning an array applies these after the filesystem check, so the app's
   // own /api/auth/exchange route handler still wins over this catch-all.
   async rewrites() {

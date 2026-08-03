@@ -1,18 +1,20 @@
 "use client";
 
+import { Illustration } from "@components/illustrations";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@components/ui/card";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import type { StudentAnalytics as Analytics } from "@types";
 
 export type StudentAnalyticsProps = { analytics: Analytics };
 
 const STATUS_SEGMENTS = [
-  { key: "approved", label: "Approved", color: "bg-primary" },
+  { key: "approved", label: "Approved", color: "bg-primary-strong" },
   { key: "submitted", label: "In Review", color: "bg-sky-500" },
   { key: "needsWork", label: "Needs Work", color: "bg-destructive" },
   { key: "todo", label: "To Do", color: "bg-muted-foreground/30" },
@@ -36,7 +38,10 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           {statusTotal === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            <div className="flex flex-col items-center gap-2 py-3 text-center">
+              <Illustration art={APP_ART.progress} className="h-20 w-auto" />
+              <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            </div>
           ) : (
             <>
               <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
@@ -79,7 +84,10 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
         </CardHeader>
         <CardContent className="space-y-3">
           {typeBreakdown.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            <div className="flex flex-col items-center gap-2 py-3 text-center">
+              <Illustration art={APP_ART.tasks} className="h-20 w-auto" />
+              <p className="text-sm text-muted-foreground">No tasks yet.</p>
+            </div>
           ) : (
             typeBreakdown.map((t) => {
               const Icon = TASK_TYPE_ICON[t.type];
@@ -97,7 +105,7 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full bg-primary"
+                      className="h-full bg-primary-strong"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

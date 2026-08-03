@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, JetBrains_Mono, Newsreader } from "next/font/google";
 
 import { NavigationLoader } from "@components/common";
 import { Toaster } from "@components/ui/sonner";
@@ -7,13 +7,25 @@ import { AppProviders } from "@providers";
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// The product runs on one grotesque. Archivo is built for signage but reads
+// well at text sizes, so it covers both display and body and replaces the
+// default UI sans the app previously used.
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Used sparingly: the mission lead and the apprentice quote only. Upright
+// only — nothing on the page sets italic.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  preload: false,
+});
+
+// Anything the system asserts — verdicts, counts, dates, ids, section labels.
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
 });
 
@@ -81,7 +93,7 @@ const RootLayout = ({
 }>) => (
   <html
     lang="en"
-    className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    className={`${archivo.variable} ${newsreader.variable} ${jetbrainsMono.variable} h-full antialiased`}
   >
     <body className="min-h-full">
       <AppProviders>

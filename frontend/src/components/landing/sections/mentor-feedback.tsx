@@ -1,129 +1,101 @@
-import { CheckCircle2, Star } from "lucide-react";
+import { Check } from "lucide-react";
 
-import { Badge } from "@components/ui/badge";
-import { Card, CardContent } from "@components/ui/card";
+import { SectionHead, Verdict } from "@components/landing/primitives";
 import {
   FEEDBACK_BULLETS,
   FEEDBACK_TESTIMONIAL,
-  PHOTOS,
   SAMPLE_FEEDBACK,
 } from "@constants/landing";
 
 export function MentorFeedback() {
   return (
-    <section className="border-y border-border bg-muted/30 px-6 py-20">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-        <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PHOTOS.codeReview}
-            alt="Two engineers sitting side-by-side doing a code review"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-5 left-5 right-5">
-            <blockquote className="text-white text-sm leading-relaxed italic">
-              &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
-            </blockquote>
-            <p className="text-white/70 text-xs mt-2 font-medium">
-              {FEEDBACK_TESTIMONIAL.attribution}
-            </p>
-          </div>
-        </div>
+    <section className="border-b border-rule px-8 py-24 lg:px-12 lg:py-28">
+      <div className="mx-auto max-w-[88rem]">
+        <SectionHead
+          title={
+            <>
+              Two verdicts.
+              <br />
+              No hedging.
+            </>
+          }
+        />
 
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <Badge
-              variant="outline"
-              className="text-xs font-semibold tracking-wide"
-            >
-              Mentor Feedback
-            </Badge>
-            <h2 className="text-3xl font-bold tracking-tight">
-              Code Review That Actually Teaches You
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Generic &ldquo;looks good&rdquo; isn&apos;t feedback —
-              it&apos;s a missed opportunity. Every submission gets a
-              detailed verdict with concrete suggestions, explained in plain
-              language by a working engineer.
-            </p>
-            <ul className="space-y-2.5">
-              {FEEDBACK_BULLETS.map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            {SAMPLE_FEEDBACK.map((sample) => {
-              const isApproved = sample.verdict === "approved";
-              return (
-                <Card
-                  key={sample.mentorName}
-                  className={
-                    isApproved
-                      ? "border-primary/30 shadow"
-                      : "border-destructive/20"
-                  }
-                >
-                  <CardContent className="p-4 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                            isApproved
-                              ? "bg-primary/10 text-primary"
-                              : "bg-orange-100 text-orange-700"
-                          }`}
-                        >
-                          {sample.mentorInitial}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">
-                            {sample.mentorName}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {sample.mentorTitle}
-                          </p>
-                        </div>
-                      </div>
-                      {isApproved ? (
-                        <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                          Approved
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive" className="text-xs">
-                          Needs Work
-                        </Badge>
-                      )}
-                    </div>
-                    <p
-                      className={`text-sm text-muted-foreground leading-relaxed border-l-2 pl-3 ${
-                        isApproved
-                          ? "border-primary/30"
-                          : "border-destructive/30"
-                      }`}
-                    >
-                      &ldquo;{sample.comment}&rdquo;
+        {/* The pair is the argument. Side by side they read as the two
+            outcomes the heading promises; stacked in a narrow column they
+            were just two quotes. Stretched to equal height, with the task
+            line pushed to the bottom so both cards close on the same edge
+            even though one comment runs a line longer. */}
+        <div className="m-stagger mt-16 grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
+          {SAMPLE_FEEDBACK.map((sample) => {
+            const approved = sample.verdict === "approved";
+            return (
+              <article
+                key={sample.mentorName}
+                className={`flex flex-col rounded-[3px] border-y border-r border-l-2 border-rule bg-white ${
+                  approved ? "border-l-quench-deep" : "border-l-ember-deep"
+                }`}
+              >
+                <header className="flex items-center justify-between gap-4 border-b border-rule px-7 py-5">
+                  <div>
+                    <p className="u-title text-base text-ink">
+                      {sample.mentorName.replace("Mentor ", "")}
                     </p>
-                    {sample.taskFooter && (
-                      <div className="flex items-center gap-2">
-                        <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-                        <span className="text-xs text-muted-foreground">
-                          {sample.taskFooter}
-                        </span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    <p className="u-tech mt-1 text-[0.75rem] text-steel">
+                      {sample.mentorTitle}
+                    </p>
+                  </div>
+                  <Verdict verdict={sample.verdict} />
+                </header>
+
+                <div className="flex flex-1 flex-col px-7 py-7">
+                  <p className="u-editorial text-lg leading-relaxed text-ink">
+                    &ldquo;{sample.comment}&rdquo;
+                  </p>
+                  {sample.taskFooter && (
+                    <p className="u-tech mt-auto pt-6 text-[0.75rem] text-steel">
+                      {sample.taskFooter}
+                    </p>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
+
+        {/* What holds for every submission, not just these two. A rule-bound
+            strip rather than a bulleted column: these are terms, and reading
+            across suits them better than reading down. */}
+        <ul className="mt-16 grid border-t border-rule sm:grid-cols-2 lg:grid-cols-4">
+          {FEEDBACK_BULLETS.map((item) => (
+            <li
+              key={item}
+              // Padding only where the dividers are, so the text is not flush
+              // against them. The outer edges stay flush with the container so
+              // the strip still lines up with the heading above it.
+              className="flex items-start gap-3 border-b border-rule py-5 pr-6 text-base text-ink lg:border-r lg:px-6 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0"
+            >
+              <Check
+                className="mt-1 h-3.5 w-3.5 shrink-0 text-quench-deep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        {/* A different voice from everything above it — a graduate, not the
+            product — so it gets its own width and centre rather than being
+            stacked under the terms wearing the same left rule as the cards. */}
+        <figure className="mx-auto mt-24 max-w-4xl text-center">
+          <blockquote className="u-editorial text-[1.75rem] leading-snug text-ink sm:text-[2.125rem]">
+            &ldquo;{FEEDBACK_TESTIMONIAL.quote}&rdquo;
+          </blockquote>
+          <figcaption className="u-tech mt-8 text-[0.75rem] text-steel">
+            {FEEDBACK_TESTIMONIAL.attribution.replace("— ", "")}
+          </figcaption>
+        </figure>
       </div>
     </section>
   );

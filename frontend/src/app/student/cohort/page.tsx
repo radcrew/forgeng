@@ -15,6 +15,7 @@ import { SubmissionStatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useTasks } from "@features/tasks";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 
 const dateRange = (start: string | null, end: string | null): string | null => {
@@ -53,7 +54,7 @@ const Page = () => {
   // (and the switcher) don't flash back to the loading state.
   if (!dashboard) {
     return (
-      <PageContainer maxWidth="4xl" spacing="8">
+      <PageContainer spacing="8">
         <PageHeader title="Cohort" description="Loading…" />
       </PageContainer>
     );
@@ -61,9 +62,9 @@ const Page = () => {
 
   if (!cohort) {
     return (
-      <PageContainer maxWidth="4xl" spacing="8">
+      <PageContainer spacing="8">
         <PageHeader title="Cohort" description="Your cohort overview." />
-        <EmptyState message="You are not enrolled in a cohort yet." />
+        <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
       </PageContainer>
     );
   }
@@ -76,7 +77,7 @@ const Page = () => {
   const range = dateRange(cohort.startDate, cohort.endDate);
 
   return (
-    <PageContainer maxWidth="4xl" spacing="8">
+    <PageContainer spacing="8">
       <PageHeader
         title={cohort.name}
         description="Your cohort overview."
@@ -126,11 +127,14 @@ const Page = () => {
       </Card>
 
       <div>
-        <h2 className="mb-4 text-xl font-semibold">Schedule</h2>
+        <h2 className="u-display mb-4 text-xl">Schedule</h2>
         {tasksLoading ? (
           <LoadingState message="Loading schedule…" />
         ) : schedule.length === 0 ? (
-          <EmptyState message="No tasks have been published for your cohort yet." />
+          <EmptyState
+            message="No tasks have been published for your cohort yet."
+            art={APP_ART.tasks}
+          />
         ) : (
           <div className="space-y-3">
             {schedule.map((task) => {
@@ -139,7 +143,7 @@ const Page = () => {
               return (
                 <Card key={task.id} className="hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 p-5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">

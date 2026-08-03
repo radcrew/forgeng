@@ -10,6 +10,7 @@ import { ClickableCard, LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { cn } from "@utils";
 import type { Notification } from "@types";
 import {
@@ -81,7 +82,7 @@ const Page = () => {
   };
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Notifications"
         description="Updates on your feedback and new tasks."
@@ -130,7 +131,7 @@ const Page = () => {
           </Button>
         </EmptyState>
       ) : data.length === 0 ? (
-        <EmptyState message="You have no notifications yet." />
+        <EmptyState message="You have no notifications yet." art={APP_ART.notifications} />
       ) : (
         <div className="space-y-3">
           {data.map((notification) => {
@@ -142,7 +143,7 @@ const Page = () => {
               <ClickableCard
                 key={notification.id}
                 onClick={() => void handleClick(notification)}
-                className={cn(unread && "border-primary/40 bg-accent/30")}
+                className={cn(unread && "border-primary-strong/40 bg-accent/30")}
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground [&_svg]:size-5">
                   <Icon />
@@ -168,7 +169,7 @@ const Page = () => {
                     {unread && (
                       <span
                         aria-hidden
-                        className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                        className="h-2 w-2 shrink-0 rounded-full bg-primary-strong"
                       />
                     )}
                   </div>

@@ -179,7 +179,7 @@ const ResetPasswordInner = () => {
                 Remembered it?{" "}
                 <Link
                   href="/sign-in"
-                  className="text-primary font-medium hover:underline"
+                  className="text-primary-strong font-medium hover:underline"
                 >
                   Back to sign in
                 </Link>

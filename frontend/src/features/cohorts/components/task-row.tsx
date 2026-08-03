@@ -31,7 +31,7 @@ export const CohortTaskRow = ({
   return (
     <Card>
       <div className="flex items-center gap-4 p-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">

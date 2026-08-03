@@ -1,66 +1,52 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import { Badge } from "@components/ui/badge";
-import { Button } from "@components/ui/button";
-import { Card, CardContent } from "@components/ui/card";
+import { ArtPanel, SectionHead } from "@components/landing/primitives";
 import { ROLES } from "@constants/landing";
 
 export function Roles() {
   return (
-    <section id="roles" className="px-6 py-24 max-w-5xl mx-auto">
-      <div className="text-center mb-16 space-y-3">
-        <Badge
-          variant="outline"
-          className="text-xs font-semibold tracking-wide"
-        >
-          Who Is This For
-        </Badge>
-        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Find Your Place on the Platform
-        </h2>
-        <p className="text-muted-foreground max-w-xl mx-auto">
-          Whether you&apos;re learning, teaching, or managing — there&apos;s a
-          role designed for you.
-        </p>
-      </div>
+    <section
+      id="roles"
+      className="border-b border-rule bg-paper-sunk px-8 py-24 lg:px-12 lg:py-28"
+    >
+      <div className="mx-auto max-w-[88rem]">
+        <SectionHead title="Three ways in" />
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {ROLES.map((role) => (
-          <Card
-            key={role.role}
-            className="border-border/60 flex flex-col hover:shadow-md transition-shadow overflow-hidden"
-          >
-            <CardContent className="p-0 flex flex-col flex-1">
-              <div className="h-36 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={role.photo}
-                  alt={`${role.role} scenario`}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-6 flex flex-col flex-1 space-y-4">
-                <Badge
-                  className={`self-start text-xs font-semibold ${role.color} border-0`}
-                >
+        <div className="m-stagger mt-16 grid gap-px border border-rule bg-rule md:grid-cols-3">
+          {ROLES.map((role) => (
+            // The whole card is the target, so the hover state describes
+            // something you can actually click. The visible cue stays a span:
+            // a link inside a link is invalid.
+            <Link
+              key={role.role}
+              href={role.href}
+              className="group m-press flex flex-col bg-paper"
+            >
+              <ArtPanel
+                art={role.art}
+                aspect="aspect-[16/9]"
+                artClassName="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              />
+
+              <div className="flex flex-1 flex-col p-8">
+                <p className="u-tech text-[0.75rem] text-quench-deep">
                   {role.role}
-                </Badge>
-                <div className="flex-1 space-y-2">
-                  <h3 className="font-bold text-lg">{role.headline}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {role.description}
-                  </p>
-                </div>
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link href={role.href}>
-                    {role.cta} <ChevronRight className="ml-1 h-3.5 w-3.5" />
-                  </Link>
-                </Button>
+                </p>
+                <h3 className="u-title mt-4 text-[1.75rem] text-ink">
+                  {role.headline}
+                </h3>
+                <p className="mt-3 flex-1 text-base leading-relaxed text-graphite">
+                  {role.description}
+                </p>
+                <span className="u-tech mt-7 inline-flex items-center gap-2 text-[0.75rem] text-ink transition-colors group-hover:text-quench-deep">
+                  {role.cta}
+                  <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

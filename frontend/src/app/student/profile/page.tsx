@@ -7,6 +7,7 @@ import { LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
 import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { useCurrentUser } from "@contexts";
 import { ProfileForm, WalletManager, useEnrollments } from "@features/profile";
 
@@ -16,14 +17,14 @@ const Page = () => {
 
   if (!isHydrated || !user) {
     return (
-      <PageContainer maxWidth="4xl" spacing="8">
+      <PageContainer maxWidth="reading" spacing="8">
         <PageHeader title="Profile" description="Loading…" />
       </PageContainer>
     );
   }
 
   return (
-    <PageContainer maxWidth="4xl" spacing="8">
+    <PageContainer maxWidth="reading" spacing="8">
       <PageHeader title="Profile" description="Manage your account details." />
 
       <ProfileForm user={user} onSaved={refreshUser} />
@@ -31,11 +32,14 @@ const Page = () => {
       <WalletManager />
 
       <div>
-        <h2 className="mb-4 text-xl font-semibold">Enrollment History</h2>
+        <h2 className="u-display mb-4 text-xl">Enrollment History</h2>
         {isLoading ? (
           <LoadingState message="Loading enrollments…" />
         ) : enrollments.length === 0 ? (
-          <EmptyState message="You are not enrolled in any cohorts yet." />
+          <EmptyState
+            message="You are not enrolled in any cohorts yet."
+            art={APP_ART.history}
+          />
         ) : (
           <div className="space-y-3">
             {enrollments.map((e) => (

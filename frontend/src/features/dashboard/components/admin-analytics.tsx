@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { Illustration } from "@components/illustrations";
 import {
   Card,
   CardContent,
@@ -9,6 +10,7 @@ import {
   CardTitle,
 } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import type { AdminDashboard } from "@types";
 
@@ -20,7 +22,12 @@ const SegmentedBar = ({ segments }: { segments: Segment[] }) => {
   const total = segments.reduce((n, s) => n + s.value, 0);
 
   if (total === 0) {
-    return <p className="text-sm text-muted-foreground">No data yet.</p>;
+    return (
+      <div className="flex flex-col items-center gap-2 py-3 text-center">
+        <Illustration art={APP_ART.progress} className="h-20 w-auto" />
+        <p className="text-sm text-muted-foreground">No data yet.</p>
+      </div>
+    );
   }
 
   return (
@@ -69,7 +76,7 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
               {
                 label: "Accepted",
                 value: applicationStats.accepted,
-                color: "bg-primary",
+                color: "bg-primary-strong",
               },
               {
                 label: "Pending",
@@ -100,7 +107,7 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
               {
                 label: "Approved",
                 value: submissionBreakdown.approved,
-                color: "bg-primary",
+                color: "bg-primary-strong",
               },
               {
                 label: "In Review",
@@ -125,7 +132,10 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
         </CardHeader>
         <CardContent>
           {cohortStats.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No cohorts yet.</p>
+            <div className="flex flex-col items-center gap-2 py-3 text-center">
+              <Illustration art={APP_ART.cohorts} className="h-20 w-auto" />
+              <p className="text-sm text-muted-foreground">No cohorts yet.</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -144,7 +154,7 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
                       <td className="py-2 pr-2">
                         <Link
                           href={`/admin/cohorts/${c.id}`}
-                          className="font-medium text-primary hover:underline"
+                          className="font-medium text-primary-strong hover:underline"
                         >
                           {c.name}
                         </Link>

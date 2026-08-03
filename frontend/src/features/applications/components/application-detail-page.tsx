@@ -41,7 +41,7 @@ export const ApplicationDetailPage = ({ id }: ApplicationDetailPageProps) => {
           ← Back to Applications
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">
+          <h1 className="u-display text-2xl">
             {application.firstName} {application.lastName}
           </h1>
           <ApplicationStatusBadge status={application.status} />
