@@ -8,7 +8,7 @@ const NotFound = () => (
   <div className="min-h-screen bg-background flex items-center justify-center px-4">
     <div className="text-center max-w-lg space-y-4">
       <Illustration art={APP_ART.pageNotFound} className="mx-auto h-48 w-auto" />
-      <p className="u-tech text-[0.75rem] text-primary">Error 404</p>
+      <p className="u-tech text-[0.75rem] text-primary-strong">Error 404</p>
       <h1 className="u-display u-tight text-4xl">
         We can&apos;t find that page.
       </h1>

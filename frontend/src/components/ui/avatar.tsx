@@ -42,7 +42,7 @@ export function Avatar({
     <div
       style={dimensions}
       className={cn(
-        "rounded-full bg-primary/10 text-primary font-semibold",
+        "rounded-full bg-primary/10 text-primary-strong font-semibold",
         "flex items-center justify-center shrink-0",
         className,
       )}

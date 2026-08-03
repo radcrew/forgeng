@@ -50,7 +50,7 @@ export function LegalSection({ heading, children }: LegalSectionProps) {
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-semibold tracking-tight">{heading}</h2>
-      <div className="space-y-3 text-muted-foreground leading-relaxed [&_a]:text-primary [&_a]:font-medium [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1.5">
+      <div className="space-y-3 text-muted-foreground leading-relaxed [&_a]:text-primary-strong [&_a]:font-medium [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1.5">
         {children}
       </div>
     </section>

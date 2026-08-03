@@ -49,7 +49,7 @@ export const PaymentProgress = ({ monthlyPayment, stipendAmount }: PaymentProgre
     tasksThisMonth === 0 ? "—" : `${approvedThisMonth}/${tasksThisMonth}`;
 
   return (
-    <Card className={eligible ? "border-primary/60" : ""}>
+    <Card className={eligible ? "border-primary-strong/60" : ""}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -62,7 +62,7 @@ export const PaymentProgress = ({ monthlyPayment, stipendAmount }: PaymentProgre
             )}
           </CardTitle>
           {eligible && (
-            <span className="flex items-center gap-1 text-xs font-medium text-primary">
+            <span className="flex items-center gap-1 text-xs font-medium text-primary-strong">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Eligible
             </span>
@@ -80,7 +80,7 @@ export const PaymentProgress = ({ monthlyPayment, stipendAmount }: PaymentProgre
           </div>
           <div className="space-y-1 min-w-0">
             <p
-              className={`text-sm font-medium leading-snug ${eligible ? "text-primary" : "text-foreground"}`}
+              className={`text-sm font-medium leading-snug ${eligible ? "text-primary-strong" : "text-foreground"}`}
             >
               {headline}
             </p>

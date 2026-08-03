@@ -30,7 +30,9 @@ export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
                 {stat.tasksTotal > 0 && (
                   <div
                     className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
-                      stat.eligible ? "bg-primary" : "bg-primary/40"
+                      stat.eligible
+                        ? "bg-primary-strong"
+                        : "bg-primary-strong/40"
                     }`}
                     style={{ width: `${pct}%` }}
                   />
@@ -41,7 +43,7 @@ export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
                 {stat.tasksTotal === 0 ? (
                   <span className="text-xs text-muted-foreground">—</span>
                 ) : stat.eligible ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary-strong shrink-0" />
                 ) : (
                   <span className="text-xs text-muted-foreground tabular-nums">
                     {stat.tasksApproved}/{stat.tasksTotal}
@@ -52,7 +54,7 @@ export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
 
             {stat.payment && (
               <div className="ml-[64px] flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary-strong">
                   {stat.payment.amount} {stat.payment.currency} paid
                 </span>
                 {stat.payment.txLink && isSafeHref(stat.payment.txLink) && (

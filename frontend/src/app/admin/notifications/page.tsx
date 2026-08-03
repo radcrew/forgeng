@@ -135,7 +135,7 @@ const Page = () => {
               <ClickableCard
                 key={notification.id}
                 onClick={() => void handleClick(notification)}
-                className={cn(unread && "border-primary/40 bg-accent/30")}
+                className={cn(unread && "border-primary-strong/40 bg-accent/30")}
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground [&_svg]:size-5">
                   <Icon />
@@ -161,7 +161,7 @@ const Page = () => {
                     {unread && (
                       <span
                         aria-hidden
-                        className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                        className="h-2 w-2 shrink-0 rounded-full bg-primary-strong"
                       />
                     )}
                   </div>

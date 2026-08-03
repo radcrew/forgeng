@@ -18,6 +18,7 @@
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-strong: hsl(var(--primary-strong));
 
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
@@ -128,10 +129,20 @@
   --popover: 0 0% 100%;
   --popover-foreground: 220 12% 5%;
 
-  /* The brand cyan darkened until it clears AA against white. The previous
-     value was 2.4:1 behind white button text. */
-  --primary: 187 85% 28%;
-  --primary-foreground: 0 0% 100%;
+  /* The brand splits in two, because one value cannot do both jobs on a light
+     ground.
+
+     `primary` is the brand cyan at full strength and is only ever a SURFACE —
+     something with text on top of it. It pairs with ink, not white: ink on
+     cyan is 7.9:1, white on cyan is 2.5:1. Pairing it with white is what
+     forced this token dark in the first place.
+
+     `primary-strong` is the same hue darkened, and is the MARK — text, icons,
+     borders, progress fills, chart bars: anything that has to carry meaning
+     against paper on its own. 5.3:1 on card white, 5.2:1 on paper. */
+  --primary: 187 85% 43%;
+  --primary-foreground: 220 12% 5%;
+  --primary-strong: 187 85% 28%;
 
   --secondary: 220 12% 5%;
   --secondary-foreground: 60 33% 98%;
@@ -173,9 +184,12 @@
   --popover: 220 12% 8%;
   --popover-foreground: 60 33% 98%;
 
-  /* On ink the brand cyan is 7.9:1, so the full-strength value is used here. */
+  /* On ink the brand cyan is 7.9:1, so the full-strength value is used here —
+     and the mark takes it too, since the darkened tone drops to 3.7:1 against
+     ink and would fail as text. On dark the two roles collapse into one. */
   --primary: 187 85% 43%;
   --primary-foreground: 220 12% 5%;
+  --primary-strong: 187 85% 43%;
 
   --secondary: 220 10% 16%;
   --secondary-foreground: 60 33% 98%;

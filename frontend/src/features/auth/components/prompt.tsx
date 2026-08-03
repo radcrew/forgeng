@@ -9,7 +9,7 @@ type PromptProps = {
 export const Prompt = ({ text, linkText, href }: PromptProps) => (
   <p className="text-center text-sm text-muted-foreground">
     {text}{" "}
-    <Link href={href} className="text-primary font-medium hover:underline">
+    <Link href={href} className="text-primary-strong font-medium hover:underline">
       {linkText}
     </Link>
   </p>

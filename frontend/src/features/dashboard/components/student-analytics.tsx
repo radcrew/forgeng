@@ -14,7 +14,7 @@ import type { StudentAnalytics as Analytics } from "@types";
 export type StudentAnalyticsProps = { analytics: Analytics };
 
 const STATUS_SEGMENTS = [
-  { key: "approved", label: "Approved", color: "bg-primary" },
+  { key: "approved", label: "Approved", color: "bg-primary-strong" },
   { key: "submitted", label: "In Review", color: "bg-sky-500" },
   { key: "needsWork", label: "Needs Work", color: "bg-destructive" },
   { key: "todo", label: "To Do", color: "bg-muted-foreground/30" },
@@ -105,7 +105,7 @@ export const StudentAnalytics = ({ analytics }: StudentAnalyticsProps) => {
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full bg-primary"
+                      className="h-full bg-primary-strong"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

@@ -21,7 +21,7 @@ export const FeedbackCard = ({
 }: FeedbackCardProps) => (
   <Card
     className={
-      verdict === "approved" ? "border-primary/40" : "border-destructive/40"
+      verdict === "approved" ? "border-primary-strong/40" : "border-destructive/40"
     }
   >
     <CardHeader className="pb-2 pt-4">

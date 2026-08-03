@@ -52,7 +52,7 @@ export function NotificationRow({
               {unread && (
                 <span
                   aria-hidden
-                  className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                  className="h-2 w-2 shrink-0 rounded-full bg-primary-strong"
                 />
               )}
             </span>

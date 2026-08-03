@@ -64,7 +64,7 @@ export const StudentView = ({ dashboard }: StudentViewProps) => {
           </CardContent>
         </Card>
 
-        <Card className={nextDeadline ? "border-primary/50" : ""}>
+        <Card className={nextDeadline ? "border-primary-strong/50" : ""}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Next Deadline

@@ -143,7 +143,7 @@ const Page = () => {
               return (
                 <Card key={task.id} className="hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 p-5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">

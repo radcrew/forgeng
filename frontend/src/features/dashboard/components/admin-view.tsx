@@ -24,7 +24,7 @@ export const AdminView = ({ dashboard }: AdminViewProps) => (
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-primary">
+            <div className="text-4xl font-bold text-primary-strong">
               {dashboard.applicationStats.pending}
             </div>
             <p className="text-xs text-muted-foreground mt-1">

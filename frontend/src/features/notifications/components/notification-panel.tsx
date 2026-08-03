@@ -113,7 +113,7 @@ export function NotificationPanel({
             <button
               type="button"
               onClick={refetch}
-              className="text-primary underline-offset-4 hover:underline"
+              className="text-primary-strong underline-offset-4 hover:underline"
             >
               Try again
             </button>

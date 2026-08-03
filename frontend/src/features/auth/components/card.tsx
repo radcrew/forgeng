@@ -59,7 +59,7 @@ const Header = ({ title, description, icon: Icon }: HeaderProps) => (
   <CardHeader className="space-y-4">
     <Brand centered={!!Icon} />
     {Icon && (
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
         <Icon className="h-6 w-6" />
       </div>
     )}

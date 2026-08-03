@@ -76,7 +76,7 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
               {
                 label: "Accepted",
                 value: applicationStats.accepted,
-                color: "bg-primary",
+                color: "bg-primary-strong",
               },
               {
                 label: "Pending",
@@ -107,7 +107,7 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
               {
                 label: "Approved",
                 value: submissionBreakdown.approved,
-                color: "bg-primary",
+                color: "bg-primary-strong",
               },
               {
                 label: "In Review",
@@ -154,7 +154,7 @@ export const AdminAnalytics = ({ dashboard }: AdminAnalyticsProps) => {
                       <td className="py-2 pr-2">
                         <Link
                           href={`/admin/cohorts/${c.id}`}
-                          className="font-medium text-primary hover:underline"
+                          className="font-medium text-primary-strong hover:underline"
                         >
                           {c.name}
                         </Link>
