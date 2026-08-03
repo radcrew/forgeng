@@ -56,9 +56,12 @@ export function HowItWorks() {
                   <div
                     className={cn(
                       "flex flex-col gap-4 md:items-start md:gap-5",
-                      onLeft
-                        ? "md:flex-row-reverse md:text-right"
-                        : "md:flex-row",
+                      // Only the row direction mirrors, so the tile stays
+                      // against the spine on both sides. The copy itself
+                      // stays left aligned throughout: mirroring it would put
+                      // a ragged left edge on half the steps, which costs the
+                      // reader the return point on every line.
+                      onLeft ? "md:flex-row-reverse" : "md:flex-row",
                     )}
                   >
                     <ArtPanel
@@ -73,12 +76,7 @@ export function HowItWorks() {
                         characters. At 28rem the text plus the tile fills the
                         side almost exactly. */}
                     <div className="min-w-0 max-w-md">
-                      <div
-                        className={cn(
-                          "flex items-center gap-2.5",
-                          onLeft && "md:justify-end",
-                        )}
-                      >
+                      <div className="flex items-center gap-2.5">
                         <Icon
                           className="h-4 w-4 shrink-0 text-quench-deep"
                           aria-hidden="true"
