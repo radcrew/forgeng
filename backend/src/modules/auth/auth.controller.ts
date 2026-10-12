@@ -7,6 +7,7 @@ import {
   Header,
   HttpCode,
   HttpStatus,
+  Logger,
   Post,
   Query,
   Req,
@@ -42,6 +43,8 @@ interface OAuthRequest extends Request {
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly service: AuthService,
     private readonly config: ConfigService<AppConfiguration, true>,
@@ -206,6 +209,10 @@ export class AuthController {
         res.redirect(`${frontendUrl}/unavailable?reason=${restrictionReason}`);
         return;
       }
+      this.logger.warn(
+        `OAuth sign-in failed for ${req.user.provider}: ${(err as Error).message}`,
+        (err as Error).stack,
+      );
       const failureUrl = this.config.getOrThrow('auth.oauthFailureRedirect', {
         infer: true,
       });
