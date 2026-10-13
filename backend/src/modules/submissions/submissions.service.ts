@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import type { Prisma, Submission, Task, User } from '@prisma/client';
 
-import type { AuthUser } from '@core/auth/auth.types';
-import { PrismaService } from '@core/database/prisma.service';
-import { toSubmissionDto, type SubmissionDto } from '@common/mappers';
-import { NotificationsService } from '@modules/notifications/notifications.service';
+import type { AuthUser } from '../../core/auth/auth.types';
+import { PrismaService } from '../../core/database/prisma.service';
+import { toSubmissionDto, type SubmissionDto } from '../../common/mappers';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';

@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
-import { Public } from '@core/auth/public.decorator';
-import { PrismaService } from '@core/database/prisma.service';
+import { Public } from '../../core/auth/public.decorator';
+import { PrismaService } from '../../core/database/prisma.service';
 
 @ApiTags('health')
 @Controller('healthz')

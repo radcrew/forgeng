@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { MailService } from '@core/mail';
+import { MailService } from '../../../core/mail';
 import { passwordResetEmail, verificationEmail } from '../templates';
 
 /** Auth-specific email helpers built on the shared {@link MailService}. */

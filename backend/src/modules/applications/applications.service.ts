@@ -6,19 +6,19 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApplicationStatus, Role, type User } from '@prisma/client';
-import type { AppConfiguration } from '@config';
-import { PrismaService } from '@core/database/prisma.service';
-import { toApplicationDto, type ApplicationDto } from '@common/mappers';
-import { splitName } from '@common/string';
-import { MailService } from '@core/mail';
-import { NotificationsService } from '@modules/notifications/notifications.service';
+import type { AppConfiguration } from '../../config';
+import { PrismaService } from '../../core/database/prisma.service';
+import { toApplicationDto, type ApplicationDto } from '../../common/mappers';
+import { splitName } from '../../common/string';
+import { MailService } from '../../core/mail';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   applicationAcceptedEmail,
   applicationRejectedEmail,
-} from '@modules/notifications/templates';
-import { DEFAULT_PAGE_SIZE } from '@common/constants/pagination';
-import { paginationParams } from '@common/utils/pagination';
-import { STUDENT_ROUTES } from '@common/constants/routes';
+} from '../notifications/templates';
+import { DEFAULT_PAGE_SIZE } from '../../common/constants/pagination';
+import { paginationParams } from '../../common/utils/pagination';
+import { STUDENT_ROUTES } from '../../common/constants/routes';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';

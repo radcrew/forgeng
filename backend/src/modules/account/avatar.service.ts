@@ -4,10 +4,10 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { AppConfiguration } from '@config';
-import type { AuthUser } from '@core/auth/auth.types';
-import { PrismaService } from '@core/database/prisma.service';
-import { toUserDto, type UserDto } from '@common/mappers';
+import type { AppConfiguration } from '../../config';
+import type { AuthUser } from '../../core/auth/auth.types';
+import { PrismaService } from '../../core/database/prisma.service';
+import { toUserDto, type UserDto } from '../../common/mappers';
 
 /** Minimal shape of a Multer memory-storage file — avoids a @types/multer dep. */
 export interface UploadedImage {

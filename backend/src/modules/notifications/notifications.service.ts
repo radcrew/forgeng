@@ -2,17 +2,17 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Verdict } from '@prisma/client';
 
-import type { AppConfiguration } from '@config';
-import type { AuthUser } from '@core/auth/auth.types';
-import { MailService, type RenderedEmail } from '@core/mail';
+import type { AppConfiguration } from '../../config';
+import type { AuthUser } from '../../core/auth/auth.types';
+import { MailService, type RenderedEmail } from '../../core/mail';
 import {
   toNotificationDto,
   toNotificationPreferenceDto,
   type NotificationDto,
   type NotificationPreferenceDto,
-} from '@common/mappers';
-import { ADMIN_ROUTES, STUDENT_ROUTES } from '@common/constants/routes';
-import { PrismaService } from '@core/database/prisma.service';
+} from '../../common/mappers';
+import { ADMIN_ROUTES, STUDENT_ROUTES } from '../../common/constants/routes';
+import { PrismaService } from '../../core/database/prisma.service';
 import { ListNotificationsQuery } from './dto/list-notifications.query';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 import {

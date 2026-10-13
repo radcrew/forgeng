@@ -7,8 +7,8 @@ import type {
   TaskType,
   User,
 } from '@prisma/client';
-import { ApplicationsService } from '@modules/applications/applications.service';
-import type { AuthUser } from '@core/auth/auth.types';
+import { ApplicationsService } from '../applications/applications.service';
+import type { AuthUser } from '../../core/auth/auth.types';
 import {
   toApplicationDto,
   toCohortDto,
@@ -16,9 +16,9 @@ import {
   type ApplicationDto,
   type CohortDto,
   type SubmissionDto,
-} from '@common/mappers';
-import { PrismaService } from '@core/database/prisma.service';
-import type { ApplicationStats } from '@modules/applications/applications.service';
+} from '../../common/mappers';
+import { PrismaService } from '../../core/database/prisma.service';
+import type { ApplicationStats } from '../applications/applications.service';
 
 const ANALYTICS_WEEKS = 6;
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;

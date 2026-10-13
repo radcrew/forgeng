@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, type Profile } from 'passport-github2';
 
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from '../../../config';
 import type { OAuthProfileDto } from './google.strategy';
 
 const PLACEHOLDER = {

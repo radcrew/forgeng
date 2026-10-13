@@ -4,7 +4,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from './config';
 
 /**
  * Express-level middleware applied once at bootstrap (security, compression,

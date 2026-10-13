@@ -1,21 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from '../../config';
 import {
   toCohortDto,
   toUserDto,
   type ProfileEnrollmentDto,
   type UserDto,
-} from '@common/mappers';
-import { MailService } from '@core/mail';
-import { PrismaService } from '@core/database/prisma.service';
+} from '../../common/mappers';
+import { MailService } from '../../core/mail';
+import { PrismaService } from '../../core/database/prisma.service';
 import {
   paymentReleasedEmail,
   walletMissingEmail,
-} from '@modules/notifications/templates';
-import { DEFAULT_PAGE_SIZE } from '@common/constants/pagination';
-import { paginationParams } from '@common/utils/pagination';
-import { STUDENT_ROUTES } from '@common/constants/routes';
+} from '../notifications/templates';
+import { DEFAULT_PAGE_SIZE } from '../../common/constants/pagination';
+import { paginationParams } from '../../common/utils/pagination';
+import { STUDENT_ROUTES } from '../../common/constants/routes';
 import { ListUsersQuery } from './dto/list-users.query';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';

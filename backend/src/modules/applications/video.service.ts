@@ -4,8 +4,8 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { AppConfiguration } from '@config';
-import type { AuthUser } from '@core/auth/auth.types';
+import type { AppConfiguration } from '../../config';
+import type { AuthUser } from '../../core/auth/auth.types';
 
 export interface UploadedVideo {
   buffer: Buffer;

@@ -1,5 +1,3 @@
-import './register-paths';
-
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -10,8 +8,8 @@ import type { Response } from 'express';
 import { AppModule } from './app.module';
 import { applyAppMiddleware } from './app.middleware';
 import { setupSwagger } from './swagger';
-import { PrismaExceptionFilter } from '@common/filters/prisma-exception.filter';
-import type { AppConfiguration } from '@config';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import type { AppConfiguration } from './config';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

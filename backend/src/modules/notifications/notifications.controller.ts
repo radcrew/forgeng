@@ -11,13 +11,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '@core/auth/current-user.decorator';
-import { Roles } from '@core/auth/roles.decorator';
-import type { AuthUser } from '@core/auth/auth.types';
+import { CurrentUser } from '../../core/auth/current-user.decorator';
+import { Roles } from '../../core/auth/roles.decorator';
+import type { AuthUser } from '../../core/auth/auth.types';
 import type {
   NotificationDto,
   NotificationPreferenceDto,
-} from '@common/mappers';
+} from '../../common/mappers';
 import { ListNotificationsQuery } from './dto/list-notifications.query';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 import { NotificationsService } from './notifications.service';

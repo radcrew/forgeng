@@ -16,10 +16,10 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-import { Roles } from '@core/auth/roles.decorator';
-import { CurrentUser } from '@core/auth/current-user.decorator';
-import type { AuthUser } from '@core/auth/auth.types';
-import type { ApplicationDto } from '@common/mappers';
+import { Roles } from '../../core/auth/roles.decorator';
+import { CurrentUser } from '../../core/auth/current-user.decorator';
+import type { AuthUser } from '../../core/auth/auth.types';
+import type { ApplicationDto } from '../../common/mappers';
 import {
   ApplicationsService,
   type ApplicationStats,

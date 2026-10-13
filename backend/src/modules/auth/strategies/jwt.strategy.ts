@@ -4,9 +4,9 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Request } from 'express';
 
-import type { AppConfiguration } from '@config';
-import { PrismaService } from '@core/database/prisma.service';
-import type { AuthUser } from '@core/auth/auth.types';
+import type { AppConfiguration } from '../../../config';
+import { PrismaService } from '../../../core/database/prisma.service';
+import type { AuthUser } from '../../../core/auth/auth.types';
 import type { JwtPayload } from '../types/jwt-payload.types';
 
 @Injectable()

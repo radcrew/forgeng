@@ -9,9 +9,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { AuthProvider, type User, VerificationTokenType } from '@prisma/client';
 
-import type { AppConfiguration } from '@config';
-import { PrismaService } from '@core/database/prisma.service';
-import { toUserDto, type UserDto } from '@common/mappers';
+import type { AppConfiguration } from '../../config';
+import { PrismaService } from '../../core/database/prisma.service';
+import { toUserDto, type UserDto } from '../../common/mappers';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 import { EmailService } from './services/email.service';
