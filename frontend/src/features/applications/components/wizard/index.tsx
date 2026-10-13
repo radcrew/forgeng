@@ -65,9 +65,6 @@ export const Wizard = ({ children }: WizardProps) => {
     resolver: zodResolver(APPLICATION_FORM_SCHEMA),
     defaultValues: {
       name: "",
-      background: "",
-      experience: "",
-      motivation: "",
       linkedin: "",
       twitter: "",
       facebook: "",
@@ -138,9 +135,6 @@ export const Wizard = ({ children }: WizardProps) => {
         await refreshUser();
       }
       await createApplication({
-        background: data.background,
-        motivation: data.motivation,
-        experience: data.experience,
         linkedin: data.linkedin,
         twitter: data.twitter || undefined,
         facebook: data.facebook || undefined,

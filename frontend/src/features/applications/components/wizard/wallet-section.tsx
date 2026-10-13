@@ -33,14 +33,15 @@ interface Props {
   control: Control<ApplicationFormValues>;
 }
 
-export const StepWallets = ({ control }: Props) => {
+/** Optional withdrawal address, shown at the end of the social profiles step. */
+export const WalletSection = ({ control }: Props) => {
   // Drive the address placeholder off the currently selected chain.
   const chain = useWatch({ control, name: "wallet.chain" }) ?? "evm";
 
   return (
-    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
+    <div className="space-y-5 border-t pt-6">
       <div>
-        <h2 className="u-display text-xl">{COPY.title}</h2>
+        <h3 className="u-display text-lg">{COPY.title}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{COPY.hint}</p>
         <p className="mt-1 text-xs text-muted-foreground">
           {COPY.atLeastOneHint}

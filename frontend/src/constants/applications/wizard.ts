@@ -5,29 +5,6 @@ export const APPLICATION_WIZARD_COPY = {
   pageTitle: "Apply to Forgeng",
   stepIndicator: (step: number, total: number) => `Step ${step} of ${total}`,
   steps: {
-    basicInfo: {
-      title: "Basic Information",
-      accountHint:
-        "You're applying with your Forgeng account. Make sure your name is correct — it'll be saved to your profile. Your email can't be changed here.",
-      nameLabel: "Name",
-      namePlaceholder: "Your full name",
-      emailLabel: "Email",
-    },
-    background: {
-      title: "Your Background",
-      backgroundLabel: "Tell us about yourself",
-      backgroundPlaceholder:
-        "Where are you coming from? What have you been learning?",
-      experienceLabel: "Technical Experience",
-      experiencePlaceholder:
-        "Any programming languages, tools, or projects you've worked with?",
-    },
-    motivation: {
-      title: "Motivation",
-      motivationLabel: "Why do you want to join this program?",
-      motivationPlaceholder:
-        "What are your goals? How will this apprenticeship help you achieve them?",
-    },
     videoIntro: {
       title: "Video Introduction",
       hint: "Please record a short video introducing yourself, about 20–30 seconds long. Just say hello and share a little about who you are — there's no need to make it long or formal.",
@@ -62,7 +39,9 @@ export const APPLICATION_WIZARD_COPY = {
     },
     socialProfiles: {
       title: "Social Profiles",
-      hint: "Help us get to know you better. LinkedIn, GitHub, and Address are required.",
+      hint: "Help us get to know you better. Name, country, LinkedIn, and GitHub are required.",
+      nameLabel: "Name",
+      namePlaceholder: "Your full name",
       linkedinLabel: "LinkedIn",
       linkedinPlaceholder: "https://linkedin.com/in/your-profile",
       twitterLabel: "Twitter / X (Optional)",

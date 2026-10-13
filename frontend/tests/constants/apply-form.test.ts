@@ -10,9 +10,6 @@ import {
 // A valid baseline; individual tests override single fields to assert failures.
 const VALID = {
   name: "Ada Lovelace",
-  background: "I have been building software for several years now.",
-  experience: "Backend and systems work.",
-  motivation: "I want to deepen my craft alongside strong engineers.",
   linkedin: "https://linkedin.com/in/ada",
   twitter: "",
   facebook: "",
@@ -32,14 +29,6 @@ describe("APPLICATION_FORM_SCHEMA", () => {
 
   it("rejects a blank name", () => {
     const result = APPLICATION_FORM_SCHEMA.safeParse({ ...VALID, name: "" });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects a too-short background", () => {
-    const result = APPLICATION_FORM_SCHEMA.safeParse({
-      ...VALID,
-      background: "too short",
-    });
     expect(result.success).toBe(false);
   });
 
@@ -95,7 +84,11 @@ describe("APPLICATION_FORM_SCHEMA", () => {
 
 describe("isApplicationStepSlug", () => {
   it("recognizes a real step slug", () => {
-    expect(isApplicationStepSlug("background")).toBe(true);
+    expect(isApplicationStepSlug("social-profiles")).toBe(true);
+  });
+
+  it("rejects a removed step slug", () => {
+    expect(isApplicationStepSlug("background")).toBe(false);
   });
 
   it("rejects an unknown slug", () => {

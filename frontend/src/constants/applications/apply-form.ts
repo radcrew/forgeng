@@ -45,35 +45,15 @@ const walletEntry = z
     }
   });
 
-/** Max length for the free-text background and motivation answers. */
-export const APPLICATION_TEXT_MAX_LENGTH = 1000;
-
-// Email comes from the signed-in account (read-only), but the applicant can
-// edit their name in the first step — so name is part of the form schema and
-// is persisted back to their profile on submit.
+// The applicant can edit their name on the social profiles step (prefilled
+// from their account), so name is part of the form schema and is persisted
+// back to their profile on submit.
 export const APPLICATION_FORM_SCHEMA = z.object({
   name: z
     .string()
     .trim()
     .min(1, "Name is required")
     .max(120, "Name must be under 120 characters"),
-  background: z
-    .string()
-    .min(20, "Please provide more detail about your background")
-    .max(
-      APPLICATION_TEXT_MAX_LENGTH,
-      `Please keep this under ${APPLICATION_TEXT_MAX_LENGTH} characters`,
-    ),
-  experience: z
-    .string()
-    .min(1, "Please share your technical experience"),
-  motivation: z
-    .string()
-    .min(20, "Please tell us why you want to join")
-    .max(
-      APPLICATION_TEXT_MAX_LENGTH,
-      `Please keep this under ${APPLICATION_TEXT_MAX_LENGTH} characters`,
-    ),
   linkedin: z
     .string()
     .min(1, "LinkedIn profile is required")
@@ -104,16 +84,9 @@ export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 // Lives under the `forgeng.` prefix so sign-out clears it (see lib/session.ts).
 export const APPLICATION_DRAFT_STORAGE_KEY = "forgeng.applicationDraft";
 
-// Each wizard step has its own URL segment, e.g. /apply/background. The order
-// of this array is the order steps are shown in.
-export const APPLICATION_STEP_SLUGS = [
-  "basic-info",
-  "background",
-  "motivation",
-  "social-profiles",
-  "video",
-  "wallets",
-] as const;
+// Each wizard step has its own URL segment, e.g. /apply/video. The order of
+// this array is the order steps are shown in.
+export const APPLICATION_STEP_SLUGS = ["social-profiles", "video"] as const;
 
 export type ApplicationStepSlug = (typeof APPLICATION_STEP_SLUGS)[number];
 
@@ -124,16 +97,14 @@ export const isApplicationStepSlug = (
 ): value is ApplicationStepSlug =>
   APPLICATION_STEP_SLUGS.includes(value as ApplicationStepSlug);
 
-// Fields validated before advancing from each step. The final step (wallets)
-// is validated by form.handleSubmit, so it has no gated fields here.
+// Fields validated before advancing from each step. form.handleSubmit also
+// validates everything again on the final step.
 export const APPLICATION_FIELDS_BY_SLUG: Record<
   ApplicationStepSlug,
   Array<keyof ApplicationFormValues>
 > = {
-  "basic-info": ["name"],
-  background: ["background", "experience"],
-  motivation: ["motivation"],
   "social-profiles": [
+    "name",
     "linkedin",
     "twitter",
     "facebook",
@@ -142,7 +113,7 @@ export const APPLICATION_FIELDS_BY_SLUG: Record<
     "telegram",
     "whatsapp",
     "country",
+    "wallet",
   ],
   video: ["videoUrl"],
-  wallets: [],
 };

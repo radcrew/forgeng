@@ -83,15 +83,17 @@ export class WalletEntryDto {
  * request body — an applicant cannot apply on behalf of someone else.
  */
 export class CreateApplicationDto {
+  // No longer asked for by the apply wizard; kept optional so older clients
+  // and existing rows still validate.
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   @MaxLength(1000)
-  motivation!: string;
+  motivation?: string;
 
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   @MaxLength(1000)
-  background!: string;
+  background?: string;
 
   @IsOptional()
   @IsString()
