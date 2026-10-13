@@ -12,9 +12,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { CurrentUser } from '@core/auth/current-user.decorator';
-import type { AuthUser } from '@core/auth/auth.types';
-import type { SubmissionDto } from '@common/mappers';
+import { CurrentUser } from '../../core/auth/current-user.decorator';
+import type { AuthUser } from '../../core/auth/auth.types';
+import type { SubmissionDto } from '../../common/mappers';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from '../../../config';
 
 export interface IpReputationResult {
   countryCode: string | null;

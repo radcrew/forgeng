@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from './config';
 
 const BEARER_AUTH = 'bearer';
 

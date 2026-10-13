@@ -19,12 +19,12 @@ import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from '../../config';
 import { AUTH_THROTTLE } from './auth.constants';
-import { Public } from '@core/auth/public.decorator';
-import type { AuthUser } from '@core/auth/auth.types';
-import { CurrentUser } from '@core/auth/current-user.decorator';
-import { toUserDto, type UserDto } from '@common/mappers';
+import { Public } from '../../core/auth/public.decorator';
+import type { AuthUser } from '../../core/auth/auth.types';
+import { CurrentUser } from '../../core/auth/current-user.decorator';
+import { toUserDto, type UserDto } from '../../common/mappers';
 import { AuthService, type AuthResult } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';

@@ -7,7 +7,7 @@ import {
   type VerifyCallback,
 } from 'passport-google-oauth20';
 
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from '../../../config';
 
 export interface OAuthProfileDto {
   provider: 'google' | 'github';

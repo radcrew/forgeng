@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { Roles } from '@core/auth/roles.decorator';
+import { Roles } from '../../core/auth/roles.decorator';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { SettingsService, type SettingsDto } from './settings.service';
 

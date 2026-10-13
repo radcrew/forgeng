@@ -18,10 +18,10 @@ import {
   toUserDto,
   type ProfileEnrollmentDto,
   type UserDto,
-} from '@common/mappers';
-import type { AuthUser } from '@core/auth/auth.types';
-import { CurrentUser } from '@core/auth/current-user.decorator';
-import { PrismaService } from '@core/database/prisma.service';
+} from '../../common/mappers';
+import type { AuthUser } from '../../core/auth/auth.types';
+import { CurrentUser } from '../../core/auth/current-user.decorator';
+import { PrismaService } from '../../core/database/prisma.service';
 import { AvatarService, type UploadedImage } from './avatar.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateWalletsDto } from './dto/update-wallets.dto';

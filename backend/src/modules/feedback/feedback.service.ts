@@ -3,10 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { AuthUser } from '@core/auth/auth.types';
-import { toFeedbackDto, type FeedbackDto } from '@common/mappers';
-import { PrismaService } from '@core/database/prisma.service';
-import { NotificationsService } from '@modules/notifications/notifications.service';
+import type { AuthUser } from '../../core/auth/auth.types';
+import { toFeedbackDto, type FeedbackDto } from '../../common/mappers';
+import { PrismaService } from '../../core/database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 
 @Injectable()

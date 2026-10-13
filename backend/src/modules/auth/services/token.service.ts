@@ -4,9 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
 
-import type { AppConfiguration } from '@config';
-import { PrismaService } from '@core/database/prisma.service';
-import { hashToken } from '@common/crypto';
+import type { AppConfiguration } from '../../../config';
+import { PrismaService } from '../../../core/database/prisma.service';
+import { hashToken } from '../../../common/crypto';
 import type { IssuedTokens, JwtPayload } from '../types/jwt-payload.types';
 
 /** How long after a rotation the old token may be replayed by a racing client. */

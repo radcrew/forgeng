@@ -1,4 +1,4 @@
-import { layout, type RenderedEmail } from '@core/mail';
+import { layout, type RenderedEmail } from '../../../core/mail';
 
 export const paymentEligibleEmail = (params: {
   studentName: string;

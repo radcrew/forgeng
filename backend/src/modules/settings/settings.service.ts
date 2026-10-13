@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { PlatformSetting } from '@prisma/client';
-import { PrismaService } from '@core/database/prisma.service';
+import { PrismaService } from '../../core/database/prisma.service';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 
 export interface SettingsDto {

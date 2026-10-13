@@ -1,3 +1,3 @@
 export { passwordResetEmail } from './password-reset.template';
 export { verificationEmail } from './verification.template';
-export type { RenderedEmail } from '@core/mail';
+export type { RenderedEmail } from '../../../core/mail';

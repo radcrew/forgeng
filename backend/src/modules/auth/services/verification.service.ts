@@ -3,9 +3,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma, VerificationTokenType } from '@prisma/client';
 
-import type { AppConfiguration } from '@config';
-import { PrismaService } from '@core/database/prisma.service';
-import { hashToken } from '@common/crypto';
+import type { AppConfiguration } from '../../../config';
+import { PrismaService } from '../../../core/database/prisma.service';
+import { hashToken } from '../../../common/crypto';
 
 /**
  * Owns the `verificationToken` table: issuing single-use, hashed tokens for

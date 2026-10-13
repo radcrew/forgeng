@@ -15,7 +15,7 @@ import {
   TELEGRAM_REGEX,
   TWITTER_PROFILE_REGEX,
   WHATSAPP_REGEX,
-} from '@common/constants/social-profiles';
+} from '../../../common/constants/social-profiles';
 
 export class UpdateProfileDto {
   @IsOptional()

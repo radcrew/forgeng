@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
 
-import type { AppConfiguration } from '@config';
+import type { AppConfiguration } from '../../config';
 
 export interface SendMailOptions {
   to: string;

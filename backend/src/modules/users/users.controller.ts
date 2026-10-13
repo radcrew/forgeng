@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import type { ProfileEnrollmentDto, UserDto } from '@common/mappers';
-import { Roles } from '@core/auth/roles.decorator';
+import type { ProfileEnrollmentDto, UserDto } from '../../common/mappers';
+import { Roles } from '../../core/auth/roles.decorator';
 import { ListUsersQuery } from './dto/list-users.query';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';

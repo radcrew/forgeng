@@ -15,14 +15,14 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-import { APPLICATION_COUNTRY_CODES } from '@common/constants/countries';
+import { APPLICATION_COUNTRY_CODES } from '../../../common/constants/countries';
 import {
   FACEBOOK_PROFILE_REGEX,
   GITHUB_PROFILE_REGEX,
   LINKEDIN_PROFILE_REGEX,
   TELEGRAM_REGEX,
   TWITTER_PROFILE_REGEX,
-} from '@common/constants/social-profiles';
+} from '../../../common/constants/social-profiles';
 
 export const SUPPORTED_CHAINS = ['evm', 'solana', 'tron'] as const;
 export type WalletChain = (typeof SUPPORTED_CHAINS)[number];

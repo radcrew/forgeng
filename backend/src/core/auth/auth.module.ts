@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
-import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
 
 /**
