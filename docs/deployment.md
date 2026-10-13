@@ -30,7 +30,7 @@ GitHub repo (main branch)
    | Name                   | Value                                  |
    | ---------------------- | -------------------------------------- |
    | `NEXT_PUBLIC_API_URL`  | `` (empty)                             |
-   | `BACKEND_ORIGIN`       | `https://forgeng-backend.onrender.com` |
+   | `BACKEND_ORIGIN`       | `https://forgeng-backend.vercel.app` |
    | `NEXT_PUBLIC_SITE_URL` | `https://<your-vercel-domain>`         |
    | `JWT_ACCESS_SECRET`    | same value as the backend's            |
 
@@ -72,7 +72,7 @@ provisions the web service and the Postgres database in one click.
 4. Click **Apply**. Render provisions the database first, then builds the
    backend. The `DATABASE_URL` is wired automatically.
 5. Wait for the first build to finish (~3–5 min). The web service will
-   show a URL like `https://forgeng-backend.onrender.com`.
+   show a URL like `https://forgeng-backend.vercel.app`.
 6. In the **forgeng-backend** service → **Environment** tab, set:
 
    | Variable      | Value                                                  |
@@ -115,7 +115,7 @@ domain.
 
 **This works automatically for local dev** (`localhost:3000` /
 `localhost:3001`) and **for the default Vercel/Render setup is broken** —
-`forgeng-frontend.vercel.app` and `forgeng-backend.onrender.com` are different
+`forgeng-frontend.vercel.app` and `forgeng-backend.vercel.app` are different
 registrable domains, so the frontend's middleware will never see the cookies
 the backend sets, and protected routes will redirect to `/sign-in` even when
 the user just logged in.
@@ -146,7 +146,7 @@ Verify the wiring end-to-end:
 
 ```bash
 # 1. Backend health check
-curl https://forgeng-backend.onrender.com/api/healthz
+curl https://forgeng-backend.vercel.app/api/healthz
 # → {"status":"ok","database":"connected", ... }
 
 # 2. Frontend hits backend (open in browser)
