@@ -11,7 +11,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 // this domain. Set NEXT_PUBLIC_API_URL="" in the deployed env so the client
 // builds relative `/api/...` URLs that this rewrite picks up.
 const BACKEND_ORIGIN =
-  process.env.BACKEND_ORIGIN ?? "https://forgeng-backend.onrender.com";
+  process.env.BACKEND_ORIGIN ?? "https://forgeng-backend.vercel.app";
 
 const nextConfig: NextConfig = {
   // This app lives in a monorepo; point Turbopack at the workspace root

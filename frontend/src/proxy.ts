@@ -16,7 +16,7 @@ import type { UserRole } from "@types";
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.BACKEND_ORIGIN ||
-  "https://forgeng-backend.onrender.com";
+  "https://forgeng-backend.vercel.app";
 
 const PROTECTED_ROUTES: { prefix: string; roles: UserRole[] }[] = [
   { prefix: "/admin", roles: ["admin"] },
