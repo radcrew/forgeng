@@ -1,4 +1,4 @@
-import 'tsconfig-paths/register';
+import './register-paths';
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
