@@ -25,6 +25,12 @@ describe('CreateApplicationDto', () => {
     expect(failingProps(VALID)).toEqual([]);
   });
 
+  it('accepts an application without motivation or background', () => {
+    expect(
+      failingProps({ ...VALID, motivation: undefined, background: undefined }),
+    ).toEqual([]);
+  });
+
   it('rejects a non-profile linkedin URL', () => {
     expect(
       failingProps({ ...VALID, linkedin: 'https://example.com/ada' }),

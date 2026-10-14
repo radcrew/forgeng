@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@components/ui/button";
 
-const MAX_SECONDS = 30;
+const MAX_SECONDS = 60;
 
 const COPY = {
   allowCameraLabel: "Allow Camera",

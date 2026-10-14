@@ -20,6 +20,8 @@ import {
 } from "@constants/applications";
 import { APPLICATION_COUNTRY_OPTIONS } from "@constants/shared/countries";
 
+import { WalletSection } from "./wallet-section";
+
 const COPY = APPLICATION_WIZARD_COPY.steps.socialProfiles;
 
 type SocialProfileFieldName =
@@ -51,6 +53,24 @@ export const StepSocialProfiles = ({ control }: Props) => (
   <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
     <h2 className="u-display text-xl">{COPY.title}</h2>
     <p className="text-sm text-muted-foreground">{COPY.hint}</p>
+
+    {/* Prefilled from the account by the Wizard and saved back on submit. */}
+    <FormField
+      control={control}
+      name="name"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            {COPY.nameLabel}
+            <span className="text-destructive ml-0.5">*</span>
+          </FormLabel>
+          <FormControl>
+            <Input placeholder={COPY.namePlaceholder} {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
 
     <FormField
       control={control}
@@ -99,5 +119,7 @@ export const StepSocialProfiles = ({ control }: Props) => (
         )}
       />
     ))}
+
+    <WalletSection control={control} />
   </div>
 );
