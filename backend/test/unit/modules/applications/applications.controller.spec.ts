@@ -15,7 +15,7 @@ describe('ApplicationsController', () => {
     findOne: jest.Mock;
     updateStatus: jest.Mock;
   };
-  let video: { upload: jest.Mock };
+  let video: { upload: jest.Mock; createUploadTarget: jest.Mock };
 
   beforeEach(() => {
     service = {
@@ -26,7 +26,12 @@ describe('ApplicationsController', () => {
       findOne: jest.fn().mockResolvedValue({ id: 1 }),
       updateStatus: jest.fn().mockResolvedValue({ id: 1 }),
     };
-    video = { upload: jest.fn().mockResolvedValue({ url: '/v.webm' }) };
+    video = {
+      upload: jest.fn().mockResolvedValue({ url: '/v.webm' }),
+      createUploadTarget: jest
+        .fn()
+        .mockResolvedValue({ uploadUrl: null, path: null }),
+    };
     controller = new ApplicationsController(
       service as unknown as ApplicationsService,
       video as unknown as VideoService,
@@ -59,6 +64,11 @@ describe('ApplicationsController', () => {
     const file = { buffer: Buffer.from('v') } as never;
     await controller.uploadVideoIntro(user, file);
     expect(video.upload).toHaveBeenCalledWith(user, file);
+  });
+
+  it('delegates the upload URL request with the content type', async () => {
+    await controller.createVideoUploadUrl(user, { contentType: 'video/mp4' });
+    expect(video.createUploadTarget).toHaveBeenCalledWith(user, 'video/mp4');
   });
 
   it('delegates findOne with the id', async () => {

@@ -22,6 +22,7 @@ import { STUDENT_ROUTES } from '../../common/constants/routes';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
+import { VideoService } from './video.service';
 
 export interface PaginatedApplications {
   items: ApplicationDto[];
@@ -48,6 +49,7 @@ export class ApplicationsService {
     private readonly notifications: NotificationsService,
     private readonly mail: MailService,
     private readonly config: ConfigService<AppConfiguration, true>,
+    private readonly video: VideoService,
   ) {
     this.frontendUrl = this.config.get('frontendUrl', { infer: true });
   }
@@ -76,6 +78,7 @@ export class ApplicationsService {
     if (existing) {
       throw new ConflictException('You have already submitted an application.');
     }
+    await this.video.assertOwnUpload(user.id, dto.videoUrl);
 
     const { firstName, lastName } = splitName(user.name, user.email);
     const created = await this.prisma.application.create({
@@ -133,7 +136,8 @@ export class ApplicationsService {
   async findOne(id: number): Promise<ApplicationDto> {
     const app = await this.prisma.application.findUnique({ where: { id } });
     if (!app) throw new NotFoundException('Application not found.');
-    return toApplicationDto(app);
+    const dto = toApplicationDto(app);
+    return { ...dto, videoUrl: await this.video.viewUrl(dto.videoUrl) };
   }
 
   async updateStatus(
