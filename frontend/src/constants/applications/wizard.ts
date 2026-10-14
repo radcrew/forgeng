@@ -7,7 +7,7 @@ export const APPLICATION_WIZARD_COPY = {
   steps: {
     videoIntro: {
       title: "Video Introduction",
-      hint: "Please record a short video introducing yourself, about 20–30 seconds long. Just say hello and share a little about who you are — there's no need to make it long or formal.",
+      hint: "Please record a short video introducing yourself, up to 1 minute long. Say hello, share a little about who you are, and tell us why you want to join. There's no need to make it formal.",
       allowCameraLabel: "Allow Camera",
       recordLabel: "Start Recording",
       stopLabel: "Stop",
