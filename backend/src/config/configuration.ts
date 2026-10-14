@@ -83,6 +83,13 @@ export default (): AppConfiguration => {
     corsOrigin: parseCorsOrigin(process.env.CORS_ORIGIN),
     frontendUrl: process.env.FRONTEND_URL ?? DEFAULT_FRONTEND,
     uploadsDir: process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads'),
+    storage:
+      process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? {
+            supabaseUrl: process.env.SUPABASE_URL,
+            serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          }
+        : null,
     database: {
       url: process.env.DATABASE_URL ?? '',
     },

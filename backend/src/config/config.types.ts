@@ -7,6 +7,8 @@ export interface AppConfiguration {
   frontendUrl: string;
   /** Absolute directory where uploaded files (e.g. avatars) are written. */
   uploadsDir: string;
+  /** Supabase Storage for uploads; null falls back to `uploadsDir` on disk. */
+  storage: { supabaseUrl: string; serviceRoleKey: string } | null;
   database: {
     url: string;
   };

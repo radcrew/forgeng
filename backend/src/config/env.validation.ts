@@ -38,6 +38,14 @@ class EnvironmentVariables {
   UPLOADS_DIR?: string;
 
   @IsOptional()
+  @IsString()
+  SUPABASE_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  SUPABASE_SERVICE_ROLE_KEY?: string;
+
+  @IsOptional()
   @IsEnum(NodeEnvironment)
   NODE_ENV?: NodeEnvironment;
 
