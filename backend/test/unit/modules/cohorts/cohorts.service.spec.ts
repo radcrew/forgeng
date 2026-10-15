@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Cohort, Enrollment, User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { CohortsService } from '@modules/cohorts/cohorts.service';
@@ -142,6 +142,18 @@ describe('CohortsService', () => {
       expect(data.startDate).toBeInstanceOf(Date);
       expect(data.endDate).toBeInstanceOf(Date);
     });
+
+    it('rejects an end date before the start date', async () => {
+      await expect(
+        service.create({
+          name: 'Spring 2026',
+          capacity: 30,
+          startDate: '2026-05-01T00:00:00.000Z',
+          endDate: '2026-02-01T00:00:00.000Z',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.cohort.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {
@@ -163,6 +175,25 @@ describe('CohortsService', () => {
       expect(prisma.cohort.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 3 } }),
       );
+    });
+
+    it('rejects an end date before the saved start date', async () => {
+      prisma.cohort.findUnique.mockResolvedValue(
+        makeCohort({ startDate: new Date('2026-05-01T00:00:00.000Z') }),
+      );
+      await expect(
+        service.update(3, { endDate: '2026-02-01T00:00:00.000Z' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.cohort.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects a capacity below the number of enrolled students', async () => {
+      prisma.cohort.findUnique.mockResolvedValue(makeCohort());
+      prisma.enrollment.count.mockResolvedValue(5);
+      await expect(service.update(3, { capacity: 4 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.cohort.update).not.toHaveBeenCalled();
     });
   });
 
