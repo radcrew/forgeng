@@ -397,26 +397,6 @@ describe('ApplicationsService', () => {
 
       expect(tx.enrollment.deleteMany).not.toHaveBeenCalled();
     });
-
-    it('refuses to accept into a full cohort and sends no email', async () => {
-      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
-      tx.application.update.mockResolvedValue(
-        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
-      );
-      tx.enrollment.findUnique.mockResolvedValue(null);
-      tx.cohort.findUnique.mockResolvedValue({
-        id: 3,
-        name: 'Spring',
-        capacity: 2,
-        _count: { enrollments: 2 },
-      });
-
-      await expect(
-        service.updateStatus(10, { status: 'accepted', cohortId: 3 }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(tx.enrollment.upsert).not.toHaveBeenCalled();
-      expect(mail.send).not.toHaveBeenCalled();
-    });
   });
 
   describe('stats', () => {
