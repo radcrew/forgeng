@@ -103,7 +103,11 @@ describe('ApplicationsService', () => {
   let tx: {
     application: { update: jest.Mock };
     user: { updateMany: jest.Mock };
-    enrollment: { upsert: jest.Mock; findUnique: jest.Mock };
+    enrollment: {
+      upsert: jest.Mock;
+      findUnique: jest.Mock;
+      deleteMany: jest.Mock;
+    };
     cohort: { findUnique: jest.Mock };
   };
   let notifications: { notifyApplicationReceived: jest.Mock };
@@ -126,7 +130,11 @@ describe('ApplicationsService', () => {
     tx = {
       application: { update: jest.fn() },
       user: { updateMany: jest.fn() },
-      enrollment: { upsert: jest.fn(), findUnique: jest.fn() },
+      enrollment: {
+        upsert: jest.fn(),
+        findUnique: jest.fn(),
+        deleteMany: jest.fn(),
+      },
       cohort: { findUnique: jest.fn() },
     };
     notifications = {
@@ -313,6 +321,67 @@ describe('ApplicationsService', () => {
       await service.updateStatus(10, { status: 'rejected' });
 
       expect(mail.send).toHaveBeenCalledTimes(1);
+    });
+
+    it('moves an accepted student to the new cohort', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 4 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue(null);
+      tx.cohort.findUnique.mockResolvedValue({
+        id: 4,
+        name: 'Autumn',
+        capacity: 10,
+        _count: { enrollments: 0 },
+      });
+
+      await service.updateStatus(10, { status: 'accepted', cohortId: 4 });
+
+      expect(tx.enrollment.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ create: { userId: 1, cohortId: 4 } }),
+      );
+      expect(tx.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 1, cohortId: 3 },
+      });
+    });
+
+    it('removes the student from the cohort when it is cleared', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: null }),
+      );
+
+      await service.updateStatus(10, {
+        status: 'accepted',
+        cohortId: null as unknown as number,
+      });
+
+      expect(tx.enrollment.upsert).not.toHaveBeenCalled();
+      expect(tx.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 1, cohortId: 3 },
+      });
+    });
+
+    it('keeps the enrollment when only the note changes', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue({ id: 1 });
+
+      await service.updateStatus(10, {
+        status: 'accepted',
+        reviewerNote: 'ok',
+      });
+
+      expect(tx.enrollment.deleteMany).not.toHaveBeenCalled();
     });
 
     it('refuses to accept into a full cohort and sends no email', async () => {

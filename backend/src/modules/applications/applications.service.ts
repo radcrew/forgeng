@@ -192,6 +192,13 @@ export class ApplicationsService {
             update: {},
           });
         }
+        // Changing or clearing the cohort moves the student out of the old
+        // one, so they never end up in both.
+        if (exists.cohortId && exists.cohortId !== app.cohortId) {
+          await tx.enrollment.deleteMany({
+            where: { userId: app.userId, cohortId: exists.cohortId },
+          });
+        }
       }
 
       return app;
