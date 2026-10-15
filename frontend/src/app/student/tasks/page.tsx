@@ -30,6 +30,7 @@ import {
   type TaskSort,
 } from "@constants/tasks";
 import { APP_ART } from "@constants/shared/app-illustrations";
+import { isCohortEnded } from "@features/cohorts";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
@@ -107,6 +108,7 @@ const Page = () => {
   }
 
   const cohort = dashboard.cohort;
+  const cohortEnded = isCohortEnded(cohort);
   const hasTasks = !tasksLoading && tasks.length > 0;
 
   return (
@@ -252,6 +254,10 @@ const Page = () => {
                   <div className="flex items-center gap-3 shrink-0">
                     {submission ? (
                       <SubmissionStatusBadge status={submission.status} />
+                    ) : cohortEnded ? (
+                      <span className="text-xs text-muted-foreground">
+                        Cohort ended
+                      </span>
                     ) : (
                       <Button size="sm" onClick={() => setSelectedTask(task)}>
                         Submit

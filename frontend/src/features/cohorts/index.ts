@@ -25,6 +25,7 @@ export {
 
 export { CohortFormDialog } from "./components/form-dialog";
 export type { CohortFormDialogProps } from "./components/form-dialog";
+export { isCohortEnded } from "./status";
 export { Enrollments } from "./components/enrollments";
 export type { EnrollmentsProps } from "./components/enrollments";
 export { CohortRow } from "./components/row";
