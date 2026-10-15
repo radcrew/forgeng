@@ -82,6 +82,14 @@ export const ListPageLayout = <
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
 
+    // A new filter starts at page 1; staying on page 3 of the old filter
+    // would show an empty list when the new one has fewer pages.
+    const [pageFilter, setPageFilter] = useState(filter);
+    if (pageFilter !== filter) {
+        setPageFilter(filter);
+        setPage(1);
+    }
+
     const { data, isLoading } = useData(filter, page, pageSize);
 
     const items = data?.items ?? [];
