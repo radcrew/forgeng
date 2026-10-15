@@ -41,6 +41,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user) {
       throw new UnauthorizedException('User no longer exists.');
     }
+    // The role changed since this token was issued. Refusing it makes the
+    // client refresh: that works after an acceptance, and fails after an
+    // admin role change, which revokes the user's refresh tokens.
+    if (user.role !== payload.role) {
+      throw new UnauthorizedException('Your role has changed.');
+    }
     return user;
   }
 }

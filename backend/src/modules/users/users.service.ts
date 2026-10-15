@@ -144,10 +144,22 @@ export class UsersService {
     const exists = await this.prisma.user.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('User not found.');
 
-    const updated = await this.prisma.user.update({
-      where: { id },
-      data: { role: dto.role },
-    });
+    // A new role signs the user out everywhere: revoking their refresh tokens
+    // means they sign in again and get a token with the new role.
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id },
+        data: { role: dto.role },
+      }),
+      ...(dto.role === exists.role
+        ? []
+        : [
+            this.prisma.refreshToken.updateMany({
+              where: { userId: id, revokedAt: null },
+              data: { revokedAt: new Date() },
+            }),
+          ]),
+    ]);
     return toUserDto(updated);
   }
 
