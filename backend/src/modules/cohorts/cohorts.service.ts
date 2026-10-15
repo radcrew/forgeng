@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Cohort } from '@prisma/client';
 import { PrismaService } from '../../core/database/prisma.service';
 import {
@@ -29,6 +33,10 @@ export class CohortsService {
   }
 
   async create(dto: CreateCohortDto): Promise<CohortDto> {
+    this.assertDateOrder(
+      dto.startDate ? new Date(dto.startDate) : null,
+      dto.endDate ? new Date(dto.endDate) : null,
+    );
     const created = await this.prisma.cohort.create({
       data: {
         name: dto.name,
@@ -45,6 +53,21 @@ export class CohortsService {
   async update(id: number, dto: UpdateCohortDto): Promise<CohortDto> {
     const exists = await this.prisma.cohort.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Cohort not found.');
+
+    this.assertDateOrder(
+      dto.startDate ? new Date(dto.startDate) : exists.startDate,
+      dto.endDate ? new Date(dto.endDate) : exists.endDate,
+    );
+    if (dto.capacity !== undefined) {
+      const enrolled = await this.prisma.enrollment.count({
+        where: { cohortId: id },
+      });
+      if (dto.capacity < enrolled) {
+        throw new BadRequestException(
+          `${enrolled} students are already enrolled. Set the capacity to at least ${enrolled}.`,
+        );
+      }
+    }
 
     const updated = await this.prisma.cohort.update({
       where: { id },
@@ -81,6 +104,14 @@ export class CohortsService {
       include: { user: true },
     });
     return toEnrollmentDto(enrollment, enrollment.user);
+  }
+
+  private assertDateOrder(start: Date | null, end: Date | null): void {
+    if (start && end && end < start) {
+      throw new BadRequestException(
+        'The end date must be on or after the start date.',
+      );
+    }
   }
 
   private async serialize(cohort: Cohort): Promise<CohortDto> {

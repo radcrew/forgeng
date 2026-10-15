@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@components/ui/textarea";
 import { ApiError } from "@lib/api-client";
 import { createCohort, updateCohort } from "../api";
+import { validateCohort, type CohortErrors } from "../validation";
 import type { Cohort, CohortStatus } from "@types";
 
 export type CohortFormDialogProps = {
@@ -46,14 +47,21 @@ export const CohortFormDialog = ({
     cohort?.startDate?.slice(0, 10) ?? "",
   );
   const [endDate, setEndDate] = useState(cohort?.endDate?.slice(0, 10) ?? "");
+  const [errors, setErrors] = useState<CohortErrors>({});
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!name) return;
+    const found = validateCohort(
+      { name, description: description ?? "", capacity, startDate, endDate },
+      cohort?.enrolledCount ?? 0,
+    );
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
     setIsSaving(true);
     try {
       const payload = {
-        name,
+        name: name.trim(),
         // Send null (not undefined) so clearing the field persists — Prisma
         // treats undefined as "leave unchanged", so an empty description would
         // otherwise never be saved.
@@ -91,31 +99,55 @@ export const CohortFormDialog = ({
         onSubmit: handleSave,
         submitLabel: isEdit ? "Save Changes" : "Create",
         isLoading: isSaving,
-        submitDisabled: !name,
+        submitDisabled: !name.trim(),
       }}
     >
       <FormBody>
-        <FormField label="Name">
+        <FormField label="Name" htmlFor="cohort-name" error={errors.name}>
           <Input
+            id="cohort-name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            aria-invalid={!!errors.name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setErrors({});
+            }}
             placeholder="e.g. Spring 2026 Cohort"
           />
         </FormField>
-        <FormField label="Description">
+        <FormField
+          label="Description"
+          htmlFor="cohort-description"
+          error={errors.description}
+        >
           <Textarea
+            id="cohort-description"
             value={description ?? ""}
-            onChange={(e) => setDescription(e.target.value)}
+            aria-invalid={!!errors.description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setErrors({});
+            }}
             rows={3}
           />
         </FormField>
         <FormGrid>
-          <FormField label="Capacity">
+          <FormField
+            label="Capacity"
+            htmlFor="cohort-capacity"
+            error={errors.capacity}
+          >
             <Input
+              id="cohort-capacity"
               type="number"
               min="1"
+              step="1"
               value={capacity}
-              onChange={(e) => setCapacity(e.target.value)}
+              aria-invalid={!!errors.capacity}
+              onChange={(e) => {
+                setCapacity(e.target.value);
+                setErrors({});
+              }}
             />
           </FormField>
           <FormField label="Status">
@@ -140,13 +172,21 @@ export const CohortFormDialog = ({
           <FormField label="Start Date">
             <DateInput
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                setErrors({});
+              }}
             />
           </FormField>
-          <FormField label="End Date">
+          <FormField label="End Date" error={errors.endDate}>
             <DateInput
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              min={startDate || undefined}
+              aria-invalid={!!errors.endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                setErrors({});
+              }}
             />
           </FormField>
         </FormGrid>

@@ -1,4 +1,5 @@
 import { CohortStatus } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
@@ -11,6 +12,9 @@ import {
 } from 'class-validator';
 
 export class CreateCohortDto {
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   @MinLength(1)
   @MaxLength(120)
