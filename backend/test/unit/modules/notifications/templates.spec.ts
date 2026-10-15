@@ -24,6 +24,23 @@ describe('notification email templates', () => {
       expect(email.text).toContain('https://app/dashboard');
       expect(email.html).toContain('https://app/dashboard');
     });
+
+    it('does not claim a cohort when none was chosen', () => {
+      expect(email.text).not.toMatch(/enrolled/i);
+      expect(email.text).toContain('We will add you to a cohort soon');
+    });
+
+    it('names the cohort when one was chosen', () => {
+      const withCohort = applicationAcceptedEmail({
+        applicantName: 'Ada',
+        dashboardUrl: 'https://app/dashboard',
+        cohortName: 'Spring 2026',
+      });
+      expect(withCohort.text).toContain(
+        'You have been added to the Spring 2026 cohort.',
+      );
+      expect(withCohort.html).toContain('Spring 2026');
+    });
   });
 
   describe('applicationRejectedEmail', () => {

@@ -4,7 +4,7 @@ import { createE2EApp, makeAuthUser, type E2EContext } from './support/e2e-app';
 
 /**
  * Exercises the global JWT + Roles guard chain through the tasks module, which
- * has both unguarded-but-authenticated routes (GET) and admin-only routes
+ * has student-and-admin routes (GET) and admin-only routes
  * (POST/PATCH/DELETE). Verifies the guard matrix end to end rather than any
  * one endpoint's business logic.
  */
@@ -71,12 +71,24 @@ describe('Guard chain (e2e)', () => {
     });
   });
 
-  describe('non-role-restricted routes', () => {
-    // Note: the harness bypasses the real JWT guard, so it does not assert the
-    // "must be authenticated" behavior on routes without @Roles — only role
-    // enforcement (RolesGuard) is exercised here. A route with no @Roles is
-    // therefore reachable by any role we attach.
-    it('allows any authenticated role to list tasks (200)', () => {
+  describe('student and admin routes', () => {
+    // Tasks, submissions, and feedback are limited to students and admins.
+    // The services only narrow what a student sees, so an applicant let
+    // through would get the unfiltered admin view.
+    it.each([
+      ['get', '/api/tasks'],
+      ['get', '/api/tasks/1'],
+      ['get', '/api/submissions'],
+      ['get', '/api/submissions/1'],
+      ['post', '/api/submissions'],
+      ['patch', '/api/submissions/1'],
+      ['get', '/api/submissions/1/feedback'],
+    ] as const)('forbids an applicant: %s %s (403)', (method, path) => {
+      ctx.setUser(makeAuthUser('applicant'));
+      return request(http())[method](path).send({}).expect(403);
+    });
+
+    it('allows a student to list tasks (200)', () => {
       ctx.setUser(makeAuthUser('student'));
       // Student with no enrollments => empty list, no further prisma calls.
       ctx.prisma.enrollment.findMany.mockResolvedValue([]);
