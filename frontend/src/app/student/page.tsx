@@ -4,6 +4,7 @@ import { ErrorState, PageContainer, PageHeader } from "@components/shared";
 import {
   AwaitingCohort,
   CohortSwitcher,
+  ProfileReminder,
   StudentView,
   useStudentDashboard,
 } from "@features/dashboard";
@@ -66,12 +67,16 @@ const Page = () => {
         }
       />
 
-      {profileIncomplete ? (
-        <AwaitingCohort profileIncomplete />
-      ) : !cohort ? (
-        <AwaitingCohort />
+      {/* An incomplete profile only takes over the page before enrollment.
+          Once the student has a cohort, a reminder sits above the dashboard
+          so their tasks stay visible. */}
+      {!cohort ? (
+        <AwaitingCohort profileIncomplete={!!profileIncomplete} />
       ) : (
-        <StudentView dashboard={dashboard} />
+        <>
+          {profileIncomplete && <ProfileReminder />}
+          <StudentView dashboard={dashboard} />
+        </>
       )}
     </PageContainer>
   );
