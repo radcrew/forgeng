@@ -14,6 +14,7 @@ import {
 } from "@components/ui/select";
 import { Textarea } from "@components/ui/textarea";
 import { APPLICATION_STATUS_OPTIONS } from "@constants/applications";
+import { ApiError } from "@lib/api-client";
 import type { ApplicationStatus } from "../types";
 import { useUpdateApplicationStatus } from "../hooks";
 
@@ -29,8 +30,12 @@ export function ApplicationReviewPanel({
   initialNote,
 }: ApplicationReviewPanelProps) {
   const [status, setStatus] = useState<ApplicationStatus>(initialStatus);
+  const [savedStatus, setSavedStatus] =
+    useState<ApplicationStatus>(initialStatus);
   const [note, setNote] = useState(initialNote);
   const { update, isPending } = useUpdateApplicationStatus();
+  // Accepting or rejecting is final; only the note can change afterwards.
+  const isDecided = savedStatus !== "pending";
 
   const handleSave = async () => {
     try {
@@ -38,9 +43,12 @@ export function ApplicationReviewPanel({
         status,
         reviewerNote: note || null,
       });
+      setSavedStatus(status);
       toast.success("Application updated");
-    } catch {
-      toast.error("Failed to update application");
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to update application",
+      );
     }
   };
 
@@ -55,8 +63,9 @@ export function ApplicationReviewPanel({
           <Select
             value={status}
             onValueChange={(v) => setStatus(v as ApplicationStatus)}
+            disabled={isDecided}
           >
-            <SelectTrigger>
+            <SelectTrigger aria-label="Status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -67,6 +76,11 @@ export function ApplicationReviewPanel({
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground">
+            {isDecided
+              ? "This application has been decided, so its status can't be changed."
+              : "Accepting or rejecting is final and can't be undone."}
+          </p>
         </div>
 
         <div className="space-y-1.5">
