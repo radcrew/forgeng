@@ -18,6 +18,6 @@ export class CreateSubmissionDto {
   content?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   repoUrl?: string;
 }

@@ -20,6 +20,8 @@ export {
   resubmitSubmission,
   createFeedback,
 } from "./api";
+export type { SubmissionErrors } from "./validation";
+export { SUBMISSION_CONTENT_MAX, validateSubmission } from "./validation";
 export type { SubmissionStatusFilter, UseSubmissionsOptions } from "./hooks";
 export { useSubmissions, useSubmissionFeedback } from "./hooks";
 export { SubmissionStatusBadge } from "./components/status-badge";

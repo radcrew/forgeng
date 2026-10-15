@@ -69,6 +69,15 @@ describe('CreateSubmissionDto', () => {
     ).toContain('repoUrl');
   });
 
+  it('rejects a repoUrl without http or https', () => {
+    expect(
+      failingProps(CreateSubmissionDto, {
+        ...valid,
+        repoUrl: 'github.com/ada/project',
+      }),
+    ).toContain('repoUrl');
+  });
+
   it('accepts a valid repoUrl', () => {
     expect(
       failingProps(CreateSubmissionDto, {

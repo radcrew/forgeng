@@ -171,6 +171,13 @@ describe('SubmissionsService', () => {
       expect(prisma.submission.create).not.toHaveBeenCalled();
     });
 
+    it('rejects a submission with no repo link and a blank write-up', async () => {
+      await expect(
+        service.create({ taskId: 5, content: '   ' }, student),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.submission.create).not.toHaveBeenCalled();
+    });
+
     it('throws NotFoundException when the task does not exist', async () => {
       prisma.task.findUnique.mockResolvedValue(null);
       await expect(
