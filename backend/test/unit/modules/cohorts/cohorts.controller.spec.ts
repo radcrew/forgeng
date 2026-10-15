@@ -11,6 +11,7 @@ describe('CohortsController', () => {
     remove: jest.Mock;
     enrollments: jest.Mock;
     enroll: jest.Mock;
+    unenroll: jest.Mock;
   };
 
   beforeEach(() => {
@@ -22,6 +23,7 @@ describe('CohortsController', () => {
       remove: jest.fn().mockResolvedValue(undefined),
       enrollments: jest.fn().mockResolvedValue([]),
       enroll: jest.fn().mockResolvedValue({ id: 1 }),
+      unenroll: jest.fn().mockResolvedValue(undefined),
     };
     controller = new CohortsController(service as unknown as CohortsService);
   });
@@ -62,5 +64,10 @@ describe('CohortsController', () => {
     const dto = { userId: 1 } as never;
     await controller.enroll(3, dto);
     expect(service.enroll).toHaveBeenCalledWith(3, dto);
+  });
+
+  it('delegates unenroll with the cohort and user ids', async () => {
+    await controller.unenroll(3, 1);
+    expect(service.unenroll).toHaveBeenCalledWith(3, 1);
   });
 });

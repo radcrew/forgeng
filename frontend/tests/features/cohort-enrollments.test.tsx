@@ -1,7 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@features/cohorts/api", () => ({ enrollStudent: vi.fn() }));
+const unenrollStudent = vi.fn();
+vi.mock("@features/cohorts/api", () => ({
+  enrollStudent: vi.fn(),
+  unenrollStudent: (...args: unknown[]) => unenrollStudent(...args),
+}));
 
 const enrollments = [
   {
@@ -12,8 +17,9 @@ const enrollments = [
     user: { id: 7, name: "Ada Lovelace", email: "ada@example.com" },
   },
 ];
+const refetch = vi.fn();
 vi.mock("@features/cohorts/hooks", () => ({
-  useEnrollments: () => ({ data: enrollments, refetch: vi.fn() }),
+  useEnrollments: () => ({ data: enrollments, refetch }),
 }));
 
 vi.mock("@features/users", () => ({
@@ -51,5 +57,27 @@ describe("Enrollments", () => {
     expect(screen.getByText("1 of 2 places taken")).toBeInTheDocument();
     expect(screen.queryByText(/This cohort is full/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enroll" })).toBeInTheDocument();
+  });
+
+  it("removes a student after Remove and then Confirm", async () => {
+    unenrollStudent.mockResolvedValue(undefined);
+    render(<Enrollments cohort={makeCohort(2)} open onOpenChange={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Remove" }));
+    expect(unenrollStudent).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(unenrollStudent).toHaveBeenCalledWith(3, 7);
+    await waitFor(() => expect(refetch).toHaveBeenCalled());
+  });
+
+  it("keeps the student when Cancel is clicked", async () => {
+    render(<Enrollments cohort={makeCohort(2)} open onOpenChange={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Remove" }));
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(unenrollStudent).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
   });
 });

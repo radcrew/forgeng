@@ -52,7 +52,9 @@ describe('CohortsService', () => {
       findMany: jest.Mock;
       create: jest.Mock;
       count: jest.Mock;
+      deleteMany: jest.Mock;
     };
+    application: { updateMany: jest.Mock };
     $transaction: jest.Mock;
   };
 
@@ -70,10 +72,14 @@ describe('CohortsService', () => {
         create: jest.fn(),
         // serialize() counts enrollments for every cohort it maps.
         count: jest.fn().mockResolvedValue(0),
+        deleteMany: jest.fn(),
       },
-      // Interactive transactions run against the same mocks.
-      $transaction: jest.fn((fn: (tx: unknown) => Promise<unknown>) =>
-        fn(prisma),
+      application: { updateMany: jest.fn() },
+      // Interactive transactions run against the same mocks; the array form
+      // just awaits each operation.
+      $transaction: jest.fn(
+        (arg: Promise<unknown>[] | ((tx: unknown) => Promise<unknown>)) =>
+          Array.isArray(arg) ? Promise.all(arg) : arg(prisma),
       ),
     };
 
@@ -277,6 +283,32 @@ describe('CohortsService', () => {
       expect(dto).toBeDefined();
       expect(prisma.enrollment.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: { cohortId: 3, userId: 1 } }),
+      );
+    });
+  });
+
+  describe('unenroll', () => {
+    it('removes the enrollment and clears the cohort on the application', async () => {
+      prisma.enrollment.deleteMany.mockResolvedValue({ count: 1 });
+      prisma.application.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.unenroll(3, 1);
+
+      expect(prisma.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { cohortId: 3, userId: 1 },
+      });
+      expect(prisma.application.updateMany).toHaveBeenCalledWith({
+        where: { cohortId: 3, userId: 1 },
+        data: { cohortId: null },
+      });
+    });
+
+    it('throws NotFoundException when the student is not in the cohort', async () => {
+      prisma.enrollment.deleteMany.mockResolvedValue({ count: 0 });
+      prisma.application.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(service.unenroll(3, 1)).rejects.toBeInstanceOf(
+        NotFoundException,
       );
     });
   });

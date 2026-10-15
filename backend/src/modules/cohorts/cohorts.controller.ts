@@ -71,4 +71,14 @@ export class CohortsController {
   ): Promise<EnrollmentDto> {
     return this.service.enroll(id, dto);
   }
+
+  @Roles('admin')
+  @Delete(':id/enrollments/:userId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  unenroll(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<void> {
+    return this.service.unenroll(id, userId);
+  }
 }
