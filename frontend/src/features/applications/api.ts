@@ -3,10 +3,9 @@ import { apiClient } from "@lib/api-client";
 import type { Application, ApplicationStatus } from "./types";
 
 export interface CreateApplicationInput {
-  linkedin: string;
+  linkedin?: string;
   twitter?: string;
-  facebook?: string;
-  github: string;
+  github?: string;
   portfolio?: string;
   telegram?: string;
   whatsapp?: string;

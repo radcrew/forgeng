@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { APPLICATION_COUNTRY_CODES } from "@constants/shared/countries";
 import {
-  FACEBOOK_PROFILE_RE,
   GITHUB_PROFILE_RE,
   LINKEDIN_PROFILE_RE,
   optionalMatching,
@@ -45,6 +44,8 @@ const walletEntry = z
     }
   });
 
+export const CONTACT_REQUIRED_MESSAGE = "Add a Telegram or WhatsApp contact";
+
 // The applicant can edit their name on the social profiles step (prefilled
 // from their account), so name is part of the form schema and is persisted
 // back to their profile on submit.
@@ -54,18 +55,9 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     .trim()
     .min(1, "Name is required")
     .max(120, "Name must be under 120 characters"),
-  linkedin: z
-    .string()
-    .min(1, "LinkedIn profile is required")
-    .url("Enter a valid LinkedIn URL (e.g. https://linkedin.com/in/you)")
-    .refine((val) => LINKEDIN_PROFILE_RE.test(val), SOCIAL_PROFILE_MESSAGES.linkedin),
+  linkedin: optionalMatching(LINKEDIN_PROFILE_RE, SOCIAL_PROFILE_MESSAGES.linkedin),
   twitter: optionalMatching(TWITTER_PROFILE_RE, SOCIAL_PROFILE_MESSAGES.twitter),
-  facebook: optionalMatching(FACEBOOK_PROFILE_RE, SOCIAL_PROFILE_MESSAGES.facebook),
-  github: z
-    .string()
-    .min(1, "GitHub profile is required")
-    .url("Enter a valid GitHub URL (e.g. https://github.com/you)")
-    .refine((val) => GITHUB_PROFILE_RE.test(val), SOCIAL_PROFILE_MESSAGES.github),
+  github: optionalMatching(GITHUB_PROFILE_RE, SOCIAL_PROFILE_MESSAGES.github),
   portfolio: optionalUrl,
   telegram: optionalMatching(TELEGRAM_RE, SOCIAL_PROFILE_MESSAGES.telegram),
   whatsapp: optionalMatching(WHATSAPP_RE, SOCIAL_PROFILE_MESSAGES.whatsapp),
@@ -77,7 +69,18 @@ export const APPLICATION_FORM_SCHEMA = z.object({
     ),
   videoUrl: z.string().min(1, "Please record and upload your video introduction"),
   wallet: walletEntry,
-});
+}).superRefine(
+  (values, ctx) => {
+    // At least one way to reach the applicant. Shown under both fields.
+    if (values.telegram.trim() || values.whatsapp.trim()) return;
+    for (const path of ["telegram", "whatsapp"]) {
+      ctx.addIssue({ code: "custom", message: CONTACT_REQUIRED_MESSAGE, path: [path] });
+    }
+  },
+  // Run even while other fields (such as the video on the next step) are
+  // still invalid, so the error shows on the step that has these fields.
+  { when: () => true },
+);
 
 export type ApplicationFormValues = z.infer<typeof APPLICATION_FORM_SCHEMA>;
 
@@ -107,7 +110,6 @@ export const APPLICATION_FIELDS_BY_SLUG: Record<
     "name",
     "linkedin",
     "twitter",
-    "facebook",
     "github",
     "portfolio",
     "telegram",

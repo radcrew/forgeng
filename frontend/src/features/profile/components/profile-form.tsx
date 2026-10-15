@@ -17,7 +17,6 @@ import {
 import { Button } from "@components/ui/button";
 import { Card, CardContent } from "@components/ui/card";
 import { Input } from "@components/ui/input";
-import { Textarea } from "@components/ui/textarea";
 import { ApiError } from "@lib/api-client";
 import type { UserProfile } from "@types";
 
@@ -34,7 +33,6 @@ export type ProfileFormProps = {
 const OPTIONAL_FIELDS = [
   "linkedin",
   "twitter",
-  "facebook",
   "github",
   "portfolio",
   "telegram",
@@ -52,7 +50,6 @@ const SOCIAL_FIELDS: SocialFieldConfig[] = [
   { name: "github", label: "GitHub", placeholder: "https://github.com/you" },
   { name: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/you" },
   { name: "twitter", label: "X (Twitter)", placeholder: "https://x.com/you" },
-  { name: "facebook", label: "Facebook", placeholder: "https://facebook.com/you" },
   { name: "telegram", label: "Telegram", placeholder: "@yourusername" },
   {
     name: "whatsapp",
@@ -74,10 +71,8 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
     resolver: zodResolver(PROFILE_FORM_SCHEMA),
     defaultValues: {
       name: user.name ?? "",
-      bio: user.bio ?? "",
       linkedin: user.linkedin ?? "",
       twitter: user.twitter ?? "",
-      facebook: user.facebook ?? "",
       github: user.github ?? "",
       portfolio: user.portfolio ?? "",
       telegram: user.telegram ?? "",
@@ -88,10 +83,8 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
   useEffect(() => {
     form.reset({
       name: user.name ?? "",
-      bio: user.bio ?? "",
       linkedin: user.linkedin ?? "",
       twitter: user.twitter ?? "",
-      facebook: user.facebook ?? "",
       github: user.github ?? "",
       portfolio: user.portfolio ?? "",
       telegram: user.telegram ?? "",
@@ -102,7 +95,6 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
   const onSubmit = async (data: ProfileFormValues) => {
     const payload: ProfileUpdate = {
       name: data.name.trim(),
-      bio: data.bio.trim(),
     };
     for (const field of OPTIONAL_FIELDS) {
       const value = data[field].trim();
@@ -137,23 +129,6 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Your name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      rows={4}
-                      placeholder="A short bio about you…"
-                      {...field}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

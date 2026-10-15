@@ -1,30 +1,17 @@
 import type { Application, UserProfile, UserRole } from "@types";
 
-const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
-  "name",
-  "bio",
-  "github",
-  "linkedin",
-  "twitter",
-  "facebook",
-  "telegram",
-  "whatsapp",
-];
+// The apply form requires a Telegram or WhatsApp contact; every other link
+// is optional, so completeness only checks for a way to reach the person.
+const hasContact = (record: {
+  telegram?: string | null;
+  whatsapp?: string | null;
+}): boolean => Boolean(record.telegram || record.whatsapp);
 
 export const isProfileComplete = (user: UserProfile): boolean =>
-  REQUIRED_PROFILE_FIELDS.every((f) => Boolean(user[f]));
-
-const REQUIRED_APPLICATION_FIELDS: (keyof Application)[] = [
-  "linkedin",
-  "twitter",
-  "facebook",
-  "github",
-  "telegram",
-  "whatsapp",
-];
+  Boolean(user.name) && hasContact(user);
 
 export const isApplicationComplete = (app: Application): boolean =>
-  REQUIRED_APPLICATION_FIELDS.every((f) => Boolean(app[f]));
+  hasContact(app);
 
 export interface UserDto {
   id: number;

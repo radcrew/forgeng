@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -78,6 +79,9 @@ export class ApplicationsService {
     });
     if (existing) {
       throw new ConflictException('You have already submitted an application.');
+    }
+    if (!dto.telegram && !dto.whatsapp) {
+      throw new BadRequestException('Add a Telegram or WhatsApp contact.');
     }
     await this.video.assertOwnUpload(user.id, dto.videoUrl);
 
