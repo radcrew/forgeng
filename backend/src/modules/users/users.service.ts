@@ -206,11 +206,16 @@ export class UsersService {
           : [];
 
       const taskIds = tasks.map((t) => t.id);
+      // Count tasks, not submissions, so duplicates aren't counted twice.
       const tasksApproved =
         taskIds.length > 0
-          ? await this.prisma.submission.count({
-              where: { userId, taskId: { in: taskIds }, status: 'approved' },
-            })
+          ? (
+              await this.prisma.submission.findMany({
+                where: { userId, taskId: { in: taskIds }, status: 'approved' },
+                select: { taskId: true },
+                distinct: ['taskId'],
+              })
+            ).length
           : 0;
 
       const [notification, payment] = await Promise.all([

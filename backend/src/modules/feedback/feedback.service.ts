@@ -50,10 +50,14 @@ export class FeedbackService {
     if (tasksThisMonth.length === 0) return;
 
     const taskIds = tasksThisMonth.map((t) => t.id);
-    const approvedCount = await this.prisma.submission.count({
+    // Count tasks, not submissions, so a duplicate can't stand in for a
+    // task the student hasn't done.
+    const approvedTasks = await this.prisma.submission.findMany({
       where: { userId, taskId: { in: taskIds }, status: 'approved' },
+      select: { taskId: true },
+      distinct: ['taskId'],
     });
-    if (approvedCount !== taskIds.length) return;
+    if (approvedTasks.length !== taskIds.length) return;
 
     // Avoid re-notifying admins if they were already alerted this month.
     const alreadyNotified = await this.prisma.notification.findFirst({

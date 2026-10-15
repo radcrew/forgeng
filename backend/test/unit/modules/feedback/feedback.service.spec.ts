@@ -44,7 +44,11 @@ function makeFeedback(overrides: Partial<Feedback> = {}): Feedback {
 describe('FeedbackService', () => {
   let service: FeedbackService;
   let prisma: {
-    submission: { findUnique: jest.Mock; update: jest.Mock };
+    submission: {
+      findUnique: jest.Mock;
+      update: jest.Mock;
+      findMany: jest.Mock;
+    };
     feedback: { findMany: jest.Mock; create: jest.Mock };
     task: { findUnique: jest.Mock; findMany: jest.Mock };
     notification: { findFirst: jest.Mock };
@@ -58,7 +62,11 @@ describe('FeedbackService', () => {
 
   beforeEach(() => {
     prisma = {
-      submission: { findUnique: jest.fn(), update: jest.fn() },
+      submission: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+        findMany: jest.fn(),
+      },
       feedback: { findMany: jest.fn(), create: jest.fn() },
       task: { findUnique: jest.fn(), findMany: jest.fn() },
       notification: { findFirst: jest.fn() },
@@ -155,6 +163,33 @@ describe('FeedbackService', () => {
         prisma.submission.update.mock.calls[0] as [{ data: { status: string } }]
       )[0].data;
       expect(updateArg.status).toBe('approved');
+    });
+
+    it('counts approved tasks, not submissions, for payment eligibility', async () => {
+      prisma.submission.findUnique.mockResolvedValue({
+        id: 10,
+        userId: student.id,
+        taskId: 5,
+      });
+      prisma.submission.update.mockReturnValue('update-op');
+      prisma.feedback.create.mockReturnValue(makeFeedback());
+      prisma.task.findUnique.mockResolvedValue({
+        cohortId: 3,
+        dueDate: new Date(),
+      });
+      // Two tasks are due this month, but only task 5 is approved.
+      prisma.task.findMany.mockResolvedValue([{ id: 5 }, { id: 6 }]);
+      prisma.submission.findMany.mockResolvedValue([{ taskId: 5 }]);
+
+      await service.create(10, reviewer, {
+        content: 'ok',
+        verdict: 'approved',
+      } as never);
+
+      expect(prisma.submission.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ distinct: ['taskId'] }),
+      );
+      expect(notifications.notifyPaymentEligible).not.toHaveBeenCalled();
     });
 
     it('maps a non-approved verdict to needs_work', async () => {

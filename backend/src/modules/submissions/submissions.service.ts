@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -100,6 +101,18 @@ export class SubmissionsService {
           'You are not enrolled in the cohort for this task.',
         );
       }
+    }
+
+    // One submission per task. Work sent back for changes is updated through
+    // resubmit, not sent again.
+    const existing = await this.prisma.submission.findFirst({
+      where: { taskId: dto.taskId, userId: user.id },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictException(
+        'You already submitted this task. Open your submission to see its status.',
+      );
     }
 
     const created = await this.prisma.submission.create({
