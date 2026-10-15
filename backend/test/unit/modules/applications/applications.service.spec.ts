@@ -98,6 +98,17 @@ describe('ApplicationsService', () => {
       create: jest.Mock;
       groupBy: jest.Mock;
     };
+    $transaction: jest.Mock;
+  };
+  let tx: {
+    application: { update: jest.Mock };
+    user: { updateMany: jest.Mock };
+    enrollment: {
+      upsert: jest.Mock;
+      findUnique: jest.Mock;
+      deleteMany: jest.Mock;
+    };
+    cohort: { findUnique: jest.Mock };
   };
   let notifications: { notifyApplicationReceived: jest.Mock };
   let mail: { send: jest.Mock };
@@ -112,6 +123,19 @@ describe('ApplicationsService', () => {
         create: jest.fn(),
         groupBy: jest.fn(),
       },
+      $transaction: jest.fn((fn: (client: typeof tx) => Promise<unknown>) =>
+        fn(tx),
+      ),
+    };
+    tx = {
+      application: { update: jest.fn() },
+      user: { updateMany: jest.fn() },
+      enrollment: {
+        upsert: jest.fn(),
+        findUnique: jest.fn(),
+        deleteMany: jest.fn(),
+      },
+      cohort: { findUnique: jest.fn() },
     };
     notifications = {
       notifyApplicationReceived: jest.fn().mockResolvedValue(undefined),
@@ -179,10 +203,20 @@ describe('ApplicationsService', () => {
 
       const dto = await service.create(makeUser(), {
         motivation: 'hi',
+        telegram: '@ada_dev',
       } as never);
 
       expect(dto.id).toBe(10);
       expect(notifications.notifyApplicationReceived).toHaveBeenCalledTimes(1);
+    });
+
+    it('requires a Telegram or WhatsApp contact', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create(makeUser(), { videoUrl: '2/abc.webm' } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.application.create).not.toHaveBeenCalled();
     });
 
     it('does not create the application when the video check fails', async () => {
@@ -190,7 +224,10 @@ describe('ApplicationsService', () => {
       video.assertOwnUpload.mockRejectedValue(new BadRequestException());
 
       await expect(
-        service.create(makeUser(), { videoUrl: '2/abc.webm' } as never),
+        service.create(makeUser(), {
+          videoUrl: '2/abc.webm',
+          whatsapp: '+15551234567',
+        } as never),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(video.assertOwnUpload).toHaveBeenCalledWith(1, '2/abc.webm');
       expect(prisma.application.create).not.toHaveBeenCalled();
@@ -209,6 +246,7 @@ describe('ApplicationsService', () => {
 
       const dto = await service.create(makeUser(), {
         motivation: 'hi',
+        telegram: '@ada_dev',
       } as never);
 
       expect(dto.id).toBe(10);
@@ -252,6 +290,112 @@ describe('ApplicationsService', () => {
       const dto = await service.findOne(10);
 
       expect(dto.videoUrl).toBe('https://signed.example/v.webm');
+    });
+  });
+
+  describe('updateStatus', () => {
+    it.each(['accepted', 'rejected'])(
+      'refuses to change the status of a %s application',
+      async (decided) => {
+        prisma.application.findUnique.mockResolvedValue(
+          makeApplicationRow({ status: decided }),
+        );
+
+        await expect(
+          service.updateStatus(10, { status: 'pending' }),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(tx.application.update).not.toHaveBeenCalled();
+        expect(mail.send).not.toHaveBeenCalled();
+      },
+    );
+
+    it('lets the note change on a decided application without emailing again', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'rejected' }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'rejected', reviewerNote: 'new note' }),
+      );
+
+      const dto = await service.updateStatus(10, {
+        status: 'rejected',
+        reviewerNote: 'new note',
+      });
+
+      expect(dto.status).toBe('rejected');
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it('decides a pending application and emails the applicant', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'rejected' }),
+      );
+
+      await service.updateStatus(10, { status: 'rejected' });
+
+      expect(mail.send).toHaveBeenCalledTimes(1);
+    });
+
+    it('moves an accepted student to the new cohort', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 4 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue(null);
+      tx.cohort.findUnique.mockResolvedValue({
+        id: 4,
+        name: 'Autumn',
+        capacity: 10,
+        _count: { enrollments: 0 },
+      });
+
+      await service.updateStatus(10, { status: 'accepted', cohortId: 4 });
+
+      expect(tx.enrollment.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ create: { userId: 1, cohortId: 4 } }),
+      );
+      expect(tx.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 1, cohortId: 3 },
+      });
+    });
+
+    it('removes the student from the cohort when it is cleared', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: null }),
+      );
+
+      await service.updateStatus(10, {
+        status: 'accepted',
+        cohortId: null as unknown as number,
+      });
+
+      expect(tx.enrollment.upsert).not.toHaveBeenCalled();
+      expect(tx.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 1, cohortId: 3 },
+      });
+    });
+
+    it('keeps the enrollment when only the note changes', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue({ id: 1 });
+
+      await service.updateStatus(10, {
+        status: 'accepted',
+        reviewerNote: 'ok',
+      });
+
+      expect(tx.enrollment.deleteMany).not.toHaveBeenCalled();
     });
   });
 

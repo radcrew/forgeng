@@ -100,13 +100,14 @@ export class CreateApplicationDto {
   @MaxLength(4000)
   experience?: string;
 
+  @IsOptional()
   @IsUrl()
   @MaxLength(500)
   @Matches(LINKEDIN_PROFILE_REGEX, {
     message:
       'Enter your LinkedIn profile URL (e.g. https://linkedin.com/in/you)',
   })
-  linkedin!: string;
+  linkedin?: string;
 
   @IsOptional()
   @IsUrl()
@@ -124,12 +125,13 @@ export class CreateApplicationDto {
   })
   facebook?: string;
 
+  @IsOptional()
   @IsUrl()
   @MaxLength(500)
   @Matches(GITHUB_PROFILE_REGEX, {
     message: 'Enter your GitHub profile URL (e.g. https://github.com/you)',
   })
-  github!: string;
+  github?: string;
 
   @IsOptional()
   // Leading/trailing whitespace (e.g. from a copy-paste) parses fine as a URL

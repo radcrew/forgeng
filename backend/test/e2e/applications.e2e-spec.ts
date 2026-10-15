@@ -10,6 +10,7 @@ const validBody = {
   background: 'Self-taught developer with two years of side projects.',
   linkedin: 'https://linkedin.com/in/jane-doe',
   github: 'https://github.com/jane-doe',
+  telegram: '@jane_doe',
   videoUrl: 'https://example.com/intro.mp4',
   country: 'US',
 };

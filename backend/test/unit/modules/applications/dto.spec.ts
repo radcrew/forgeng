@@ -25,6 +25,12 @@ describe('CreateApplicationDto', () => {
     expect(failingProps(VALID)).toEqual([]);
   });
 
+  it('accepts an application without LinkedIn or GitHub', () => {
+    expect(
+      failingProps({ ...VALID, linkedin: undefined, github: undefined }),
+    ).toEqual([]);
+  });
+
   it('accepts an application without motivation or background', () => {
     expect(
       failingProps({ ...VALID, motivation: undefined, background: undefined }),

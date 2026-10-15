@@ -27,21 +27,37 @@ const FULL_PROFILE: UserProfile = {
 };
 
 describe("isProfileComplete", () => {
-  it("returns true when every required field is present", () => {
+  it("returns true with a name and a contact", () => {
     expect(isProfileComplete(FULL_PROFILE)).toBe(true);
   });
 
-  it("returns false when a required field is null", () => {
-    expect(isProfileComplete({ ...FULL_PROFILE, bio: null })).toBe(false);
+  it("needs only one of Telegram or WhatsApp", () => {
+    expect(isProfileComplete({ ...FULL_PROFILE, telegram: null })).toBe(true);
+    expect(isProfileComplete({ ...FULL_PROFILE, whatsapp: "" })).toBe(true);
   });
 
-  it("returns false when a required field is an empty string", () => {
-    expect(isProfileComplete({ ...FULL_PROFILE, whatsapp: "" })).toBe(false);
+  it("returns false with neither Telegram nor WhatsApp", () => {
+    expect(
+      isProfileComplete({ ...FULL_PROFILE, telegram: null, whatsapp: "" }),
+    ).toBe(false);
   });
 
-  it("ignores non-required fields like portfolio", () => {
-    // portfolio is not in the required set, so leaving it null is still complete.
-    expect(isProfileComplete({ ...FULL_PROFILE, portfolio: null })).toBe(true);
+  it("returns false without a name", () => {
+    expect(isProfileComplete({ ...FULL_PROFILE, name: null })).toBe(false);
+  });
+
+  it("ignores the optional fields", () => {
+    expect(
+      isProfileComplete({
+        ...FULL_PROFILE,
+        bio: null,
+        facebook: null,
+        linkedin: null,
+        github: null,
+        twitter: null,
+        portfolio: null,
+      }),
+    ).toBe(true);
   });
 });
 
@@ -75,10 +91,20 @@ describe("isApplicationComplete", () => {
     expect(isApplicationComplete(FULL_APPLICATION)).toBe(true);
   });
 
-  it("returns false when a required social field is missing", () => {
-    expect(isApplicationComplete({ ...FULL_APPLICATION, github: null })).toBe(
-      false,
-    );
+  it("does not need LinkedIn or GitHub", () => {
+    expect(
+      isApplicationComplete({ ...FULL_APPLICATION, linkedin: null, github: null }),
+    ).toBe(true);
+  });
+
+  it("returns false with neither Telegram nor WhatsApp", () => {
+    expect(
+      isApplicationComplete({
+        ...FULL_APPLICATION,
+        telegram: null,
+        whatsapp: null,
+      }),
+    ).toBe(false);
   });
 });
 

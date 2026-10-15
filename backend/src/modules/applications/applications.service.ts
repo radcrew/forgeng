@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -78,6 +79,9 @@ export class ApplicationsService {
     if (existing) {
       throw new ConflictException('You have already submitted an application.');
     }
+    if (!dto.telegram && !dto.whatsapp) {
+      throw new BadRequestException('Add a Telegram or WhatsApp contact.');
+    }
     await this.video.assertOwnUpload(user.id, dto.videoUrl);
 
     const { firstName, lastName } = splitName(user.name, user.email);
@@ -147,6 +151,17 @@ export class ApplicationsService {
     const exists = await this.prisma.application.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Application not found.');
 
+    // Accepting or rejecting is final. The reviewer note can still be edited.
+    if (
+      exists.status !== ApplicationStatus.pending &&
+      dto.status !== exists.status
+    ) {
+      throw new ConflictException(
+        `This application was already ${exists.status}. Its status can't be changed.`,
+      );
+    }
+    const statusChanged = dto.status !== exists.status;
+
     const updated = await this.prisma.$transaction(async (tx) => {
       const app = await tx.application.update({
         where: { id },
@@ -174,12 +189,22 @@ export class ApplicationsService {
             update: {},
           });
         }
+        // Changing or clearing the cohort moves the student out of the old
+        // one, so they never end up in both.
+        if (exists.cohortId && exists.cohortId !== app.cohortId) {
+          await tx.enrollment.deleteMany({
+            where: { userId: app.userId, cohortId: exists.cohortId },
+          });
+        }
       }
 
       return app;
     });
 
     const applicantName = `${updated.firstName} ${updated.lastName}`.trim();
+
+    // Only a new decision emails the applicant, not a later note edit.
+    if (!statusChanged) return toApplicationDto(updated);
 
     if (updated.status === ApplicationStatus.accepted) {
       try {
