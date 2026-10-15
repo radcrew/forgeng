@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -139,11 +140,19 @@ export class SubmissionsService {
       );
     }
 
+    const content = dto.content ?? sub.content;
+    const repoUrl = dto.repoUrl ?? sub.repoUrl;
+    if (!content?.trim() && !repoUrl?.trim()) {
+      throw new BadRequestException(
+        'Add your written work or a repo link before resubmitting.',
+      );
+    }
+
     const updated = await this.prisma.submission.update({
       where: { id },
       data: {
-        content: dto.content ?? sub.content,
-        repoUrl: dto.repoUrl ?? sub.repoUrl,
+        content,
+        repoUrl,
         status: 'submitted',
       },
     });
