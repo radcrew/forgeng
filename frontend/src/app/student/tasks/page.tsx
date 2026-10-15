@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { Clock, Code2 } from "lucide-react";
 
 import { Badge } from "@components/ui/badge";
@@ -34,7 +33,7 @@ import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
 import { useSelectedCohort } from "@contexts";
-import { cn } from "@utils";
+import { cn, formatCalendarDate, isCalendarDayOver } from "@utils";
 import type { Task, TaskType } from "@types";
 
 type TypeFilter = TaskType | "all";
@@ -199,7 +198,7 @@ const Page = () => {
             const progress = submission?.status ?? "todo";
             const isOverdue =
               !!task.dueDate &&
-              new Date(task.dueDate).getTime() < now &&
+              isCalendarDayOver(task.dueDate, now) &&
               (progress === "todo" || progress === "needs_work");
             const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
             return (
@@ -244,7 +243,7 @@ const Page = () => {
                         >
                           <Clock className="h-3 w-3" />
                           {isOverdue ? "Overdue · " : "Due "}
-                          {format(new Date(task.dueDate), "MMM d, yyyy")}
+                          {formatCalendarDate(task.dueDate)}
                         </span>
                       )}
                     </div>

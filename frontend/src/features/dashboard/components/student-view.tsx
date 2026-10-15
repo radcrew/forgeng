@@ -1,11 +1,11 @@
 "use client";
 
-import { format } from "date-fns";
 import { Clock } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
 import { useSettings } from "@features/settings";
+import { formatCalendarDate } from "@utils";
 import type { StudentDashboard } from "../types";
 import { StudentAnalytics } from "./student-analytics";
 import { PaymentProgress } from "./payment-progress";
@@ -74,7 +74,7 @@ export const StudentView = ({ dashboard }: StudentViewProps) => {
             {nextDeadline ? (
               <>
                 <div className="text-2xl font-bold">
-                  {format(new Date(nextDeadline), "MMM d, yyyy")}
+                  {formatCalendarDate(nextDeadline)}
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">
                   Keep up the good work!

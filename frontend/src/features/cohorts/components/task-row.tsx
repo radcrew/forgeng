@@ -6,6 +6,7 @@ import { Badge } from "@components/ui/badge";
 import { Card } from "@components/ui/card";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { SubmissionStatusBadge } from "@features/submissions";
+import { formatCalendarDate } from "@utils";
 import type { Submission, TaskStatus, TaskType } from "@types";
 
 export type CohortTaskRowProps = {
@@ -42,7 +43,7 @@ export const CohortTaskRow = ({
             </Badge>
             <span>{submissions.length} submissions</span>
             {pending > 0 && <span>{pending} awaiting review</span>}
-            {dueDate && <span>Due {format(new Date(dueDate), "MMM d")}</span>}
+            {dueDate && <span>Due {formatCalendarDate(dueDate, "MMM d")}</span>}
           </div>
         </div>
         <Badge

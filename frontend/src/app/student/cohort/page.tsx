@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { CalendarDays, Code2, Users } from "lucide-react";
 
 import { LoadingState } from "@components/common";
@@ -17,10 +16,11 @@ import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useTasks } from "@features/tasks";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
+import { formatCalendarDate } from "@utils";
 
 const dateRange = (start: string | null, end: string | null): string | null => {
   if (!start && !end) return null;
-  const fmt = (d: string) => format(new Date(d), "MMM d, yyyy");
+  const fmt = (d: string) => formatCalendarDate(d);
   if (start && end) return `${fmt(start)} – ${fmt(end)}`;
   return start ? `Starts ${fmt(start)}` : `Ends ${fmt(end!)}`;
 };
@@ -155,7 +155,7 @@ const Page = () => {
                       </Link>
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         {task.dueDate
-                          ? `Due ${format(new Date(task.dueDate), "MMM d, yyyy")}`
+                          ? `Due ${formatCalendarDate(task.dueDate)}`
                           : "No due date"}
                       </p>
                     </div>

@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { format } from "date-fns";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const deleteTask = vi.fn();
@@ -52,12 +51,9 @@ describe("task Row", () => {
     expect(screen.getByText("2 submissions")).toBeInTheDocument();
   });
 
-  it("formats the due date", () => {
+  it("shows the due date as saved, in any time zone", () => {
     render(<Row task={makeTask()} onEdit={vi.fn()} />);
-    // Compute the expected label the same way the component does so the test
-    // is robust to the runner's local timezone. The date is its own text node.
-    const due = format(new Date("2026-02-01T00:00:00.000Z"), "MMM d, yyyy");
-    expect(screen.getByText(`Due ${due}`)).toBeInTheDocument();
+    expect(screen.getByText("Due Feb 1, 2026")).toBeInTheDocument();
   });
 
   it("calls onEdit from the edit button", async () => {

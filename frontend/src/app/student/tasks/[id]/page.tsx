@@ -15,6 +15,7 @@ import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { SubmissionDetailSheet, SubmissionStatusBadge, useSubmissions } from "@features/submissions";
 import { TaskSubmitDialog, useTask } from "@features/tasks";
+import { formatCalendarDate } from "@utils";
 
 const Page = () => {
   const params = useParams<{ id: string }>();
@@ -77,7 +78,7 @@ const Page = () => {
             {task.dueDate && (
               <span className="flex items-center gap-1 text-xs">
                 <Clock className="h-3 w-3" />
-                Due {format(new Date(task.dueDate), "MMM d, yyyy")}
+                Due {formatCalendarDate(task.dueDate)}
               </span>
             )}
           </span>

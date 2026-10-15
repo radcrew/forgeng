@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import { Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,6 +11,7 @@ import { Button } from "@components/ui/button";
 import { Card as UiCard } from "@components/ui/card";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { FormDialog } from "@components/common";
+import { formatCalendarDate } from "@utils";
 import { ApiError } from "@lib/api-client";
 import { deleteCohort } from "../api";
 import type { Cohort } from "@types";
@@ -74,9 +74,9 @@ export const CohortRow = ({ cohort, onEdit, onDeleted }: CohortRowProps) => {
             </span>
             {cohort.startDate && (
               <span>
-                · {format(new Date(cohort.startDate), "MMM d, yyyy")}
+                · {formatCalendarDate(cohort.startDate)}
                 {cohort.endDate &&
-                  ` → ${format(new Date(cohort.endDate), "MMM d, yyyy")}`}
+                  ` → ${formatCalendarDate(cohort.endDate)}`}
               </span>
             )}
           </div>
