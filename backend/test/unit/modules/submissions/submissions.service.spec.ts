@@ -1,5 +1,9 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import type { Submission, Task, User } from '@prisma/client';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
+import type { Cohort, Submission, Task, User } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
@@ -15,7 +19,11 @@ const student: AuthUser = {
   createdAt: DATE,
 } as AuthUser;
 
-function makeTask(overrides: Partial<Task> = {}): Task {
+type TaskWithCohort = Task & {
+  cohort: Pick<Cohort, 'status' | 'endDate'>;
+};
+
+function makeTask(overrides: Partial<TaskWithCohort> = {}): TaskWithCohort {
   return {
     id: 5,
     cohortId: 3,
@@ -25,8 +33,9 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     status: 'published',
     dueDate: null,
     createdAt: DATE,
+    cohort: { status: 'active', endDate: null },
     ...overrides,
-  } as Task;
+  } as TaskWithCohort;
 }
 
 function makeUser(overrides: Partial<User> = {}): User {
@@ -158,6 +167,38 @@ describe('SubmissionsService', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
+    it.each([
+      ['marked completed', { status: 'completed' as const, endDate: null }],
+      [
+        'past its end date',
+        {
+          status: 'active' as const,
+          endDate: new Date('2020-01-01T00:00:00Z'),
+        },
+      ],
+    ])('forbids submitting to a cohort %s', async (_label, cohort) => {
+      prisma.task.findUnique.mockResolvedValue(makeTask({ cohort }));
+      await expect(
+        service.create({ taskId: 5, content: 'x' }, student),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(prisma.submission.create).not.toHaveBeenCalled();
+    });
+
+    it('still accepts work on the cohort end day', async () => {
+      // Saved as midnight UTC today, so the end day is not over yet.
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ cohort: { status: 'active', endDate: today } }),
+      );
+      prisma.enrollment.findUnique.mockResolvedValue({ id: 1 });
+      prisma.submission.create.mockResolvedValue(makeSubmission());
+
+      await expect(
+        service.create({ taskId: 5, content: 'x' }, student),
+      ).resolves.toBeDefined();
+    });
+
     it('forbids a student who is not enrolled in the task cohort', async () => {
       prisma.task.findUnique.mockResolvedValue(makeTask());
       prisma.enrollment.findUnique.mockResolvedValue(null);
@@ -215,6 +256,29 @@ describe('SubmissionsService', () => {
       await expect(service.resubmit(10, {}, student)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+
+    it('rejects a resubmission that would leave no work', async () => {
+      prisma.submission.findUnique.mockResolvedValue(
+        makeSubmission({ status: 'needs_work', content: null }),
+      );
+      await expect(
+        service.resubmit(10, { content: ' ' }, student),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.submission.update).not.toHaveBeenCalled();
+    });
+
+    it('forbids resubmitting once the cohort has ended', async () => {
+      prisma.submission.findUnique.mockResolvedValue(
+        makeSubmission({
+          status: 'needs_work',
+          task: makeTask({ cohort: { status: 'completed', endDate: null } }),
+        }),
+      );
+      await expect(
+        service.resubmit(10, { content: 'redone' }, student),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(prisma.submission.update).not.toHaveBeenCalled();
     });
 
     it('moves a needs_work submission back to submitted', async () => {
