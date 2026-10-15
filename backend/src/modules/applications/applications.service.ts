@@ -190,11 +190,18 @@ export class ApplicationsService {
 
     if (updated.status === ApplicationStatus.accepted) {
       try {
+        const cohort = updated.cohortId
+          ? await this.prisma.cohort.findUnique({
+              where: { id: updated.cohortId },
+              select: { name: true },
+            })
+          : null;
         await this.mail.send({
           to: updated.email,
           ...applicationAcceptedEmail({
             applicantName,
             dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
+            cohortName: cohort?.name,
           }),
         });
       } catch (err) {
