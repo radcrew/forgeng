@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { APPLICATION_COUNTRY_CODES } from "@constants/shared/countries";
+import { isWalletAddressForChain } from "@utils/wallet";
 import {
   GITHUB_PROFILE_RE,
   LINKEDIN_PROFILE_RE,
@@ -14,12 +15,6 @@ import {
 
 export const WALLET_CHAINS = ["evm", "solana", "tron"] as const;
 export type WalletChain = (typeof WALLET_CHAINS)[number];
-
-const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
-  evm: /^0x[0-9a-fA-F]{40}$/,
-  solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
-  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
-};
 
 const ADDRESS_MESSAGES: Record<WalletChain, string> = {
   evm: "Enter a valid EVM address (0x + 40 hex characters)",
@@ -35,7 +30,7 @@ const walletEntry = z
     address: z.string(),
   })
   .superRefine((entry, ctx) => {
-    if (entry.address && !ADDRESS_PATTERNS[entry.chain].test(entry.address)) {
+    if (entry.address && !isWalletAddressForChain(entry.chain, entry.address)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: ADDRESS_MESSAGES[entry.chain],

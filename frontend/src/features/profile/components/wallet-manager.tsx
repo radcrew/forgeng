@@ -17,6 +17,7 @@ import {
 } from "@components/ui/select";
 import { WALLET_CHAINS, type WalletChain } from "@constants/applications";
 import { ApiError } from "@lib/api-client";
+import { isWalletAddressForChain } from "@utils";
 
 import { getWallets, updateWallets } from "../api";
 
@@ -30,12 +31,6 @@ const CHAIN_PLACEHOLDERS: Record<WalletChain, string> = {
   evm: "0x…",
   solana: "e.g. 7xKX…",
   tron: "T…",
-};
-
-const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
-  evm: /^0x[0-9a-fA-F]{40}$/,
-  solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
-  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
 };
 
 export function WalletManager() {
@@ -67,7 +62,7 @@ export function WalletManager() {
       setAddressError("Address is required.");
       return;
     }
-    if (!ADDRESS_PATTERNS[chain].test(addr)) {
+    if (!isWalletAddressForChain(chain, addr)) {
       setAddressError(`Invalid ${CHAIN_LABELS[chain]} address.`);
       return;
     }

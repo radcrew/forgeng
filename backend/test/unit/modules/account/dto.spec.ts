@@ -58,6 +58,25 @@ describe('UpdateWalletsDto', () => {
     ).toEqual([]);
   });
 
+  it.each([
+    ['tron', 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'],
+    ['solana', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'],
+  ])('accepts a real %s address', (chain, address) => {
+    expect(
+      failingProps(UpdateWalletsDto, { wallets: [{ chain, address }] }),
+    ).toEqual([]);
+  });
+
+  it.each([
+    ['evm', 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'],
+    ['solana', 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'],
+    ['tron', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'],
+  ])('rejects an address from another chain saved as %s', (chain, address) => {
+    expect(
+      failingProps(UpdateWalletsDto, { wallets: [{ chain, address }] }),
+    ).toContain('wallets');
+  });
+
   it('accepts an empty wallet array', () => {
     expect(failingProps(UpdateWalletsDto, { wallets: [] })).toEqual([]);
   });
