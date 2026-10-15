@@ -26,6 +26,23 @@ The import above pulls in the cross-tool non-negotiables and command baseline fr
 
 **Commit messages.** After any set of file changes, automatically draft and show a Conventional Commits message (`feat:`, `fix:`, `docs:`, `chore:`, etc., matching this repo's history) in a copyable code block, without waiting to be asked. Scope it to the actual uncommitted change set (check `git status`) and call out any unrelated modified files so they can be excluded. Do not run `git commit` yourself; the user commits manually unless they explicitly ask you to.
 
+## Writing Style
+
+Always use plain, simple English when talking to me.
+
+- Use common words that are easy to understand.
+- Keep sentences short.
+- Explain technical terms in simple words.
+- Give examples when they help me understand.
+- Explain things step by step when needed.
+- Avoid complex words, long explanations, and formal language.
+- When I ask about code, explain what it does in simple English.
+- When suggesting a PR title, commit message, or branch name, use natural and professional English.
+- Do not change technical meaning just to make a sentence shorter.
+- Assume English is not my first language.
+
+The goal is to help me understand, not to impress me with complex English.
+
 ## Commands
 
 Run from repo root unless noted. Package manager is **pnpm** (`packageManager: pnpm@10.32.1`), Node `>=24 <25`.
