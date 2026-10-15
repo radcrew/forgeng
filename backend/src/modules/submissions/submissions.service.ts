@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -62,6 +63,7 @@ export class SubmissionsService {
     dto: CreateSubmissionDto,
     user: AuthUser,
   ): Promise<SubmissionDto> {
+    this.assertHasWork(dto.content, dto.repoUrl);
     const task = await this.prisma.task.findUnique({
       where: { id: dto.taskId },
     });
@@ -120,17 +122,27 @@ export class SubmissionsService {
       );
     }
 
+    const content = dto.content ?? sub.content;
+    const repoUrl = dto.repoUrl ?? sub.repoUrl;
+    this.assertHasWork(content, repoUrl);
+
     const updated = await this.prisma.submission.update({
       where: { id },
-      data: {
-        content: dto.content ?? sub.content,
-        repoUrl: dto.repoUrl ?? sub.repoUrl,
-        status: 'submitted',
-      },
+      data: { content, repoUrl, status: 'submitted' },
     });
     // A resubmission re-enters the review queue, so admins should hear about it.
     await this.notifyAdminsOfSubmission(user, sub.task?.title ?? 'a task');
     return this.serialize(updated, sub.task, sub.user);
+  }
+
+  /** A submission needs a repo link or a write-up that isn't only spaces. */
+  private assertHasWork(
+    content: string | null | undefined,
+    repoUrl: string | null | undefined,
+  ): void {
+    if (!content?.trim() && !repoUrl) {
+      throw new BadRequestException('Add a repository link or a write-up.');
+    }
   }
 
   /** Best-effort: a notification failure must never break a student's submit. */

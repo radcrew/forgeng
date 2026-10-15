@@ -6,7 +6,11 @@ import { toast } from "sonner";
 import { FormBody, FormDialog, FormField } from "@components/common";
 import { Input } from "@components/ui/input";
 import { Textarea } from "@components/ui/textarea";
-import { createSubmission } from "@features/submissions";
+import {
+  createSubmission,
+  validateSubmission,
+  type SubmissionErrors,
+} from "@features/submissions";
 import { ApiError } from "@lib/api-client";
 import type { Task } from "@types";
 
@@ -26,9 +30,14 @@ export const TaskSubmitDialog = ({
 }: TaskSubmitDialogProps) => {
   const [content, setContent] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
+  const [errors, setErrors] = useState<SubmissionErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    const found = validateSubmission({ repoUrl, content });
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
     setIsSubmitting(true);
     try {
       await createSubmission(task.id, {
@@ -65,21 +74,37 @@ export const TaskSubmitDialog = ({
       }}
     >
       <FormBody>
-        <FormField label="Repository URL (optional)" htmlFor="repoUrl">
+        <FormField
+          label="Repository URL (optional)"
+          htmlFor="repoUrl"
+          error={errors.repoUrl}
+        >
           <Input
             id="repoUrl"
             placeholder="https://github.com/you/repo"
             value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
+            aria-invalid={!!errors.repoUrl}
+            onChange={(e) => {
+              setRepoUrl(e.target.value);
+              setErrors({});
+            }}
           />
         </FormField>
-        <FormField label="Notes / Write-up (optional)" htmlFor="content">
+        <FormField
+          label="Notes / Write-up (optional)"
+          htmlFor="content"
+          error={errors.content}
+        >
           <Textarea
             id="content"
             placeholder="Describe your solution, approach, or any notes for the reviewer..."
             rows={5}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            aria-invalid={!!errors.content}
+            onChange={(e) => {
+              setContent(e.target.value);
+              setErrors({});
+            }}
           />
         </FormField>
       </FormBody>

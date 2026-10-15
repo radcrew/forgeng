@@ -1,4 +1,8 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Submission, Task, User } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
@@ -144,6 +148,13 @@ describe('SubmissionsService', () => {
   });
 
   describe('create', () => {
+    it('rejects a submission with no repo link and a blank write-up', async () => {
+      await expect(
+        service.create({ taskId: 5, content: '   ' }, student),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.submission.create).not.toHaveBeenCalled();
+    });
+
     it('throws NotFoundException when the task does not exist', async () => {
       prisma.task.findUnique.mockResolvedValue(null);
       await expect(
@@ -215,6 +226,16 @@ describe('SubmissionsService', () => {
       await expect(service.resubmit(10, {}, student)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+
+    it('rejects a resubmission that would leave no work', async () => {
+      prisma.submission.findUnique.mockResolvedValue(
+        makeSubmission({ status: 'needs_work', content: null }),
+      );
+      await expect(
+        service.resubmit(10, { content: ' ' }, student),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.submission.update).not.toHaveBeenCalled();
     });
 
     it('moves a needs_work submission back to submitted', async () => {

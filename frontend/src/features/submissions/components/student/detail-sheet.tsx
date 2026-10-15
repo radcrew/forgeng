@@ -22,6 +22,7 @@ import type { Submission } from "@types";
 
 import { resubmitSubmission } from "../../api";
 import { useSubmissionFeedback } from "../../hooks";
+import { validateSubmission, type SubmissionErrors } from "../../validation";
 import { SubmissionStatusBadge } from "../status-badge";
 
 export type SubmissionDetailSheetProps = {
@@ -44,9 +45,14 @@ export const SubmissionDetailSheet = ({
 
   const [content, setContent] = useState(submission.content ?? "");
   const [repoUrl, setRepoUrl] = useState(submission.repoUrl ?? "");
+  const [errors, setErrors] = useState<SubmissionErrors>({});
   const [isResubmitting, setIsResubmitting] = useState(false);
 
   const handleResubmit = async () => {
+    const found = validateSubmission({ repoUrl, content });
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
     setIsResubmitting(true);
     try {
       await resubmitSubmission(submission.id, {
@@ -121,21 +127,37 @@ export const SubmissionDetailSheet = ({
           <Separator />
           <div className="space-y-4">
             <SectionTitle>Revise & Resubmit</SectionTitle>
-            <FormField label="Repository URL (optional)" htmlFor="resubmit-repo">
+            <FormField
+              label="Repository URL (optional)"
+              htmlFor="resubmit-repo"
+              error={errors.repoUrl}
+            >
               <Input
                 id="resubmit-repo"
                 placeholder="https://github.com/you/repo"
                 value={repoUrl}
-                onChange={(e) => setRepoUrl(e.target.value)}
+                aria-invalid={!!errors.repoUrl}
+                onChange={(e) => {
+                  setRepoUrl(e.target.value);
+                  setErrors({});
+                }}
               />
             </FormField>
-            <FormField label="Notes / Write-up (optional)" htmlFor="resubmit-content">
+            <FormField
+              label="Notes / Write-up (optional)"
+              htmlFor="resubmit-content"
+              error={errors.content}
+            >
               <Textarea
                 id="resubmit-content"
                 placeholder="Describe what you changed since the last review..."
                 rows={5}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                aria-invalid={!!errors.content}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  setErrors({});
+                }}
               />
             </FormField>
             <Button
