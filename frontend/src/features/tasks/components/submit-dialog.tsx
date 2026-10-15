@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { FormBody, FormDialog, FormField } from "@components/common";
 import { Input } from "@components/ui/input";
 import { Textarea } from "@components/ui/textarea";
-import { createSubmission } from "@features/submissions";
+import { createSubmission, type Submission } from "@features/submissions";
 import { ApiError } from "@lib/api-client";
 import type { Task } from "@types";
 
@@ -14,8 +14,11 @@ export type TaskSubmitDialogProps = {
   task: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Called after a successful submission so the caller can refetch. */
-  onSubmitted?: () => void;
+  /**
+   * Called with the new submission, so the page can show it right away
+   * instead of offering Submit again while it reloads.
+   */
+  onSubmitted?: (submission: Submission) => void;
 };
 
 export const TaskSubmitDialog = ({
@@ -27,11 +30,15 @@ export const TaskSubmitDialog = ({
   const [content, setContent] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Blocks a second send before the disabled button has re-rendered.
+  const sending = useRef(false);
 
   const handleSubmit = async () => {
+    if (sending.current) return;
+    sending.current = true;
     setIsSubmitting(true);
     try {
-      await createSubmission(task.id, {
+      const submission = await createSubmission(task.id, {
         content: content.trim() || undefined,
         repoUrl: repoUrl.trim() || undefined,
       });
@@ -41,12 +48,13 @@ export const TaskSubmitDialog = ({
       onOpenChange(false);
       setContent("");
       setRepoUrl("");
-      onSubmitted?.();
+      onSubmitted?.(submission);
     } catch (err) {
       toast.error(
         err instanceof ApiError ? err.message : "Failed to submit your work.",
       );
     } finally {
+      sending.current = false;
       setIsSubmitting(false);
     }
   };

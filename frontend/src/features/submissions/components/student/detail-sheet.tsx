@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { format } from "date-fns";
 import { MessageSquare } from "lucide-react";
 import { toast } from "sonner";
@@ -45,8 +45,12 @@ export const SubmissionDetailSheet = ({
   const [content, setContent] = useState(submission.content ?? "");
   const [repoUrl, setRepoUrl] = useState(submission.repoUrl ?? "");
   const [isResubmitting, setIsResubmitting] = useState(false);
+  // Blocks a second send before the disabled button has re-rendered.
+  const sending = useRef(false);
 
   const handleResubmit = async () => {
+    if (sending.current) return;
+    sending.current = true;
     setIsResubmitting(true);
     try {
       await resubmitSubmission(submission.id, {
@@ -63,6 +67,7 @@ export const SubmissionDetailSheet = ({
         err instanceof ApiError ? err.message : "Failed to resubmit your work.",
       );
     } finally {
+      sending.current = false;
       setIsResubmitting(false);
     }
   };
@@ -121,7 +126,10 @@ export const SubmissionDetailSheet = ({
           <Separator />
           <div className="space-y-4">
             <SectionTitle>Revise & Resubmit</SectionTitle>
-            <FormField label="Repository URL (optional)" htmlFor="resubmit-repo">
+            <FormField
+              label="Repository URL (optional)"
+              htmlFor="resubmit-repo"
+            >
               <Input
                 id="resubmit-repo"
                 placeholder="https://github.com/you/repo"
@@ -129,7 +137,10 @@ export const SubmissionDetailSheet = ({
                 onChange={(e) => setRepoUrl(e.target.value)}
               />
             </FormField>
-            <FormField label="Notes / Write-up (optional)" htmlFor="resubmit-content">
+            <FormField
+              label="Notes / Write-up (optional)"
+              htmlFor="resubmit-content"
+            >
               <Textarea
                 id="resubmit-content"
                 placeholder="Describe what you changed since the last review..."

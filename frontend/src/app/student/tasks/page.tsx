@@ -40,7 +40,7 @@ import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
 import { useSelectedCohort } from "@contexts";
 import { cn, formatCalendarDate, isCalendarDayOver } from "@utils";
-import type { Task, TaskType } from "@types";
+import type { Submission, Task, TaskType } from "@types";
 
 type TypeFilter = TaskType | "all";
 
@@ -71,9 +71,12 @@ const Page = () => {
   const { data: submissions = [], refetch: refetchSubmissions } =
     useSubmissions();
 
+  // Work sent from this page shows straight away, before the list reloads,
+  // so the task never offers Submit a second time. Loaded data wins.
+  const [justSubmitted, setJustSubmitted] = useState<Submission[]>([]);
   const submissionByTaskId = useMemo(
-    () => new Map(submissions.map((s) => [s.taskId, s])),
-    [submissions],
+    () => new Map([...justSubmitted, ...submissions].map((s) => [s.taskId, s])),
+    [justSubmitted, submissions],
   );
 
   const visibleTasks = useMemo(() => {
@@ -121,7 +124,10 @@ const Page = () => {
           title="Tasks"
           description="Enroll in a cohort to see your assignments."
         />
-        <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
+        <EmptyState
+          message="You are not enrolled in a cohort yet."
+          art={APP_ART.cohort}
+        />
       </PageContainer>
     );
   }
@@ -173,10 +179,7 @@ const Page = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Select
-              value={sort}
-              onValueChange={(v) => setSort(v as TaskSort)}
-            >
+            <Select value={sort} onValueChange={(v) => setSort(v as TaskSort)}>
               <SelectTrigger className="sm:w-44">
                 <SelectValue />
               </SelectTrigger>
@@ -214,7 +217,10 @@ const Page = () => {
           art={APP_ART.tasks}
         />
       ) : visibleTasks.length === 0 ? (
-        <EmptyState message="No tasks match your filters." art={APP_ART.noResults} />
+        <EmptyState
+          message="No tasks match your filters."
+          art={APP_ART.noResults}
+        />
       ) : (
         <div className="space-y-3">
           {visibleTasks.map((task) => {
@@ -250,10 +256,7 @@ const Page = () => {
                       </p>
                     )}
                     <div className="flex items-center gap-3 mt-2">
-                      <Badge
-                        variant="outline"
-                        className="capitalize text-xs"
-                      >
+                      <Badge variant="outline" className="capitalize text-xs">
                         {task.type}
                       </Badge>
                       {task.dueDate && (
@@ -299,7 +302,10 @@ const Page = () => {
           onOpenChange={(open) => {
             if (!open) setSelectedTask(null);
           }}
-          onSubmitted={refetchSubmissions}
+          onSubmitted={(submission) => {
+            setJustSubmitted((prev) => [...prev, submission]);
+            refetchSubmissions();
+          }}
         />
       )}
     </PageContainer>

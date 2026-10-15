@@ -13,9 +13,14 @@ import { Card } from "@components/ui/card";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
-import { SubmissionDetailSheet, SubmissionStatusBadge, useSubmissions } from "@features/submissions";
+import {
+  SubmissionDetailSheet,
+  SubmissionStatusBadge,
+  useSubmissions,
+} from "@features/submissions";
 import { isCohortEnded, useCohort } from "@features/cohorts";
 import { TaskSubmitDialog, useTask } from "@features/tasks";
+import type { Submission } from "@types";
 import { formatCalendarDate } from "@utils";
 
 const Page = () => {
@@ -27,9 +32,12 @@ const Page = () => {
   const cohortEnded = !!cohort && isCohortEnded(cohort);
   const { data: submissions = [], refetch: refetchSubmissions } =
     useSubmissions();
+  // Work sent from this page shows straight away, before the list reloads,
+  // so the page never offers Submit a second time.
+  const [justSubmitted, setJustSubmitted] = useState<Submission | null>(null);
   const submission = useMemo(
-    () => submissions.find((s) => s.taskId === taskId),
-    [submissions, taskId],
+    () => submissions.find((s) => s.taskId === taskId) ?? justSubmitted,
+    [submissions, taskId, justSubmitted],
   );
 
   const [submitOpen, setSubmitOpen] = useState(false);
@@ -158,7 +166,10 @@ const Page = () => {
         task={task}
         open={submitOpen}
         onOpenChange={setSubmitOpen}
-        onSubmitted={refetchSubmissions}
+        onSubmitted={(created) => {
+          setJustSubmitted(created);
+          refetchSubmissions();
+        }}
       />
 
       {submission && (
