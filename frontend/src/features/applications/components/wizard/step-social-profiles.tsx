@@ -25,7 +25,7 @@ import { WalletSection } from "./wallet-section";
 const COPY = APPLICATION_WIZARD_COPY.steps.socialProfiles;
 
 type SocialProfileFieldName =
-  | "linkedin" | "github" | "twitter" | "facebook"
+  | "linkedin" | "github" | "twitter"
   | "telegram" | "whatsapp" | "portfolio";
 
 type SocialField = {
@@ -36,10 +36,9 @@ type SocialField = {
 };
 
 const FIELDS: SocialField[] = [
-  { name: "linkedin", label: COPY.linkedinLabel, placeholder: COPY.linkedinPlaceholder, required: true },
-  { name: "github", label: COPY.githubLabel, placeholder: COPY.githubPlaceholder, required: true },
+  { name: "linkedin", label: COPY.linkedinLabel, placeholder: COPY.linkedinPlaceholder },
+  { name: "github", label: COPY.githubLabel, placeholder: COPY.githubPlaceholder },
   { name: "twitter", label: COPY.twitterLabel, placeholder: COPY.twitterPlaceholder },
-  { name: "facebook", label: COPY.facebookLabel, placeholder: COPY.facebookPlaceholder },
   { name: "telegram", label: COPY.telegramLabel, placeholder: COPY.telegramPlaceholder },
   { name: "whatsapp", label: COPY.whatsappLabel, placeholder: COPY.whatsappPlaceholder },
   { name: "portfolio", label: COPY.portfolioLabel, placeholder: COPY.portfolioPlaceholder },

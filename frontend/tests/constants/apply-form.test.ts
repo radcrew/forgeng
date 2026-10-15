@@ -12,10 +12,9 @@ const VALID = {
   name: "Ada Lovelace",
   linkedin: "https://linkedin.com/in/ada",
   twitter: "",
-  facebook: "",
   github: "https://github.com/ada",
   portfolio: "",
-  telegram: "",
+  telegram: "@ada_dev",
   whatsapp: "",
   country: "US",
   videoUrl: "https://example.com/intro.mp4",
@@ -25,6 +24,46 @@ const VALID = {
 describe("APPLICATION_FORM_SCHEMA", () => {
   it("accepts a valid application", () => {
     expect(APPLICATION_FORM_SCHEMA.safeParse(VALID).success).toBe(true);
+  });
+
+  it("accepts an application without LinkedIn or GitHub", () => {
+    const result = APPLICATION_FORM_SCHEMA.safeParse({
+      ...VALID,
+      linkedin: "",
+      github: "",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts WhatsApp instead of Telegram", () => {
+    const result = APPLICATION_FORM_SCHEMA.safeParse({
+      ...VALID,
+      telegram: "",
+      whatsapp: "+15551234567",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("asks for Telegram or WhatsApp under both fields when neither is given", () => {
+    const result = APPLICATION_FORM_SCHEMA.safeParse({
+      ...VALID,
+      telegram: "",
+      whatsapp: "",
+    });
+    expect(result.success).toBe(false);
+    const paths = result.error!.issues.map((i) => i.path.join("."));
+    expect(paths).toEqual(expect.arrayContaining(["telegram", "whatsapp"]));
+  });
+
+  it("asks for a contact even while the video is still missing", () => {
+    // Step 1 is checked before the video exists on step 2.
+    const result = APPLICATION_FORM_SCHEMA.safeParse({
+      ...VALID,
+      telegram: "",
+      videoUrl: "",
+    });
+    const paths = result.error!.issues.map((i) => i.path.join("."));
+    expect(paths).toContain("telegram");
   });
 
   it("rejects a blank name", () => {

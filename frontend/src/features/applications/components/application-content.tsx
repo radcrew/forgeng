@@ -1,5 +1,5 @@
 import { ProseBlock, SectionTitle } from "@components/common";
-import { isSafeHref } from "@utils";
+import { isSafeHref, telegramHref, whatsappHref } from "@utils";
 import { countryLabel } from "@constants/shared/countries";
 import type { Application } from "../types";
 import { CopyButton } from "./copy-button";
@@ -11,6 +11,21 @@ const SOCIAL_LINKS = [
   { key: "facebook" as const, label: "Facebook" },
   { key: "portfolio" as const, label: "Portfolio" },
 ] as const;
+
+/** Opens the chat in a new tab, or shows plain text if there's no link. */
+const ContactLink = ({ text, href }: { text: string; href: string | null }) =>
+  href ? (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:underline"
+    >
+      {text}
+    </a>
+  ) : (
+    <>{text}</>
+  );
 
 export type ApplicationContentProps = { application: Application };
 
@@ -79,7 +94,10 @@ export function ApplicationContent({ application }: ApplicationContentProps) {
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Telegram</span>
                 <span className="font-mono text-xs flex items-center">
-                  {application.telegram}
+                  <ContactLink
+                    text={application.telegram}
+                    href={telegramHref(application.telegram)}
+                  />
                   <CopyButton text={application.telegram} />
                 </span>
               </div>
@@ -88,7 +106,10 @@ export function ApplicationContent({ application }: ApplicationContentProps) {
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">WhatsApp</span>
                 <span className="font-mono text-xs flex items-center">
-                  {application.whatsapp}
+                  <ContactLink
+                    text={application.whatsapp}
+                    href={whatsappHref(application.whatsapp)}
+                  />
                   <CopyButton text={application.whatsapp} />
                 </span>
               </div>

@@ -84,9 +84,10 @@ describe("ProfileForm", () => {
     const payload = updateProfile.mock.calls[0][0] as Record<string, unknown>;
     expect(payload).toMatchObject({
       name: "Ada Lovelace",
-      bio: "Engineer",
       github: "https://github.com/ada",
     });
+    // Bio is no longer on the form, so a save never clears it.
+    expect(payload).not.toHaveProperty("bio");
     // Empty optionals are omitted, not sent as "".
     expect(payload).not.toHaveProperty("linkedin");
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());

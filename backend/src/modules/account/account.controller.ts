@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -124,19 +125,23 @@ export class AccountController {
       whatsapp: true,
     } as const;
 
+    // Social links live on the application. Saving them never creates one,
+    // because an application made here would show up as an empty pending
+    // application in the admin list.
+    const hasApplication =
+      (await this.prisma.application.count({ where: { userId: user.id } })) > 0;
+    if (hasSocials && !hasApplication) {
+      throw new BadRequestException(
+        'Social links are saved with your application, and this account has none. Clear the links to save the rest of your profile.',
+      );
+    }
+
     const [updated, socials] = await Promise.all([
       this.prisma.user.update({ where: { id: user.id }, data: userFields }),
       hasSocials
-        ? this.prisma.application.upsert({
+        ? this.prisma.application.update({
             where: { userId: user.id },
-            update: socialFields,
-            create: {
-              userId: user.id,
-              email: user.email,
-              firstName: user.name?.split(' ')[0] ?? '',
-              lastName: user.name?.split(' ').slice(1).join(' ') ?? '',
-              ...socialFields,
-            },
+            data: socialFields,
             select: SOCIALS_SELECT,
           })
         : this.prisma.application.findUnique({

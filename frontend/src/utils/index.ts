@@ -8,5 +8,5 @@ export {
   writeStorageJson,
 } from "./storage";
 export { formatStatusLabel, initials } from "./string";
-export { isSafeHref } from "./url";
+export { isSafeHref, telegramHref, whatsappHref } from "./url";
 export { mapUserDto, type UserDto } from "./user";

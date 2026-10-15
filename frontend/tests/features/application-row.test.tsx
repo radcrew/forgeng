@@ -47,9 +47,12 @@ describe("application Row", () => {
   });
 
   it("flags an incomplete profile", () => {
-    // Drop a required social field so isApplicationComplete returns false.
+    // No Telegram or WhatsApp, so there is no way to reach the applicant.
     render(
-      <Row application={makeApplication({ github: null })} onSelect={vi.fn()} />,
+      <Row
+        application={makeApplication({ telegram: null, whatsapp: null })}
+        onSelect={vi.fn()}
+      />,
     );
     expect(screen.getByText(/incomplete profile/i)).toBeInTheDocument();
   });
