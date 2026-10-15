@@ -1,10 +1,16 @@
-import { ConflictException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { MailService } from '@core/mail';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import { ApplicationsService } from '@modules/applications/applications.service';
+import { VideoService } from '@modules/applications/video.service';
 
 const DATE = new Date('2026-01-15T10:30:00.000Z');
 
@@ -95,6 +101,7 @@ describe('ApplicationsService', () => {
   };
   let notifications: { notifyApplicationReceived: jest.Mock };
   let mail: { send: jest.Mock };
+  let video: { assertOwnUpload: jest.Mock; viewUrl: jest.Mock };
 
   beforeEach(() => {
     prisma = {
@@ -110,6 +117,10 @@ describe('ApplicationsService', () => {
       notifyApplicationReceived: jest.fn().mockResolvedValue(undefined),
     };
     mail = { send: jest.fn().mockResolvedValue(undefined) };
+    video = {
+      assertOwnUpload: jest.fn().mockResolvedValue(undefined),
+      viewUrl: jest.fn((url: string | null) => Promise.resolve(url)),
+    };
     const config = {
       get: jest.fn().mockReturnValue('https://app.example.com'),
     };
@@ -119,6 +130,7 @@ describe('ApplicationsService', () => {
       notifications as unknown as NotificationsService,
       mail as unknown as MailService,
       config as unknown as ConfigService<never, true>,
+      video as unknown as VideoService,
     );
   });
 
@@ -173,6 +185,17 @@ describe('ApplicationsService', () => {
       expect(notifications.notifyApplicationReceived).toHaveBeenCalledTimes(1);
     });
 
+    it('does not create the application when the video check fails', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+      video.assertOwnUpload.mockRejectedValue(new BadRequestException());
+
+      await expect(
+        service.create(makeUser(), { videoUrl: '2/abc.webm' } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(video.assertOwnUpload).toHaveBeenCalledWith(1, '2/abc.webm');
+      expect(prisma.application.create).not.toHaveBeenCalled();
+    });
+
     it('still creates the application when the admin notification fails', async () => {
       prisma.application.findUnique.mockResolvedValue(null);
       prisma.application.create.mockResolvedValue(makeApplicationRow());
@@ -220,6 +243,15 @@ describe('ApplicationsService', () => {
       prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
       const dto = await service.findOne(10);
       expect(dto.reviewerNote).toBe('internal note');
+    });
+
+    it('replaces the stored video path with a playable link', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      video.viewUrl.mockResolvedValue('https://signed.example/v.webm');
+
+      const dto = await service.findOne(10);
+
+      expect(dto.videoUrl).toBe('https://signed.example/v.webm');
     });
   });
 

@@ -27,10 +27,14 @@ import {
 } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ListApplicationsQuery } from './dto/list-applications.query';
+import { CreateVideoUploadDto } from './dto/create-video-upload.dto';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
-import { VideoService, type UploadedVideo } from './video.service';
-
-const MAX_VIDEO_BYTES = 100 * 1024 * 1024; // 100 MB
+import {
+  MAX_VIDEO_BYTES,
+  VideoService,
+  type UploadedVideo,
+  type VideoUploadTarget,
+} from './video.service';
 
 @ApiTags('applications')
 @Controller('applications')
@@ -68,6 +72,17 @@ export class ApplicationsController {
     return this.service.create(user, dto);
   }
 
+  @Roles('applicant')
+  @Post('video-intro/upload-url')
+  @HttpCode(HttpStatus.OK)
+  createVideoUploadUrl(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateVideoUploadDto,
+  ): Promise<VideoUploadTarget> {
+    return this.video.createUploadTarget(user, dto.contentType);
+  }
+
+  /** Disk upload for local dev; storage deployments use the signed URL. */
   @Roles('applicant')
   @Post('video-intro')
   @HttpCode(HttpStatus.OK)

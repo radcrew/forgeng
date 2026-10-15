@@ -15,10 +15,34 @@ export interface CreateApplicationInput {
   wallets: Array<{ chain: string; address: string }>;
 }
 
+interface VideoUploadTarget {
+  uploadUrl: string | null;
+  path: string | null;
+}
+
+// The browser uploads straight to storage through a signed URL, because the
+// API host rejects request bodies this large. Local dev without storage gets
+// no URL and posts the file to the API instead.
 export const uploadVideoIntro = async (blob: Blob): Promise<{ url: string }> => {
-  const form = new FormData();
-  form.append("video", blob, "intro.webm");
-  return apiClient.postForm<{ url: string }>("/applications/video-intro", form);
+  const contentType = blob.type.startsWith("video/mp4") ? "video/mp4" : "video/webm";
+  const { uploadUrl, path } = await apiClient.post<VideoUploadTarget>(
+    "/applications/video-intro/upload-url",
+    { contentType },
+  );
+
+  if (!uploadUrl || !path) {
+    const form = new FormData();
+    form.append("video", blob, "intro.webm");
+    return apiClient.postForm<{ url: string }>("/applications/video-intro", form);
+  }
+
+  const res = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: blob,
+  });
+  if (!res.ok) throw new Error(`Video upload failed (${res.status})`);
+  return { url: path };
 };
 
 export interface UpdateApplicationStatusInput {

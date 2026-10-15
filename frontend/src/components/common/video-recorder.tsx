@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@components/ui/button";
 
 const MAX_SECONDS = 60;
@@ -18,6 +18,13 @@ const COPY = {
   errorLabel: "Upload failed. Please try again.",
   permissionDenied:
     "Camera or microphone access was denied. Please allow access in your browser and try again.",
+  deviceNotFound:
+    "No camera or microphone was found. Connect one and try again.",
+  deviceBusy:
+    "Your camera or microphone is being used by another app. Close it and try again.",
+  noMicrophone:
+    "No microphone was found, so your voice will not be recorded. Connect one and reload the page.",
+  micLabel: "Microphone",
   unsupported:
     "Your browser does not support video recording. Try Chrome or Firefox.",
 };
@@ -39,7 +46,9 @@ export interface VideoRecorderProps {
 
 export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
   const [state, setState] = useState<State>({ status: "idle" });
-  const liveVideoRef = useRef<HTMLVideoElement>(null);
+  const [micLevel, setMicLevel] = useState(0);
+  const [hasMic, setHasMic] = useState(true);
+  const liveVideoRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mimeTypeRef = useRef<string>("");
@@ -76,12 +85,20 @@ export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
         video: true,
         audio: true,
       });
-    } catch {
-      setState({ status: "error", message: COPY.permissionDenied });
+    } catch (err) {
+      const name = err instanceof DOMException ? err.name : "";
+      const message =
+        name === "NotFoundError"
+          ? COPY.deviceNotFound
+          : name === "NotReadableError"
+            ? COPY.deviceBusy
+            : COPY.permissionDenied;
+      setState({ status: "error", message });
       return;
     }
 
     streamRef.current = stream;
+    setHasMic(stream.getAudioTracks().length > 0);
     mimeTypeRef.current =
       ["video/webm;codecs=vp9,opus", "video/webm", "video/mp4"].find((t) =>
         MediaRecorder.isTypeSupported(t),
@@ -93,6 +110,41 @@ export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
 
     setState({ status: "ready" });
   };
+
+  // The live <video> unmounts while the recording is previewed, so reattach
+  // the camera stream whenever it mounts again (e.g. after Re-record).
+  const attachLiveVideo = useCallback((el: HTMLVideoElement | null) => {
+    liveVideoRef.current = el;
+    if (el && streamRef.current) el.srcObject = streamRef.current;
+  }, []);
+
+  // Show a live microphone level so the applicant can see they are heard.
+  const micActive = state.status === "ready" || state.status === "recording";
+  useEffect(() => {
+    const stream = streamRef.current;
+    if (!micActive || !stream || stream.getAudioTracks().length === 0) return;
+
+    const ctx = new AudioContext();
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    ctx.createMediaStreamSource(stream).connect(analyser);
+    const samples = new Uint8Array(analyser.fftSize);
+    let frame = 0;
+    const tick = () => {
+      analyser.getByteTimeDomainData(samples);
+      let peak = 0;
+      for (const s of samples) peak = Math.max(peak, Math.abs(s - 128));
+      setMicLevel(Math.min(1, (peak / 128) * 2));
+      frame = requestAnimationFrame(tick);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(frame);
+      setMicLevel(0);
+      void ctx.close();
+    };
+  }, [micActive]);
 
   // If the browser already granted camera access (e.g. a returning applicant),
   // skip the "Allow Camera" step and go straight to the live preview. The
@@ -192,9 +244,6 @@ export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
     }
 
     if (streamRef.current?.active) {
-      if (liveVideoRef.current) {
-        liveVideoRef.current.srcObject = streamRef.current;
-      }
       setState({ status: "ready" });
     } else {
       stopStream();
@@ -219,7 +268,7 @@ export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
       {showLive && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
           <video
-            ref={liveVideoRef}
+            ref={attachLiveVideo}
             autoPlay
             muted
             playsInline
@@ -235,6 +284,28 @@ export const VideoRecorder = ({ onUpload, onUploaded }: VideoRecorderProps) => {
           )}
         </div>
       )}
+
+      {micActive &&
+        (hasMic ? (
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">{COPY.micLabel}</span>
+            <div
+              role="meter"
+              aria-label={COPY.micLabel}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(micLevel * 100)}
+              className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
+            >
+              <div
+                className="h-full bg-green-500 transition-[width] duration-75"
+                style={{ width: `${Math.round(micLevel * 100)}%` }}
+              />
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-destructive">{COPY.noMicrophone}</p>
+        ))}
 
       {showPreview && previewUrl && (
         <div className="relative overflow-hidden rounded-lg bg-black aspect-video w-full">
