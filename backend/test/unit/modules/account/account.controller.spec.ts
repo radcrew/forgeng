@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import type { User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { AccountController } from '@modules/account/account.controller';
@@ -31,7 +32,8 @@ describe('AccountController', () => {
     application: {
       findUnique: jest.Mock;
       updateMany: jest.Mock;
-      upsert: jest.Mock;
+      update: jest.Mock;
+      count: jest.Mock;
     };
     user: { update: jest.Mock };
     enrollment: { findMany: jest.Mock };
@@ -43,7 +45,8 @@ describe('AccountController', () => {
       application: {
         findUnique: jest.fn().mockResolvedValue(null),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-        upsert: jest.fn().mockResolvedValue(null),
+        update: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(1),
       },
       user: { update: jest.fn().mockResolvedValue(makeUser()) },
       enrollment: { findMany: jest.fn().mockResolvedValue([]) },
@@ -107,25 +110,43 @@ describe('AccountController', () => {
       expect(prisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 2 }, data: { name: 'Ada B' } }),
       );
-      // No social field provided, so upsert is not called.
-      expect(prisma.application.upsert).not.toHaveBeenCalled();
+      // No social field provided, so the application is not written.
+      expect(prisma.application.update).not.toHaveBeenCalled();
     });
 
-    it('upserts the application socials when a social field is present', async () => {
+    it('updates the application socials when a social field is present', async () => {
       await controller.updateProfile(user, {
         name: 'Ada',
         github: 'https://github.com/ada',
       });
 
-      expect(prisma.application.upsert).toHaveBeenCalledTimes(1);
-      expect(prisma.application.upsert).toHaveBeenCalledWith(
+      expect(prisma.application.update).toHaveBeenCalledTimes(1);
+      expect(prisma.application.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { userId: 2 },
-          update: expect.objectContaining({
+          data: expect.objectContaining({
             github: 'https://github.com/ada',
           }) as unknown,
         }),
       );
+    });
+
+    it('refuses social links without an application and creates none', async () => {
+      prisma.application.count.mockResolvedValue(0);
+
+      await expect(
+        controller.updateProfile(user, { github: 'https://github.com/ada' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.application.update).not.toHaveBeenCalled();
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('saves the name without an application when no links are given', async () => {
+      prisma.application.count.mockResolvedValue(0);
+
+      await controller.updateProfile(user, { name: 'Ada B' });
+
+      expect(prisma.user.update).toHaveBeenCalledTimes(1);
     });
   });
 
