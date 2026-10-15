@@ -78,12 +78,17 @@ describe('notification email templates', () => {
   describe('paymentEligibleEmail', () => {
     const email = paymentEligibleEmail({
       studentName: 'Ada',
+      month: 'May 2026',
       url: 'https://app/pay',
     });
 
     it('mentions the stipend and links the URL', () => {
       expect(email.subject).toMatch(/stipend/i);
       expect(email.html).toContain('https://app/pay');
+    });
+
+    it('names the month the tasks were due', () => {
+      expect(email.text).toContain('for May 2026');
     });
   });
 

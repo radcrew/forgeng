@@ -231,18 +231,24 @@ export class NotificationsService {
     studentName: string;
     studentId: number;
     studentEmail: string;
+    /** The month the tasks were due, such as "May 2026". */
+    month: string;
   }): Promise<void> {
     await this.notifyAdmins({
       type: 'payment_eligible',
       title: 'Student eligible for monthly payment',
-      body: `${params.studentName} completed all tasks due this month`,
+      body: `${params.studentName} completed all tasks due in ${params.month}`,
       link: ADMIN_ROUTES.USER(params.studentId),
     });
 
     const url = this.absoluteUrl(STUDENT_ROUTES.DASHBOARD);
     await this.sendEmail(
       params.studentEmail,
-      paymentEligibleEmail({ studentName: params.studentName, url }),
+      paymentEligibleEmail({
+        studentName: params.studentName,
+        month: params.month,
+        url,
+      }),
     );
   }
 

@@ -206,9 +206,16 @@ describe('NotificationsService', () => {
         studentName: 'Ada',
         studentId: 2,
         studentEmail: 'ada@example.com',
+        month: 'May 2026',
       });
 
-      expect(prisma.notification.createMany).toHaveBeenCalledTimes(1);
+      expect(prisma.notification.createMany).toHaveBeenCalledWith({
+        data: [
+          expect.objectContaining({
+            body: 'Ada completed all tasks due in May 2026',
+          }),
+        ],
+      });
       expect(mail.send).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'ada@example.com' }),
       );

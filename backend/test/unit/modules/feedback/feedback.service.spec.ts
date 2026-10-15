@@ -165,6 +165,53 @@ describe('FeedbackService', () => {
       expect(updateArg.status).toBe('approved');
     });
 
+    it('alerts for the month the task was due, even when reviewed later', async () => {
+      prisma.submission.findUnique.mockResolvedValue({
+        id: 10,
+        userId: student.id,
+        taskId: 5,
+      });
+      prisma.submission.update.mockReturnValue('update-op');
+      prisma.feedback.create.mockReturnValue(makeFeedback());
+      // Due in May 2026; the review happens whenever the test runs.
+      prisma.task.findUnique.mockResolvedValue({
+        cohortId: 3,
+        dueDate: new Date('2026-05-30T00:00:00.000Z'),
+      });
+      prisma.task.findMany.mockResolvedValue([{ id: 5 }]);
+      prisma.submission.findMany.mockResolvedValue([{ taskId: 5 }]);
+      prisma.notification.findFirst.mockResolvedValue(null);
+      prisma.user.findUnique.mockResolvedValue({
+        name: 'Stu',
+        email: 'stu@example.com',
+      });
+
+      await service.create(10, reviewer, {
+        content: 'ok',
+        verdict: 'approved',
+      } as never);
+
+      // Only May's tasks are checked.
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            dueDate: {
+              gte: new Date('2026-05-01T00:00:00.000Z'),
+              lte: new Date('2026-05-31T23:59:59.999Z'),
+            },
+          }) as unknown,
+        }),
+      );
+      expect(prisma.notification.findFirst).toHaveBeenCalledWith({
+        where: expect.objectContaining({
+          body: { contains: 'due in May 2026' },
+        }) as unknown,
+      });
+      expect(notifications.notifyPaymentEligible).toHaveBeenCalledWith(
+        expect.objectContaining({ month: 'May 2026' }),
+      );
+    });
+
     it('counts approved tasks, not submissions, for payment eligibility', async () => {
       prisma.submission.findUnique.mockResolvedValue({
         id: 10,
