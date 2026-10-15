@@ -1,5 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { randomBytes } from 'node:crypto';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -20,6 +26,10 @@ export interface UploadedImage {
 const AVATAR_SUBDIR = 'avatars';
 /** Public URL prefix; mirrors the static mount in `main.ts` (`/api/uploads`). */
 const PUBLIC_PREFIX = `/api/uploads/${AVATAR_SUBDIR}`;
+/** Public Supabase Storage bucket used instead of the disk when configured. */
+const STORAGE_BUCKET = 'avatars';
+
+type StorageBucket = ReturnType<SupabaseClient['storage']['from']>;
 
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -61,10 +71,28 @@ function detectImageMime(buffer: Buffer): string | null {
 
 @Injectable()
 export class AvatarService {
+  private readonly logger = new Logger(AvatarService.name);
+  private readonly bucket: StorageBucket | null;
+  /** URL prefix of avatars this service stored, used to find old ones to delete. */
+  private readonly publicPrefix: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService<AppConfiguration, true>,
-  ) {}
+  ) {
+    // Serverless hosts (Vercel) have a read-only filesystem, so avatars go to
+    // Supabase Storage when it's configured; local dev and tests use the disk.
+    const storage = this.config.get('storage', { infer: true });
+    if (storage) {
+      this.bucket = createClient(storage.supabaseUrl, storage.serviceRoleKey, {
+        auth: { persistSession: false },
+      }).storage.from(STORAGE_BUCKET);
+      this.publicPrefix = `${storage.supabaseUrl.replace(/\/+$/, '')}/storage/v1/object/public/${STORAGE_BUCKET}/`;
+    } else {
+      this.bucket = null;
+      this.publicPrefix = `${PUBLIC_PREFIX}/`;
+    }
+  }
 
   private get dir(): string {
     return join(this.config.get('uploadsDir', { infer: true }), AVATAR_SUBDIR);
@@ -78,9 +106,8 @@ export class AvatarService {
       );
     }
 
-    await mkdir(this.dir, { recursive: true });
     const filename = `${user.id}-${randomBytes(8).toString('hex')}.${EXT_BY_MIME[mime]}`;
-    await writeFile(join(this.dir, filename), file.buffer);
+    await this.store(filename, file.buffer, mime);
 
     const previous = await this.prisma.user.findUnique({
       where: { id: user.id },
@@ -89,7 +116,7 @@ export class AvatarService {
 
     const updated = await this.prisma.user.update({
       where: { id: user.id },
-      data: { avatarUrl: `${PUBLIC_PREFIX}/${filename}` },
+      data: { avatarUrl: `${this.publicPrefix}${filename}` },
     });
 
     await this.removePrevious(previous?.avatarUrl ?? null, filename);
@@ -97,15 +124,39 @@ export class AvatarService {
     return toUserDto(updated);
   }
 
-  /** Best-effort delete of the prior locally-stored avatar, if any. */
+  private async store(
+    filename: string,
+    buffer: Buffer,
+    mime: string,
+  ): Promise<void> {
+    if (!this.bucket) {
+      await mkdir(this.dir, { recursive: true });
+      await writeFile(join(this.dir, filename), buffer);
+      return;
+    }
+    const { error } = await this.bucket.upload(filename, buffer, {
+      contentType: mime,
+    });
+    if (error) {
+      this.logger.error(`Avatar upload to storage failed: ${error.message}`);
+      throw new InternalServerErrorException('Could not store the avatar.');
+    }
+  }
+
+  /** Best-effort delete of the prior avatar this service stored, if any. */
   private async removePrevious(
     previousUrl: string | null,
     keep: string,
   ): Promise<void> {
-    if (!previousUrl || !previousUrl.startsWith(`${PUBLIC_PREFIX}/`)) return;
-    const name = previousUrl.slice(`${PUBLIC_PREFIX}/`.length);
+    // OAuth avatars (e.g. Google) are external URLs and fail this check.
+    if (!previousUrl || !previousUrl.startsWith(this.publicPrefix)) return;
+    const name = previousUrl.slice(this.publicPrefix.length);
     // Guard against path traversal and deleting the file we just wrote.
     if (!name || name === keep || name.includes('/') || name.includes('..')) {
+      return;
+    }
+    if (this.bucket) {
+      await this.bucket.remove([name]).catch(() => undefined);
       return;
     }
     await rm(join(this.dir, name), { force: true }).catch(() => undefined);
