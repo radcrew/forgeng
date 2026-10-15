@@ -216,9 +216,17 @@ describe('toFeedbackDto', () => {
   it('keeps the reviewer email and IP address out of the result', () => {
     const dto = toFeedbackDto(
       feedback,
-      makeUser({ id: 2, email: 'admin@example.com', registrationIp: '1.2.3.4' }),
+      makeUser({
+        id: 2,
+        email: 'admin@example.com',
+        registrationIp: '1.2.3.4',
+      }),
     );
-    expect(Object.keys(dto.reviewer ?? {})).toEqual(['id', 'name', 'avatarUrl']);
+    expect(Object.keys(dto.reviewer ?? {})).toEqual([
+      'id',
+      'name',
+      'avatarUrl',
+    ]);
   });
 
   it('leaves the reviewer null when absent', () => {
