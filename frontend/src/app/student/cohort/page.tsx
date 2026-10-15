@@ -8,7 +8,12 @@ import { LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
 import { Card, CardContent } from "@components/ui/card";
 import { Progress } from "@components/ui/progress";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { useSelectedCohort } from "@contexts";
 import { SubmissionStatusBadge } from "@features/submissions";
 import { useSubmissions } from "@features/submissions";
@@ -27,11 +32,20 @@ const dateRange = (start: string | null, end: string | null): string | null => {
 
 const Page = () => {
   const { selectedCohortId } = useSelectedCohort();
-  const { data: dashboard, isLoading: dashboardLoading } =
-    useStudentDashboard(selectedCohortId);
+  const {
+    data: dashboard,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard,
+  } = useStudentDashboard(selectedCohortId);
   const cohort = dashboard?.cohort ?? null;
   const cohorts = dashboard?.cohorts ?? [];
-  const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohort?.id);
+  const {
+    data: tasks = [],
+    isLoading: tasksLoading,
+    error: tasksError,
+    refetch: refetchTasks,
+  } = useTasks(cohort?.id);
   const { data: submissions = [] } = useSubmissions();
 
   const submissionByTaskId = useMemo(
@@ -55,7 +69,13 @@ const Page = () => {
   if (!dashboard) {
     return (
       <PageContainer spacing="8">
-        <PageHeader title="Cohort" description="Loading…" />
+        <PageHeader
+          title="Cohort"
+          description={dashboardError ? undefined : "Loading…"}
+        />
+        {dashboardError && (
+          <ErrorState what="your cohort" onRetry={refetchDashboard} />
+        )}
       </PageContainer>
     );
   }
@@ -64,7 +84,10 @@ const Page = () => {
     return (
       <PageContainer spacing="8">
         <PageHeader title="Cohort" description="Your cohort overview." />
-        <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
+        <EmptyState
+          message="You are not enrolled in a cohort yet."
+          art={APP_ART.cohort}
+        />
       </PageContainer>
     );
   }
@@ -130,6 +153,12 @@ const Page = () => {
         <h2 className="u-display mb-4 text-xl">Schedule</h2>
         {tasksLoading ? (
           <LoadingState message="Loading schedule…" />
+        ) : tasksError ? (
+          <ErrorState
+            what="the schedule"
+            onRetry={refetchTasks}
+            size="compact"
+          />
         ) : schedule.length === 0 ? (
           <EmptyState
             message="No tasks have been published for your cohort yet."
@@ -141,7 +170,10 @@ const Page = () => {
               const submission = submissionByTaskId.get(task.id);
               const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
               return (
-                <Card key={task.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={task.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-center gap-4 p-5">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                       <Icon className="h-5 w-5" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { PageContainer, PageHeader } from "@components/shared";
+import { ErrorState, PageContainer, PageHeader } from "@components/shared";
 import {
   AwaitingCohort,
   CohortSwitcher,
@@ -12,7 +12,12 @@ import { isProfileComplete } from "@utils/user";
 
 const Page = () => {
   const { selectedCohortId } = useSelectedCohort();
-  const { data: dashboard, isLoading } = useStudentDashboard(selectedCohortId);
+  const {
+    data: dashboard,
+    isLoading,
+    error,
+    refetch,
+  } = useStudentDashboard(selectedCohortId);
   const { user } = useCurrentUser();
 
   // Keep the stale dashboard on screen while switching cohorts so the page
@@ -20,7 +25,11 @@ const Page = () => {
   if (!dashboard) {
     return (
       <PageContainer spacing="8">
-        <PageHeader title="Student Dashboard" description="Loading…" />
+        <PageHeader
+          title="Student Dashboard"
+          description={error ? undefined : "Loading…"}
+        />
+        {error && <ErrorState what="your dashboard" onRetry={refetch} />}
       </PageContainer>
     );
   }

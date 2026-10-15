@@ -17,7 +17,12 @@ import {
 } from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { LoadingState } from "@components/common";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { SubmissionStatusBadge } from "@features/submissions";
 import { TaskSubmitDialog } from "@features/tasks";
 import {
@@ -50,10 +55,19 @@ const Page = () => {
   const [now] = useState(() => Date.now());
 
   const { selectedCohortId } = useSelectedCohort();
-  const { data: dashboard, isLoading: dashboardLoading } =
-    useStudentDashboard(selectedCohortId);
+  const {
+    data: dashboard,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard,
+  } = useStudentDashboard(selectedCohortId);
   const cohortId = dashboard?.cohort?.id;
-  const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohortId);
+  const {
+    data: tasks = [],
+    isLoading: tasksLoading,
+    error: tasksError,
+    refetch: refetchTasks,
+  } = useTasks(cohortId);
   const { data: submissions = [], refetch: refetchSubmissions } =
     useSubmissions();
 
@@ -89,7 +103,13 @@ const Page = () => {
   if (!dashboard) {
     return (
       <PageContainer>
-        <PageHeader title="Tasks" description="Loading…" />
+        <PageHeader
+          title="Tasks"
+          description={dashboardError ? undefined : "Loading…"}
+        />
+        {dashboardError && (
+          <ErrorState what="your tasks" onRetry={refetchDashboard} />
+        )}
       </PageContainer>
     );
   }
@@ -186,6 +206,8 @@ const Page = () => {
 
       {tasksLoading ? (
         <LoadingState message="Loading tasks…" />
+      ) : tasksError ? (
+        <ErrorState what="your tasks" onRetry={refetchTasks} />
       ) : tasks.length === 0 ? (
         <EmptyState
           message="No tasks have been published for your cohort yet."

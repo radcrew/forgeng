@@ -33,6 +33,22 @@ afterEach(() => {
 });
 
 describe("WalletManager", () => {
+  it("hides the form and offers a retry when the wallet fails to load", async () => {
+    getWallets.mockRejectedValueOnce(new Error("network down"));
+    render(<WalletManager />);
+
+    expect(
+      await screen.findByText(/couldn.t load your withdrawal address/),
+    ).toBeInTheDocument();
+    // No Save button, so an unseen address can't be overwritten.
+    expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByRole("button", { name: "Save" })).toBeInTheDocument();
+    expect(getWallets).toHaveBeenCalledTimes(2);
+  });
+
   it("requires an address before saving", async () => {
     render(<WalletManager />);
     await waitFor(() => expect(getWallets).toHaveBeenCalled());

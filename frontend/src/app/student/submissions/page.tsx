@@ -6,7 +6,12 @@ import { Clock, MessageSquare } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import {
   SubmissionDetailSheet,
@@ -16,7 +21,12 @@ import {
 
 const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const { data: submissions = [], isLoading, refetch } = useSubmissions();
+  const {
+    data: submissions = [],
+    isLoading,
+    error,
+    refetch,
+  } = useSubmissions();
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (
@@ -28,6 +38,8 @@ const Page = () => {
 
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
+      ) : error ? (
+        <ErrorState what="your submissions" onRetry={refetch} />
       ) : submissions.length === 0 ? (
         <EmptyState
           message="No submissions yet. Head to Tasks to start submitting your work."
@@ -36,18 +48,14 @@ const Page = () => {
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (
-            <ClickableCard
-              key={sub.id}
-              onClick={() => setSelectedId(sub.id)}
-            >
+            <ClickableCard key={sub.id} onClick={() => setSelectedId(sub.id)}>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold truncate">
                   {sub.task?.title ?? "Unknown Task"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  Submitted{" "}
-                  {format(new Date(sub.createdAt), "MMM d, yyyy")}
+                  Submitted {format(new Date(sub.createdAt), "MMM d, yyyy")}
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
