@@ -98,6 +98,13 @@ describe('ApplicationsService', () => {
       create: jest.Mock;
       groupBy: jest.Mock;
     };
+    $transaction: jest.Mock;
+  };
+  let tx: {
+    application: { update: jest.Mock };
+    user: { updateMany: jest.Mock };
+    enrollment: { upsert: jest.Mock; findUnique: jest.Mock };
+    cohort: { findUnique: jest.Mock };
   };
   let notifications: { notifyApplicationReceived: jest.Mock };
   let mail: { send: jest.Mock };
@@ -112,6 +119,15 @@ describe('ApplicationsService', () => {
         create: jest.fn(),
         groupBy: jest.fn(),
       },
+      $transaction: jest.fn((fn: (client: typeof tx) => Promise<unknown>) =>
+        fn(tx),
+      ),
+    };
+    tx = {
+      application: { update: jest.fn() },
+      user: { updateMany: jest.fn() },
+      enrollment: { upsert: jest.fn(), findUnique: jest.fn() },
+      cohort: { findUnique: jest.fn() },
     };
     notifications = {
       notifyApplicationReceived: jest.fn().mockResolvedValue(undefined),
@@ -252,6 +268,71 @@ describe('ApplicationsService', () => {
       const dto = await service.findOne(10);
 
       expect(dto.videoUrl).toBe('https://signed.example/v.webm');
+    });
+  });
+
+  describe('updateStatus', () => {
+    it.each(['accepted', 'rejected'])(
+      'refuses to change the status of a %s application',
+      async (decided) => {
+        prisma.application.findUnique.mockResolvedValue(
+          makeApplicationRow({ status: decided }),
+        );
+
+        await expect(
+          service.updateStatus(10, { status: 'pending' }),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(tx.application.update).not.toHaveBeenCalled();
+        expect(mail.send).not.toHaveBeenCalled();
+      },
+    );
+
+    it('lets the note change on a decided application without emailing again', async () => {
+      prisma.application.findUnique.mockResolvedValue(
+        makeApplicationRow({ status: 'rejected' }),
+      );
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'rejected', reviewerNote: 'new note' }),
+      );
+
+      const dto = await service.updateStatus(10, {
+        status: 'rejected',
+        reviewerNote: 'new note',
+      });
+
+      expect(dto.status).toBe('rejected');
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it('decides a pending application and emails the applicant', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'rejected' }),
+      );
+
+      await service.updateStatus(10, { status: 'rejected' });
+
+      expect(mail.send).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses to accept into a full cohort and sends no email', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 3 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue(null);
+      tx.cohort.findUnique.mockResolvedValue({
+        id: 3,
+        name: 'Spring',
+        capacity: 2,
+        _count: { enrollments: 2 },
+      });
+
+      await expect(
+        service.updateStatus(10, { status: 'accepted', cohortId: 3 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(tx.enrollment.upsert).not.toHaveBeenCalled();
+      expect(mail.send).not.toHaveBeenCalled();
     });
   });
 

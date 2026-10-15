@@ -48,6 +48,7 @@ export const Enrollments = ({
   const students = studentPage?.items ?? [];
   const enrolledIds = new Set(enrollments.map((e) => e.userId));
   const availableStudents = students.filter((u) => !enrolledIds.has(u.id));
+  const isFull = enrollments.length >= cohort.capacity;
 
   const [userId, setUserId] = useState("");
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -80,7 +81,7 @@ export const Enrollments = ({
     >
       <FormBody>
         <p className="text-sm text-muted-foreground">
-          {enrollments.length} enrolled
+          {enrollments.length} of {cohort.capacity} places taken
         </p>
 
         {enrollments.length > 0 ? (
@@ -112,7 +113,16 @@ export const Enrollments = ({
           </p>
         )}
 
-        {availableStudents.length > 0 && (
+        {isFull && (
+          <>
+            <Separator />
+            <p className="text-sm text-amber-700 dark:text-amber-400">
+              This cohort is full. Raise its capacity to add more students.
+            </p>
+          </>
+        )}
+
+        {!isFull && availableStudents.length > 0 && (
           <>
             <Separator />
             <FormField label="Enroll a Student">

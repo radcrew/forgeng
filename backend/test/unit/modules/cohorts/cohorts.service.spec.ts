@@ -53,6 +53,7 @@ describe('CohortsService', () => {
       create: jest.Mock;
       count: jest.Mock;
     };
+    $transaction: jest.Mock;
   };
 
   beforeEach(() => {
@@ -70,6 +71,10 @@ describe('CohortsService', () => {
         // serialize() counts enrollments for every cohort it maps.
         count: jest.fn().mockResolvedValue(0),
       },
+      // Interactive transactions run against the same mocks.
+      $transaction: jest.fn((fn: (tx: unknown) => Promise<unknown>) =>
+        fn(prisma),
+      ),
     };
 
     service = new CohortsService(prisma as unknown as PrismaService);
@@ -234,7 +239,31 @@ describe('CohortsService', () => {
   });
 
   describe('enroll', () => {
+    it('refuses to enroll into a full cohort', async () => {
+      prisma.cohort.findUnique.mockResolvedValue({
+        ...makeCohort({ capacity: 2 }),
+        _count: { enrollments: 2 },
+      });
+
+      await expect(service.enroll(3, { userId: 1 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.enrollment.create).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException for a missing cohort', async () => {
+      prisma.cohort.findUnique.mockResolvedValue(null);
+
+      await expect(service.enroll(3, { userId: 1 })).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
     it('creates an enrollment for the given user', async () => {
+      prisma.cohort.findUnique.mockResolvedValue({
+        ...makeCohort({ capacity: 2 }),
+        _count: { enrollments: 1 },
+      });
       prisma.enrollment.create.mockResolvedValue({
         id: 1,
         cohortId: 3,
