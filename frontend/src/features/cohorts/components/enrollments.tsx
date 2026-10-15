@@ -24,7 +24,7 @@ import { Separator } from "@components/ui/separator";
 import { useUsers } from "@features/users";
 import { ApiError } from "@lib/api-client";
 import { isProfileComplete } from "@utils/user";
-import { enrollStudent } from "../api";
+import { enrollStudent, unenrollStudent } from "../api";
 import { useEnrollments } from "../hooks";
 import type { Cohort } from "@types";
 
@@ -52,6 +52,28 @@ export const Enrollments = ({
 
   const [userId, setUserId] = useState("");
   const [isEnrolling, setIsEnrolling] = useState(false);
+  // Removing takes two clicks: Remove, then Confirm on the same row.
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [removingId, setRemovingId] = useState<number | null>(null);
+
+  const handleUnenroll = async (studentId: number) => {
+    setRemovingId(studentId);
+    try {
+      await unenrollStudent(cohort.id, studentId);
+      toast.success("Student removed from the cohort.");
+      setConfirmingId(null);
+      refetch();
+      onEnrolled?.();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Could not remove the student. Please try again.";
+      toast.error(message);
+    } finally {
+      setRemovingId(null);
+    }
+  };
 
   const handleEnroll = async () => {
     if (!userId) return;
@@ -103,6 +125,37 @@ export const Enrollments = ({
                     </span>
                   }
                   subtitle={`Enrolled ${format(new Date(e.enrolledAt), "MMM d, yyyy")}`}
+                  action={
+                    confirmingId === e.userId ? (
+                      <div className="flex shrink-0 gap-1">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={removingId === e.userId}
+                          onClick={() => handleUnenroll(e.userId)}
+                        >
+                          {removingId === e.userId ? "Removing..." : "Confirm"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={removingId === e.userId}
+                          onClick={() => setConfirmingId(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 text-destructive hover:text-destructive"
+                        onClick={() => setConfirmingId(e.userId)}
+                      >
+                        Remove
+                      </Button>
+                    )
+                  }
                 />
               );
             })}

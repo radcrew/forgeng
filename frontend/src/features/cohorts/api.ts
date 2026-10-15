@@ -36,3 +36,9 @@ export const enrollStudent = async (
   userId: number,
 ): Promise<Enrollment> =>
   apiClient.post<Enrollment>(`/cohorts/${cohortId}/enroll`, { userId });
+
+export const unenrollStudent = async (
+  cohortId: number,
+  userId: number,
+): Promise<void> =>
+  apiClient.delete<void>(`/cohorts/${cohortId}/enrollments/${userId}`);

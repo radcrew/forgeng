@@ -110,6 +110,24 @@ export class CohortsService {
     return toEnrollmentDto(enrollment, enrollment.user);
   }
 
+  /**
+   * Removes a student from a cohort. Their submissions stay. The cohort is
+   * also cleared on their application, so saving that application later
+   * doesn't enroll them again.
+   */
+  async unenroll(cohortId: number, userId: number): Promise<void> {
+    const [removed] = await this.prisma.$transaction([
+      this.prisma.enrollment.deleteMany({ where: { cohortId, userId } }),
+      this.prisma.application.updateMany({
+        where: { cohortId, userId },
+        data: { cohortId: null },
+      }),
+    ]);
+    if (removed.count === 0) {
+      throw new NotFoundException('This student is not in the cohort.');
+    }
+  }
+
   private assertDateOrder(start: Date | null, end: Date | null): void {
     if (start && end && end < start) {
       throw new BadRequestException(

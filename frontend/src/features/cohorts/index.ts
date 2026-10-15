@@ -13,6 +13,7 @@ export {
   deleteCohort,
   listEnrollments,
   enrollStudent,
+  unenrollStudent,
   type CohortInput,
 } from "./api";
 export {
