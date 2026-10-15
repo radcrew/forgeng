@@ -221,7 +221,8 @@ export interface FeedbackDto {
   reviewerId: number;
   content: string;
   verdict: Feedback['verdict'];
-  reviewer: UserDto | null;
+  // Students see feedback too, so only the reviewer's public details go out.
+  reviewer: Pick<UserDto, 'id' | 'name' | 'avatarUrl'> | null;
   createdAt: string;
 }
 
@@ -235,7 +236,9 @@ export function toFeedbackDto(
     reviewerId: fb.reviewerId,
     content: fb.content,
     verdict: fb.verdict,
-    reviewer: reviewer ? toUserDto(reviewer) : null,
+    reviewer: reviewer
+      ? { id: reviewer.id, name: reviewer.name, avatarUrl: reviewer.avatarUrl }
+      : null,
     createdAt: fb.createdAt.toISOString(),
   };
 }

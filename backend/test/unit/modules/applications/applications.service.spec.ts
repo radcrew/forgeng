@@ -337,6 +337,30 @@ describe('ApplicationsService', () => {
       expect(mail.send).toHaveBeenCalledTimes(1);
     });
 
+    it('accepting makes the applicant a student and enrolls them', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 5 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue(null);
+      tx.cohort.findUnique.mockResolvedValue({
+        id: 5,
+        name: 'Autumn',
+        capacity: 10,
+        _count: { enrollments: 0 },
+      });
+
+      await service.updateStatus(10, { status: 'accepted', cohortId: 5 });
+
+      expect(tx.user.updateMany).toHaveBeenCalledWith({
+        where: { id: 1, role: 'applicant' },
+        data: { role: 'student' },
+      });
+      expect(tx.enrollment.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ create: { userId: 1, cohortId: 5 } }),
+      );
+    });
+
     it('moves an accepted student to the new cohort', async () => {
       prisma.application.findUnique.mockResolvedValue(
         makeApplicationRow({ status: 'accepted', cohortId: 3 }),
