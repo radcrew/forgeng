@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -65,27 +65,43 @@ describe("cohort Row", () => {
     expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ id: 3 }));
   });
 
+  it("asks before deleting and says what else is deleted", async () => {
+    render(<Row cohort={makeCohort()} onEdit={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Delete cohort" }));
+
+    expect(screen.getByText('Delete "Spring 2026"?')).toBeInTheDocument();
+    expect(screen.getByText("12 students' enrollments")).toBeInTheDocument();
+    expect(
+      screen.getByText("Every submission and piece of feedback for those tasks"),
+    ).toBeInTheDocument();
+    expect(deleteCohort).not.toHaveBeenCalled();
+  });
+
   it("deletes and fires onDeleted when confirmed", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     const onDeleted = vi.fn();
     render(<Row cohort={makeCohort()} onEdit={vi.fn()} onDeleted={onDeleted} />);
 
-    // The delete button is the second one (after Edit cohort).
-    const buttons = screen.getAllByRole("button");
-    await userEvent.click(buttons[1]);
+    await userEvent.click(screen.getByRole("button", { name: "Delete cohort" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Delete cohort",
+      }),
+    );
 
     expect(deleteCohort).toHaveBeenCalledWith(3);
     expect(toastSuccess).toHaveBeenCalled();
     expect(onDeleted).toHaveBeenCalledTimes(1);
+    expect(push).not.toHaveBeenCalled();
   });
 
-  it("does not delete when the confirm is cancelled", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
+  it("does not delete when the dialog is cancelled", async () => {
     render(<Row cohort={makeCohort()} onEdit={vi.fn()} />);
 
-    const buttons = screen.getAllByRole("button");
-    await userEvent.click(buttons[1]);
+    await userEvent.click(screen.getByRole("button", { name: "Delete cohort" }));
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(deleteCohort).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
   });
 });
