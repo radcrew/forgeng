@@ -181,6 +181,28 @@ describe('DashboardService', () => {
       expect(result.taskStats.approved).toBe(1);
     });
 
+    it('skips past due dates when picking the next deadline', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        {
+          cohortId: 3,
+          cohort: makeCohort({ id: 3, name: 'Spring' }),
+          enrolledAt: DATE,
+        },
+      ]);
+      prisma.task.findMany.mockResolvedValue([
+        // Missed long ago, never submitted.
+        makeTask({ id: 1, dueDate: new Date('2020-01-01T00:00:00.000Z') }),
+        // Still ahead.
+        makeTask({ id: 2, dueDate: new Date('2099-06-01T00:00:00.000Z') }),
+        makeTask({ id: 3, dueDate: new Date('2099-09-01T00:00:00.000Z') }),
+      ]);
+      prisma.submission.findMany.mockResolvedValue([]);
+
+      const result = await service.student(student);
+
+      expect(result.nextDeadline).toBe('2099-06-01T00:00:00.000Z');
+    });
+
     it('counts a task with no submission as todo in the status breakdown', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
         {

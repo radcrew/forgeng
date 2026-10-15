@@ -18,6 +18,7 @@ import {
   type SubmissionDto,
 } from '../../common/mappers';
 import { PrismaService } from '../../core/database/prisma.service';
+import { isCalendarDayOver } from '../../common/utils/date';
 import type { ApplicationStats } from '../applications/applications.service';
 
 const ANALYTICS_WEEKS = 6;
@@ -163,8 +164,15 @@ export class DashboardService {
       pending: Math.max(0, tasks.length - submittedTaskIds.size),
     };
 
+    // The next deadline is the soonest one that is not over yet. A missed
+    // deadline from the past is not "next".
     const upcoming = tasks
-      .filter((t) => t.dueDate && !submittedTaskIds.has(t.id))
+      .filter(
+        (t) =>
+          t.dueDate &&
+          !submittedTaskIds.has(t.id) &&
+          !isCalendarDayOver(t.dueDate),
+      )
       .sort(
         (a, b) => (a.dueDate?.getTime() ?? 0) - (b.dueDate?.getTime() ?? 0),
       );
