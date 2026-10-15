@@ -1,6 +1,7 @@
 export { buildApiBase } from "./api";
 export { homeForRole, normalizeEmail } from "./auth";
 export { cn } from "./cn";
+export { formatCalendarDate } from "./date";
 export {
   readStorageJson,
   removeStorageItem,
