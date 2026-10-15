@@ -143,9 +143,17 @@ export class DashboardService {
       include: { task: true },
     });
 
-    const submittedTaskIds = new Set(mySubmissions.map((s) => s.taskId));
+    // Progress counts only this cohort's published tasks. Submissions from
+    // other cohorts, or for tasks moved back to draft, would push it past 100%.
+    const cohortTaskIds = new Set(tasks.map((t) => t.id));
+    const cohortSubmissions = mySubmissions.filter((s) =>
+      cohortTaskIds.has(s.taskId),
+    );
+    const submittedTaskIds = new Set(cohortSubmissions.map((s) => s.taskId));
     const approvedIds = new Set(
-      mySubmissions.filter((s) => s.status === 'approved').map((s) => s.taskId),
+      cohortSubmissions
+        .filter((s) => s.status === 'approved')
+        .map((s) => s.taskId),
     );
 
     const taskStats = {

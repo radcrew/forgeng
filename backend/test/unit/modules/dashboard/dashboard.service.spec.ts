@@ -151,6 +151,36 @@ describe('DashboardService', () => {
       expect(result.cohort?.name).toBe('Spring');
     });
 
+    it('ignores submissions outside the selected cohort, so progress stays within 100%', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        {
+          cohortId: 3,
+          cohort: makeCohort({ id: 3, name: 'Spring' }),
+          enrolledAt: DATE,
+        },
+      ]);
+      // One published task in this cohort.
+      prisma.task.findMany.mockResolvedValue([makeTask({ id: 1 })]);
+      // Approved work on that task, plus on tasks 8 and 9 from another cohort
+      // or moved back to draft.
+      prisma.submission.findMany.mockResolvedValue(
+        [1, 8, 9].map((taskId) =>
+          makeSubmission({
+            id: 100 + taskId,
+            taskId,
+            status: 'approved',
+            task: makeTask({ id: taskId }),
+          }),
+        ),
+      );
+
+      const result = await service.student(student);
+
+      expect(result.taskStats.total).toBe(1);
+      expect(result.taskStats.submitted).toBe(1);
+      expect(result.taskStats.approved).toBe(1);
+    });
+
     it('counts a task with no submission as todo in the status breakdown', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
         {
