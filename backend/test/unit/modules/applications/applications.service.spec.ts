@@ -203,10 +203,20 @@ describe('ApplicationsService', () => {
 
       const dto = await service.create(makeUser(), {
         motivation: 'hi',
+        telegram: '@ada_dev',
       } as never);
 
       expect(dto.id).toBe(10);
       expect(notifications.notifyApplicationReceived).toHaveBeenCalledTimes(1);
+    });
+
+    it('requires a Telegram or WhatsApp contact', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create(makeUser(), { videoUrl: '2/abc.webm' } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.application.create).not.toHaveBeenCalled();
     });
 
     it('does not create the application when the video check fails', async () => {
@@ -214,7 +224,10 @@ describe('ApplicationsService', () => {
       video.assertOwnUpload.mockRejectedValue(new BadRequestException());
 
       await expect(
-        service.create(makeUser(), { videoUrl: '2/abc.webm' } as never),
+        service.create(makeUser(), {
+          videoUrl: '2/abc.webm',
+          whatsapp: '+15551234567',
+        } as never),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(video.assertOwnUpload).toHaveBeenCalledWith(1, '2/abc.webm');
       expect(prisma.application.create).not.toHaveBeenCalled();
@@ -233,6 +246,7 @@ describe('ApplicationsService', () => {
 
       const dto = await service.create(makeUser(), {
         motivation: 'hi',
+        telegram: '@ada_dev',
       } as never);
 
       expect(dto.id).toBe(10);

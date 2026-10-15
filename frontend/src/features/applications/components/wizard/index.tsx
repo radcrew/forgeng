@@ -67,7 +67,6 @@ export const Wizard = ({ children }: WizardProps) => {
       name: "",
       linkedin: "",
       twitter: "",
-      facebook: "",
       github: "",
       portfolio: "",
       telegram: "",
@@ -135,10 +134,9 @@ export const Wizard = ({ children }: WizardProps) => {
         await refreshUser();
       }
       await createApplication({
-        linkedin: data.linkedin,
+        linkedin: data.linkedin || undefined,
         twitter: data.twitter || undefined,
-        facebook: data.facebook || undefined,
-        github: data.github,
+        github: data.github || undefined,
         portfolio: data.portfolio || undefined,
         telegram: data.telegram || undefined,
         whatsapp: data.whatsapp || undefined,
