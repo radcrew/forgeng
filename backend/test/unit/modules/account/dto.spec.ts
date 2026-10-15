@@ -20,6 +20,12 @@ describe('UpdateProfileDto', () => {
     expect(failingProps(UpdateProfileDto, {})).toEqual([]);
   });
 
+  it('accepts null to remove a saved social link', () => {
+    expect(
+      failingProps(UpdateProfileDto, { github: null, twitter: null }),
+    ).toEqual([]);
+  });
+
   it('accepts valid social profile URLs', () => {
     expect(
       failingProps(UpdateProfileDto, {

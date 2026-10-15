@@ -94,6 +94,22 @@ describe("ProfileForm", () => {
     expect(onSaved).toHaveBeenCalledTimes(1);
   });
 
+  it("removes a saved field that was emptied", async () => {
+    render(<ProfileForm user={makeUser()} />);
+
+    await userEvent.clear(screen.getByPlaceholderText("https://github.com/you"));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Save Changes" }),
+    );
+
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
+    const payload = updateProfile.mock.calls[0][0] as Record<string, unknown>;
+    // GitHub was saved before, so emptying it sends null to remove it.
+    expect(payload.github).toBeNull();
+    // LinkedIn was already empty, so it is still left out.
+    expect(payload).not.toHaveProperty("linkedin");
+  });
+
   it("blocks submission when a social URL is invalid", async () => {
     render(<ProfileForm user={makeUser({ github: "" })} />);
 

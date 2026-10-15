@@ -98,7 +98,13 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
     };
     for (const field of OPTIONAL_FIELDS) {
       const value = data[field].trim();
-      if (value) payload[field] = value;
+      if (value) {
+        payload[field] = value;
+      } else if (user[field]) {
+        // The student emptied a saved field. Send null so the server removes
+        // it; leaving it out would keep the old value.
+        payload[field] = null;
+      }
     }
     try {
       await updateProfile(payload);
