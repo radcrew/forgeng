@@ -11,6 +11,7 @@ import {
   type CohortDto,
   type EnrollmentDto,
 } from '../../common/mappers';
+import { assertCohortHasRoom } from './cohort-capacity';
 import { CreateCohortDto } from './dto/create-cohort.dto';
 import { EnrollDto } from './dto/enroll.dto';
 import { UpdateCohortDto } from './dto/update-cohort.dto';
@@ -99,9 +100,12 @@ export class CohortsService {
   }
 
   async enroll(cohortId: number, dto: EnrollDto): Promise<EnrollmentDto> {
-    const enrollment = await this.prisma.enrollment.create({
-      data: { cohortId, userId: dto.userId },
-      include: { user: true },
+    const enrollment = await this.prisma.$transaction(async (tx) => {
+      await assertCohortHasRoom(tx, cohortId);
+      return tx.enrollment.create({
+        data: { cohortId, userId: dto.userId },
+        include: { user: true },
+      });
     });
     return toEnrollmentDto(enrollment, enrollment.user);
   }
