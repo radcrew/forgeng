@@ -26,6 +26,17 @@ The import above pulls in the cross-tool non-negotiables and command baseline fr
 
 **Commit messages.** After any set of file changes, automatically draft and show a Conventional Commits message (`feat:`, `fix:`, `docs:`, `chore:`, etc., matching this repo's history) in a copyable code block, without waiting to be asked. Scope it to the actual uncommitted change set (check `git status`) and call out any unrelated modified files so they can be excluded. Do not run `git commit` yourself; the user commits manually unless they explicitly ask you to.
 
+Write commit messages that sound natural, professional, and meaningful, following the team's history (`git log main --no-merges --format=%s`):
+- Title: a prefix, then a lowercase plain verb and what changed for the user, for example `fix: stop creating empty applications when saving a profile` or `feat: make Telegram and WhatsApp contacts clickable`. Keep it short, with no trailing period.
+- Body (optional): two or three plain sentences on what was wrong and what changed. No file lists or code names unless they matter.
+- Never add `Co-Authored-By` lines or any mention of Claude.
+
+**PR titles.** Follow the team's past PR titles (check them with the GitHub API or `gh pr list --state all`). The pattern is:
+- No `fix:` or `feat:` prefix in the title. The prefix belongs to commits and branch names.
+- Sentence case, starting with a plain verb: Store, Simplify, Repair, Stop, Unblock, Set, Resolve.
+- Say what changes, and the result when it helps, often with "so": `Store avatars in Supabase Storage so uploads work on Vercel`, `Set auth cookies SameSite=Lax so the browser sends them`.
+- Short and concrete, with no trailing period.
+
 ## Writing Style
 
 Always use plain, simple English when talking to me.
