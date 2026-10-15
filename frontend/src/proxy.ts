@@ -64,6 +64,21 @@ export async function proxy(req: NextRequest) {
     if (!payload) {
       return redirectWithCookies(req, "/sign-in", setCookieHeaders);
     }
+    // The role inside the access token can be out of date, for example right
+    // after an applicant is accepted. Before turning the user away, refresh
+    // once to pick up their current role.
+    const cookieHeader = req.headers.get("cookie");
+    if (
+      !protectedRoute.roles.includes(payload.role) &&
+      setCookieHeaders.length === 0 &&
+      cookieHeader
+    ) {
+      const refreshed = await attemptRefresh(cookieHeader);
+      if (refreshed) {
+        payload = refreshed.payload;
+        setCookieHeaders = refreshed.setCookieHeaders;
+      }
+    }
     if (!protectedRoute.roles.includes(payload.role)) {
       return redirectWithCookies(req, homeForRole(payload.role), setCookieHeaders);
     }
