@@ -77,14 +77,16 @@ export class TasksService {
     });
     if (!cohort) throw new NotFoundException('Cohort not found.');
 
+    const status = dto.status ?? 'draft';
     const created = await this.prisma.task.create({
       data: {
         cohortId: dto.cohortId,
         title: dto.title,
         description: dto.description,
         type: dto.type,
-        status: dto.status ?? 'draft',
+        status,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        publishedAt: status === 'published' ? new Date() : undefined,
       },
     });
     if (created.status === 'published') {
@@ -97,6 +99,10 @@ export class TasksService {
     const exists = await this.prisma.task.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Task not found.');
 
+    // Students hear about a task only the first time it is published, not
+    // again after it goes back to draft and is published once more.
+    const firstPublish = dto.status === 'published' && !exists.publishedAt;
+
     const updated = await this.prisma.task.update({
       where: { id },
       data: {
@@ -105,10 +111,10 @@ export class TasksService {
         type: dto.type,
         status: dto.status,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        publishedAt: firstPublish ? new Date() : undefined,
       },
     });
-    // Notify enrolled students only on the draft -> published transition.
-    if (exists.status !== 'published' && updated.status === 'published') {
+    if (firstPublish) {
       await this.notifications.notifyTaskPublished(updated);
     }
     return this.serialize(updated);

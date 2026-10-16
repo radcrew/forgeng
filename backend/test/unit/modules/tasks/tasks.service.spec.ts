@@ -16,6 +16,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     type: 'project',
     status: 'published',
     dueDate: null,
+    publishedAt: null,
     createdAt: DATE,
     ...overrides,
   } as Task;
@@ -212,6 +213,10 @@ describe('TasksService', () => {
       } as never);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+      const data = (
+        prisma.task.create.mock.calls[0] as [{ data: { publishedAt: unknown } }]
+      )[0].data;
+      expect(data.publishedAt).toBeInstanceOf(Date);
     });
   });
 
@@ -230,6 +235,36 @@ describe('TasksService', () => {
       await service.update(5, { status: 'published' } as never);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+      const data = (
+        prisma.task.update.mock.calls[0] as [{ data: { publishedAt: unknown } }]
+      )[0].data;
+      expect(data.publishedAt).toBeInstanceOf(Date);
+    });
+
+    it('does not notify again when a task is published a second time', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', publishedAt: DATE }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+
+      await service.update(5, { status: 'published' } as never);
+
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
+      const data = (
+        prisma.task.update.mock.calls[0] as [{ data: { publishedAt: unknown } }]
+      )[0].data;
+      expect(data.publishedAt).toBeUndefined();
+    });
+
+    it('does not notify when saving a task that is already published', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'published', publishedAt: DATE }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+
+      await service.update(5, { status: 'published', title: 'x' } as never);
+
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
     });
 
     it('does not re-notify when the task was already published', async () => {

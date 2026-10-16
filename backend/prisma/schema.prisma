@@ -234,6 +234,9 @@ model Task {
   type        TaskType   @default(coding)
   status      TaskStatus @default(draft)
   dueDate     DateTime?  @map("due_date") @db.Timestamptz
+  // When students were first told about the task. Publishing it again later
+  // doesn't notify them a second time.
+  publishedAt DateTime?  @map("published_at") @db.Timestamptz
   createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
 
