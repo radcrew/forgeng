@@ -1,10 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Task } from "@types";
 
-let tasks: Task[] = [];
+let tasks: Task[] | undefined = [];
+let error: Error | null = null;
+const refetch = vi.fn();
 
 vi.mock("@features/cohorts", () => ({
   useCohorts: () => ({ data: [{ id: 3, name: "Spring" }] }),
@@ -12,7 +14,7 @@ vi.mock("@features/cohorts", () => ({
 
 vi.mock("@features/tasks", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@features/tasks")>()),
-  useTasks: () => ({ data: tasks, isLoading: false, refetch: vi.fn() }),
+  useTasks: () => ({ data: tasks, isLoading: false, error, refetch }),
   TaskFormDialog: () => null,
 }));
 
@@ -33,7 +35,26 @@ function makeTask(overrides: Partial<Task> = {}): Task {
   } as Task;
 }
 
+beforeEach(() => {
+  error = null;
+  refetch.mockClear();
+});
+
 describe("admin tasks page", () => {
+  it("shows an error with a retry when the tasks fail to load", async () => {
+    tasks = undefined;
+    error = new Error("offline");
+    render(<Page />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "We couldn't load the tasks.",
+    );
+    expect(screen.queryByText(/No tasks yet/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
   it("says there are no tasks yet when the list is empty", () => {
     tasks = [];
     render(<Page />);

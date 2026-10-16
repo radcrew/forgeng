@@ -13,7 +13,12 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { LoadingState } from "@components/common";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { useCohorts } from "@features/cohorts";
 import {
@@ -30,7 +35,7 @@ import type { Task } from "@types";
 const PAGE_SIZE = 20;
 
 const Page = () => {
-  const { data: tasks = [], isLoading, refetch } = useTasks();
+  const { data: tasks = [], isLoading, error, refetch } = useTasks();
   const { data: cohorts = [] } = useCohorts();
   const cohortNames = new Map(cohorts.map((c) => [c.id, c.name]));
   const [formOpen, setFormOpen] = useState(false);
@@ -120,7 +125,10 @@ const Page = () => {
 
       <div className="space-y-3">
         {isLoading ? <LoadingState message="Loading tasks…" /> : null}
-        {!isLoading && tasks.length === 0 && (
+        {!isLoading && error && (
+          <ErrorState what="the tasks" onRetry={refetch} />
+        )}
+        {!isLoading && !error && tasks.length === 0 && (
           <EmptyState
             message="No tasks yet. Create your first task to get started."
             art={APP_ART.tasks}
