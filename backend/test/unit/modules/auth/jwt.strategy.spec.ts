@@ -20,13 +20,34 @@ function makeStrategy(prismaUser: User | null): {
 
 describe('JwtStrategy', () => {
   it('returns the user for a valid payload subject', async () => {
-    const user = { id: 5, email: 'ada@example.com', createdAt: DATE } as User;
+    const user = {
+      id: 5,
+      email: 'ada@example.com',
+      role: 'student',
+      createdAt: DATE,
+    } as User;
     const { strategy, findUnique } = makeStrategy(user);
 
-    const result = await strategy.validate({ sub: 5 } as never);
+    const result = await strategy.validate({
+      sub: 5,
+      role: 'student',
+    } as never);
 
     expect(result).toBe(user);
     expect(findUnique).toHaveBeenCalledWith({ where: { id: 5 } });
+  });
+
+  it('refuses a token whose role is out of date', async () => {
+    // The token still says applicant, but the user is now a student.
+    const { strategy } = makeStrategy({
+      id: 5,
+      role: 'student',
+      createdAt: DATE,
+    } as User);
+
+    await expect(
+      strategy.validate({ sub: 5, role: 'applicant' } as never),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('throws UnauthorizedException when the user no longer exists', async () => {

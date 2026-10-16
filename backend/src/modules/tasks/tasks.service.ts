@@ -25,7 +25,14 @@ export class TasksService {
       });
       const cohortIds = enrollments.map((e) => e.cohortId);
       if (cohortIds.length === 0) return [];
-      where.cohortId = { in: cohortIds };
+      // A student in several cohorts sees the one they selected. A cohort
+      // they aren't enrolled in gives an empty list.
+      if (query.cohortId) {
+        if (!cohortIds.includes(query.cohortId)) return [];
+        where.cohortId = query.cohortId;
+      } else {
+        where.cohortId = { in: cohortIds };
+      }
       where.status = 'published';
     } else if (query.cohortId) {
       where.cohortId = query.cohortId;

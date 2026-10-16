@@ -6,15 +6,16 @@ export interface ProfileEnrollment {
   cohort: Cohort;
 }
 
+/** Leaving a field out keeps it; null removes a saved value. */
 export interface ProfileUpdate {
   name?: string;
   bio?: string;
-  linkedin?: string;
-  twitter?: string;
-  facebook?: string;
-  github?: string;
-  portfolio?: string;
-  telegram?: string;
-  whatsapp?: string;
+  linkedin?: string | null;
+  twitter?: string | null;
+  facebook?: string | null;
+  github?: string | null;
+  portfolio?: string | null;
+  telegram?: string | null;
+  whatsapp?: string | null;
   avatarUrl?: string;
 }

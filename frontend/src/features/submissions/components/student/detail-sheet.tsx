@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { format } from "date-fns";
 import { MessageSquare } from "lucide-react";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import type { Submission } from "@types";
 
 import { resubmitSubmission } from "../../api";
 import { useSubmissionFeedback } from "../../hooks";
+import { validateSubmission, type SubmissionErrors } from "../../validation";
 import { SubmissionStatusBadge } from "../status-badge";
 
 export type SubmissionDetailSheetProps = {
@@ -44,9 +45,18 @@ export const SubmissionDetailSheet = ({
 
   const [content, setContent] = useState(submission.content ?? "");
   const [repoUrl, setRepoUrl] = useState(submission.repoUrl ?? "");
+  const [errors, setErrors] = useState<SubmissionErrors>({});
   const [isResubmitting, setIsResubmitting] = useState(false);
+  // Blocks a second send before the disabled button has re-rendered.
+  const sending = useRef(false);
 
   const handleResubmit = async () => {
+    const found = validateSubmission({ repoUrl, content });
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
+    if (sending.current) return;
+    sending.current = true;
     setIsResubmitting(true);
     try {
       await resubmitSubmission(submission.id, {
@@ -63,6 +73,7 @@ export const SubmissionDetailSheet = ({
         err instanceof ApiError ? err.message : "Failed to resubmit your work.",
       );
     } finally {
+      sending.current = false;
       setIsResubmitting(false);
     }
   };
@@ -121,21 +132,37 @@ export const SubmissionDetailSheet = ({
           <Separator />
           <div className="space-y-4">
             <SectionTitle>Revise & Resubmit</SectionTitle>
-            <FormField label="Repository URL (optional)" htmlFor="resubmit-repo">
+            <FormField
+              label="Repository URL (optional)"
+              htmlFor="resubmit-repo"
+              error={errors.repoUrl}
+            >
               <Input
                 id="resubmit-repo"
                 placeholder="https://github.com/you/repo"
                 value={repoUrl}
-                onChange={(e) => setRepoUrl(e.target.value)}
+                aria-invalid={!!errors.repoUrl}
+                onChange={(e) => {
+                  setRepoUrl(e.target.value);
+                  setErrors({});
+                }}
               />
             </FormField>
-            <FormField label="Notes / Write-up (optional)" htmlFor="resubmit-content">
+            <FormField
+              label="Notes / Write-up (optional)"
+              htmlFor="resubmit-content"
+              error={errors.content}
+            >
               <Textarea
                 id="resubmit-content"
                 placeholder="Describe what you changed since the last review..."
                 rows={5}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                aria-invalid={!!errors.content}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  setErrors({});
+                }}
               />
             </FormField>
             <Button

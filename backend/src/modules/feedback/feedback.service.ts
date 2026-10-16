@@ -26,18 +26,17 @@ export class FeedbackService {
     });
     if (!task?.dueDate) return;
 
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999,
-    );
-    if (task.dueDate < monthStart || task.dueDate > monthEnd) return;
+    // Check the month the task was due, not the month of the review, so a
+    // late review still counts toward that month's payment.
+    const year = task.dueDate.getUTCFullYear();
+    const month = task.dueDate.getUTCMonth();
+    const monthStart = new Date(Date.UTC(year, month, 1));
+    const monthEnd = new Date(Date.UTC(year, month + 1, 1) - 1);
+    const monthLabel = monthStart.toLocaleString('en-US', {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
 
     const tasksThisMonth = await this.prisma.task.findMany({
       where: {
@@ -50,17 +49,22 @@ export class FeedbackService {
     if (tasksThisMonth.length === 0) return;
 
     const taskIds = tasksThisMonth.map((t) => t.id);
-    const approvedCount = await this.prisma.submission.count({
+    // Count tasks, not submissions, so a duplicate can't stand in for a
+    // task the student hasn't done.
+    const approvedTasks = await this.prisma.submission.findMany({
       where: { userId, taskId: { in: taskIds }, status: 'approved' },
+      select: { taskId: true },
+      distinct: ['taskId'],
     });
-    if (approvedCount !== taskIds.length) return;
+    if (approvedTasks.length !== taskIds.length) return;
 
-    // Avoid re-notifying admins if they were already alerted this month.
+    // Alert admins once per student and month. The month name is part of
+    // the alert, so a late alert for May isn't blocked by one for June.
     const alreadyNotified = await this.prisma.notification.findFirst({
       where: {
         type: 'payment_eligible',
         link: `/admin/users/${userId}`,
-        createdAt: { gte: monthStart },
+        body: { contains: `due in ${monthLabel}` },
       },
     });
     if (alreadyNotified) return;
@@ -73,6 +77,7 @@ export class FeedbackService {
       studentName: student?.name ?? student?.email ?? 'A student',
       studentId: userId,
       studentEmail: student?.email ?? '',
+      month: monthLabel,
     });
   }
 

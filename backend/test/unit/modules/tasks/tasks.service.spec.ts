@@ -86,6 +86,29 @@ describe('TasksService', () => {
       );
     });
 
+    it('shows a student only the cohort they selected', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        { cohortId: 3 },
+        { cohortId: 7 },
+      ]);
+      prisma.task.findMany.mockResolvedValue([]);
+
+      await service.list(student, { cohortId: 7 });
+
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { cohortId: 7, status: 'published' },
+        }),
+      );
+    });
+
+    it('gives a student an empty list for a cohort they are not in', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([{ cohortId: 3 }]);
+
+      await expect(service.list(student, { cohortId: 9 })).resolves.toEqual([]);
+      expect(prisma.task.findMany).not.toHaveBeenCalled();
+    });
+
     it('filters by cohortId for an admin when provided', async () => {
       prisma.task.findMany.mockResolvedValue([]);
 

@@ -17,6 +17,7 @@ import {
 } from "@components/ui/select";
 import { WALLET_CHAINS, type WalletChain } from "@constants/applications";
 import { ApiError } from "@lib/api-client";
+import { isWalletAddressForChain } from "@utils";
 
 import { getWallets, updateWallets } from "../api";
 
@@ -32,12 +33,6 @@ const CHAIN_PLACEHOLDERS: Record<WalletChain, string> = {
   tron: "T…",
 };
 
-const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
-  evm: /^0x[0-9a-fA-F]{40}$/,
-  solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
-  tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
-};
-
 export function WalletManager() {
   const [chain, setChain] = useState<WalletChain>("evm");
   const [address, setAddress] = useState("");
@@ -45,10 +40,15 @@ export function WalletManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [addressError, setAddressError] = useState("");
+  // Set when the saved wallet could not be loaded. The form stays hidden then,
+  // so a student can't overwrite an address they can't see.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
     getWallets()
       .then((wallets) => {
+        setLoadFailed(false);
         // A student has at most one withdrawal address.
         const current = wallets[0];
         if (current) {
@@ -57,9 +57,9 @@ export function WalletManager() {
           setHasWallet(true);
         }
       })
-      .catch(() => {})
+      .catch(() => setLoadFailed(true))
       .finally(() => setLoading(false));
-  }, []);
+  }, [loadAttempt]);
 
   const handleSave = async () => {
     const addr = address.trim();
@@ -67,7 +67,7 @@ export function WalletManager() {
       setAddressError("Address is required.");
       return;
     }
-    if (!ADDRESS_PATTERNS[chain].test(addr)) {
+    if (!isWalletAddressForChain(chain, addr)) {
       setAddressError(`Invalid ${CHAIN_LABELS[chain]} address.`);
       return;
     }
@@ -124,70 +124,89 @@ export function WalletManager() {
           </p>
         </div>
       </CardHeader>
-      <CardContent className="space-y-2">
-        <Label className="text-xs text-muted-foreground">
-          {hasWallet ? "Your withdrawal address" : "Add withdrawal address"}
-        </Label>
-        <div className="flex gap-2">
-          <Select
-            value={chain}
-            onValueChange={(v) => {
-              setChain(v as WalletChain);
-              setAddressError("");
+      {loadFailed ? (
+        <CardContent className="space-y-3">
+          <p role="alert" className="text-sm text-destructive">
+            We couldn&apos;t load your withdrawal address. Check your connection
+            and try again.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              setLoadAttempt((n) => n + 1);
             }}
           >
-            <SelectTrigger className="w-[110px] shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {WALLET_CHAINS.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {CHAIN_LABELS[c]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex-1 space-y-1">
-            <Input
-              placeholder={CHAIN_PLACEHOLDERS[chain]}
-              value={address}
-              disabled={loading || saving}
-              onChange={(e) => {
-                setAddress(e.target.value);
+            Try again
+          </Button>
+        </CardContent>
+      ) : (
+        <CardContent className="space-y-2">
+          <Label className="text-xs text-muted-foreground">
+            {hasWallet ? "Your withdrawal address" : "Add withdrawal address"}
+          </Label>
+          <div className="flex gap-2">
+            <Select
+              value={chain}
+              onValueChange={(v) => {
+                setChain(v as WalletChain);
                 setAddressError("");
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSave();
-              }}
-              className={addressError ? "border-destructive" : ""}
-            />
-            {addressError && (
-              <p className="text-xs text-destructive">{addressError}</p>
-            )}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={loading || saving}
-            onClick={handleSave}
-            className="shrink-0"
-          >
-            Save
-          </Button>
-          {hasWallet && (
+            >
+              <SelectTrigger className="w-[110px] shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {WALLET_CHAINS.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {CHAIN_LABELS[c]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex-1 space-y-1">
+              <Input
+                placeholder={CHAIN_PLACEHOLDERS[chain]}
+                value={address}
+                disabled={loading || saving}
+                onChange={(e) => {
+                  setAddress(e.target.value);
+                  setAddressError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSave();
+                }}
+                className={addressError ? "border-destructive" : ""}
+              />
+              {addressError && (
+                <p className="text-xs text-destructive">{addressError}</p>
+              )}
+            </div>
             <Button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="shrink-0 text-muted-foreground hover:text-destructive"
-              disabled={saving}
-              onClick={handleRemove}
+              variant="outline"
+              disabled={loading || saving}
+              onClick={handleSave}
+              className="shrink-0"
             >
-              <Trash2 className="h-4 w-4" />
+              Save
             </Button>
-          )}
-        </div>
-      </CardContent>
+            {hasWallet && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0 text-muted-foreground hover:text-destructive"
+                disabled={saving}
+                onClick={handleRemove}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 }

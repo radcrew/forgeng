@@ -7,6 +7,22 @@ import axios, {
 import { API_BASE } from "@lib/config";
 import { clearAuth, sessionVersion } from "@lib/session";
 
+/** Pages that need a signed-in user. Mirrors the route guard in proxy.ts. */
+const SIGNED_IN_PREFIXES = ["/admin", "/student", "/apply"];
+
+/**
+ * Sends the user to sign in when their session ends on a page that needs
+ * one, instead of leaving them on a page where every request fails.
+ */
+export const redirectToSignInIfNeeded = (): void => {
+  if (typeof window === "undefined") return;
+  const { pathname } = window.location;
+  const needsSignIn = SIGNED_IN_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+  if (needsSignIn) window.location.assign("/sign-in");
+};
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -108,6 +124,7 @@ class ApiClient {
       // session login just wrote and strand them on /sign-in.
       if (config.sessionVersion === sessionVersion()) {
         clearAuth();
+        redirectToSignInIfNeeded();
       }
     }
 

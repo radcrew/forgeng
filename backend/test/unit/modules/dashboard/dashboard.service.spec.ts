@@ -151,6 +151,58 @@ describe('DashboardService', () => {
       expect(result.cohort?.name).toBe('Spring');
     });
 
+    it('ignores submissions outside the selected cohort, so progress stays within 100%', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        {
+          cohortId: 3,
+          cohort: makeCohort({ id: 3, name: 'Spring' }),
+          enrolledAt: DATE,
+        },
+      ]);
+      // One published task in this cohort.
+      prisma.task.findMany.mockResolvedValue([makeTask({ id: 1 })]);
+      // Approved work on that task, plus on tasks 8 and 9 from another cohort
+      // or moved back to draft.
+      prisma.submission.findMany.mockResolvedValue(
+        [1, 8, 9].map((taskId) =>
+          makeSubmission({
+            id: 100 + taskId,
+            taskId,
+            status: 'approved',
+            task: makeTask({ id: taskId }),
+          }),
+        ),
+      );
+
+      const result = await service.student(student);
+
+      expect(result.taskStats.total).toBe(1);
+      expect(result.taskStats.submitted).toBe(1);
+      expect(result.taskStats.approved).toBe(1);
+    });
+
+    it('skips past due dates when picking the next deadline', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        {
+          cohortId: 3,
+          cohort: makeCohort({ id: 3, name: 'Spring' }),
+          enrolledAt: DATE,
+        },
+      ]);
+      prisma.task.findMany.mockResolvedValue([
+        // Missed long ago, never submitted.
+        makeTask({ id: 1, dueDate: new Date('2020-01-01T00:00:00.000Z') }),
+        // Still ahead.
+        makeTask({ id: 2, dueDate: new Date('2099-06-01T00:00:00.000Z') }),
+        makeTask({ id: 3, dueDate: new Date('2099-09-01T00:00:00.000Z') }),
+      ]);
+      prisma.submission.findMany.mockResolvedValue([]);
+
+      const result = await service.student(student);
+
+      expect(result.nextDeadline).toBe('2099-06-01T00:00:00.000Z');
+    });
+
     it('counts a task with no submission as todo in the status breakdown', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
         {

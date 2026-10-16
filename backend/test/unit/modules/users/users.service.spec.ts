@@ -42,6 +42,8 @@ describe('UsersService', () => {
     };
     application: { findUnique: jest.Mock };
     payment: { create: jest.Mock };
+    refreshToken: { updateMany: jest.Mock };
+    $transaction: jest.Mock;
   };
   let mail: { send: jest.Mock };
 
@@ -55,6 +57,9 @@ describe('UsersService', () => {
       },
       application: { findUnique: jest.fn().mockResolvedValue(null) },
       payment: { create: jest.fn() },
+      refreshToken: { updateMany: jest.fn() },
+      // The service passes an array of prepared queries; resolve them in order.
+      $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
     };
     mail = { send: jest.fn().mockResolvedValue(undefined) };
     const config = {
@@ -185,6 +190,27 @@ describe('UsersService', () => {
       expect(prisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 1 }, data: { role: 'admin' } }),
       );
+    });
+
+    it('signs the user out everywhere when the role changes', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'applicant' }));
+
+      await service.updateRole(1, { role: 'applicant' } as never);
+
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: 1, revokedAt: null },
+        data: { revokedAt: expect.any(Date) as unknown },
+      });
+    });
+
+    it('keeps the user signed in when the role stays the same', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      await service.updateRole(1, { role: 'student' } as never);
+
+      expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
     });
   });
 

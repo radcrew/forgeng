@@ -144,10 +144,22 @@ export class UsersService {
     const exists = await this.prisma.user.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('User not found.');
 
-    const updated = await this.prisma.user.update({
-      where: { id },
-      data: { role: dto.role },
-    });
+    // A new role signs the user out everywhere: revoking their refresh tokens
+    // means they sign in again and get a token with the new role.
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id },
+        data: { role: dto.role },
+      }),
+      ...(dto.role === exists.role
+        ? []
+        : [
+            this.prisma.refreshToken.updateMany({
+              where: { userId: id, revokedAt: null },
+              data: { revokedAt: new Date() },
+            }),
+          ]),
+    ]);
     return toUserDto(updated);
   }
 
@@ -206,11 +218,16 @@ export class UsersService {
           : [];
 
       const taskIds = tasks.map((t) => t.id);
+      // Count tasks, not submissions, so duplicates aren't counted twice.
       const tasksApproved =
         taskIds.length > 0
-          ? await this.prisma.submission.count({
-              where: { userId, taskId: { in: taskIds }, status: 'approved' },
-            })
+          ? (
+              await this.prisma.submission.findMany({
+                where: { userId, taskId: { in: taskIds }, status: 'approved' },
+                select: { taskId: true },
+                distinct: ['taskId'],
+              })
+            ).length
           : 0;
 
       const [notification, payment] = await Promise.all([

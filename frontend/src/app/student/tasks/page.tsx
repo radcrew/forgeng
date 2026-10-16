@@ -17,7 +17,12 @@ import {
 } from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { LoadingState } from "@components/common";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { SubmissionStatusBadge } from "@features/submissions";
 import { TaskSubmitDialog } from "@features/tasks";
 import {
@@ -35,7 +40,7 @@ import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
 import { useSelectedCohort } from "@contexts";
 import { cn, formatCalendarDate, isCalendarDayOver } from "@utils";
-import type { Task, TaskType } from "@types";
+import type { Submission, Task, TaskType } from "@types";
 
 type TypeFilter = TaskType | "all";
 
@@ -50,16 +55,28 @@ const Page = () => {
   const [now] = useState(() => Date.now());
 
   const { selectedCohortId } = useSelectedCohort();
-  const { data: dashboard, isLoading: dashboardLoading } =
-    useStudentDashboard(selectedCohortId);
+  const {
+    data: dashboard,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard,
+  } = useStudentDashboard(selectedCohortId);
   const cohortId = dashboard?.cohort?.id;
-  const { data: tasks = [], isLoading: tasksLoading } = useTasks(cohortId);
+  const {
+    data: tasks = [],
+    isLoading: tasksLoading,
+    error: tasksError,
+    refetch: refetchTasks,
+  } = useTasks(cohortId);
   const { data: submissions = [], refetch: refetchSubmissions } =
     useSubmissions();
 
+  // Work sent from this page shows straight away, before the list reloads,
+  // so the task never offers Submit a second time. Loaded data wins.
+  const [justSubmitted, setJustSubmitted] = useState<Submission[]>([]);
   const submissionByTaskId = useMemo(
-    () => new Map(submissions.map((s) => [s.taskId, s])),
-    [submissions],
+    () => new Map([...justSubmitted, ...submissions].map((s) => [s.taskId, s])),
+    [justSubmitted, submissions],
   );
 
   const visibleTasks = useMemo(() => {
@@ -89,7 +106,13 @@ const Page = () => {
   if (!dashboard) {
     return (
       <PageContainer>
-        <PageHeader title="Tasks" description="Loading…" />
+        <PageHeader
+          title="Tasks"
+          description={dashboardError ? undefined : "Loading…"}
+        />
+        {dashboardError && (
+          <ErrorState what="your tasks" onRetry={refetchDashboard} />
+        )}
       </PageContainer>
     );
   }
@@ -101,7 +124,10 @@ const Page = () => {
           title="Tasks"
           description="Enroll in a cohort to see your assignments."
         />
-        <EmptyState message="You are not enrolled in a cohort yet." art={APP_ART.cohort} />
+        <EmptyState
+          message="You are not enrolled in a cohort yet."
+          art={APP_ART.cohort}
+        />
       </PageContainer>
     );
   }
@@ -153,10 +179,7 @@ const Page = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Select
-              value={sort}
-              onValueChange={(v) => setSort(v as TaskSort)}
-            >
+            <Select value={sort} onValueChange={(v) => setSort(v as TaskSort)}>
               <SelectTrigger className="sm:w-44">
                 <SelectValue />
               </SelectTrigger>
@@ -186,13 +209,18 @@ const Page = () => {
 
       {tasksLoading ? (
         <LoadingState message="Loading tasks…" />
+      ) : tasksError ? (
+        <ErrorState what="your tasks" onRetry={refetchTasks} />
       ) : tasks.length === 0 ? (
         <EmptyState
           message="No tasks have been published for your cohort yet."
           art={APP_ART.tasks}
         />
       ) : visibleTasks.length === 0 ? (
-        <EmptyState message="No tasks match your filters." art={APP_ART.noResults} />
+        <EmptyState
+          message="No tasks match your filters."
+          art={APP_ART.noResults}
+        />
       ) : (
         <div className="space-y-3">
           {visibleTasks.map((task) => {
@@ -228,10 +256,7 @@ const Page = () => {
                       </p>
                     )}
                     <div className="flex items-center gap-3 mt-2">
-                      <Badge
-                        variant="outline"
-                        className="capitalize text-xs"
-                      >
+                      <Badge variant="outline" className="capitalize text-xs">
                         {task.type}
                       </Badge>
                       {task.dueDate && (
@@ -277,7 +302,10 @@ const Page = () => {
           onOpenChange={(open) => {
             if (!open) setSelectedTask(null);
           }}
-          onSubmitted={refetchSubmissions}
+          onSubmitted={(submission) => {
+            setJustSubmitted((prev) => [...prev, submission]);
+            refetchSubmissions();
+          }}
         />
       )}
     </PageContainer>

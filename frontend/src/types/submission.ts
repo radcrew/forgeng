@@ -21,7 +21,7 @@ export interface Feedback {
   id: number;
   submissionId: number;
   reviewerId: number;
-  reviewer?: Pick<UserProfile, "id" | "name" | "email">;
+  reviewer?: Pick<UserProfile, "id" | "name">;
   content: string;
   verdict: FeedbackVerdict;
   createdAt: string;

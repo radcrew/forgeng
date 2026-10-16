@@ -9,13 +9,16 @@ import {
   Matches,
   MaxLength,
   MinLength,
-  registerDecorator,
-  ValidationArguments,
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 import { APPLICATION_COUNTRY_CODES } from '../../../common/constants/countries';
+import {
+  IsWalletAddressForChain,
+  SUPPORTED_CHAINS,
+  type WalletChain,
+} from '../../../common/utils/wallet';
 import {
   FACEBOOK_PROFILE_REGEX,
   GITHUB_PROFILE_REGEX,
@@ -23,49 +26,6 @@ import {
   TELEGRAM_REGEX,
   TWITTER_PROFILE_REGEX,
 } from '../../../common/constants/social-profiles';
-
-export const SUPPORTED_CHAINS = ['evm', 'solana', 'tron'] as const;
-export type WalletChain = (typeof SUPPORTED_CHAINS)[number];
-
-const EVM_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
-const SOLANA_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
-const TRON_ADDRESS_REGEX = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
-
-const ADDRESS_PATTERNS: Record<WalletChain, RegExp> = {
-  evm: EVM_ADDRESS_REGEX,
-  solana: SOLANA_ADDRESS_REGEX,
-  tron: TRON_ADDRESS_REGEX,
-};
-
-const ADDRESS_MESSAGES: Record<WalletChain, string> = {
-  evm: 'Invalid EVM address (0x + 40 hex characters)',
-  solana: 'Invalid Solana address',
-  tron: 'Invalid Tron address (must start with T)',
-};
-
-function IsWalletAddressForChain() {
-  return function (object: object, propertyName: string) {
-    registerDecorator({
-      name: 'isWalletAddressForChain',
-      target: (object as { constructor: new (...args: unknown[]) => unknown })
-        .constructor,
-      propertyName,
-      validator: {
-        validate(value: unknown, args: ValidationArguments): boolean {
-          const chain = (args.object as WalletEntryDto).chain;
-          return (
-            typeof value === 'string' &&
-            (ADDRESS_PATTERNS[chain]?.test(value) ?? false)
-          );
-        },
-        defaultMessage(args: ValidationArguments): string {
-          const chain = (args.object as WalletEntryDto).chain;
-          return ADDRESS_MESSAGES[chain] ?? 'Invalid wallet address';
-        },
-      },
-    });
-  };
-}
 
 export class WalletEntryDto {
   @IsEnum(SUPPORTED_CHAINS)

@@ -27,7 +27,7 @@ const STATUS_COPY: Record<ApplicationStatus, { title: string; body: string }> =
     },
     accepted: {
       title: "You're in! 🎉",
-      body: "Congratulations — you've been accepted. Sign in again to access your student portal and get started.",
+      body: "Congratulations, you've been accepted. Open your student portal to get started.",
     },
     rejected: {
       title: "Application decision",

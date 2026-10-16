@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
@@ -70,6 +71,7 @@ describe('SubmissionsService', () => {
     submission: {
       findMany: jest.Mock;
       findUnique: jest.Mock;
+      findFirst: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
     };
@@ -84,6 +86,8 @@ describe('SubmissionsService', () => {
       submission: {
         findMany: jest.fn(),
         findUnique: jest.fn(),
+        // No earlier submission for the task unless a test says so.
+        findFirst: jest.fn().mockResolvedValue(null),
         create: jest.fn(),
         update: jest.fn(),
       },
@@ -153,6 +157,27 @@ describe('SubmissionsService', () => {
   });
 
   describe('create', () => {
+    it('refuses a second submission for the same task', async () => {
+      prisma.task.findUnique.mockResolvedValue(makeTask());
+      prisma.enrollment.findUnique.mockResolvedValue({ id: 1 });
+      prisma.submission.findFirst.mockResolvedValue({ id: 10 });
+
+      await expect(
+        service.create({ taskId: 5, content: 'x' }, student),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(prisma.submission.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { taskId: 5, userId: student.id } }),
+      );
+      expect(prisma.submission.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects a submission with no repo link and a blank write-up', async () => {
+      await expect(
+        service.create({ taskId: 5, content: '   ' }, student),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.submission.create).not.toHaveBeenCalled();
+    });
+
     it('throws NotFoundException when the task does not exist', async () => {
       prisma.task.findUnique.mockResolvedValue(null);
       await expect(

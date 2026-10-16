@@ -6,3 +6,7 @@
  */
 process.env.NODE_ENV ??= 'test';
 process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/test';
+// Keep a local .env from pointing the suite at real Supabase Storage. Values
+// already set here win over the .env file.
+process.env.SUPABASE_URL = '';
+process.env.SUPABASE_SERVICE_ROLE_KEY = '';

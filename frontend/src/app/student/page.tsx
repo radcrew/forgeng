@@ -1,9 +1,10 @@
 "use client";
 
-import { PageContainer, PageHeader } from "@components/shared";
+import { ErrorState, PageContainer, PageHeader } from "@components/shared";
 import {
   AwaitingCohort,
   CohortSwitcher,
+  ProfileReminder,
   StudentView,
   useStudentDashboard,
 } from "@features/dashboard";
@@ -12,7 +13,12 @@ import { isProfileComplete } from "@utils/user";
 
 const Page = () => {
   const { selectedCohortId } = useSelectedCohort();
-  const { data: dashboard, isLoading } = useStudentDashboard(selectedCohortId);
+  const {
+    data: dashboard,
+    isLoading,
+    error,
+    refetch,
+  } = useStudentDashboard(selectedCohortId);
   const { user } = useCurrentUser();
 
   // Keep the stale dashboard on screen while switching cohorts so the page
@@ -20,7 +26,11 @@ const Page = () => {
   if (!dashboard) {
     return (
       <PageContainer spacing="8">
-        <PageHeader title="Student Dashboard" description="Loading…" />
+        <PageHeader
+          title="Student Dashboard"
+          description={error ? undefined : "Loading…"}
+        />
+        {error && <ErrorState what="your dashboard" onRetry={refetch} />}
       </PageContainer>
     );
   }
@@ -57,12 +67,16 @@ const Page = () => {
         }
       />
 
-      {profileIncomplete ? (
-        <AwaitingCohort profileIncomplete />
-      ) : !cohort ? (
-        <AwaitingCohort />
+      {/* An incomplete profile only takes over the page before enrollment.
+          Once the student has a cohort, a reminder sits above the dashboard
+          so their tasks stay visible. */}
+      {!cohort ? (
+        <AwaitingCohort profileIncomplete={!!profileIncomplete} />
       ) : (
-        <StudentView dashboard={dashboard} />
+        <>
+          {profileIncomplete && <ProfileReminder />}
+          <StudentView dashboard={dashboard} />
+        </>
       )}
     </PageContainer>
   );

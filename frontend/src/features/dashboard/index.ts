@@ -4,6 +4,7 @@ export { useAdminDashboard, useStudentDashboard } from "./hooks";
 
 export { AwaitingCohort } from "./components/awaiting-cohort";
 export type { AwaitingCohortProps } from "./components/awaiting-cohort";
+export { ProfileReminder } from "./components/profile-reminder";
 export { CohortSwitcher } from "./components/cohort-switcher";
 export type { CohortSwitcherProps } from "./components/cohort-switcher";
 export { AdminView } from "./components/admin-view";

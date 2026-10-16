@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { FormBody, FormDialog, FormField } from "@components/common";
 import { Input } from "@components/ui/input";
 import { Textarea } from "@components/ui/textarea";
-import { createSubmission } from "@features/submissions";
+import {
+  createSubmission,
+  validateSubmission,
+  type Submission,
+  type SubmissionErrors,
+} from "@features/submissions";
 import { ApiError } from "@lib/api-client";
 import type { Task } from "@types";
 
@@ -14,8 +19,11 @@ export type TaskSubmitDialogProps = {
   task: Task;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Called after a successful submission so the caller can refetch. */
-  onSubmitted?: () => void;
+  /**
+   * Called with the new submission, so the page can show it right away
+   * instead of offering Submit again while it reloads.
+   */
+  onSubmitted?: (submission: Submission) => void;
 };
 
 export const TaskSubmitDialog = ({
@@ -26,12 +34,21 @@ export const TaskSubmitDialog = ({
 }: TaskSubmitDialogProps) => {
   const [content, setContent] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
+  const [errors, setErrors] = useState<SubmissionErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Blocks a second send before the disabled button has re-rendered.
+  const sending = useRef(false);
 
   const handleSubmit = async () => {
+    const found = validateSubmission({ repoUrl, content });
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
+    if (sending.current) return;
+    sending.current = true;
     setIsSubmitting(true);
     try {
-      await createSubmission(task.id, {
+      const submission = await createSubmission(task.id, {
         content: content.trim() || undefined,
         repoUrl: repoUrl.trim() || undefined,
       });
@@ -41,12 +58,13 @@ export const TaskSubmitDialog = ({
       onOpenChange(false);
       setContent("");
       setRepoUrl("");
-      onSubmitted?.();
+      onSubmitted?.(submission);
     } catch (err) {
       toast.error(
         err instanceof ApiError ? err.message : "Failed to submit your work.",
       );
     } finally {
+      sending.current = false;
       setIsSubmitting(false);
     }
   };
@@ -65,21 +83,37 @@ export const TaskSubmitDialog = ({
       }}
     >
       <FormBody>
-        <FormField label="Repository URL (optional)" htmlFor="repoUrl">
+        <FormField
+          label="Repository URL (optional)"
+          htmlFor="repoUrl"
+          error={errors.repoUrl}
+        >
           <Input
             id="repoUrl"
             placeholder="https://github.com/you/repo"
             value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
+            aria-invalid={!!errors.repoUrl}
+            onChange={(e) => {
+              setRepoUrl(e.target.value);
+              setErrors({});
+            }}
           />
         </FormField>
-        <FormField label="Notes / Write-up (optional)" htmlFor="content">
+        <FormField
+          label="Notes / Write-up (optional)"
+          htmlFor="content"
+          error={errors.content}
+        >
           <Textarea
             id="content"
             placeholder="Describe your solution, approach, or any notes for the reviewer..."
             rows={5}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            aria-invalid={!!errors.content}
+            onChange={(e) => {
+              setContent(e.target.value);
+              setErrors({});
+            }}
           />
         </FormField>
       </FormBody>

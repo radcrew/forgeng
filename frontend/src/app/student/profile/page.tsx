@@ -6,14 +6,24 @@ import { Calendar } from "lucide-react";
 import { LoadingState } from "@components/common";
 import { Badge } from "@components/ui/badge";
 import { Card } from "@components/ui/card";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { useCurrentUser } from "@contexts";
 import { ProfileForm, WalletManager, useEnrollments } from "@features/profile";
 
 const Page = () => {
   const { user, isHydrated, refreshUser } = useCurrentUser();
-  const { data: enrollments = [], isLoading } = useEnrollments();
+  const {
+    data: enrollments = [],
+    isLoading,
+    error,
+    refetch,
+  } = useEnrollments();
 
   if (!isHydrated || !user) {
     return (
@@ -35,6 +45,12 @@ const Page = () => {
         <h2 className="u-display mb-4 text-xl">Enrollment History</h2>
         {isLoading ? (
           <LoadingState message="Loading enrollments…" />
+        ) : error ? (
+          <ErrorState
+            what="your enrollments"
+            onRetry={refetch}
+            size="compact"
+          />
         ) : enrollments.length === 0 ? (
           <EmptyState
             message="You are not enrolled in any cohorts yet."
