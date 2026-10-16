@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { LoadingState } from "@components/common";
-import { PageContainer, PageHeader } from "@components/shared";
+import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { useCohorts } from "@features/cohorts";
 import {
   ALL_TASKS_FILTER,
@@ -119,10 +120,17 @@ const Page = () => {
 
       <div className="space-y-3">
         {isLoading ? <LoadingState message="Loading tasks…" /> : null}
+        {!isLoading && tasks.length === 0 && (
+          <EmptyState
+            message="No tasks yet. Create your first task to get started."
+            art={APP_ART.tasks}
+          />
+        )}
         {!isLoading && tasks.length > 0 && matching.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No tasks match these filters.
-          </p>
+          <EmptyState
+            message="No tasks match these filters."
+            art={APP_ART.noResults}
+          />
         )}
         {visible.map((task) => (
           <TaskRow
