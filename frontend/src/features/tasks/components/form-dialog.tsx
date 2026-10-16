@@ -51,7 +51,6 @@ export const TaskFormDialog = ({
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!title || !cohortId) return;
     const found = validateTask({
       title,
       description: description ?? "",
@@ -177,14 +176,20 @@ export const TaskFormDialog = ({
         </FormGrid>
         <FormGrid>
           <FormField label="Cohort" error={errors.cohortId}>
+            {/* A task can't move cohorts once created: its submissions belong
+                to the students of this cohort. */}
             <Select
               value={cohortId}
+              disabled={isEdit}
               onValueChange={(v) => {
                 setCohortId(v);
                 setErrors({});
               }}
             >
-              <SelectTrigger aria-invalid={!!errors.cohortId}>
+              <SelectTrigger
+                aria-label="Cohort"
+                aria-invalid={!!errors.cohortId}
+              >
                 <SelectValue placeholder="Select cohort..." />
               </SelectTrigger>
               <SelectContent>
@@ -195,6 +200,11 @@ export const TaskFormDialog = ({
                 ))}
               </SelectContent>
             </Select>
+            {isEdit && (
+              <p className="text-xs text-muted-foreground">
+                A task can&apos;t move to another cohort.
+              </p>
+            )}
           </FormField>
           <FormField label="Due Date" error={errors.dueDate}>
             <DateInput

@@ -152,6 +152,21 @@ describe("task FormDialog", () => {
     expect(screen.getByRole("button", { name: "Save Changes" })).toBeEnabled();
   });
 
+  it("locks the cohort when editing a task", () => {
+    render(<FormDialog task={makeTask()} open onOpenChange={vi.fn()} />);
+
+    expect(screen.getByRole("combobox", { name: "Cohort" })).toBeDisabled();
+    expect(
+      screen.getByText("A task can't move to another cohort."),
+    ).toBeInTheDocument();
+  });
+
+  it("lets the cohort be chosen when creating a task", () => {
+    render(<FormDialog open onOpenChange={vi.fn()} />);
+
+    expect(screen.getByRole("combobox", { name: "Cohort" })).toBeEnabled();
+  });
+
   it("toasts an error when the update fails", async () => {
     updateTask.mockRejectedValue(new Error("nope"));
     render(<FormDialog task={makeTask()} open onOpenChange={vi.fn()} />);
