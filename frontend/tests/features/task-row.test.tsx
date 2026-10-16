@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const deleteTask = vi.fn();
 vi.mock("@features/tasks/api", () => ({
@@ -39,9 +39,6 @@ beforeEach(() => {
   deleteTask.mockResolvedValue(undefined);
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
 describe("task Row", () => {
   it("renders the title, type, status, and submission count", () => {
@@ -60,32 +57,53 @@ describe("task Row", () => {
     const onEdit = vi.fn();
     render(<Row task={makeTask()} onEdit={onEdit} />);
 
-    // The first ghost icon button is edit, the second is delete.
-    const buttons = screen.getAllByRole("button");
-    await userEvent.click(buttons[0]);
+    await userEvent.click(screen.getByRole("button", { name: "Edit task" }));
 
     expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ id: 5 }));
   });
 
-  it("deletes and fires onDeleted when the confirm is accepted", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+  it("asks before deleting and says the submissions go too", async () => {
+    render(<Row task={makeTask()} onEdit={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Delete task" }));
+
+    expect(screen.getByText('Delete "Build a CLI"?')).toBeInTheDocument();
+    expect(
+      screen.getByText(/2 student submissions and all their feedback/),
+    ).toBeInTheDocument();
+    expect(deleteTask).not.toHaveBeenCalled();
+  });
+
+  it("leaves out the submissions line when there are none", async () => {
+    render(<Row task={makeTask({ submissionCount: 0 })} onEdit={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Delete task" }));
+
+    expect(screen.queryByText(/student submission/)).not.toBeInTheDocument();
+    expect(screen.getByText("This cannot be undone.")).toBeInTheDocument();
+  });
+
+  it("deletes and fires onDeleted when confirmed", async () => {
     const onDeleted = vi.fn();
     render(<Row task={makeTask()} onEdit={vi.fn()} onDeleted={onDeleted} />);
 
-    const buttons = screen.getAllByRole("button");
-    await userEvent.click(buttons[1]);
+    await userEvent.click(screen.getByRole("button", { name: "Delete task" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Delete task",
+      }),
+    );
 
     expect(deleteTask).toHaveBeenCalledWith(5);
     expect(toastSuccess).toHaveBeenCalled();
     expect(onDeleted).toHaveBeenCalledTimes(1);
   });
 
-  it("does nothing when the delete confirm is cancelled", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
+  it("does not delete when the dialog is cancelled", async () => {
     render(<Row task={makeTask()} onEdit={vi.fn()} />);
 
-    const buttons = screen.getAllByRole("button");
-    await userEvent.click(buttons[1]);
+    await userEvent.click(screen.getByRole("button", { name: "Delete task" }));
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(deleteTask).not.toHaveBeenCalled();
   });

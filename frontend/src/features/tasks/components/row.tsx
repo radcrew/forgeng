@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
+import { FormDialog } from "@components/common";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { ApiError } from "@lib/api-client";
 import { formatCalendarDate } from "@utils";
@@ -21,14 +22,15 @@ export type TaskRowProps = {
 
 export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm(`Delete task "${task.title}"?`)) return;
     setIsDeleting(true);
     try {
       await deleteTask(task.id);
       toast.success("Task deleted");
+      setConfirmOpen(false);
       onDeleted?.();
     } catch (err) {
       const message =
@@ -76,14 +78,20 @@ export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
           >
             {task.status}
           </Badge>
-          <Button variant="ghost" size="icon" onClick={() => onEdit(task)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Edit task"
+            onClick={() => onEdit(task)}
+          >
             <Pencil className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Delete task"
             className="text-destructive hover:text-destructive"
-            onClick={handleDelete}
+            onClick={() => setConfirmOpen(true)}
             disabled={isDeleting}
           >
             {isDeleting ? (
@@ -94,6 +102,32 @@ export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
           </Button>
         </div>
       </div>
+      <FormDialog
+        open={confirmOpen}
+        onOpenChange={(open) => !isDeleting && setConfirmOpen(open)}
+        title={`Delete "${task.title}"?`}
+        size="sm"
+        actions={{
+          onSubmit: () => void handleDelete(),
+          submitLabel: "Delete task",
+          loadingLabel: "Deleting...",
+          isLoading: isDeleting,
+          submitVariant: "destructive",
+        }}
+      >
+        <div className="space-y-2 text-sm text-muted-foreground">
+          {task.submissionCount > 0 && (
+            <p>
+              This also deletes, for good,{" "}
+              {task.submissionCount === 1
+                ? "1 student submission"
+                : `${task.submissionCount} student submissions`}{" "}
+              and all their feedback.
+            </p>
+          )}
+          <p className="font-medium text-destructive">This cannot be undone.</p>
+        </div>
+      </FormDialog>
     </Card>
   );
 };
