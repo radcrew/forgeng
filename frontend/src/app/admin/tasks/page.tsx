@@ -6,11 +6,14 @@ import { Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { LoadingState } from "@components/common";
 import { PageContainer, PageHeader } from "@components/shared";
+import { useCohorts } from "@features/cohorts";
 import { TaskFormDialog, TaskRow, useTasks } from "@features/tasks";
 import type { Task } from "@types";
 
 const Page = () => {
   const { data: tasks = [], isLoading, refetch } = useTasks();
+  const { data: cohorts = [] } = useCohorts();
+  const cohortNames = new Map(cohorts.map((c) => [c.id, c.name]));
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<Task | undefined>(undefined);
 
@@ -37,6 +40,7 @@ const Page = () => {
           <TaskRow
             key={task.id}
             task={task}
+            cohortName={cohortNames.get(task.cohortId)}
             onEdit={(t) => {
               setEditTask(t);
               setFormOpen(true);

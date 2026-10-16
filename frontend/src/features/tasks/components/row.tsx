@@ -16,11 +16,17 @@ import type { Task } from "@types";
 
 export type TaskRowProps = {
   task: Task;
+  cohortName?: string;
   onEdit: (task: Task) => void;
   onDeleted?: () => void;
 };
 
-export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
+export const TaskRow = ({
+  task,
+  cohortName,
+  onEdit,
+  onDeleted,
+}: TaskRowProps) => {
   const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -56,6 +62,11 @@ export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
             </p>
           )}
           <div className="flex items-center gap-3 mt-1">
+            {cohortName && (
+              <span className="text-xs font-medium text-foreground">
+                {cohortName}
+              </span>
+            )}
             <Badge variant="outline" className="text-xs capitalize">
               {task.type}
             </Badge>
