@@ -4,15 +4,30 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/ui/select";
 import { LoadingState } from "@components/common";
 import { PageContainer, PageHeader } from "@components/shared";
-import { TaskFormDialog, TaskRow, useTasks } from "@features/tasks";
+import { TASK_SORT_OPTIONS, type TaskSort } from "@constants/tasks";
+import {
+  TaskFormDialog,
+  TaskRow,
+  sortTasks,
+  useTasks,
+} from "@features/tasks";
 import type { Task } from "@types";
 
 const Page = () => {
   const { data: tasks = [], isLoading, refetch } = useTasks();
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<Task | undefined>(undefined);
+  const [sort, setSort] = useState<TaskSort>("recent");
+  const sorted = sortTasks(tasks, sort);
 
   return (
     <PageContainer>
@@ -31,9 +46,24 @@ const Page = () => {
         }
       />
 
+      <div className="flex justify-end">
+        <Select value={sort} onValueChange={(v) => setSort(v as TaskSort)}>
+          <SelectTrigger className="sm:w-48" aria-label="Sort tasks">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TASK_SORT_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                Sort: {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="space-y-3">
         {isLoading ? <LoadingState message="Loading tasks…" /> : null}
-        {tasks.map((task) => (
+        {sorted.map((task) => (
           <TaskRow
             key={task.id}
             task={task}

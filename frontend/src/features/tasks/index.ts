@@ -13,6 +13,7 @@ export {
   type TaskInput,
 } from "./api";
 export { useTasks, useTask } from "./hooks";
+export { sortTasks } from "./sort";
 
 export { TaskFormDialog } from "./components/form-dialog";
 export type { TaskFormDialogProps } from "./components/form-dialog";
