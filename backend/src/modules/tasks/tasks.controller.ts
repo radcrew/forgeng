@@ -22,6 +22,8 @@ import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @ApiTags('tasks')
+// Applicants have no access: the services only narrow what students see.
+@Roles('student', 'admin')
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly service: TasksService) {}

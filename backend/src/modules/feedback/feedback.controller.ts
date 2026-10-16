@@ -17,6 +17,8 @@ import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { FeedbackService } from './feedback.service';
 
 @ApiTags('feedback')
+// Applicants have no access: the services only narrow what students see.
+@Roles('student', 'admin')
 @Controller('submissions/:id/feedback')
 export class FeedbackController {
   constructor(private readonly service: FeedbackService) {}

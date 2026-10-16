@@ -12,6 +12,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { toApplicationDto, type ApplicationDto } from '../../common/mappers';
 import { splitName } from '../../common/string';
 import { MailService } from '../../core/mail';
+import { assertCohortHasRoom } from '../cohorts/cohort-capacity';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   applicationAcceptedEmail,
@@ -181,10 +182,16 @@ export class ApplicationsService {
           data: { role: Role.student },
         });
         if (app.cohortId) {
+          const where = {
+            userId_cohortId: { userId: app.userId, cohortId: app.cohortId },
+          };
+          // A full cohort fails the whole save, so the application stays
+          // pending. Someone already in the cohort doesn't need a place.
+          if (!(await tx.enrollment.findUnique({ where }))) {
+            await assertCohortHasRoom(tx, app.cohortId);
+          }
           await tx.enrollment.upsert({
-            where: {
-              userId_cohortId: { userId: app.userId, cohortId: app.cohortId },
-            },
+            where,
             create: { userId: app.userId, cohortId: app.cohortId },
             update: {},
           });
@@ -208,11 +215,18 @@ export class ApplicationsService {
 
     if (updated.status === ApplicationStatus.accepted) {
       try {
+        const cohort = updated.cohortId
+          ? await this.prisma.cohort.findUnique({
+              where: { id: updated.cohortId },
+              select: { name: true },
+            })
+          : null;
         await this.mail.send({
           to: updated.email,
           ...applicationAcceptedEmail({
             applicantName,
             dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
+            cohortName: cohort?.name,
           }),
         });
       } catch (err) {

@@ -8,6 +8,7 @@ export type FormFieldProps = {
   htmlFor?: string;
   children: React.ReactNode;
   className?: string;
+  error?: string;
 };
 
 export const FormField = ({
@@ -15,10 +16,12 @@ export const FormField = ({
   htmlFor,
   children,
   className,
+  error,
 }: FormFieldProps) => (
   <div className={cn("space-y-2", className)}>
     <Label htmlFor={htmlFor}>{label}</Label>
     {children}
+    {error && <p className="text-xs text-destructive">{error}</p>}
   </div>
 );
 

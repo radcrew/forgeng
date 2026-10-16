@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { Clock, Code2 } from "lucide-react";
 
 import { Badge } from "@components/ui/badge";
@@ -30,11 +29,12 @@ import {
   type TaskSort,
 } from "@constants/tasks";
 import { APP_ART } from "@constants/shared/app-illustrations";
+import { isCohortEnded } from "@features/cohorts";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
 import { useSelectedCohort } from "@contexts";
-import { cn } from "@utils";
+import { cn, formatCalendarDate, isCalendarDayOver } from "@utils";
 import type { Task, TaskType } from "@types";
 
 type TypeFilter = TaskType | "all";
@@ -107,6 +107,7 @@ const Page = () => {
   }
 
   const cohort = dashboard.cohort;
+  const cohortEnded = isCohortEnded(cohort);
   const hasTasks = !tasksLoading && tasks.length > 0;
 
   return (
@@ -199,7 +200,7 @@ const Page = () => {
             const progress = submission?.status ?? "todo";
             const isOverdue =
               !!task.dueDate &&
-              new Date(task.dueDate).getTime() < now &&
+              isCalendarDayOver(task.dueDate, now) &&
               (progress === "todo" || progress === "needs_work");
             const Icon = TASK_TYPE_ICON[task.type] ?? Code2;
             return (
@@ -244,7 +245,7 @@ const Page = () => {
                         >
                           <Clock className="h-3 w-3" />
                           {isOverdue ? "Overdue · " : "Due "}
-                          {format(new Date(task.dueDate), "MMM d, yyyy")}
+                          {formatCalendarDate(task.dueDate)}
                         </span>
                       )}
                     </div>
@@ -252,6 +253,10 @@ const Page = () => {
                   <div className="flex items-center gap-3 shrink-0">
                     {submission ? (
                       <SubmissionStatusBadge status={submission.status} />
+                    ) : cohortEnded ? (
+                      <span className="text-xs text-muted-foreground">
+                        Cohort ended
+                      </span>
                     ) : (
                       <Button size="sm" onClick={() => setSelectedTask(task)}>
                         Submit

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { Users } from "lucide-react";
 
 import { LoadingState } from "@components/common";
@@ -14,6 +13,7 @@ import { APP_ART } from "@constants/shared/app-illustrations";
 import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { ReviewSheet, useSubmissions } from "@features/submissions";
 import { useTasks } from "@features/tasks";
+import { formatCalendarDate } from "@utils";
 
 import { useCohort, useCohortStats, useEnrollments } from "../hooks";
 import { CohortDetailStats } from "./detail-stats";
@@ -85,9 +85,9 @@ export const CohortDetail = ({ cohortId }: CohortDetailProps) => {
             </Badge>
             {cohort.startDate && (
               <span className="text-xs">
-                {format(new Date(cohort.startDate), "MMM d, yyyy")}
+                {formatCalendarDate(cohort.startDate)}
                 {cohort.endDate &&
-                  ` → ${format(new Date(cohort.endDate), "MMM d, yyyy")}`}
+                  ` → ${formatCalendarDate(cohort.endDate)}`}
               </span>
             )}
           </span>

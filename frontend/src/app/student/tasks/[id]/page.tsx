@@ -14,13 +14,17 @@ import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { SubmissionDetailSheet, SubmissionStatusBadge, useSubmissions } from "@features/submissions";
+import { isCohortEnded, useCohort } from "@features/cohorts";
 import { TaskSubmitDialog, useTask } from "@features/tasks";
+import { formatCalendarDate } from "@utils";
 
 const Page = () => {
   const params = useParams<{ id: string }>();
   const taskId = Number(params?.id);
 
   const { data: task, isLoading, error } = useTask(taskId);
+  const { data: cohort } = useCohort(task?.cohortId ?? NaN);
+  const cohortEnded = !!cohort && isCohortEnded(cohort);
   const { data: submissions = [], refetch: refetchSubmissions } =
     useSubmissions();
   const submission = useMemo(
@@ -77,7 +81,7 @@ const Page = () => {
             {task.dueDate && (
               <span className="flex items-center gap-1 text-xs">
                 <Clock className="h-3 w-3" />
-                Due {format(new Date(task.dueDate), "MMM d, yyyy")}
+                Due {formatCalendarDate(task.dueDate)}
               </span>
             )}
           </span>
@@ -86,6 +90,10 @@ const Page = () => {
           submission ? (
             <Button variant="outline" onClick={() => setDetailOpen(true)}>
               View Submission
+            </Button>
+          ) : cohortEnded ? (
+            <Button disabled title="This cohort has ended">
+              Cohort ended
             </Button>
           ) : (
             <Button onClick={() => setSubmitOpen(true)}>Submit Work</Button>

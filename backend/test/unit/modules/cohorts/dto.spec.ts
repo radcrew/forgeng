@@ -25,6 +25,12 @@ describe('CreateCohortDto', () => {
     );
   });
 
+  it('rejects a name that is only spaces', () => {
+    expect(failingProps(CreateCohortDto, { ...valid, name: '   ' })).toContain(
+      'name',
+    );
+  });
+
   it('rejects a capacity below 1', () => {
     expect(failingProps(CreateCohortDto, { ...valid, capacity: 0 })).toContain(
       'capacity',

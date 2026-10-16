@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { Code2, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,6 +9,7 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { TASK_TYPE_ICON } from "@constants/tasks";
 import { ApiError } from "@lib/api-client";
+import { formatCalendarDate } from "@utils";
 import { deleteTask } from "../api";
 import type { Task } from "@types";
 
@@ -59,7 +59,7 @@ export const TaskRow = ({ task, onEdit, onDeleted }: TaskRowProps) => {
             </Badge>
             {task.dueDate && (
               <span className="text-xs text-muted-foreground">
-                Due {format(new Date(task.dueDate), "MMM d, yyyy")}
+                Due {formatCalendarDate(task.dueDate)}
               </span>
             )}
             {task.submissionCount > 0 && (

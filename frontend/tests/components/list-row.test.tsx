@@ -19,6 +19,11 @@ describe("ListRow", () => {
     expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
   });
 
+  it("renders the action when provided", () => {
+    render(<ListRow title="Ada" action={<button>Remove</button>} />);
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
+  });
+
   it("accepts a node as the title", () => {
     render(<ListRow title={<span data-testid="badge">★</span>} />);
     expect(screen.getByTestId("badge")).toBeInTheDocument();

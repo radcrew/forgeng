@@ -3,15 +3,22 @@ import { layout, type RenderedEmail } from '../../../core/mail';
 export const applicationAcceptedEmail = (params: {
   applicantName: string;
   dashboardUrl: string;
+  /** The cohort the student was placed in, if one was chosen on accept. */
+  cohortName?: string | null;
 }): RenderedEmail => {
-  const { applicantName, dashboardUrl } = params;
+  const { applicantName, dashboardUrl, cohortName } = params;
+  // Only claim a cohort when the student was actually placed in one.
+  const placement = cohortName
+    ? `You have been added to the ${cohortName} cohort.`
+    : 'We will add you to a cohort soon and let you know when it is ready.';
 
   return {
     subject: 'Your Forgeng application has been accepted!',
     text: [
       `Hi ${applicantName},`,
       '',
-      'Congratulations — your application has been accepted! You are now enrolled as a student.',
+      'Congratulations, your application has been accepted!',
+      placement,
       '',
       'Head to your dashboard to get started:',
       dashboardUrl,
@@ -21,8 +28,8 @@ export const applicationAcceptedEmail = (params: {
       heading: "You're in! 🎉",
       intro: [
         `Hi ${applicantName},`,
-        'Congratulations — your application has been accepted! You are now enrolled as a student on the Forgeng apprenticeship program.',
-        'Head to your dashboard to see your cohort and tasks.',
+        'Congratulations, your application to the Forgeng apprenticeship program has been accepted!',
+        placement,
       ],
       buttonLabel: 'Go to dashboard',
       buttonUrl: dashboardUrl,

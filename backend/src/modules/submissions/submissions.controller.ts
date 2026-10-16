@@ -13,6 +13,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../core/auth/current-user.decorator';
+import { Roles } from '../../core/auth/roles.decorator';
 import type { AuthUser } from '../../core/auth/auth.types';
 import type { SubmissionDto } from '../../common/mappers';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
@@ -21,6 +22,8 @@ import { UpdateSubmissionDto } from './dto/update-submission.dto';
 import { SubmissionsService } from './submissions.service';
 
 @ApiTags('submissions')
+// Applicants have no access: the services only narrow what students see.
+@Roles('student', 'admin')
 @Controller('submissions')
 export class SubmissionsController {
   constructor(private readonly service: SubmissionsService) {}

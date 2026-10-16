@@ -89,6 +89,65 @@ describe("cohort FormDialog", () => {
     );
   });
 
+  it("keeps create disabled for a name that is only spaces", async () => {
+    render(<FormDialog open onOpenChange={vi.fn()} />);
+
+    await userEvent.type(screen.getByPlaceholderText(/Spring 2026/i), "   ");
+
+    expect(screen.getByRole("button", { name: "Create" })).toBeDisabled();
+  });
+
+  it("shows an error and does not save an empty capacity", async () => {
+    render(<FormDialog open onOpenChange={vi.fn()} />);
+
+    await userEvent.type(screen.getByPlaceholderText(/Spring 2026/i), "Summer");
+    await userEvent.clear(screen.getByLabelText("Capacity"));
+    await userEvent.click(screen.getByRole("button", { name: "Create" }));
+
+    expect(
+      screen.getByText("Enter a whole number of 1 or more."),
+    ).toBeInTheDocument();
+    expect(createCohort).not.toHaveBeenCalled();
+  });
+
+  it("does not save a capacity below the enrolled count", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({ enrolledCount: 5 })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    const capacity = screen.getByLabelText("Capacity");
+    await userEvent.clear(capacity);
+    await userEvent.type(capacity, "4");
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(screen.getByText(/5 students are already enrolled/)).toBeInTheDocument();
+    expect(updateCohort).not.toHaveBeenCalled();
+  });
+
+  it("does not save an end date before the start date", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({
+          startDate: "2026-05-01T00:00:00.000Z",
+          endDate: "2026-02-01T00:00:00.000Z",
+        })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(
+      screen.getByText("The end date must be on or after the start date."),
+    ).toBeInTheDocument();
+    expect(updateCohort).not.toHaveBeenCalled();
+  });
+
   it("toasts an error when the create fails", async () => {
     createCohort.mockRejectedValue(new Error("nope"));
     render(<FormDialog open onOpenChange={vi.fn()} />);

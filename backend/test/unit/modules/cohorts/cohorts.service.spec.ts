@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Cohort, Enrollment, User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { CohortsService } from '@modules/cohorts/cohorts.service';
@@ -52,7 +52,10 @@ describe('CohortsService', () => {
       findMany: jest.Mock;
       create: jest.Mock;
       count: jest.Mock;
+      deleteMany: jest.Mock;
     };
+    application: { updateMany: jest.Mock };
+    $transaction: jest.Mock;
   };
 
   beforeEach(() => {
@@ -69,7 +72,15 @@ describe('CohortsService', () => {
         create: jest.fn(),
         // serialize() counts enrollments for every cohort it maps.
         count: jest.fn().mockResolvedValue(0),
+        deleteMany: jest.fn(),
       },
+      application: { updateMany: jest.fn() },
+      // Interactive transactions run against the same mocks; the array form
+      // just awaits each operation.
+      $transaction: jest.fn(
+        (arg: Promise<unknown>[] | ((tx: unknown) => Promise<unknown>)) =>
+          Array.isArray(arg) ? Promise.all(arg) : arg(prisma),
+      ),
     };
 
     service = new CohortsService(prisma as unknown as PrismaService);
@@ -142,6 +153,18 @@ describe('CohortsService', () => {
       expect(data.startDate).toBeInstanceOf(Date);
       expect(data.endDate).toBeInstanceOf(Date);
     });
+
+    it('rejects an end date before the start date', async () => {
+      await expect(
+        service.create({
+          name: 'Spring 2026',
+          capacity: 30,
+          startDate: '2026-05-01T00:00:00.000Z',
+          endDate: '2026-02-01T00:00:00.000Z',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.cohort.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {
@@ -163,6 +186,25 @@ describe('CohortsService', () => {
       expect(prisma.cohort.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 3 } }),
       );
+    });
+
+    it('rejects an end date before the saved start date', async () => {
+      prisma.cohort.findUnique.mockResolvedValue(
+        makeCohort({ startDate: new Date('2026-05-01T00:00:00.000Z') }),
+      );
+      await expect(
+        service.update(3, { endDate: '2026-02-01T00:00:00.000Z' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.cohort.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects a capacity below the number of enrolled students', async () => {
+      prisma.cohort.findUnique.mockResolvedValue(makeCohort());
+      prisma.enrollment.count.mockResolvedValue(5);
+      await expect(service.update(3, { capacity: 4 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.cohort.update).not.toHaveBeenCalled();
     });
   });
 
@@ -203,7 +245,31 @@ describe('CohortsService', () => {
   });
 
   describe('enroll', () => {
+    it('refuses to enroll into a full cohort', async () => {
+      prisma.cohort.findUnique.mockResolvedValue({
+        ...makeCohort({ capacity: 2 }),
+        _count: { enrollments: 2 },
+      });
+
+      await expect(service.enroll(3, { userId: 1 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.enrollment.create).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException for a missing cohort', async () => {
+      prisma.cohort.findUnique.mockResolvedValue(null);
+
+      await expect(service.enroll(3, { userId: 1 })).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
     it('creates an enrollment for the given user', async () => {
+      prisma.cohort.findUnique.mockResolvedValue({
+        ...makeCohort({ capacity: 2 }),
+        _count: { enrollments: 1 },
+      });
       prisma.enrollment.create.mockResolvedValue({
         id: 1,
         cohortId: 3,
@@ -217,6 +283,32 @@ describe('CohortsService', () => {
       expect(dto).toBeDefined();
       expect(prisma.enrollment.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: { cohortId: 3, userId: 1 } }),
+      );
+    });
+  });
+
+  describe('unenroll', () => {
+    it('removes the enrollment and clears the cohort on the application', async () => {
+      prisma.enrollment.deleteMany.mockResolvedValue({ count: 1 });
+      prisma.application.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.unenroll(3, 1);
+
+      expect(prisma.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { cohortId: 3, userId: 1 },
+      });
+      expect(prisma.application.updateMany).toHaveBeenCalledWith({
+        where: { cohortId: 3, userId: 1 },
+        data: { cohortId: null },
+      });
+    });
+
+    it('throws NotFoundException when the student is not in the cohort', async () => {
+      prisma.enrollment.deleteMany.mockResolvedValue({ count: 0 });
+      prisma.application.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(service.unenroll(3, 1)).rejects.toBeInstanceOf(
+        NotFoundException,
       );
     });
   });

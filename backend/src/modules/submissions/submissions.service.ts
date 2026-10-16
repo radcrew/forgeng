@@ -1,18 +1,35 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import type { Prisma, Submission, Task, User } from '@prisma/client';
+import type { Cohort, Prisma, Submission, Task, User } from '@prisma/client';
 
 import type { AuthUser } from '../../core/auth/auth.types';
 import { PrismaService } from '../../core/database/prisma.service';
 import { toSubmissionDto, type SubmissionDto } from '../../common/mappers';
+import { isCalendarDayOver } from '../../common/utils/date';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
+
+/**
+ * A cohort stops taking work once an admin marks it completed or its end
+ * date is over everywhere on Earth, so no student loses part of the last day.
+ */
+function assertCohortOpen(cohort: Pick<Cohort, 'status' | 'endDate'>): void {
+  const ended =
+    cohort.status === 'completed' ||
+    (cohort.endDate !== null && isCalendarDayOver(cohort.endDate));
+  if (ended) {
+    throw new ForbiddenException(
+      'This cohort has ended, so it no longer accepts submissions.',
+    );
+  }
+}
 
 @Injectable()
 export class SubmissionsService {
@@ -64,6 +81,7 @@ export class SubmissionsService {
   ): Promise<SubmissionDto> {
     const task = await this.prisma.task.findUnique({
       where: { id: dto.taskId },
+      include: { cohort: true },
     });
     if (!task) throw new NotFoundException('Task not found.');
 
@@ -71,6 +89,7 @@ export class SubmissionsService {
       if (task.status !== 'published') {
         throw new ForbiddenException('Task is not published.');
       }
+      assertCohortOpen(task.cohort);
       const enrollment = await this.prisma.enrollment.findUnique({
         where: {
           userId_cohortId: { userId: user.id, cohortId: task.cohortId },
@@ -108,23 +127,32 @@ export class SubmissionsService {
   ): Promise<SubmissionDto> {
     const sub = await this.prisma.submission.findUnique({
       where: { id },
-      include: { task: true, user: true },
+      include: { task: { include: { cohort: true } }, user: true },
     });
     if (!sub) throw new NotFoundException('Submission not found.');
     if (sub.userId !== user.id) {
       throw new ForbiddenException('Cannot edit another student submission.');
     }
+    if (sub.task) assertCohortOpen(sub.task.cohort);
     if (sub.status !== 'needs_work') {
       throw new ForbiddenException(
         'Only submissions marked needs work can be resubmitted.',
       );
     }
 
+    const content = dto.content ?? sub.content;
+    const repoUrl = dto.repoUrl ?? sub.repoUrl;
+    if (!content?.trim() && !repoUrl?.trim()) {
+      throw new BadRequestException(
+        'Add your written work or a repo link before resubmitting.',
+      );
+    }
+
     const updated = await this.prisma.submission.update({
       where: { id },
       data: {
-        content: dto.content ?? sub.content,
-        repoUrl: dto.repoUrl ?? sub.repoUrl,
+        content,
+        repoUrl,
         status: 'submitted',
       },
     });
