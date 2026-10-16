@@ -49,6 +49,8 @@ export class SubmissionsService {
 
     if (user.role === 'student') {
       where.userId = user.id;
+      // A student in several cohorts sees the one they selected.
+      if (query.cohortId) where.task = { cohortId: query.cohortId };
     } else {
       if (query.taskId) where.taskId = query.taskId;
       if (query.status) where.status = query.status;

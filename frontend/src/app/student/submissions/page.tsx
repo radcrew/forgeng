@@ -13,6 +13,8 @@ import {
   PageHeader,
 } from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
+import { useSelectedCohort } from "@contexts";
+import { useStudentDashboard } from "@features/dashboard";
 import {
   SubmissionDetailSheet,
   SubmissionStatusBadge,
@@ -21,12 +23,23 @@ import {
 
 const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  // Follow the same cohort as the Tasks page: the one the student picked, or
+  // their default cohort when they haven't picked one.
+  const { selectedCohortId } = useSelectedCohort();
+  const {
+    data: dashboard,
+    error: dashboardError,
+    refetch: refetchDashboard,
+  } = useStudentDashboard(selectedCohortId);
   const {
     data: submissions = [],
-    isLoading,
-    error,
+    isLoading: submissionsLoading,
+    error: submissionsError,
     refetch,
-  } = useSubmissions();
+  } = useSubmissions({ cohortId: dashboard?.cohort?.id });
+  const isLoading = (!dashboard && !dashboardError) || submissionsLoading;
+  const error = dashboardError ?? submissionsError;
+  const retry = dashboardError ? refetchDashboard : refetch;
   const selected = submissions.find((s) => s.id === selectedId);
 
   return (
@@ -39,7 +52,7 @@ const Page = () => {
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
       ) : error ? (
-        <ErrorState what="your submissions" onRetry={refetch} />
+        <ErrorState what="your submissions" onRetry={retry} />
       ) : submissions.length === 0 ? (
         <EmptyState
           message="No submissions yet. Head to Tasks to start submitting your work."

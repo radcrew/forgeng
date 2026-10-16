@@ -116,6 +116,19 @@ describe('SubmissionsService', () => {
       );
     });
 
+    it('shows a student only the cohort they selected', async () => {
+      prisma.submission.findMany.mockResolvedValue([]);
+
+      await service.list(student, { cohortId: 7, status: 'approved' });
+
+      // Students can filter by cohort, but not by other admin filters.
+      expect(prisma.submission.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: student.id, task: { cohortId: 7 } },
+        }),
+      );
+    });
+
     it('applies admin filters for task, status, and cohort', async () => {
       prisma.submission.findMany.mockResolvedValue([]);
 
