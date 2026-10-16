@@ -23,6 +23,7 @@ import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
 import { ApiError } from "@lib/api-client";
 import { createTask, updateTask } from "../api";
+import { isNewPastDueDate, todayAsDateInput } from "../due-date";
 import { unpublishHidesWork } from "../unpublish";
 import type { Task, TaskStatus, TaskType } from "@types";
 
@@ -49,6 +50,11 @@ export const TaskFormDialog = ({
   const [dueDate, setDueDate] = useState(task?.dueDate?.slice(0, 10) ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const hidesSubmittedWork = !!task && unpublishHidesWork(task, status);
+  const dueDateIsPast = isNewPastDueDate(
+    dueDate,
+    task?.dueDate?.slice(0, 10) ?? "",
+    todayAsDateInput(),
+  );
 
   const handleSave = async () => {
     if (!title || !cohortId) return;
@@ -177,6 +183,12 @@ export const TaskFormDialog = ({
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
+            {dueDateIsPast && (
+              <p role="alert" className="text-xs text-destructive">
+                This date has already passed. Students will see the task as
+                overdue.
+              </p>
+            )}
           </FormField>
         </FormGrid>
       </FormBody>
