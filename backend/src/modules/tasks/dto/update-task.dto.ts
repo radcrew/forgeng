@@ -1,4 +1,5 @@
 import { TaskStatus, TaskType } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
@@ -10,6 +11,9 @@ import {
 
 export class UpdateTaskDto {
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   @MinLength(1)
   @MaxLength(200)

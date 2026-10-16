@@ -23,6 +23,7 @@ import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
 import { ApiError } from "@lib/api-client";
 import { createTask, updateTask } from "../api";
+import { validateTask, type TaskErrors } from "../validation";
 import type { Task, TaskStatus, TaskType } from "@types";
 
 export type TaskFormDialogProps = {
@@ -46,14 +47,25 @@ export const TaskFormDialog = ({
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? "draft");
   const [cohortId, setCohortId] = useState(task?.cohortId?.toString() ?? "");
   const [dueDate, setDueDate] = useState(task?.dueDate?.slice(0, 10) ?? "");
+  const [errors, setErrors] = useState<TaskErrors>({});
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     if (!title || !cohortId) return;
+    const found = validateTask({
+      title,
+      description: description ?? "",
+      cohortId,
+      status,
+      dueDate,
+    });
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
     setIsSaving(true);
     try {
       const payload = {
-        title,
+        title: title.trim(),
         // Send null (not undefined) so clearing the field persists — Prisma
         // treats undefined as "leave unchanged".
         description: description || null,
@@ -91,21 +103,35 @@ export const TaskFormDialog = ({
         onSubmit: handleSave,
         submitLabel: isEdit ? "Save Changes" : "Create Task",
         isLoading: isSaving,
-        submitDisabled: !title || !cohortId,
+        submitDisabled: !title.trim(),
       }}
     >
       <FormBody>
-        <FormField label="Title">
+        <FormField label="Title" htmlFor="task-title" error={errors.title}>
           <Input
+            id="task-title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            aria-invalid={!!errors.title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setErrors({});
+            }}
             placeholder="Task title..."
           />
         </FormField>
-        <FormField label="Description">
+        <FormField
+          label="Description"
+          htmlFor="task-description"
+          error={errors.description}
+        >
           <Textarea
+            id="task-description"
             value={description ?? ""}
-            onChange={(e) => setDescription(e.target.value)}
+            aria-invalid={!!errors.description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setErrors({});
+            }}
             rows={3}
             placeholder="What should students do?"
           />
@@ -131,7 +157,10 @@ export const TaskFormDialog = ({
           <FormField label="Status">
             <Select
               value={status}
-              onValueChange={(v) => setStatus(v as TaskStatus)}
+              onValueChange={(v) => {
+                setStatus(v as TaskStatus);
+                setErrors({});
+              }}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -147,9 +176,15 @@ export const TaskFormDialog = ({
           </FormField>
         </FormGrid>
         <FormGrid>
-          <FormField label="Cohort">
-            <Select value={cohortId} onValueChange={setCohortId}>
-              <SelectTrigger>
+          <FormField label="Cohort" error={errors.cohortId}>
+            <Select
+              value={cohortId}
+              onValueChange={(v) => {
+                setCohortId(v);
+                setErrors({});
+              }}
+            >
+              <SelectTrigger aria-invalid={!!errors.cohortId}>
                 <SelectValue placeholder="Select cohort..." />
               </SelectTrigger>
               <SelectContent>
@@ -161,10 +196,14 @@ export const TaskFormDialog = ({
               </SelectContent>
             </Select>
           </FormField>
-          <FormField label="Due Date">
+          <FormField label="Due Date" error={errors.dueDate}>
             <DateInput
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              aria-invalid={!!errors.dueDate}
+              onChange={(e) => {
+                setDueDate(e.target.value);
+                setErrors({});
+              }}
             />
           </FormField>
         </FormGrid>
