@@ -23,6 +23,7 @@ import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
 import { ApiError } from "@lib/api-client";
 import { createTask, updateTask } from "../api";
+import { unpublishHidesWork } from "../unpublish";
 import type { Task, TaskStatus, TaskType } from "@types";
 
 export type TaskFormDialogProps = {
@@ -47,6 +48,7 @@ export const TaskFormDialog = ({
   const [cohortId, setCohortId] = useState(task?.cohortId?.toString() ?? "");
   const [dueDate, setDueDate] = useState(task?.dueDate?.slice(0, 10) ?? "");
   const [isSaving, setIsSaving] = useState(false);
+  const hidesSubmittedWork = !!task && unpublishHidesWork(task, status);
 
   const handleSave = async () => {
     if (!title || !cohortId) return;
@@ -144,6 +146,15 @@ export const TaskFormDialog = ({
                 ))}
               </SelectContent>
             </Select>
+            {hidesSubmittedWork && (
+              <p role="alert" className="text-xs text-destructive">
+                {task.submissionCount === 1
+                  ? "1 student has"
+                  : `${task.submissionCount} students have`}{" "}
+                already submitted this task. Moving it back to draft hides it
+                from them until you publish it again.
+              </p>
+            )}
           </FormField>
         </FormGrid>
         <FormGrid>
