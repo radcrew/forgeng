@@ -40,6 +40,7 @@ describe('Guard chain (e2e)', () => {
 
     it('allows an admin through the guard chain (201)', () => {
       ctx.setUser(makeAuthUser('admin'));
+      ctx.prisma.cohort.findUnique.mockResolvedValue({ id: 1 });
       ctx.prisma.task.create.mockResolvedValue({
         id: 1,
         cohortId: 1,
