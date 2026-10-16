@@ -24,6 +24,7 @@ export type { SubmissionErrors } from "./validation";
 export { SUBMISSION_CONTENT_MAX, validateSubmission } from "./validation";
 export type { SubmissionStatusFilter, UseSubmissionsOptions } from "./hooks";
 export { useSubmissions, useSubmissionFeedback } from "./hooks";
+export { filterSubmissions } from "./filter";
 export { SubmissionStatusBadge } from "./components/status-badge";
 export type { SubmissionStatusBadgeProps } from "./components/status-badge";
 

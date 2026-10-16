@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let selectedCohortId: number | undefined;
@@ -66,6 +67,46 @@ describe("student submissions page", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText("Switch between Spring, Autumn"),
+    ).toBeInTheDocument();
+  });
+
+  it("filters by status tab and by task title", async () => {
+    selectedCohortId = 7;
+    dashboard = {
+      cohort: { id: 7, name: "Autumn" },
+      cohorts: [{ id: 7, name: "Autumn" }],
+    };
+    const sub = (id: number, title: string, status: string) => ({
+      id,
+      taskId: id,
+      task: { id, title, type: "coding" },
+      content: "My work",
+      repoUrl: null,
+      status,
+      feedbackCount: 0,
+      createdAt: "2026-01-15T10:30:00.000Z",
+    });
+    useSubmissions.mockReturnValue({
+      data: [
+        sub(1, "Build a CLI", "approved"),
+        sub(2, "Read the docs", "needs_work"),
+      ],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<Page />);
+
+    await userEvent.click(screen.getByRole("tab", { name: "Needs Work" }));
+    expect(screen.getByText("Read the docs")).toBeInTheDocument();
+    expect(screen.queryByText("Build a CLI")).not.toBeInTheDocument();
+
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Search submissions by task title" }),
+      "quiz",
+    );
+    expect(
+      screen.getByText("No submissions match these filters."),
     ).toBeInTheDocument();
   });
 
