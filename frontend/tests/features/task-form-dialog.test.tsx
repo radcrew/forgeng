@@ -97,6 +97,23 @@ describe("task FormDialog", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("sends no description when it is only spaces", async () => {
+    render(
+      <FormDialog
+        task={makeTask({ description: "   " })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(updateTask).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({ description: null }),
+    );
+  });
+
   it("toasts an error when the update fails", async () => {
     updateTask.mockRejectedValue(new Error("nope"));
     render(<FormDialog task={makeTask()} open onOpenChange={vi.fn()} />);

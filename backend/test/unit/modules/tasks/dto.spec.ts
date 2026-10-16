@@ -27,6 +27,23 @@ describe('CreateTaskDto', () => {
     expect(failingProps({ ...valid, title: '' })).toContain('title');
   });
 
+  it('turns a description of only spaces into no description', () => {
+    const dto = plainToInstance(CreateTaskDto, {
+      ...valid,
+      description: '   ',
+    });
+    expect(dto.description).toBeNull();
+    expect(failingProps({ ...valid, description: '   ' })).toEqual([]);
+  });
+
+  it('trims spaces around the description', () => {
+    const dto = plainToInstance(CreateTaskDto, {
+      ...valid,
+      description: '  Build it  ',
+    });
+    expect(dto.description).toBe('Build it');
+  });
+
   it('rejects an unknown task type', () => {
     expect(failingProps({ ...valid, type: 'nonsense' })).toContain('type');
   });

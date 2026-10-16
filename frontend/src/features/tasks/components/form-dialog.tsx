@@ -64,7 +64,7 @@ export const TaskFormDialog = ({
         title,
         // Send null (not undefined) so clearing the field persists — Prisma
         // treats undefined as "leave unchanged".
-        description: description || null,
+        description: description.trim() || null,
         type,
         status,
         dueDate: dueDate || undefined,
