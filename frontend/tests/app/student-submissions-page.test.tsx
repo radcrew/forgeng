@@ -16,6 +16,9 @@ vi.mock("@features/dashboard", () => ({
     refetch: vi.fn(),
     requested: cohortId,
   }),
+  CohortSwitcher: ({ cohorts }: { cohorts: { name: string }[] }) => (
+    <div>Switch between {cohorts.map((c) => c.name).join(", ")}</div>
+  ),
 }));
 
 vi.mock("@features/submissions", async (importOriginal) => ({
@@ -38,10 +41,32 @@ beforeEach(() => {
 describe("student submissions page", () => {
   it("asks only for the submissions of the student's current cohort", () => {
     selectedCohortId = 7;
-    dashboard = { cohort: { id: 7, name: "Autumn" } };
+    dashboard = {
+      cohort: { id: 7, name: "Autumn" },
+      cohorts: [{ id: 7, name: "Autumn" }],
+    };
     render(<Page />);
 
     expect(useSubmissions).toHaveBeenLastCalledWith({ cohortId: 7 });
+  });
+
+  it("names the cohort in the header and offers the cohort switcher", () => {
+    selectedCohortId = 7;
+    dashboard = {
+      cohort: { id: 7, name: "Autumn" },
+      cohorts: [
+        { id: 3, name: "Spring" },
+        { id: 7, name: "Autumn" },
+      ],
+    };
+    render(<Page />);
+
+    expect(
+      screen.getByText("Autumn — your submission history and feedback."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Switch between Spring, Autumn"),
+    ).toBeInTheDocument();
   });
 
   it("waits for the cohort before showing the list", () => {

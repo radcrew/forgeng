@@ -14,7 +14,7 @@ import {
 } from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { useSelectedCohort } from "@contexts";
-import { useStudentDashboard } from "@features/dashboard";
+import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import {
   SubmissionDetailSheet,
   SubmissionStatusBadge,
@@ -46,7 +46,20 @@ const Page = () => {
     <PageContainer>
       <PageHeader
         title="Submissions"
-        description="Your submission history and feedback."
+        description={
+          dashboard?.cohort
+            ? `${dashboard.cohort.name} — your submission history and feedback.`
+            : "Your submission history and feedback."
+        }
+        actions={
+          dashboard?.cohort && (
+            <CohortSwitcher
+              cohorts={dashboard.cohorts}
+              activeCohortId={dashboard.cohort.id}
+              disabled={submissionsLoading}
+            />
+          )
+        }
       />
 
       {isLoading ? (
