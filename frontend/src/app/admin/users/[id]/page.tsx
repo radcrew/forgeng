@@ -425,7 +425,12 @@ export default function UserDetailPage({
       </div>
 
       {/* Record payment dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Stays open while saving: closing it mid-request hid whether the
+          payment was recorded, so the admin might record it again. */}
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => !submitting && setDialogOpen(open)}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Record Payment</DialogTitle>

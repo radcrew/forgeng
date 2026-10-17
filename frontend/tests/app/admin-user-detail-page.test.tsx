@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -21,6 +21,7 @@ const refetchEnrollments = vi.fn();
 
 let statsState: { data?: unknown } = {};
 const record = vi.fn();
+let recordPending = false;
 let settingsState: { data?: unknown } = {};
 
 const sampleUser = {
@@ -59,7 +60,7 @@ vi.mock("@features/users/hooks", () => ({
     refetch: refetchEnrollments,
   }),
   useUserPaymentStats: () => ({ ...idle, ...statsState }),
-  useRecordPayment: () => ({ record, isPending: false }),
+  useRecordPayment: () => ({ record, isPending: recordPending }),
   useNotifyWalletMissing: () => ({ notify: vi.fn(), isPending: false }),
 }));
 
@@ -86,6 +87,7 @@ beforeEach(() => {
   statsState = {};
   settingsState = {};
   record.mockReset();
+  recordPending = false;
   record.mockResolvedValue({});
 });
 
@@ -216,6 +218,52 @@ describe("admin user detail page", () => {
     expect(record).toHaveBeenCalledWith(
       7,
       expect.objectContaining({ amount: 30, currency: "USDT" }),
+    );
+  });
+
+  it("keeps the payment dialog open while the payment is saving", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    statsState = {
+      data: {
+        wallets: [{ chain: "evm", address: "0xabc" }],
+        monthlyStats: [],
+      },
+    };
+    // A payment is being saved.
+    recordPending = true;
+    await renderPage();
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: /Record payment & notify student/,
+      }),
+    );
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    await userEvent.keyboard("{Escape}");
+
+    // Esc doesn't close it while saving.
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("closes the payment dialog with Esc when nothing is saving", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    statsState = {
+      data: {
+        wallets: [{ chain: "evm", address: "0xabc" }],
+        monthlyStats: [],
+      },
+    };
+    await renderPage();
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: /Record payment & notify student/,
+      }),
+    );
+
+    await userEvent.keyboard("{Escape}");
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
   });
 
