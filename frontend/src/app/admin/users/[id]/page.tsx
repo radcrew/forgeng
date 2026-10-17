@@ -480,13 +480,12 @@ export default function UserDetailPage({
                     <button
                       key={label}
                       type="button"
-                      onClick={() => {
-                        setAmount(value);
-                        setCurrency("USD");
-                      }}
+                      // Fills in the amount only. It used to switch the
+                      // currency to USD without saying so.
+                      onClick={() => setAmount(value)}
                       className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     >
-                      {label} (${value})
+                      {label} ({value} {currency})
                     </button>
                   ))}
                 </div>

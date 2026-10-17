@@ -76,9 +76,7 @@ describe("ProfileForm", () => {
     const onSaved = vi.fn();
     render(<ProfileForm user={makeUser()} onSaved={onSaved} />);
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "Save Changes" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
     await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
     const payload = updateProfile.mock.calls[0][0] as Record<string, unknown>;
@@ -94,13 +92,37 @@ describe("ProfileForm", () => {
     expect(onSaved).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps unsaved edits when the user reloads, e.g. after a photo upload", async () => {
+    const { rerender } = render(<ProfileForm user={makeUser()} />);
+
+    const name = screen.getByDisplayValue("Ada Lovelace");
+    await userEvent.clear(name);
+    await userEvent.type(name, "Ada King");
+
+    // A photo upload reloads the user with a new avatar and maybe new data.
+    rerender(
+      <ProfileForm
+        user={makeUser({
+          avatarUrl: "https://cdn.example.com/a.png",
+          github: "https://github.com/ada-king",
+        })}
+      />,
+    );
+
+    // The typed name stays; the untouched GitHub field updates.
+    expect(screen.getByDisplayValue("Ada King")).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue("https://github.com/ada-king"),
+    ).toBeInTheDocument();
+  });
+
   it("removes a saved field that was emptied", async () => {
     render(<ProfileForm user={makeUser()} />);
 
-    await userEvent.clear(screen.getByPlaceholderText("https://github.com/you"));
-    await userEvent.click(
-      screen.getByRole("button", { name: "Save Changes" }),
+    await userEvent.clear(
+      screen.getByPlaceholderText("https://github.com/you"),
     );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
     await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
     const payload = updateProfile.mock.calls[0][0] as Record<string, unknown>;
@@ -115,9 +137,7 @@ describe("ProfileForm", () => {
 
     const github = screen.getByPlaceholderText("https://github.com/you");
     await userEvent.type(github, "not-a-url");
-    await userEvent.click(
-      screen.getByRole("button", { name: "Save Changes" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
     // Zod validation fails, so the API is never called.
     await waitFor(() =>

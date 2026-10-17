@@ -21,6 +21,7 @@ const refetchEnrollments = vi.fn();
 
 let statsState: { data?: unknown } = {};
 const record = vi.fn();
+let settingsState: { data?: unknown } = {};
 
 const sampleUser = {
   id: 7,
@@ -62,7 +63,9 @@ vi.mock("@features/users/hooks", () => ({
   useNotifyWalletMissing: () => ({ notify: vi.fn(), isPending: false }),
 }));
 
-vi.mock("@features/settings", () => ({ useSettings: () => idle }));
+vi.mock("@features/settings", () => ({
+  useSettings: () => ({ ...idle, ...settingsState }),
+}));
 
 import UserDetailPage from "../../src/app/admin/users/[id]/page";
 
@@ -81,6 +84,7 @@ beforeEach(() => {
   refetchUser.mockClear();
   enrollmentsState = { data: [], isLoading: false, error: null };
   statsState = {};
+  settingsState = {};
   record.mockReset();
   record.mockResolvedValue({});
 });
@@ -179,6 +183,39 @@ describe("admin user detail page", () => {
     expect(record).toHaveBeenCalledWith(
       7,
       expect.objectContaining({ amount: 50, forMonth: "2026-05" }),
+    );
+  });
+
+  it("fills in a stipend amount without changing the currency", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    statsState = {
+      data: {
+        wallets: [{ chain: "evm", address: "0xabc" }],
+        monthlyStats: [],
+      },
+    };
+    settingsState = {
+      data: { stipendMonth1: "30", stipendMonth2: "50", stipendMonth3: "100" },
+    };
+    await renderPage();
+
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: /Record payment & notify student/,
+      }),
+    );
+    // The label shows the currency that will really be used.
+    await userEvent.click(
+      screen.getByRole("button", { name: "Month 1 (30 USDT)" }),
+    );
+    expect(screen.getByLabelText("Amount")).toHaveValue(30);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Confirm & notify" }),
+    );
+    expect(record).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({ amount: 30, currency: "USDT" }),
     );
   });
 
