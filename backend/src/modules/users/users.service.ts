@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Prisma } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
@@ -161,6 +166,17 @@ export class UsersService {
   async updateRole(id: number, dto: UpdateRoleDto): Promise<UserDto> {
     const exists = await this.prisma.user.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('User not found.');
+
+    // The site always needs an admin: without one, nobody can manage it or
+    // give the role back.
+    if (exists.role === 'admin' && dto.role !== 'admin') {
+      const admins = await this.prisma.user.count({ where: { role: 'admin' } });
+      if (admins <= 1) {
+        throw new BadRequestException(
+          'This is the only admin. Make another user an admin first.',
+        );
+      }
+    }
 
     // A new role signs the user out everywhere: revoking their refresh tokens
     // means they sign in again and get a token with the new role.

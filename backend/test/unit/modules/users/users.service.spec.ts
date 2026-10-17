@@ -1,4 +1,4 @@
-import { Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Payment, User } from '@prisma/client';
 import { MailService } from '@core/mail';
@@ -242,6 +242,39 @@ describe('UsersService', () => {
       await service.updateRole(1, { role: 'student' } as never);
 
       expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses to remove the role of the only admin', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.user.count.mockResolvedValue(1);
+
+      await expect(
+        service.updateRole(1, { role: 'student' } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.user.count).toHaveBeenCalledWith({
+        where: { role: 'admin' },
+      });
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('lets an admin lose the role when another admin remains', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.user.count.mockResolvedValue(2);
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      const dto = await service.updateRole(1, { role: 'student' } as never);
+
+      expect(dto.role).toBe('student');
+    });
+
+    it('does not count admins when the role stays admin', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'admin' }));
+
+      await service.updateRole(1, { role: 'admin' } as never);
+
+      expect(prisma.user.count).not.toHaveBeenCalled();
     });
   });
 
