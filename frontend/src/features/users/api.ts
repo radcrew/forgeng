@@ -42,12 +42,13 @@ export interface MonthlyPaymentStat {
   tasksApproved: number;
   eligible: boolean;
   notifiedAt: string | null;
-  payment: {
+  /** Every payment for this stipend month, oldest first. */
+  payments: Array<{
     amount: string;
     currency: string;
     txLink: string | null;
     paidAt: string;
-  } | null;
+  }>;
 }
 
 export interface PaymentRecord {
@@ -79,7 +80,14 @@ export const notifyWalletMissing = async (
 
 export const recordPayment = async (
   id: number,
-  payload: { amount: number; currency: string; txLink?: string; note?: string },
+  payload: {
+    amount: number;
+    currency: string;
+    /** The stipend month, "YYYY-MM". */
+    forMonth: string;
+    txLink?: string;
+    note?: string;
+  },
 ): Promise<PaymentRecord> =>
   apiClient.post<PaymentRecord>(`/users/${id}/payments`, payload);
 

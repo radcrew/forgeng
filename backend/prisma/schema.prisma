@@ -298,6 +298,9 @@ model Payment {
   currency  String   @default("USDT") @db.VarChar(20)
   txLink    String?  @map("tx_link") @db.VarChar(500)
   note      String?
+  // The stipend month this payment is for, as "YYYY-MM". It can differ from
+  // the month it was paid, e.g. a May stipend paid in June.
+  forMonth  String   @map("for_month") @db.VarChar(7)
   paidAt    DateTime @default(now()) @map("paid_at") @db.Timestamptz
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 

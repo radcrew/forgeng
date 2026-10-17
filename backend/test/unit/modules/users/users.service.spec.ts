@@ -26,6 +26,7 @@ function makePayment(overrides: Partial<Payment> = {}): Payment {
     currency: 'USDC',
     txLink: null,
     note: null,
+    forMonth: '2026-01',
     paidAt: DATE,
     ...overrides,
   } as unknown as Payment;
@@ -41,8 +42,11 @@ describe('UsersService', () => {
       count: jest.Mock;
     };
     application: { findUnique: jest.Mock; updateMany: jest.Mock };
-    enrollment: { deleteMany: jest.Mock };
-    payment: { create: jest.Mock };
+    enrollment: { deleteMany: jest.Mock; findMany: jest.Mock };
+    payment: { create: jest.Mock; findMany: jest.Mock };
+    task: { findMany: jest.Mock };
+    submission: { findMany: jest.Mock };
+    notification: { findFirst: jest.Mock };
     refreshToken: { updateMany: jest.Mock };
     $transaction: jest.Mock;
   };
@@ -60,8 +64,14 @@ describe('UsersService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
         updateMany: jest.fn(),
       },
-      enrollment: { deleteMany: jest.fn() },
-      payment: { create: jest.fn() },
+      enrollment: {
+        deleteMany: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      payment: { create: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
+      task: { findMany: jest.fn().mockResolvedValue([]) },
+      submission: { findMany: jest.fn().mockResolvedValue([]) },
+      notification: { findFirst: jest.fn().mockResolvedValue(null) },
       refreshToken: { updateMany: jest.fn() },
       // The service passes an array of prepared queries; resolve them in order.
       $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
@@ -150,6 +160,40 @@ describe('UsersService', () => {
       expect(mail.send).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'ada@example.com' }),
       );
+    });
+
+    it('saves the stipend month the admin picked', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(
+        makePayment({ forMonth: '2026-05' }),
+      );
+
+      const dto = await service.recordPayment(1, {
+        amount: 250,
+        currency: 'USDT',
+        forMonth: '2026-05',
+      });
+
+      const data = (
+        prisma.payment.create.mock.calls[0] as [{ data: { forMonth: string } }]
+      )[0].data;
+      expect(data.forMonth).toBe('2026-05');
+      expect(dto.forMonth).toBe('2026-05');
+    });
+
+    it('uses the current month when none is given', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(makePayment());
+
+      await service.recordPayment(1, {
+        amount: 250,
+        currency: 'USDT',
+      });
+
+      const data = (
+        prisma.payment.create.mock.calls[0] as [{ data: { forMonth: string } }]
+      )[0].data;
+      expect(data.forMonth).toMatch(/^\d{4}-\d{2}$/);
     });
 
     it('still returns the saved payment when the email fails', async () => {
@@ -318,6 +362,40 @@ describe('UsersService', () => {
       await service.updateRole(1, { role: 'admin' } as never);
 
       expect(prisma.user.count).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('paymentStats', () => {
+    it('lists every payment under the stipend month it is for', async () => {
+      const now = new Date();
+      const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      prisma.payment.findMany.mockImplementation(
+        ({ where }: { where: { forMonth: string } }) =>
+          Promise.resolve(
+            where.forMonth === thisMonth
+              ? [
+                  makePayment({ id: 1, currency: 'USDT' }),
+                  makePayment({ id: 2, currency: 'USD' }),
+                ]
+              : [],
+          ),
+      );
+
+      const stats = await service.paymentStats(1);
+
+      expect(prisma.payment.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 1, forMonth: thisMonth },
+        }),
+      );
+      const current = stats.monthlyStats.find((m) => m.month === thisMonth);
+      // Both payments show, not only the latest one.
+      expect(current?.payments.map((p) => p.currency)).toEqual(['USDT', 'USD']);
+      expect(
+        stats.monthlyStats
+          .filter((m) => m.month !== thisMonth)
+          .every((m) => m.payments.length === 0),
+      ).toBe(true);
     });
   });
 

@@ -52,6 +52,12 @@ import { PaymentStatsChart } from "./_components/payment-stats-chart";
 import { RoleControl } from "./_components/role-control";
 import { WalletSection } from "./_components/wallet-section";
 
+/** Last month as "YYYY-MM", the value a month input expects. */
+const lastMonthInput = (now = new Date()) => {
+  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+};
+
 export default function UserDetailPage({
   params,
 }: {
@@ -88,7 +94,9 @@ export default function UserDetailPage({
   const [currency, setCurrency] = useState("USDT");
   const [txLink, setTxLink] = useState("");
   const [note, setNote] = useState("");
+  const [forMonth, setForMonth] = useState("");
   const amountRef = useRef<HTMLInputElement>(null);
+  const forMonthRef = useRef<HTMLInputElement>(null);
 
   // Only true once the payment info has loaded without a wallet. Before that,
   // or after a failed load, the wallet section says so instead.
@@ -112,6 +120,8 @@ export default function UserDetailPage({
     setCurrency("USDT");
     setTxLink("");
     setNote("");
+    // Stipends are usually paid for the month that just ended.
+    setForMonth(lastMonthInput());
     setDialogOpen(true);
   };
 
@@ -121,10 +131,15 @@ export default function UserDetailPage({
       amountRef.current?.focus();
       return;
     }
+    if (!forMonth) {
+      forMonthRef.current?.focus();
+      return;
+    }
     try {
       await record(userId, {
         amount: parsed,
         currency,
+        forMonth,
         txLink: txLink.trim() || undefined,
         note: note.trim() || undefined,
       });
@@ -417,6 +432,17 @@ export default function UserDetailPage({
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="forMonth">Stipend for</Label>
+              <Input
+                id="forMonth"
+                ref={forMonthRef}
+                type="month"
+                value={forMonth}
+                onChange={(e) => setForMonth(e.target.value)}
+              />
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="amount">Amount</Label>
               <div className="flex gap-2">

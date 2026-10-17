@@ -19,6 +19,9 @@ let enrollmentsState: {
 } = { data: [], isLoading: false, error: null };
 const refetchEnrollments = vi.fn();
 
+let statsState: { data?: unknown } = {};
+const record = vi.fn();
+
 const sampleUser = {
   id: 7,
   name: "Ada Lovelace",
@@ -54,8 +57,8 @@ vi.mock("@features/users/hooks", () => ({
     ...enrollmentsState,
     refetch: refetchEnrollments,
   }),
-  useUserPaymentStats: () => idle,
-  useRecordPayment: () => ({ record: vi.fn(), isPending: false }),
+  useUserPaymentStats: () => ({ ...idle, ...statsState }),
+  useRecordPayment: () => ({ record, isPending: false }),
   useNotifyWalletMissing: () => ({ notify: vi.fn(), isPending: false }),
 }));
 
@@ -77,6 +80,9 @@ const renderPage = async (id = "7") => {
 beforeEach(() => {
   refetchUser.mockClear();
   enrollmentsState = { data: [], isLoading: false, error: null };
+  statsState = {};
+  record.mockReset();
+  record.mockResolvedValue({});
 });
 
 describe("admin user detail page", () => {
@@ -139,6 +145,41 @@ describe("admin user detail page", () => {
     expect(
       await screen.findByText("Not enrolled in any cohort."),
     ).toBeInTheDocument();
+  });
+
+  it("records a payment for the stipend month picked, last month by default", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    statsState = {
+      data: {
+        wallets: [{ chain: "evm", address: "0xabc" }],
+        monthlyStats: [],
+      },
+    };
+    await renderPage();
+
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: /Record payment & notify student/,
+      }),
+    );
+
+    const now = new Date();
+    const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonth = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, "0")}`;
+    const monthInput = screen.getByLabelText("Stipend for");
+    expect(monthInput).toHaveValue(lastMonth);
+
+    await userEvent.clear(monthInput);
+    await userEvent.type(monthInput, "2026-05");
+    await userEvent.type(screen.getByLabelText("Amount"), "50");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Confirm & notify" }),
+    );
+
+    expect(record).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({ amount: 50, forMonth: "2026-05" }),
+    );
   });
 
   it("still shows the loading message while the user loads", async () => {

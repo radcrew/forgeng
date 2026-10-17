@@ -41,12 +41,13 @@ export interface MonthlyPaymentStat {
   tasksApproved: number;
   eligible: boolean;
   notifiedAt: string | null;
-  payment: {
+  /** Every payment for this stipend month, oldest first. */
+  payments: Array<{
     amount: string;
     currency: string;
     txLink: string | null;
     paidAt: string;
-  } | null;
+  }>;
 }
 
 export interface UserPaymentStats {
@@ -60,8 +61,13 @@ export interface PaymentDto {
   currency: string;
   txLink: string | null;
   note: string | null;
+  forMonth: string;
   paidAt: string;
 }
+
+/** A month as "YYYY-MM", matching the keys of the monthly stats. */
+const monthKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
 @Injectable()
 export class UsersService {
@@ -111,6 +117,7 @@ export class UsersService {
         currency: dto.currency,
         txLink: dto.txLink,
         note: dto.note,
+        forMonth: dto.forMonth ?? monthKey(new Date()),
       },
     });
 
@@ -135,6 +142,7 @@ export class UsersService {
       currency: payment.currency,
       txLink: payment.txLink,
       note: payment.note,
+      forMonth: payment.forMonth,
       paidAt: payment.paidAt.toISOString(),
     };
   }
@@ -254,7 +262,7 @@ export class UsersService {
         59,
         999,
       );
-      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const month = monthKey(d);
 
       const tasks =
         cohortIds.length > 0
@@ -281,7 +289,7 @@ export class UsersService {
             ).length
           : 0;
 
-      const [notification, payment] = await Promise.all([
+      const [notification, payments] = await Promise.all([
         this.prisma.notification.findFirst({
           where: {
             type: 'payment_eligible',
@@ -290,12 +298,11 @@ export class UsersService {
           },
           orderBy: { createdAt: 'desc' },
         }),
-        this.prisma.payment.findFirst({
-          where: {
-            userId,
-            paidAt: { gte: monthStart, lte: monthEnd },
-          },
-          orderBy: { paidAt: 'desc' },
+        // By the stipend month, not the day paid, and all of them: a late
+        // payment or a second one in a month used to show wrong or not at all.
+        this.prisma.payment.findMany({
+          where: { userId, forMonth: month },
+          orderBy: { paidAt: 'asc' },
         }),
       ]);
 
@@ -305,14 +312,12 @@ export class UsersService {
         tasksApproved,
         eligible: tasks.length > 0 && tasksApproved === tasks.length,
         notifiedAt: notification?.createdAt.toISOString() ?? null,
-        payment: payment
-          ? {
-              amount: payment.amount.toString(),
-              currency: payment.currency,
-              txLink: payment.txLink,
-              paidAt: payment.paidAt.toISOString(),
-            }
-          : null,
+        payments: payments.map((p) => ({
+          amount: p.amount.toString(),
+          currency: p.currency,
+          txLink: p.txLink,
+          paidAt: p.paidAt.toISOString(),
+        })),
       });
     }
 
