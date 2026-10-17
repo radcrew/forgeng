@@ -14,6 +14,8 @@ import {
 } from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { useCurrentUser } from "@contexts";
+import { getMyApplication } from "@features/applications";
+import { useAsyncResource } from "@hooks/use-async-resource";
 import { ProfileForm, WalletManager, useEnrollments } from "@features/profile";
 
 const Page = () => {
@@ -24,6 +26,8 @@ const Page = () => {
     error,
     refetch,
   } = useEnrollments();
+  // null means no application; undefined while loading or after an error.
+  const { data: application } = useAsyncResource(getMyApplication, []);
 
   if (!isHydrated || !user) {
     return (
@@ -37,7 +41,11 @@ const Page = () => {
     <PageContainer maxWidth="reading" spacing="8">
       <PageHeader title="Profile" description="Manage your account details." />
 
-      <ProfileForm user={user} onSaved={refreshUser} />
+      <ProfileForm
+        user={user}
+        onSaved={refreshUser}
+        hasApplication={application === undefined ? undefined : !!application}
+      />
 
       <WalletManager />
 
