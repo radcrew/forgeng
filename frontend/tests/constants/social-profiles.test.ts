@@ -135,6 +135,18 @@ describe("optionalMatching", () => {
     const result = field.safeParse("https://github.com/jane/repo");
     expect(result.success).toBe(false);
   });
+
+  it("accepts a pasted link with spaces at either end, and trims it", () => {
+    const result = field.safeParse("  https://github.com/jane \n");
+    expect(result.success).toBe(true);
+    expect(result.data).toBe("https://github.com/jane");
+  });
+
+  it("treats a value of only spaces as blank", () => {
+    const result = field.safeParse("   ");
+    expect(result.success).toBe(true);
+    expect(result.data).toBe("");
+  });
 });
 
 describe("optionalUrl", () => {

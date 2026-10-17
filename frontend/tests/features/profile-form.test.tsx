@@ -157,6 +157,20 @@ describe("ProfileForm", () => {
     expect(payload).not.toHaveProperty("linkedin");
   });
 
+  it("saves a pasted link that has a space at the end", async () => {
+    render(<ProfileForm user={makeUser({ github: "" })} />);
+
+    await userEvent.type(
+      screen.getByPlaceholderText("https://github.com/you"),
+      "https://github.com/ada ",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
+    const payload = updateProfile.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.github).toBe("https://github.com/ada");
+  });
+
   it("blocks submission when a social URL is invalid", async () => {
     render(<ProfileForm user={makeUser({ github: "" })} />);
 
