@@ -18,7 +18,8 @@ import {
   ProseBlock,
   SectionTitle,
 } from "@components/common";
-import { PageContainer } from "@components/shared";
+import { EmptyState, ErrorState, PageContainer } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { Avatar } from "@components/ui/avatar";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
@@ -59,7 +60,12 @@ export default function UserDetailPage({
   const { id } = use(params);
   const userId = Number(id);
 
-  const { data: user, isLoading, refetch: refetchUser } = useUser(userId);
+  const {
+    data: user,
+    isLoading,
+    error: userError,
+    refetch: refetchUser,
+  } = useUser(userId);
   const { data: enrollments = [], isLoading: enrollmentsLoading } =
     useUserEnrollments(userId);
   const {
@@ -127,6 +133,34 @@ export default function UserDetailPage({
       );
     }
   };
+
+  // Without this, a failed load kept showing "Loading user…" forever.
+  if (userError) {
+    // A bad id in the link is refused before the server looks it up (400).
+    const notFound =
+      userError instanceof ApiError &&
+      (userError.status === 404 || userError.status === 400);
+    return (
+      <PageContainer>
+        <div className="space-y-6">
+          <Link
+            href="/admin/users"
+            className="text-sm text-muted-foreground hover:text-foreground inline-block"
+          >
+            ← Back to Users
+          </Link>
+          {notFound ? (
+            <EmptyState
+              message="This user doesn't exist. They may have been deleted."
+              art={APP_ART.notFoundItem}
+            />
+          ) : (
+            <ErrorState what="this user" onRetry={refetchUser} />
+          )}
+        </div>
+      </PageContainer>
+    );
+  }
 
   if (isLoading || !user) {
     return (
