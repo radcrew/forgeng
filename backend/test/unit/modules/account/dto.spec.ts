@@ -48,6 +48,15 @@ describe('UpdateProfileDto', () => {
     );
   });
 
+  it('rejects a blank name or one of only spaces', () => {
+    expect(failingProps(UpdateProfileDto, { name: '' })).toContain('name');
+    expect(failingProps(UpdateProfileDto, { name: '   ' })).toContain('name');
+  });
+
+  it('still lets the name be left out', () => {
+    expect(failingProps(UpdateProfileDto, {})).not.toContain('name');
+  });
+
   it('accepts a portfolio URL with incidental surrounding whitespace', () => {
     expect(
       failingProps(UpdateProfileDto, { portfolio: '  https://ada.dev  ' }),

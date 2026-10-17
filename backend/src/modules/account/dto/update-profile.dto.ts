@@ -4,6 +4,7 @@ import {
   IsUrl,
   Matches,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -18,8 +19,14 @@ import {
 } from '../../../common/constants/social-profiles';
 
 export class UpdateProfileDto {
+  // Leaving the name out keeps it, but a sent name can't be blank: the header
+  // would show nothing, since "" doesn't fall back to "Unnamed".
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
+  @MinLength(1, { message: 'Enter your name.' })
   @MaxLength(120)
   name?: string;
 
