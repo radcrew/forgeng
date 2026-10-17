@@ -161,8 +161,14 @@ const Page = () => {
                 <div className="flex items-center gap-3 shrink-0">
                   {sub.feedbackCount > 0 && (
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" />
+                      <MessageSquare className="h-3 w-3" aria-hidden="true" />
                       {sub.feedbackCount}
+                      {/* Screen readers would otherwise read only the number. */}
+                      <span className="sr-only">
+                        {sub.feedbackCount === 1
+                          ? " feedback comment"
+                          : " feedback comments"}
+                      </span>
                     </span>
                   )}
                   <SubmissionStatusBadge status={sub.status} />
