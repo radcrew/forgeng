@@ -111,6 +111,44 @@ describe("RoleControl", () => {
     expect(toastSuccess).toHaveBeenCalledWith("Ada is now admin.");
   });
 
+  it("warns that moving a student to applicant removes their cohorts", async () => {
+    const { container } = render(
+      <RoleControl
+        userId={4}
+        userName="Ada"
+        role="student"
+        onChanged={vi.fn()}
+      />,
+    );
+
+    pickRole(container, "applicant");
+    await userEvent.click(screen.getByRole("button", { name: "Change role" }));
+
+    expect(
+      screen.getByText("They will also be removed from all their cohorts."),
+    ).toBeInTheDocument();
+  });
+
+  it("says a pending application is accepted when an applicant becomes a student", async () => {
+    const { container } = render(
+      <RoleControl
+        userId={4}
+        userName="Ada"
+        role="applicant"
+        onChanged={vi.fn()}
+      />,
+    );
+
+    pickRole(container, "student");
+    await userEvent.click(screen.getByRole("button", { name: "Change role" }));
+
+    expect(
+      screen.getByText(
+        "If their application is still pending, it will be accepted.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("shows the server's reason when the change is refused", async () => {
     updateUserRole.mockRejectedValue(
       new ApiError(

@@ -40,7 +40,8 @@ describe('UsersService', () => {
       update: jest.Mock;
       count: jest.Mock;
     };
-    application: { findUnique: jest.Mock };
+    application: { findUnique: jest.Mock; updateMany: jest.Mock };
+    enrollment: { deleteMany: jest.Mock };
     payment: { create: jest.Mock };
     refreshToken: { updateMany: jest.Mock };
     $transaction: jest.Mock;
@@ -55,7 +56,11 @@ describe('UsersService', () => {
         update: jest.fn(),
         count: jest.fn(),
       },
-      application: { findUnique: jest.fn().mockResolvedValue(null) },
+      application: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        updateMany: jest.fn(),
+      },
+      enrollment: { deleteMany: jest.fn() },
       payment: { create: jest.fn() },
       refreshToken: { updateMany: jest.fn() },
       // The service passes an array of prepared queries; resolve them in order.
@@ -242,6 +247,44 @@ describe('UsersService', () => {
       await service.updateRole(1, { role: 'student' } as never);
 
       expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('takes a student moved back to applicant out of their cohorts', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'applicant' }));
+
+      await service.updateRole(1, { role: 'applicant' } as never);
+
+      expect(prisma.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 1 },
+      });
+      expect(prisma.application.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('accepts a pending application when an applicant becomes a student', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'applicant' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      await service.updateRole(1, { role: 'student' } as never);
+
+      // Only a pending application changes; decided ones stay final.
+      expect(prisma.application.updateMany).toHaveBeenCalledWith({
+        where: { userId: 1, status: 'pending' },
+        data: { status: 'accepted' },
+      });
+      expect(prisma.enrollment.deleteMany).not.toHaveBeenCalled();
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it('leaves cohorts and applications alone for other changes', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.count.mockResolvedValue(2);
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'admin' }));
+
+      await service.updateRole(1, { role: 'admin' } as never);
+
+      expect(prisma.enrollment.deleteMany).not.toHaveBeenCalled();
+      expect(prisma.application.updateMany).not.toHaveBeenCalled();
     });
 
     it('refuses to remove the role of the only admin', async () => {

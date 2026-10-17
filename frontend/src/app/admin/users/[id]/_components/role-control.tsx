@@ -100,10 +100,21 @@ export const RoleControl = ({
           isLoading: saving,
         }}
       >
-        <p className="text-sm text-muted-foreground">
-          From {roleLabel(role)} to {roleLabel(nextRole)}. They will be signed
-          out and need to sign in again.
-        </p>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p>
+            From {roleLabel(role)} to {roleLabel(nextRole)}. They will be signed
+            out and need to sign in again.
+          </p>
+          {/* The server does these too; say so before the admin confirms. */}
+          {nextRole === "applicant" && (
+            <p className="font-medium text-destructive">
+              They will also be removed from all their cohorts.
+            </p>
+          )}
+          {role === "applicant" && nextRole === "student" && (
+            <p>If their application is still pending, it will be accepted.</p>
+          )}
+        </div>
       </FormDialog>
     </div>
   );

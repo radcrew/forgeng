@@ -180,19 +180,36 @@ export class UsersService {
 
     // A new role signs the user out everywhere: revoking their refresh tokens
     // means they sign in again and get a token with the new role.
+    const roleChanged = dto.role !== exists.role;
     const [updated] = await this.prisma.$transaction([
       this.prisma.user.update({
         where: { id },
         data: { role: dto.role },
       }),
-      ...(dto.role === exists.role
-        ? []
-        : [
+      ...(roleChanged
+        ? [
             this.prisma.refreshToken.updateMany({
               where: { userId: id, revokedAt: null },
               data: { revokedAt: new Date() },
             }),
-          ]),
+          ]
+        : []),
+      // An applicant isn't in any cohort, so moving someone back to
+      // applicant takes them out of their cohorts too.
+      ...(roleChanged && dto.role === 'applicant'
+        ? [this.prisma.enrollment.deleteMany({ where: { userId: id } })]
+        : []),
+      // Making an applicant a student accepts their application if it was
+      // still waiting. Decided applications stay as they are: decisions are
+      // final. No email, since the admin chose this directly.
+      ...(exists.role === 'applicant' && dto.role === 'student'
+        ? [
+            this.prisma.application.updateMany({
+              where: { userId: id, status: 'pending' },
+              data: { status: 'accepted' },
+            }),
+          ]
+        : []),
     ]);
     return toUserDto(updated);
   }
