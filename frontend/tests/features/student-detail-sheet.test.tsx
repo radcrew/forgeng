@@ -65,6 +65,32 @@ describe("student SubmissionDetailSheet feedback", () => {
     expect(refetch).toHaveBeenCalledTimes(1);
   });
 
+  it("links to the task page", () => {
+    feedbackState = { data: [], isLoading: false, error: null };
+    renderSheet();
+
+    expect(screen.getByRole("link", { name: "View task" })).toHaveAttribute(
+      "href",
+      "/student/tasks/5",
+    );
+  });
+
+  it("leaves out the task link when asked to", () => {
+    feedbackState = { data: [], isLoading: false, error: null };
+    render(
+      <SubmissionDetailSheet
+        submission={submission}
+        open
+        onClose={vi.fn()}
+        showTaskLink={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("link", { name: "View task" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("says 'No feedback yet' once it knows there is none", () => {
     feedbackState = { data: [], isLoading: false, error: null };
     renderSheet();

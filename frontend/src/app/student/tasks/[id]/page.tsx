@@ -178,6 +178,7 @@ const Page = () => {
           open={detailOpen}
           onClose={() => setDetailOpen(false)}
           onResubmitted={refetchSubmissions}
+          showTaskLink={false}
         />
       )}
     </PageContainer>

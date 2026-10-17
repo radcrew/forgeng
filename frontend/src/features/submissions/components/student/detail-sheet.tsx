@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { MessageSquare } from "lucide-react";
 import { toast } from "sonner";
@@ -33,6 +34,8 @@ export type SubmissionDetailSheetProps = {
   onClose: () => void;
   /** Called after a successful resubmission so the caller can refetch. */
   onResubmitted?: () => void;
+  /** Off on the task page itself, where the link would lead back to it. */
+  showTaskLink?: boolean;
 };
 
 export const SubmissionDetailSheet = ({
@@ -40,6 +43,7 @@ export const SubmissionDetailSheet = ({
   open,
   onClose,
   onResubmitted,
+  showTaskLink = true,
 }: SubmissionDetailSheetProps) => {
   const {
     data: feedback = [],
@@ -94,6 +98,14 @@ export const SubmissionDetailSheet = ({
           <span className="text-sm text-muted-foreground">
             Submitted {format(new Date(submission.createdAt), "MMM d, yyyy")}
           </span>
+          {showTaskLink && (
+            <Link
+              href={`/student/tasks/${submission.taskId}`}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View task
+            </Link>
+          )}
         </div>
       }
     >
