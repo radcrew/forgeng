@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Info, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { FormDialog } from "@components/common";
 import { Button } from "@components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card";
 import { Input } from "@components/ui/input";
@@ -39,6 +40,7 @@ export function WalletManager() {
   const [hasWallet, setHasWallet] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [addressError, setAddressError] = useState("");
   // Set when the saved wallet could not be loaded. The form stays hidden then,
   // so a student can't overwrite an address they can't see.
@@ -97,6 +99,7 @@ export function WalletManager() {
       setAddress("");
       setHasWallet(false);
       setAddressError("");
+      setConfirmOpen(false);
       toast.success("Wallet removed.");
     } catch (err) {
       toast.error(
@@ -197,9 +200,10 @@ export function WalletManager() {
                 type="button"
                 variant="ghost"
                 size="icon"
+                aria-label="Remove wallet address"
                 className="shrink-0 text-muted-foreground hover:text-destructive"
                 disabled={saving}
-                onClick={handleRemove}
+                onClick={() => setConfirmOpen(true)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -207,6 +211,25 @@ export function WalletManager() {
           </div>
         </CardContent>
       )}
+      {/* One click used to delete the address with no way back. */}
+      <FormDialog
+        open={confirmOpen}
+        onOpenChange={(open) => !saving && setConfirmOpen(open)}
+        title="Remove your wallet address?"
+        size="sm"
+        actions={{
+          onSubmit: () => void handleRemove(),
+          submitLabel: "Remove",
+          loadingLabel: "Removing...",
+          isLoading: saving,
+          submitVariant: "destructive",
+        }}
+      >
+        <p className="text-sm text-muted-foreground">
+          You won&apos;t receive your stipend until you add a wallet address
+          again.
+        </p>
+      </FormDialog>
     </Card>
   );
 }
