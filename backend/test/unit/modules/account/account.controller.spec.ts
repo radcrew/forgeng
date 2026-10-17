@@ -101,6 +101,17 @@ describe('AccountController', () => {
       );
       expect(result.wallets).toEqual([{ chain: 'evm', address: '0xabc' }]);
     });
+
+    it('refuses to report a wallet as saved when there is no application', async () => {
+      prisma.application.updateMany.mockResolvedValue({ count: 0 });
+      const dto = {
+        wallets: [{ chain: 'evm', address: '0xabc' }],
+      } as never;
+
+      await expect(controller.updateWallets(user, dto)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
   });
 
   describe('updateProfile', () => {

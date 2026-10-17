@@ -82,10 +82,17 @@ export class AccountController {
       chain: w.chain,
       address: w.address,
     }));
-    await this.prisma.application.updateMany({
+    const { count } = await this.prisma.application.updateMany({
       where: { userId: user.id },
       data: { wallets },
     });
+    // Nothing was stored, so don't report the wallet as saved: the student
+    // would believe they can be paid when there is no address on file.
+    if (count === 0) {
+      throw new BadRequestException(
+        'Wallets are saved with your application, and this account has none. Please contact an admin to add your wallet.',
+      );
+    }
     return { wallets };
   }
 
