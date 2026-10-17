@@ -49,6 +49,7 @@ import { ApiError } from "@lib/api-client";
 import { isProfileComplete } from "@utils/user";
 
 import { PaymentStatsChart } from "./_components/payment-stats-chart";
+import { RoleControl } from "./_components/role-control";
 
 export default function UserDetailPage({
   params,
@@ -58,7 +59,7 @@ export default function UserDetailPage({
   const { id } = use(params);
   const userId = Number(id);
 
-  const { data: user, isLoading } = useUser(userId);
+  const { data: user, isLoading, refetch: refetchUser } = useUser(userId);
   const { data: enrollments = [], isLoading: enrollmentsLoading } =
     useUserEnrollments(userId);
   const { data: paymentStats, refetch: refetchStats } =
@@ -175,6 +176,15 @@ export default function UserDetailPage({
         <div className="grid md:grid-cols-2 gap-6">
           {/* Left column */}
           <div className="space-y-6">
+            <RoleControl
+              // A new key resets the picker to the saved role after a change.
+              key={user.role}
+              userId={user.id}
+              userName={displayName}
+              role={user.role}
+              onChanged={refetchUser}
+            />
+
             <div>
               <SectionTitle>Joined</SectionTitle>
               <p className="text-sm text-muted-foreground">
