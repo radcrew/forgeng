@@ -83,8 +83,7 @@ export class UpdateProfileDto {
   @Matches(WHATSAPP_REGEX, { message: SOCIAL_PROFILE_MESSAGES.whatsapp })
   whatsapp?: string;
 
-  @IsOptional()
-  @IsUrl()
-  @MaxLength(2000)
-  avatarUrl?: string;
+  // No avatarUrl here: a photo can only change through the upload route,
+  // which checks the file. Setting a link here skipped those checks and
+  // could point at any outside image.
 }

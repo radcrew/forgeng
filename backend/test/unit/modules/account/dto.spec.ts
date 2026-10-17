@@ -57,6 +57,18 @@ describe('UpdateProfileDto', () => {
     expect(failingProps(UpdateProfileDto, {})).not.toContain('name');
   });
 
+  it('refuses an avatar link, which must go through the upload', () => {
+    const instance = plainToInstance(UpdateProfileDto, {
+      avatarUrl: 'https://tracker.example.com/pixel.png',
+    });
+    // The app validates with these options, so unknown fields are refused.
+    const errors = validateSync(instance, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    expect(errors.map((e) => e.property)).toContain('avatarUrl');
+  });
+
   it('accepts a portfolio URL with incidental surrounding whitespace', () => {
     expect(
       failingProps(UpdateProfileDto, { portfolio: '  https://ada.dev  ' }),
