@@ -23,6 +23,11 @@ describe("user Row", () => {
     expect(screen.getByText("ada@example.com")).toBeInTheDocument();
   });
 
+  it("shows the user's role", () => {
+    render(<Row user={makeUser({ role: "applicant" })} />);
+    expect(screen.getByText("applicant")).toBeInTheDocument();
+  });
+
   it("shows an em dash when the name is null", () => {
     render(<Row user={makeUser({ name: null })} />);
     expect(screen.getByText("—")).toBeInTheDocument();

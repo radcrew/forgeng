@@ -11,15 +11,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
-import { UserRow, useUsers } from "@features/users";
+import { USER_ROLE_FILTER_TABS } from "@constants/users";
+import { UserRow, useUsers, type UserRoleFilter } from "@features/users";
+
+// Wording for the count and the empty message on each tab.
+const ROLE_NOUNS: Record<UserRoleFilter, [string, string]> = {
+  all: ["user", "users"],
+  applicant: ["applicant", "applicants"],
+  student: ["student", "students"],
+  admin: ["admin", "admins"],
+};
 
 const Page = () => {
+  // Students stay the first view, as before; the other tabs are one click away.
+  const [role, setRole] = useState<UserRoleFilter>("student");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const { data, isLoading } = useUsers("student", page, pageSize);
+  const { data, isLoading } = useUsers(role, page, pageSize);
+  const [singular, plural] = ROLE_NOUNS[role];
 
   const users = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -34,18 +47,33 @@ const Page = () => {
   return (
     <PageContainer>
       <PageHeader
-        title="Students"
-        description="Manage students and their roles."
+        title="Users"
+        description="Manage applicants, students, and admins."
       />
 
+      <Tabs
+        value={role}
+        onValueChange={(v) => {
+          setRole(v as UserRoleFilter);
+          // A new tab starts at page 1 so a shorter list isn't hidden.
+          setPage(1);
+        }}
+      >
+        <TabsList>
+          {USER_ROLE_FILTER_TABS.map(({ value, label }) => (
+            <TabsTrigger key={value} value={value}>
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       <p className="text-sm text-muted-foreground">
-        {isLoading
-          ? "Loading…"
-          : `${total} ${total === 1 ? "student" : "students"}`}
+        {isLoading ? "Loading…" : `${total} ${total === 1 ? singular : plural}`}
       </p>
 
       {!isLoading && users.length === 0 ? (
-        <EmptyState message="No students yet." art={APP_ART.cohort} />
+        <EmptyState message={`No ${plural} yet.`} art={APP_ART.cohort} />
       ) : (
         <div className="space-y-2">
           {users.map((user) => (
