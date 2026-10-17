@@ -307,6 +307,45 @@ describe('SubmissionsService', () => {
       expect(prisma.submission.update).not.toHaveBeenCalled();
     });
 
+    it('removes the repo link when it is sent as null', async () => {
+      prisma.submission.findUnique.mockResolvedValue(
+        makeSubmission({
+          status: 'needs_work',
+          content: 'my work',
+          repoUrl: 'https://github.com/me/old',
+          task: makeTask(),
+          user: makeUser(),
+        }),
+      );
+      prisma.submission.update.mockResolvedValue(makeSubmission());
+
+      await service.resubmit(10, { repoUrl: null }, student);
+
+      const data = (
+        prisma.submission.update.mock.calls[0] as [
+          { data: { content: unknown; repoUrl: unknown } },
+        ]
+      )[0].data;
+      expect(data.repoUrl).toBeNull();
+      // Left out, so the write-up stays.
+      expect(data.content).toBe('my work');
+    });
+
+    it('refuses to remove both the write-up and the repo link', async () => {
+      prisma.submission.findUnique.mockResolvedValue(
+        makeSubmission({
+          status: 'needs_work',
+          content: 'my work',
+          repoUrl: 'https://github.com/me/old',
+        }),
+      );
+
+      await expect(
+        service.resubmit(10, { content: null, repoUrl: null }, student),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.submission.update).not.toHaveBeenCalled();
+    });
+
     it('forbids resubmitting once the cohort has ended', async () => {
       prisma.submission.findUnique.mockResolvedValue(
         makeSubmission({

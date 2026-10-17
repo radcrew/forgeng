@@ -15,6 +15,13 @@ vi.mock("@features/submissions/hooks", () => ({
   useSubmissionFeedback: () => ({ ...feedbackState, refetch }),
 }));
 
+const resubmitSubmission = vi.fn();
+vi.mock("@features/submissions/api", () => ({
+  resubmitSubmission: (...args: unknown[]) => resubmitSubmission(...args),
+}));
+
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+
 import { SubmissionDetailSheet } from "@features/submissions/components/student/detail-sheet";
 
 const submission: Submission = {
@@ -36,6 +43,35 @@ const renderSheet = () =>
 
 beforeEach(() => {
   refetch.mockClear();
+  resubmitSubmission.mockReset();
+  resubmitSubmission.mockResolvedValue(undefined);
+});
+
+describe("student SubmissionDetailSheet resubmit", () => {
+  it("sends a cleared repo link as null so it is removed", async () => {
+    feedbackState = { data: [], isLoading: false, error: null };
+    render(
+      <SubmissionDetailSheet
+        submission={{
+          ...submission,
+          status: "needs_work",
+          repoUrl: "https://github.com/me/old",
+        }}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    await userEvent.clear(screen.getByLabelText("Repository URL (optional)"));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Resubmit for Review" }),
+    );
+
+    expect(resubmitSubmission).toHaveBeenCalledWith(10, {
+      content: "My work",
+      repoUrl: null,
+    });
+  });
 });
 
 describe("student SubmissionDetailSheet feedback", () => {

@@ -156,8 +156,9 @@ export class SubmissionsService {
       );
     }
 
-    const content = dto.content ?? sub.content;
-    const repoUrl = dto.repoUrl ?? sub.repoUrl;
+    // null removes a field; leaving it out keeps the old value.
+    const content = dto.content === undefined ? sub.content : dto.content;
+    const repoUrl = dto.repoUrl === undefined ? sub.repoUrl : dto.repoUrl;
     this.assertHasWork(content, repoUrl);
 
     const updated = await this.prisma.submission.update({

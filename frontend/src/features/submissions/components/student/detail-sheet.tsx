@@ -68,9 +68,11 @@ export const SubmissionDetailSheet = ({
     sending.current = true;
     setIsResubmitting(true);
     try {
+      // Send null (not undefined) so a cleared field is removed. The server
+      // treats a missing field as "keep the old value".
       await resubmitSubmission(submission.id, {
-        content: content.trim() || undefined,
-        repoUrl: repoUrl.trim() || undefined,
+        content: content.trim() || null,
+        repoUrl: repoUrl.trim() || null,
       });
       toast.success("Resubmitted!", {
         description: "Your revised work is back in the review queue.",
