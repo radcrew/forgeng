@@ -162,7 +162,12 @@ export class SubmissionsService {
 
     const updated = await this.prisma.submission.update({
       where: { id },
-      data: { content, repoUrl, status: 'submitted' },
+      data: {
+        content,
+        repoUrl,
+        status: 'submitted',
+        lastSubmittedAt: new Date(),
+      },
     });
     // A resubmission re-enters the review queue, so admins should hear about it.
     await this.notifyAdminsOfSubmission(user, sub.task?.title ?? 'a task');

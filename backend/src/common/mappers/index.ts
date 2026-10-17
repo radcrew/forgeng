@@ -192,6 +192,7 @@ export interface SubmissionDto {
   task: TaskDto | null;
   user: UserDto | null;
   feedbackCount: number;
+  lastSubmittedAt: string;
   createdAt: string;
 }
 
@@ -211,6 +212,7 @@ export function toSubmissionDto(
     task: task ? toTaskDto(task, 0) : null,
     user: user ? toUserDto(user) : null,
     feedbackCount,
+    lastSubmittedAt: sub.lastSubmittedAt.toISOString(),
     createdAt: sub.createdAt.toISOString(),
   };
 }

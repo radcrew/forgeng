@@ -84,6 +84,7 @@ describe("student submissions page", () => {
       repoUrl: null,
       status,
       feedbackCount: 0,
+      lastSubmittedAt: "2026-01-15T10:30:00.000Z",
       createdAt: "2026-01-15T10:30:00.000Z",
     });
     useSubmissions.mockReturnValue({
@@ -108,6 +109,49 @@ describe("student submissions page", () => {
     expect(
       screen.getByText("No submissions match these filters."),
     ).toBeInTheDocument();
+  });
+
+  it("shows when work was sent again, and only then", () => {
+    selectedCohortId = 7;
+    dashboard = {
+      cohort: { id: 7, name: "Autumn" },
+      cohorts: [{ id: 7, name: "Autumn" }],
+    };
+    const base = {
+      task: { id: 1, title: "Build a CLI", type: "coding" },
+      content: "My work",
+      repoUrl: null,
+      status: "submitted",
+      feedbackCount: 0,
+    };
+    useSubmissions.mockReturnValue({
+      data: [
+        {
+          ...base,
+          id: 1,
+          taskId: 1,
+          createdAt: "2026-01-15T12:00:00.000Z",
+          lastSubmittedAt: "2026-01-20T12:00:00.000Z",
+        },
+        {
+          ...base,
+          id: 2,
+          taskId: 2,
+          task: { id: 2, title: "Read the docs", type: "reading" },
+          createdAt: "2026-01-16T12:00:00.000Z",
+          lastSubmittedAt: "2026-01-16T12:00:00.000Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<Page />);
+
+    expect(
+      screen.getByText(/Submitted Jan 15, 2026 · Resubmitted Jan 20, 2026/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Submitted Jan 16, 2026$/)).toBeInTheDocument();
   });
 
   it("waits for the cohort before showing the list", () => {

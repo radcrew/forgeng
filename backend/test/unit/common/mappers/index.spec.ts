@@ -171,8 +171,14 @@ describe('toSubmissionDto', () => {
     content: 'done',
     repoUrl: null,
     status: 'submitted',
+    lastSubmittedAt: new Date('2026-01-20T08:00:00.000Z'),
     createdAt: DATE,
   } as Submission;
+
+  it('sends when the work was last sent', () => {
+    const dto = toSubmissionDto(submission, null, null, 0);
+    expect(dto.lastSubmittedAt).toBe('2026-01-20T08:00:00.000Z');
+  });
 
   it('maps nested task and user when present', () => {
     const task = {

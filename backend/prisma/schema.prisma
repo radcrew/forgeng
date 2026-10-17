@@ -253,6 +253,9 @@ model Submission {
   content   String?
   repoUrl   String?          @map("repo_url")
   status    SubmissionStatus @default(submitted)
+  // When the student last sent their work: the first send or the latest
+  // resubmit. updatedAt also changes when a reviewer leaves feedback.
+  lastSubmittedAt DateTime @default(now()) @map("last_submitted_at") @db.Timestamptz
   createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz
 

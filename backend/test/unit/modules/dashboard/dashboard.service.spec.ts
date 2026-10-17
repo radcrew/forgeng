@@ -49,6 +49,7 @@ function makeSubmission(
     content: 'work',
     repoUrl: null,
     status: 'submitted',
+    lastSubmittedAt: DATE,
     createdAt: DATE,
     ...overrides,
   } as Submission;

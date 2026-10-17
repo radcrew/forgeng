@@ -16,6 +16,7 @@ function makeSubmission(
     repoUrl: null,
     status,
     feedbackCount: 0,
+    lastSubmittedAt: "2026-01-15T10:30:00.000Z",
     createdAt: "2026-01-15T10:30:00.000Z",
   };
 }

@@ -60,6 +60,7 @@ function makeSubmission(
     content: 'my work',
     repoUrl: null,
     status: 'submitted',
+    lastSubmittedAt: DATE,
     createdAt: DATE,
     ...overrides,
   } as Submission;
@@ -334,9 +335,12 @@ describe('SubmissionsService', () => {
       await service.resubmit(10, { content: 'redone' }, student);
 
       const data = (
-        prisma.submission.update.mock.calls[0] as [{ data: { status: string } }]
+        prisma.submission.update.mock.calls[0] as [
+          { data: { status: string; lastSubmittedAt: unknown } },
+        ]
       )[0].data;
       expect(data.status).toBe('submitted');
+      expect(data.lastSubmittedAt).toBeInstanceOf(Date);
       expect(notifications.notifySubmissionReceived).toHaveBeenCalledTimes(1);
     });
   });

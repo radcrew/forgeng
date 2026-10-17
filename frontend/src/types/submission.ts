@@ -14,6 +14,8 @@ export interface Submission {
   repoUrl: string | null;
   status: SubmissionStatus;
   feedbackCount: number;
+  /** The first send or the latest resubmit. */
+  lastSubmittedAt: string;
   createdAt: string;
 }
 

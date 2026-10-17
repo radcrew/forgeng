@@ -30,9 +30,15 @@ import {
   filterSubmissions,
   useSubmissions,
 } from "@features/submissions";
-import type { SubmissionStatusFilter } from "@types";
+import type { Submission, SubmissionStatusFilter } from "@types";
 
 const PAGE_SIZE = 20;
+
+// The first send sets both dates at almost the same moment, so only a clear
+// gap means the work was sent again.
+const wasResubmitted = (sub: Submission) =>
+  new Date(sub.lastSubmittedAt).getTime() - new Date(sub.createdAt).getTime() >
+  60_000;
 
 const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -148,6 +154,8 @@ const Page = () => {
                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     Submitted {format(new Date(sub.createdAt), "MMM d, yyyy")}
+                    {wasResubmitted(sub) &&
+                      ` · Resubmitted ${format(new Date(sub.lastSubmittedAt), "MMM d, yyyy")}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
