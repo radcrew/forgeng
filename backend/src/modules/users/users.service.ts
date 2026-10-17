@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfiguration } from '../../config';
 import {
@@ -59,6 +59,7 @@ export interface PaymentDto {
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   private readonly frontendUrl: string;
 
   constructor(
@@ -111,7 +112,16 @@ export class UsersService {
       studentName: user.name ?? user.email,
       url: this.absoluteUrl(STUDENT_ROUTES.DASHBOARD),
     });
-    await this.mail.send({ to: user.email, ...email });
+    // The payment is already saved. A failed email must not report it as
+    // failed, or the admin records it again and the student is paid twice.
+    try {
+      await this.mail.send({ to: user.email, ...email });
+    } catch (err) {
+      this.logger.error(
+        `Failed to send payment email to ${user.email}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
 
     return {
       id: payment.id,

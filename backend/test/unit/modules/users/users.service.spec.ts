@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Payment, User } from '@prisma/client';
 import { MailService } from '@core/mail';
@@ -145,6 +145,18 @@ describe('UsersService', () => {
       expect(mail.send).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'ada@example.com' }),
       );
+    });
+
+    it('still returns the saved payment when the email fails', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(makePayment());
+      mail.send.mockRejectedValue(new Error('smtp down'));
+      jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+      await expect(
+        service.recordPayment(1, { amount: '250', currency: 'USDC' } as never),
+      ).resolves.toMatchObject({ amount: '250' });
+      expect(prisma.payment.create).toHaveBeenCalledTimes(1);
     });
   });
 
