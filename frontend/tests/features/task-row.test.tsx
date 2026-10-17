@@ -53,6 +53,11 @@ describe("task Row", () => {
     expect(screen.getByText("Spring 2026")).toBeInTheDocument();
   });
 
+  it("says submission, not submissions, when there is only one", () => {
+    render(<Row task={makeTask({ submissionCount: 1 })} onEdit={vi.fn()} />);
+    expect(screen.getByText("1 submission")).toBeInTheDocument();
+  });
+
   it("shows the due date as saved, in any time zone", () => {
     render(<Row task={makeTask()} onEdit={vi.fn()} />);
     expect(screen.getByText("Due Feb 1, 2026")).toBeInTheDocument();

@@ -77,7 +77,9 @@ export const TaskRow = ({
             )}
             {task.submissionCount > 0 && (
               <span className="text-xs text-muted-foreground">
-                {task.submissionCount} submissions
+                {task.submissionCount === 1
+                  ? "1 submission"
+                  : `${task.submissionCount} submissions`}
               </span>
             )}
           </div>
