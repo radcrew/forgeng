@@ -12,6 +12,35 @@ let userState: {
 };
 const refetchUser = vi.fn();
 
+let enrollmentsState: {
+  data: unknown[] | undefined;
+  isLoading: boolean;
+  error: Error | null;
+} = { data: [], isLoading: false, error: null };
+const refetchEnrollments = vi.fn();
+
+const sampleUser = {
+  id: 7,
+  name: "Ada Lovelace",
+  email: "ada@example.com",
+  emailVerified: true,
+  role: "student",
+  bio: null,
+  githubUrl: null,
+  avatarUrl: null,
+  createdAt: "2026-01-15T10:30:00.000Z",
+  linkedin: null,
+  twitter: null,
+  facebook: null,
+  github: null,
+  portfolio: null,
+  telegram: null,
+  whatsapp: null,
+  registrationIp: null,
+  registrationCountry: null,
+  registrationCity: null,
+};
+
 const idle = {
   data: undefined,
   isLoading: false,
@@ -21,7 +50,10 @@ const idle = {
 
 vi.mock("@features/users/hooks", () => ({
   useUser: () => ({ ...userState, refetch: refetchUser }),
-  useUserEnrollments: () => ({ ...idle, data: [] }),
+  useUserEnrollments: () => ({
+    ...enrollmentsState,
+    refetch: refetchEnrollments,
+  }),
   useUserPaymentStats: () => idle,
   useRecordPayment: () => ({ record: vi.fn(), isPending: false }),
   useNotifyWalletMissing: () => ({ notify: vi.fn(), isPending: false }),
@@ -44,6 +76,7 @@ const renderPage = async (id = "7") => {
 
 beforeEach(() => {
   refetchUser.mockClear();
+  enrollmentsState = { data: [], isLoading: false, error: null };
 });
 
 describe("admin user detail page", () => {
@@ -79,6 +112,33 @@ describe("admin user detail page", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(refetchUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows an error, not 'Not enrolled', when enrollments fail to load", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    enrollmentsState = {
+      data: undefined,
+      isLoading: false,
+      error: new Error("offline"),
+    };
+    await renderPage();
+
+    expect(
+      await screen.findByText(/We couldn't load the enrollments/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Not enrolled in any cohort."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("says 'Not enrolled' once it knows there are no enrollments", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    enrollmentsState = { data: [], isLoading: false, error: null };
+    await renderPage();
+
+    expect(
+      await screen.findByText("Not enrolled in any cohort."),
+    ).toBeInTheDocument();
   });
 
   it("still shows the loading message while the user loads", async () => {

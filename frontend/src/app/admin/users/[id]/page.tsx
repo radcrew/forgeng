@@ -66,8 +66,12 @@ export default function UserDetailPage({
     error: userError,
     refetch: refetchUser,
   } = useUser(userId);
-  const { data: enrollments = [], isLoading: enrollmentsLoading } =
-    useUserEnrollments(userId);
+  const {
+    data: enrollments = [],
+    isLoading: enrollmentsLoading,
+    error: enrollmentsError,
+    refetch: refetchEnrollments,
+  } = useUserEnrollments(userId);
   const {
     data: paymentStats,
     isLoading: statsLoading,
@@ -363,6 +367,13 @@ export default function UserDetailPage({
               <SectionTitle>Enrollments</SectionTitle>
               {enrollmentsLoading ? (
                 <LoadingState message="Loading enrollments…" />
+              ) : enrollmentsError ? (
+                // A failed load must not read as "not enrolled".
+                <ErrorState
+                  what="the enrollments"
+                  onRetry={refetchEnrollments}
+                  size="compact"
+                />
               ) : enrollments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   Not enrolled in any cohort.
