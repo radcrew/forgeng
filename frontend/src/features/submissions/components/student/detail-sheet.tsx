@@ -16,6 +16,8 @@ import {
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { Separator } from "@components/ui/separator";
+import { Skeleton } from "@components/ui/skeleton";
+import { ErrorState } from "@components/shared";
 import { Textarea } from "@components/ui/textarea";
 import { ApiError } from "@lib/api-client";
 import type { Submission } from "@types";
@@ -39,9 +41,12 @@ export const SubmissionDetailSheet = ({
   onClose,
   onResubmitted,
 }: SubmissionDetailSheetProps) => {
-  const { data: feedback = [] } = useSubmissionFeedback(
-    open ? submission.id : null,
-  );
+  const {
+    data: feedback = [],
+    isLoading: feedbackLoading,
+    error: feedbackError,
+    refetch: refetchFeedback,
+  } = useSubmissionFeedback(open ? submission.id : null);
 
   const [content, setContent] = useState(submission.content ?? "");
   const [repoUrl, setRepoUrl] = useState(submission.repoUrl ?? "");
@@ -106,9 +111,28 @@ export const SubmissionDetailSheet = ({
       <div>
         <SectionTitle className="mb-3 flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
-          Feedback ({feedback.length})
+          Feedback
+          {!feedbackLoading && !feedbackError && ` (${feedback.length})`}
         </SectionTitle>
-        {feedback.length === 0 ? (
+        {/* "No feedback yet" only once we know there is none, not while it
+            loads or after it failed to load. */}
+        {feedbackLoading ? (
+          <div className="space-y-4">
+            {[0, 1].map((i) => (
+              <Skeleton
+                key={i}
+                className="h-24 w-full rounded-lg"
+                data-testid="feedback-placeholder"
+              />
+            ))}
+          </div>
+        ) : feedbackError ? (
+          <ErrorState
+            what="the feedback"
+            onRetry={refetchFeedback}
+            size="compact"
+          />
+        ) : feedback.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No feedback yet. Check back after your submission is reviewed.
           </p>
