@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 import { Button } from "@components/ui/button";
+import { Input } from "@components/ui/input";
 import {
   Select,
   SelectContent,
@@ -18,6 +19,8 @@ import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
 import { USER_ROLE_FILTER_TABS } from "@constants/users";
 import { UserRow, useUsers, type UserRoleFilter } from "@features/users";
 
+const SEARCH_DELAY_MS = 300;
+
 // Wording for the count and the empty message on each tab.
 const ROLE_NOUNS: Record<UserRoleFilter, [string, string]> = {
   all: ["user", "users"],
@@ -31,8 +34,24 @@ const Page = () => {
   const [role, setRole] = useState<UserRoleFilter>("student");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const { data, isLoading } = useUsers(role, page, pageSize);
+  // What the admin types, and the search actually sent. The second one waits
+  // until typing pauses, so each key press doesn't send a request.
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(searchTimer.current), []);
+  const { data, isLoading } = useUsers(role, page, pageSize, search);
   const [singular, plural] = ROLE_NOUNS[role];
+
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setSearch(value);
+      // New results start at page 1.
+      setPage(1);
+    }, SEARCH_DELAY_MS);
+  };
 
   const users = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -68,12 +87,30 @@ const Page = () => {
         </TabsList>
       </Tabs>
 
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder="Search by name or email..."
+          aria-label="Search users by name or email"
+          className="pl-9"
+        />
+      </div>
+
       <p className="text-sm text-muted-foreground">
         {isLoading ? "Loading…" : `${total} ${total === 1 ? singular : plural}`}
       </p>
 
       {!isLoading && users.length === 0 ? (
-        <EmptyState message={`No ${plural} yet.`} art={APP_ART.cohort} />
+        <EmptyState
+          message={
+            search.trim()
+              ? `No ${plural} match "${search.trim()}".`
+              : `No ${plural} yet.`
+          }
+          art={search.trim() ? APP_ART.noResults : APP_ART.cohort}
+        />
       ) : (
         <div className="space-y-2">
           {users.map((user) => (

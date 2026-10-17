@@ -182,6 +182,25 @@ describe('UsersService', () => {
         expect.objectContaining({ where: { role: 'admin' } }),
       );
     });
+
+    it('searches names and emails, ignoring case, within the role', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+      prisma.user.count.mockResolvedValue(0);
+
+      await service.list({ role: 'student', search: 'ada' } as never);
+
+      const where = {
+        role: 'student',
+        OR: [
+          { name: { contains: 'ada', mode: 'insensitive' } },
+          { email: { contains: 'ada', mode: 'insensitive' } },
+        ],
+      };
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where }),
+      );
+      expect(prisma.user.count).toHaveBeenCalledWith({ where });
+    });
   });
 
   describe('updateRole', () => {

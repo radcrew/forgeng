@@ -20,9 +20,11 @@ export const listUsers = async (params?: {
   role?: UserRole;
   page?: number;
   pageSize?: number;
+  search?: string;
 }): Promise<PaginatedUsers> => {
   const search = new URLSearchParams();
   if (params?.role) search.set("role", params.role);
+  if (params?.search) search.set("search", params.search);
   if (params?.page != null) search.set("page", String(params.page));
   if (params?.pageSize != null) search.set("pageSize", String(params.pageSize));
   const query = search.toString();

@@ -19,10 +19,17 @@ export const useUsers = (
   role: UserRoleFilter = "all",
   page = 1,
   pageSize?: number,
+  search = "",
 ) =>
   useAsyncResource(
-    () => listUsers({ role: role === "all" ? undefined : role, page, pageSize }),
-    [role, page, pageSize],
+    () =>
+      listUsers({
+        role: role === "all" ? undefined : role,
+        page,
+        pageSize,
+        search: search.trim() || undefined,
+      }),
+    [role, page, pageSize, search],
   );
 
 export const useUserEnrollments = (userId: number | null) =>
