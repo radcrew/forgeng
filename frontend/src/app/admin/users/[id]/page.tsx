@@ -3,7 +3,6 @@
 import { use, useRef, useState } from "react";
 import { format } from "date-fns";
 import {
-  AlertCircle,
   AlertTriangle,
   Mail,
   MapPin,
@@ -50,6 +49,7 @@ import { isProfileComplete } from "@utils/user";
 
 import { PaymentStatsChart } from "./_components/payment-stats-chart";
 import { RoleControl } from "./_components/role-control";
+import { WalletSection } from "./_components/wallet-section";
 
 export default function UserDetailPage({
   params,
@@ -62,8 +62,12 @@ export default function UserDetailPage({
   const { data: user, isLoading, refetch: refetchUser } = useUser(userId);
   const { data: enrollments = [], isLoading: enrollmentsLoading } =
     useUserEnrollments(userId);
-  const { data: paymentStats, refetch: refetchStats } =
-    useUserPaymentStats(userId);
+  const {
+    data: paymentStats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useUserPaymentStats(userId);
 
   const { record, isPending: submitting } = useRecordPayment();
   const { notify: notifyWallet, isPending: sendingWalletReminder } = useNotifyWalletMissing();
@@ -76,8 +80,11 @@ export default function UserDetailPage({
   const [note, setNote] = useState("");
   const amountRef = useRef<HTMLInputElement>(null);
 
-  const walletsEmpty =
-    !paymentStats || paymentStats.wallets.length === 0;
+  // Only true once the payment info has loaded without a wallet. Before that,
+  // or after a failed load, the wallet section says so instead.
+  const walletsEmpty = !!paymentStats && paymentStats.wallets.length === 0;
+  const canRecordPayment =
+    !statsError && !!paymentStats && paymentStats.wallets.length > 0;
 
   const handleNotifyWalletMissing = async () => {
     try {
@@ -268,39 +275,14 @@ export default function UserDetailPage({
               </div>
             )}
 
-            {/* Wallet addresses */}
-            <div className="space-y-2">
-              <SectionTitle>Wallet address</SectionTitle>
-              {walletsEmpty ? (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-3 space-y-2.5">
-                  <p className="flex items-center gap-2 text-sm text-destructive">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    No wallet address added — payment cannot be processed.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    disabled={sendingWalletReminder}
-                    onClick={handleNotifyWalletMissing}
-                  >
-                    <Mail className="h-3.5 w-3.5 mr-1.5" />
-                    {sendingWalletReminder ? "Sending…" : "Email student to add wallet"}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {paymentStats!.wallets.map((w) => (
-                    <div key={w.chain}>
-                      <p className="text-xs font-medium capitalize">{w.chain}</p>
-                      <p className="text-xs text-muted-foreground font-mono break-all mt-0.5">
-                        {w.address}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <WalletSection
+              wallets={paymentStats?.wallets}
+              isLoading={statsLoading}
+              error={statsError}
+              onRetry={refetchStats}
+              onRemind={handleNotifyWalletMissing}
+              reminding={sendingWalletReminder}
+            />
           </div>
 
           {/* Right column */}
@@ -326,12 +308,14 @@ export default function UserDetailPage({
 
                 <Button
                   onClick={openDialog}
-                  disabled={walletsEmpty}
+                  disabled={!canRecordPayment}
                   className="w-full"
                   title={
                     walletsEmpty
                       ? "Student must add a wallet address first"
-                      : undefined
+                      : statsError
+                        ? "Payment info didn't load. Try again above."
+                        : undefined
                   }
                 >
                   <Send className="h-4 w-4 mr-2" />
