@@ -13,7 +13,12 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
 import { USER_ROLE_FILTER_TABS } from "@constants/users";
@@ -40,7 +45,12 @@ const Page = () => {
   const [search, setSearch] = useState("");
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(searchTimer.current), []);
-  const { data, isLoading } = useUsers(role, page, pageSize, search);
+  const { data, isLoading, error, refetch } = useUsers(
+    role,
+    page,
+    pageSize,
+    search,
+  );
   const [singular, plural] = ROLE_NOUNS[role];
 
   const handleSearchChange = (value: string) => {
@@ -98,11 +108,18 @@ const Page = () => {
         />
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        {isLoading ? "Loading…" : `${total} ${total === 1 ? singular : plural}`}
-      </p>
+      {!error && (
+        <p className="text-sm text-muted-foreground">
+          {isLoading
+            ? "Loading…"
+            : `${total} ${total === 1 ? singular : plural}`}
+        </p>
+      )}
 
-      {!isLoading && users.length === 0 ? (
+      {/* A failed load must not look like an empty list. */}
+      {!isLoading && error ? (
+        <ErrorState what="the users" onRetry={refetch} />
+      ) : !isLoading && users.length === 0 ? (
         <EmptyState
           message={
             search.trim()
@@ -119,7 +136,7 @@ const Page = () => {
         </div>
       )}
 
-      {total > 0 && (
+      {!error && total > 0 && (
         <div className="flex items-center justify-between gap-4 pt-2">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Per page</span>

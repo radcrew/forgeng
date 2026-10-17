@@ -20,6 +20,26 @@ beforeEach(() => {
 });
 
 describe("admin users page", () => {
+  it("shows an error with a retry when the users fail to load", async () => {
+    const refetch = vi.fn();
+    useUsers.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error("offline"),
+      refetch,
+    });
+    render(<Page />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "We couldn't load the users.",
+    );
+    expect(screen.queryByText(/No students yet/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 students/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
   it("starts on students, as before", () => {
     render(<Page />);
 
