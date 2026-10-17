@@ -36,6 +36,8 @@ export type SubmissionDetailSheetProps = {
   onResubmitted?: () => void;
   /** Off on the task page itself, where the link would lead back to it. */
   showTaskLink?: boolean;
+  /** The submission's cohort has ended, so resubmitting isn't possible. */
+  cohortEnded?: boolean;
 };
 
 export const SubmissionDetailSheet = ({
@@ -44,6 +46,7 @@ export const SubmissionDetailSheet = ({
   onClose,
   onResubmitted,
   showTaskLink = true,
+  cohortEnded = false,
 }: SubmissionDetailSheetProps) => {
   const {
     data: feedback = [],
@@ -165,7 +168,18 @@ export const SubmissionDetailSheet = ({
         )}
       </div>
 
-      {submission.status === "needs_work" && (
+      {/* The server refuses resubmits once the cohort has ended, so say so
+          instead of showing a form that can only fail. */}
+      {submission.status === "needs_work" && cohortEnded && (
+        <>
+          <Separator />
+          <p className="text-sm text-muted-foreground">
+            This cohort has ended, so it no longer accepts resubmissions.
+          </p>
+        </>
+      )}
+
+      {submission.status === "needs_work" && !cohortEnded && (
         <>
           <Separator />
           <div className="space-y-4">

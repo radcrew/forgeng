@@ -47,6 +47,29 @@ beforeEach(() => {
   resubmitSubmission.mockResolvedValue(undefined);
 });
 
+describe("student SubmissionDetailSheet after the cohort ends", () => {
+  it("explains that resubmitting is closed instead of showing the form", () => {
+    feedbackState = { data: [], isLoading: false, error: null };
+    render(
+      <SubmissionDetailSheet
+        submission={{ ...submission, status: "needs_work" }}
+        open
+        onClose={vi.fn()}
+        cohortEnded
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "This cohort has ended, so it no longer accepts resubmissions.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Resubmit for Review" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe("student SubmissionDetailSheet resubmit", () => {
   it("sends a cleared repo link as null so it is removed", async () => {
     feedbackState = { data: [], isLoading: false, error: null };

@@ -23,6 +23,7 @@ import {
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { STUDENT_SUBMISSION_FILTER_TABS } from "@constants/submissions";
 import { useSelectedCohort } from "@contexts";
+import { isCohortEnded } from "@features/cohorts";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import {
   SubmissionDetailSheet,
@@ -213,6 +214,8 @@ const Page = () => {
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
           onResubmitted={refetch}
+          // The list only shows the current cohort, so this is its cohort.
+          cohortEnded={!!dashboard?.cohort && isCohortEnded(dashboard.cohort)}
         />
       )}
     </PageContainer>
