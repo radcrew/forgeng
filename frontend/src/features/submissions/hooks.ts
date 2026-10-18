@@ -11,10 +11,12 @@ export interface UseSubmissionsOptions {
   status?: SubmissionStatusFilter;
   taskId?: number;
   cohortId?: number;
+  /** False waits before loading, for example until the cohort is known. */
+  enabled?: boolean;
 }
 
 export const useSubmissions = (options: UseSubmissionsOptions = {}) => {
-  const { status = "all", taskId, cohortId } = options;
+  const { status = "all", taskId, cohortId, enabled } = options;
   return useAsyncResource(
     () =>
       listSubmissions({
@@ -23,6 +25,7 @@ export const useSubmissions = (options: UseSubmissionsOptions = {}) => {
         status: status === "all" ? undefined : status,
       }),
     [status, taskId, cohortId],
+    { enabled },
   );
 };
 

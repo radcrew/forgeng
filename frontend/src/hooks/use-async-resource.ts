@@ -12,10 +12,12 @@ export interface AsyncResourceState<T> {
 /**
  * Loads async data on mount and when `deps` change.
  * Swap mock `api` implementations for live fetch without touching UI hooks.
+ * With `enabled: false` it waits, for example until a value it needs is known.
  */
 export const useAsyncResource = <T>(
   fetcher: () => Promise<T>,
   deps: readonly unknown[],
+  { enabled = true }: { enabled?: boolean } = {},
 ): AsyncResourceState<T> => {
   const [data, setData] = useState<T | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +27,7 @@ export const useAsyncResource = <T>(
   const refetch = useCallback(() => setVersion((v) => v + 1), []);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
 
     const load = async () => {
@@ -48,7 +51,7 @@ export const useAsyncResource = <T>(
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- caller controls invalidation via deps
-  }, [...deps, version]);
+  }, [...deps, version, enabled]);
 
   return { data, isLoading, error, refetch };
 };

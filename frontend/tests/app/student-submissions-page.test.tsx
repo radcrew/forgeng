@@ -48,7 +48,24 @@ describe("student submissions page", () => {
     };
     render(<Page />);
 
-    expect(useSubmissions).toHaveBeenLastCalledWith({ cohortId: 7 });
+    expect(useSubmissions).toHaveBeenLastCalledWith({
+      cohortId: 7,
+      enabled: true,
+    });
+  });
+
+  it("waits for the dashboard before loading any submissions", () => {
+    // Without the dashboard the cohort is unknown, so loading now would
+    // fetch every cohort's submissions only to throw them away.
+    selectedCohortId = 7;
+    dashboard = undefined;
+    render(<Page />);
+
+    expect(useSubmissions).toHaveBeenLastCalledWith({
+      cohortId: undefined,
+      enabled: false,
+    });
+    expect(screen.getByText("Loading submissions…")).toBeInTheDocument();
   });
 
   it("names the cohort in the header and offers the cohort switcher", () => {

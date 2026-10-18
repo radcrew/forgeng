@@ -59,7 +59,12 @@ const Page = () => {
     isLoading: submissionsLoading,
     error: submissionsError,
     refetch,
-  } = useSubmissions({ cohortId: dashboard?.cohort?.id });
+  } = useSubmissions({
+    cohortId: dashboard?.cohort?.id,
+    // Wait for the dashboard, which says which cohort to show. Loading
+    // before that fetched every cohort's submissions only to throw them away.
+    enabled: !!dashboard,
+  });
   const isLoading = (!dashboard && !dashboardError) || submissionsLoading;
   const error = dashboardError ?? submissionsError;
   const retry = dashboardError ? refetchDashboard : refetch;

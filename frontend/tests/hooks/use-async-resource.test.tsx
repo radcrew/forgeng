@@ -77,6 +77,23 @@ describe("useAsyncResource", () => {
     await waitFor(() => expect(result.current.data).toBe("item-2"));
   });
 
+  it("waits while enabled is false, then loads once it turns true", async () => {
+    const fetcher = vi.fn<() => Promise<number>>().mockResolvedValue(7);
+
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useAsyncResource(fetcher, [], { enabled }),
+      { initialProps: { enabled: false } },
+    );
+
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(result.current.isLoading).toBe(true);
+
+    rerender({ enabled: true });
+
+    await waitFor(() => expect(result.current.data).toBe(7));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it("ignores a resolution after unmount (no state update)", async () => {
     let resolve!: (value: number) => void;
     const fetcher = () =>
