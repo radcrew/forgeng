@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { Prisma, Task } from '@prisma/client';
@@ -27,6 +28,8 @@ function assertDueDateToPublish(
 
 @Injectable()
 export class TasksService {
+  private readonly logger = new Logger(TasksService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
@@ -102,7 +105,7 @@ export class TasksService {
       },
     });
     if (created.status === 'published') {
-      await this.notifications.notifyTaskPublished(created);
+      await this.announce(created);
     }
     return this.serialize(created);
   }
@@ -151,7 +154,7 @@ export class TasksService {
     // Only after the transaction commits, so a rolled-back change is never
     // announced.
     if (firstPublish) {
-      await this.notifications.notifyTaskPublished(updated);
+      await this.announce(updated);
     }
     return this.serialize(updated);
   }
@@ -160,6 +163,22 @@ export class TasksService {
     const exists = await this.prisma.task.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Task not found.');
     await this.prisma.task.delete({ where: { id } });
+  }
+
+  /**
+   * Best-effort: the task is already saved and marked as published, so a
+   * failed notice must not report the save as failed. Saving again would not
+   * announce it either, since the task is already marked.
+   */
+  private async announce(task: Task): Promise<void> {
+    try {
+      await this.notifications.notifyTaskPublished(task);
+    } catch (err) {
+      this.logger.error(
+        `Failed to announce task ${task.id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   private async serialize(task: Task): Promise<TaskDto> {

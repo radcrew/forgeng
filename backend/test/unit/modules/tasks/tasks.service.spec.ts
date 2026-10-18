@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma, type Task } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
@@ -230,6 +230,26 @@ describe('TasksService', () => {
       expect(data.publishedAt).toBeInstanceOf(Date);
     });
 
+    it('still creates a published task when the notice fails', async () => {
+      prisma.task.create.mockResolvedValue(makeTask({ status: 'published' }));
+      notifications.notifyTaskPublished.mockRejectedValue(new Error('db blip'));
+      const logged = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+
+      const dto = await service.create({
+        cohortId: 3,
+        title: 'x',
+        type: 'project',
+        status: 'published',
+        dueDate: '2026-11-30T00:00:00.000Z',
+      } as never);
+
+      expect(dto.status).toBe('published');
+      expect(logged).toHaveBeenCalled();
+      logged.mockRestore();
+    });
+
     it('refuses to create a published task with no due date', async () => {
       await expect(
         service.create({
@@ -283,6 +303,23 @@ describe('TasksService', () => {
       ]);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+    });
+
+    it('still reports a publish as saved when the notice fails', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', dueDate: new Date('2026-11-30') }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+      notifications.notifyTaskPublished.mockRejectedValue(new Error('db blip'));
+      const logged = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+
+      const dto = await service.update(5, { status: 'published' } as never);
+
+      expect(dto.status).toBe('published');
+      expect(logged).toHaveBeenCalled();
+      logged.mockRestore();
     });
 
     it('saves the task and its published mark in one transaction', async () => {
