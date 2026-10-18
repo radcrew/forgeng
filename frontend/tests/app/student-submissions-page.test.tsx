@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 let selectedCohortId: number | undefined;
 let dashboard: unknown;
+let dashboardLoading = false;
 const useSubmissions = vi.fn();
 
 vi.mock("@contexts", () => ({
@@ -13,12 +14,22 @@ vi.mock("@contexts", () => ({
 vi.mock("@features/dashboard", () => ({
   useStudentDashboard: (cohortId?: number) => ({
     data: dashboard,
+    isLoading: dashboardLoading,
     error: null,
     refetch: vi.fn(),
     requested: cohortId,
   }),
-  CohortSwitcher: ({ cohorts }: { cohorts: { name: string }[] }) => (
-    <div>Switch between {cohorts.map((c) => c.name).join(", ")}</div>
+  CohortSwitcher: ({
+    cohorts,
+    disabled,
+  }: {
+    cohorts: { name: string }[];
+    disabled?: boolean;
+  }) => (
+    <div>
+      Switch between {cohorts.map((c) => c.name).join(", ")}
+      {disabled ? " (locked)" : ""}
+    </div>
   ),
 }));
 
@@ -30,6 +41,7 @@ vi.mock("@features/submissions", async (importOriginal) => ({
 import Page from "../../src/app/student/submissions/page";
 
 beforeEach(() => {
+  dashboardLoading = false;
   useSubmissions.mockReset();
   useSubmissions.mockReturnValue({
     data: [],
@@ -52,6 +64,31 @@ describe("student submissions page", () => {
       cohortId: 7,
       enabled: true,
     });
+  });
+
+  it("shows loading, not the old cohort, while a switched cohort loads", () => {
+    // The hook still holds the old cohort's dashboard and submissions.
+    selectedCohortId = 3;
+    dashboard = {
+      cohort: { id: 7, name: "Autumn" },
+      cohorts: [
+        { id: 3, name: "Spring" },
+        { id: 7, name: "Autumn" },
+      ],
+    };
+    dashboardLoading = true;
+    useSubmissions.mockReturnValue({
+      data: [{ id: 1, status: "submitted", task: { title: "Old task" } }],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<Page />);
+
+    expect(screen.getByText("Loading submissions…")).toBeInTheDocument();
+    expect(screen.queryByText(/Autumn —/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Old task")).not.toBeInTheDocument();
+    expect(screen.getByText(/(locked)/)).toBeInTheDocument();
   });
 
   it("waits for the dashboard before loading any submissions", () => {

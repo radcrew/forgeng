@@ -50,10 +50,15 @@ const Page = () => {
   // their default cohort when they haven't picked one.
   const { selectedCohortId } = useSelectedCohort();
   const {
-    data: dashboard,
+    data: loadedDashboard,
+    isLoading: dashboardLoading,
     error: dashboardError,
     refetch: refetchDashboard,
   } = useStudentDashboard(selectedCohortId);
+  // After a cohort switch the hook keeps the old cohort's dashboard until the
+  // new one arrives. Don't treat it as current, or the page shows the old
+  // cohort's name and list, and the old "cohort ended" state.
+  const dashboard = dashboardLoading ? undefined : loadedDashboard;
   const {
     data: submissions = [],
     isLoading: submissionsLoading,
@@ -89,11 +94,12 @@ const Page = () => {
             : "Your submission history and feedback."
         }
         actions={
-          dashboard?.cohort && (
+          // The switcher stays on screen during a switch, but locked.
+          loadedDashboard?.cohort && (
             <CohortSwitcher
-              cohorts={dashboard.cohorts}
-              activeCohortId={dashboard.cohort.id}
-              disabled={submissionsLoading}
+              cohorts={loadedDashboard.cohorts}
+              activeCohortId={loadedDashboard.cohort.id}
+              disabled={dashboardLoading || submissionsLoading}
             />
           )
         }
@@ -213,7 +219,7 @@ const Page = () => {
         </div>
       )}
 
-      {selected && (
+      {selected && !isLoading && (
         <SubmissionDetailSheet
           submission={selected}
           open={!!selectedId}
