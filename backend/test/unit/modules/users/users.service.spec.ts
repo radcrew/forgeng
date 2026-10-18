@@ -32,11 +32,13 @@ function makePayment(overrides: Partial<Payment> = {}): Payment {
   } as unknown as Payment;
 }
 
-/** The month `ago` months before now, as "YYYY-MM" (negative is ahead). */
+/** The UTC month `ago` months before now, as "YYYY-MM" (negative is ahead). */
 function monthsAgo(ago: number): string {
   const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth() - ago, 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const d = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - ago, 1),
+  );
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
 describe('UsersService', () => {
@@ -243,6 +245,29 @@ describe('UsersService', () => {
       expect(data.forMonth).toMatch(/^\d{4}-\d{2}$/);
     });
 
+    it('picks the default month in UTC, whatever the server time zone', async () => {
+      // 02:00 UTC on 1 June is still 31 May in time zones behind UTC.
+      jest.useFakeTimers({
+        now: new Date('2026-06-01T02:00:00.000Z'),
+        doNotFake: ['nextTick', 'setImmediate'],
+      });
+      try {
+        prisma.user.findUnique.mockResolvedValue(makeUser());
+        prisma.payment.create.mockResolvedValue(makePayment());
+
+        await service.recordPayment(1, { amount: 250, currency: 'USDT' });
+
+        const data = (
+          prisma.payment.create.mock.calls[0] as [
+            { data: { forMonth: string } },
+          ]
+        )[0].data;
+        expect(data.forMonth).toBe('2026-06');
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     it('still returns the saved payment when the email fails', async () => {
       prisma.user.findUnique.mockResolvedValue(makeUser());
       prisma.payment.create.mockResolvedValue(makePayment());
@@ -427,8 +452,7 @@ describe('UsersService', () => {
 
   describe('paymentStats', () => {
     it('lists every payment under the stipend month it is for', async () => {
-      const now = new Date();
-      const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const thisMonth = monthsAgo(0);
       prisma.payment.findMany.mockImplementation(
         ({ where }: { where: { forMonth: string } }) =>
           Promise.resolve(

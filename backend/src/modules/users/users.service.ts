@@ -67,9 +67,18 @@ export interface PaymentDto {
   paidAt: string;
 }
 
-/** A month as "YYYY-MM", matching the keys of the monthly stats. */
+/**
+ * A month as "YYYY-MM", matching the keys of the monthly stats. Months are in
+ * UTC everywhere: here, in the payment month migration, and in the stipend
+ * check in the feedback service. So a payment near a month edge lands in the
+ * same month whatever time zone the server runs in.
+ */
 const monthKey = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+
+/** The first moment (UTC) of the month `ago` months before `now`. */
+const monthStartUtc = (now: Date, ago: number) =>
+  new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - ago, 1));
 
 @Injectable()
 export class UsersService {
@@ -117,13 +126,7 @@ export class UsersService {
     // other month would be saved but never shown, and could be paid twice.
     const now = new Date();
     const forMonth = dto.forMonth ?? monthKey(now);
-    const oldest = monthKey(
-      new Date(
-        now.getFullYear(),
-        now.getMonth() - (PAYMENT_HISTORY_MONTHS - 1),
-        1,
-      ),
-    );
+    const oldest = monthKey(monthStartUtc(now, PAYMENT_HISTORY_MONTHS - 1));
     if (forMonth < oldest || forMonth > monthKey(now)) {
       throw new BadRequestException(
         `Pick a month from ${oldest} to ${monthKey(now)}.`,
@@ -224,7 +227,9 @@ export class UsersService {
         });
       }
       // An applicant isn't in any cohort, so moving someone back to
-      // applicant takes them out of their cohorts too.
+      // applicant takes them out of their cohorts too. Their application
+      // stays as it is, even when it was accepted: decisions are final, and
+      // this changes the role, not the review.
       if (roleChanged && dto.role === 'applicant') {
         await tx.enrollment.deleteMany({ where: { userId: id } });
       }
@@ -276,18 +281,9 @@ export class UsersService {
     const monthlyStats: MonthlyPaymentStat[] = [];
 
     for (let i = PAYMENT_HISTORY_MONTHS - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
-      const monthEnd = new Date(
-        d.getFullYear(),
-        d.getMonth() + 1,
-        0,
-        23,
-        59,
-        59,
-        999,
-      );
-      const month = monthKey(d);
+      const monthStart = monthStartUtc(now, i);
+      const monthEnd = new Date(monthStartUtc(now, i - 1).getTime() - 1);
+      const month = monthKey(monthStart);
 
       const tasks =
         cohortIds.length > 0
