@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Prisma, Task } from '@prisma/client';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { toTaskDto, type TaskDto } from '../../common/mappers';
@@ -7,6 +11,19 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { ListTasksQuery } from './dto/list-tasks.query';
 import { UpdateTaskDto } from './dto/update-task.dto';
+
+/**
+ * The stipend counts tasks by the month they are due, so a task can't be
+ * published without a due date. Same rule as the admin task form.
+ */
+function assertDueDateToPublish(
+  publishing: boolean,
+  dueDate: string | Date | null | undefined,
+): void {
+  if (publishing && !dueDate) {
+    throw new BadRequestException('Add a due date before publishing.');
+  }
+}
 
 @Injectable()
 export class TasksService {
@@ -69,6 +86,7 @@ export class TasksService {
   }
 
   async create(dto: CreateTaskDto): Promise<TaskDto> {
+    assertDueDateToPublish(dto.status === 'published', dto.dueDate);
     const created = await this.prisma.task.create({
       data: {
         cohortId: dto.cohortId,
@@ -88,6 +106,12 @@ export class TasksService {
   async update(id: number, dto: UpdateTaskDto): Promise<TaskDto> {
     const exists = await this.prisma.task.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Task not found.');
+    // Only on the draft -> published step: a task published before this rule
+    // may have no date and must stay editable.
+    assertDueDateToPublish(
+      exists.status !== 'published' && dto.status === 'published',
+      dto.dueDate ?? exists.dueDate,
+    );
 
     const updated = await this.prisma.task.update({
       where: { id },
