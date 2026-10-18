@@ -58,7 +58,7 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { title: "Cohorts", href: "/admin/cohorts", icon: GraduationCap },
     { title: "Tasks", href: "/admin/tasks", icon: CheckSquare },
     { title: "Notifications", href: "/admin/notifications", icon: Bell },
-    { title: "Students", href: "/admin/users", icon: Users },
+    { title: "Users", href: "/admin/users", icon: Users },
     { title: "Settings", href: "/admin/settings", icon: Settings },
   ],
 };
