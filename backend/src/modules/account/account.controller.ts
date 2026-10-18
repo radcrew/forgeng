@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -15,6 +14,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 
 import {
+  profileLinksOf,
+  SOCIAL_LINK_KEYS,
+  walletsOf,
   toCohortDto,
   toUserDto,
   type ProfileEnrollmentDto,
@@ -55,7 +57,8 @@ export class AccountController {
         whatsapp: true,
       },
     });
-    return toUserDto(user, socials);
+    // Without an application, the links are kept on the user.
+    return toUserDto(user, socials ?? profileLinksOf(user));
   }
 
   @Get('wallets')
@@ -66,11 +69,8 @@ export class AccountController {
       where: { userId: user.id },
       select: { wallets: true },
     });
-    return {
-      wallets:
-        (app?.wallets as Array<{ chain: string; address: string }> | null) ??
-        [],
-    };
+    // Without an application, the wallet is kept on the user.
+    return { wallets: walletsOf(app ? app.wallets : user.wallets) };
   }
 
   @Patch('wallets')
@@ -86,12 +86,13 @@ export class AccountController {
       where: { userId: user.id },
       data: { wallets },
     });
-    // Nothing was stored, so don't report the wallet as saved: the student
-    // would believe they can be paid when there is no address on file.
+    // No application to hold it, so keep the wallet on the user. Never create
+    // an application here: it would show up as an empty pending one.
     if (count === 0) {
-      throw new BadRequestException(
-        'Wallets are saved with your application, and this account has none. Please contact an admin to add your wallet.',
-      );
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { wallets },
+      });
     }
     return { wallets };
   }
@@ -134,13 +135,27 @@ export class AccountController {
 
     // Social links live on the application. Saving them never creates one,
     // because an application made here would show up as an empty pending
-    // application in the admin list.
+    // application in the admin list. Without one, they are kept on the user.
     const hasApplication =
       (await this.prisma.application.count({ where: { userId: user.id } })) > 0;
-    if (hasSocials && !hasApplication) {
-      throw new BadRequestException(
-        'Social links are saved with your application, and this account has none. Clear the links to save the rest of your profile.',
+    if (!hasApplication) {
+      const links: Record<string, string | null> = { ...profileLinksOf(user) };
+      for (const key of SOCIAL_LINK_KEYS) {
+        const value = socialFields[key];
+        // Left out keeps the link; null removes it.
+        if (value !== undefined) links[key] = value;
+      }
+      const stored = Object.fromEntries(
+        Object.entries(links).filter(([, v]) => v !== null),
       );
+      const updated = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...userFields,
+          ...(hasSocials ? { profileLinks: stored } : {}),
+        },
+      });
+      return toUserDto(updated, profileLinksOf(updated));
     }
 
     const [updated, socials] = await Promise.all([

@@ -8,7 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import type { Prisma } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
 import {
+  profileLinksOf,
   toCohortDto,
+  walletsOf,
   toUserDto,
   type ProfileEnrollmentDto,
   type UserDto,
@@ -103,7 +105,8 @@ export class UsersService {
       }),
     ]);
     if (!user) throw new NotFoundException('User not found.');
-    return toUserDto(user, socials);
+    // Without an application, the links are kept on the user.
+    return toUserDto(user, socials ?? profileLinksOf(user));
   }
 
   async recordPayment(id: number, dto: RecordPaymentDto): Promise<PaymentDto> {
@@ -235,7 +238,7 @@ export class UsersService {
   }
 
   async paymentStats(userId: number): Promise<UserPaymentStats> {
-    const [application, enrollments] = await Promise.all([
+    const [application, enrollments, user] = await Promise.all([
       this.prisma.application.findUnique({
         where: { userId },
         select: { wallets: true },
@@ -243,6 +246,11 @@ export class UsersService {
       this.prisma.enrollment.findMany({
         where: { userId },
         select: { cohortId: true },
+      }),
+      // Holds the wallet when there is no application.
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { wallets: true },
       }),
     ]);
 
@@ -322,11 +330,7 @@ export class UsersService {
     }
 
     return {
-      wallets:
-        (application?.wallets as Array<{
-          chain: string;
-          address: string;
-        }> | null) ?? [],
+      wallets: walletsOf(application ? application.wallets : user?.wallets),
       monthlyStats,
     };
   }

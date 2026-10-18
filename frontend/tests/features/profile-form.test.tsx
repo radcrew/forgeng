@@ -145,31 +145,6 @@ describe("ProfileForm", () => {
     ).toBeInTheDocument();
   });
 
-  it("hides the link fields and explains why when there is no application", async () => {
-    render(<ProfileForm user={makeUser()} hasApplication={false} />);
-
-    expect(
-      screen.queryByPlaceholderText("https://github.com/you"),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByText(/Your profile links are saved with your application/),
-    ).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
-
-    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
-    // Only the name goes out, so the server can't refuse links.
-    expect(updateProfile.mock.calls[0][0]).toEqual({ name: "Ada Lovelace" });
-  });
-
-  it("shows the link fields while it is unknown whether there is an application", () => {
-    render(<ProfileForm user={makeUser()} />);
-
-    expect(
-      screen.getByPlaceholderText("https://github.com/you"),
-    ).toBeInTheDocument();
-  });
-
   it("removes a saved field that was emptied", async () => {
     render(<ProfileForm user={makeUser()} />);
 

@@ -397,6 +397,18 @@ describe('UsersService', () => {
           .every((m) => m.payments.length === 0),
       ).toBe(true);
     });
+
+    it('shows the wallet kept on the user when there is no application', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+      prisma.user.findUnique.mockResolvedValue({
+        wallets: [{ chain: 'evm', address: '0xabc' }],
+      });
+      prisma.payment.findMany.mockResolvedValue([]);
+
+      const stats = await service.paymentStats(1);
+
+      expect(stats.wallets).toEqual([{ chain: 'evm', address: '0xabc' }]);
+    });
   });
 
   describe('notifyWalletMissing', () => {

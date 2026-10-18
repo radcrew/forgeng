@@ -28,11 +28,6 @@ import { ProfileAvatarUpload } from "./profile-avatar-upload";
 export type ProfileFormProps = {
   user: UserProfile;
   onSaved?: () => void | Promise<unknown>;
-  /**
-   * False when the student has no application, so links can't be saved.
-   * Undefined while it is unknown; the link fields then show as usual.
-   */
-  hasApplication?: boolean;
 };
 
 const OPTIONAL_FIELDS = [
@@ -75,11 +70,7 @@ const SOCIAL_FIELDS: SocialFieldConfig[] = [
   },
 ];
 
-export const ProfileForm = ({
-  user,
-  onSaved,
-  hasApplication,
-}: ProfileFormProps) => {
+export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(PROFILE_FORM_SCHEMA),
     defaultValues: {
@@ -114,7 +105,7 @@ export const ProfileForm = ({
     const payload: ProfileUpdate = {
       name: data.name.trim(),
     };
-    for (const field of hasApplication === false ? [] : OPTIONAL_FIELDS) {
+    for (const field of OPTIONAL_FIELDS) {
       const value = data[field].trim();
       if (value) {
         payload[field] = value;
@@ -178,17 +169,7 @@ export const ProfileForm = ({
               )}
             />
 
-            {/* Links are saved with the application, so without one the
-                server refuses them. Say so instead of showing fields that
-                can only fail. */}
-            {hasApplication === false && (
-              <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-                Your profile links are saved with your application. Apply to
-                the program to add your GitHub, LinkedIn and contact links.
-              </p>
-            )}
-
-            {hasApplication !== false && SOCIAL_FIELDS.map((sf) => (
+            {SOCIAL_FIELDS.map((sf) => (
               <FormField
                 key={sf.name}
                 control={form.control}
