@@ -13,6 +13,7 @@ export interface AsyncResourceState<T> {
  * Loads async data on mount and when `deps` change.
  * Swap mock `api` implementations for live fetch without touching UI hooks.
  * With `enabled: false` it waits, for example until a value it needs is known.
+ * While waiting it reports `isLoading: false`.
  */
 export const useAsyncResource = <T>(
   fetcher: () => Promise<T>,
@@ -53,5 +54,7 @@ export const useAsyncResource = <T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps -- caller controls invalidation via deps
   }, [...deps, version, enabled]);
 
-  return { data, isLoading, error, refetch };
+  // Waiting isn't loading. Reporting it as loading would keep a page on its
+  // spinner when the value it waits for failed to load and never arrives.
+  return { data, isLoading: enabled && isLoading, error, refetch };
 };

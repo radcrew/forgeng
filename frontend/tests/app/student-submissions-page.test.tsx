@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 let selectedCohortId: number | undefined;
 let dashboard: unknown;
 let dashboardLoading = false;
+let dashboardError: Error | null = null;
+const refetchDashboard = vi.fn();
 const useSubmissions = vi.fn();
 
 vi.mock("@contexts", () => ({
@@ -15,8 +17,8 @@ vi.mock("@features/dashboard", () => ({
   useStudentDashboard: (cohortId?: number) => ({
     data: dashboard,
     isLoading: dashboardLoading,
-    error: null,
-    refetch: vi.fn(),
+    error: dashboardError,
+    refetch: refetchDashboard,
     requested: cohortId,
   }),
   CohortSwitcher: ({
@@ -42,6 +44,8 @@ import Page from "../../src/app/student/submissions/page";
 
 beforeEach(() => {
   dashboardLoading = false;
+  dashboardError = null;
+  refetchDashboard.mockClear();
   useSubmissions.mockReset();
   useSubmissions.mockReturnValue({
     data: [],
@@ -89,6 +93,28 @@ describe("student submissions page", () => {
     expect(screen.queryByText(/Autumn —/)).not.toBeInTheDocument();
     expect(screen.queryByText("Old task")).not.toBeInTheDocument();
     expect(screen.getByText(/(locked)/)).toBeInTheDocument();
+  });
+
+  it("shows an error with a retry when the dashboard fails to load", async () => {
+    selectedCohortId = 7;
+    dashboard = undefined;
+    dashboardError = new Error("offline");
+    // The submissions load is still waiting for the dashboard, so it is not
+    // loading. Before, it said "loading", and the page never left its spinner.
+    useSubmissions.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<Page />);
+
+    expect(screen.queryByText("Loading submissions…")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "We couldn't load your submissions.",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(refetchDashboard).toHaveBeenCalledTimes(1);
   });
 
   it("waits for the dashboard before loading any submissions", () => {

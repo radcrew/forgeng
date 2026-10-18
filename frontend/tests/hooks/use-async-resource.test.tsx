@@ -86,10 +86,12 @@ describe("useAsyncResource", () => {
     );
 
     expect(fetcher).not.toHaveBeenCalled();
-    expect(result.current.isLoading).toBe(true);
+    // Waiting isn't loading.
+    expect(result.current.isLoading).toBe(false);
 
     rerender({ enabled: true });
 
+    expect(result.current.isLoading).toBe(true);
     await waitFor(() => expect(result.current.data).toBe(7));
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
