@@ -36,8 +36,12 @@ export type SubmissionDetailSheetProps = {
   onResubmitted?: () => void;
   /** Off on the task page itself, where the link would lead back to it. */
   showTaskLink?: boolean;
-  /** The submission's cohort has ended, so resubmitting isn't possible. */
-  cohortEnded?: boolean;
+  /**
+   * The submission's cohort has ended, so resubmitting isn't possible.
+   * Required on purpose: a caller that left it out would show a resubmit
+   * form that the server then refuses.
+   */
+  cohortEnded: boolean;
 };
 
 export const SubmissionDetailSheet = ({
@@ -46,7 +50,7 @@ export const SubmissionDetailSheet = ({
   onClose,
   onResubmitted,
   showTaskLink = true,
-  cohortEnded = false,
+  cohortEnded,
 }: SubmissionDetailSheetProps) => {
   const {
     data: feedback = [],

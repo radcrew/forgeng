@@ -38,7 +38,12 @@ const submission: Submission = {
 
 const renderSheet = () =>
   render(
-    <SubmissionDetailSheet submission={submission} open onClose={vi.fn()} />,
+    <SubmissionDetailSheet
+      submission={submission}
+      open
+      onClose={vi.fn()}
+      cohortEnded={false}
+    />,
   );
 
 beforeEach(() => {
@@ -82,6 +87,7 @@ describe("student SubmissionDetailSheet resubmit", () => {
         }}
         open
         onClose={vi.fn()}
+        cohortEnded={false}
       />,
     );
 
@@ -142,6 +148,7 @@ describe("student SubmissionDetailSheet feedback", () => {
         open
         onClose={vi.fn()}
         showTaskLink={false}
+        cohortEnded={false}
       />,
     );
 
