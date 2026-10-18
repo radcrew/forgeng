@@ -182,6 +182,23 @@ describe('DashboardService', () => {
       expect(result.taskStats.approved).toBe(1);
     });
 
+    it('lists the student submissions by the latest send', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        { cohortId: 3, cohort: makeCohort({ id: 3 }), enrolledAt: DATE },
+      ]);
+      prisma.task.findMany.mockResolvedValue([]);
+      prisma.submission.findMany.mockResolvedValue([]);
+
+      await service.student(student);
+
+      expect(prisma.submission.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: student.id },
+          orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
+        }),
+      );
+    });
+
     it('skips past due dates when picking the next deadline', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
         {
@@ -275,6 +292,13 @@ describe('DashboardService', () => {
       expect(result.analytics.submissionBreakdown.approved).toBe(9);
       expect(result.analytics.submissionBreakdown.submitted).toBe(4);
       expect(result.analytics.submissionBreakdown.needsWork).toBe(0);
+      // Waiting work is listed by the latest send, like the review queue.
+      expect(prisma.submission.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { status: 'submitted' },
+          orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
+        }),
+      );
     });
 
     it('rolls submission counts up to their cohort', async () => {

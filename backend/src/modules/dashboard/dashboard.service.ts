@@ -140,7 +140,9 @@ export class DashboardService {
     });
     const mySubmissions = await this.prisma.submission.findMany({
       where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
+      // Latest send first, like the submissions page, so a resubmit shows up
+      // in the recent list.
+      orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
       include: { task: true },
     });
 
@@ -312,7 +314,9 @@ export class DashboardService {
       }),
       this.prisma.submission.findMany({
         where: { status: 'submitted' },
-        orderBy: { createdAt: 'desc' },
+        // Latest send first, like the review queue, so resubmitted work
+        // waiting for review shows up here too.
+        orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
         take: 5,
         include: { task: true, user: true },
       }),
