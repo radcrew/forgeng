@@ -125,8 +125,17 @@ const Page = () => {
 
       <div className="space-y-3">
         {isLoading ? <LoadingState message="Loading tasks…" /> : null}
+        {/* A failed reload keeps the old list, so keep it on screen and say
+            only that the refresh failed. */}
         {!isLoading && error && (
-          <ErrorState what="the tasks" onRetry={refetch} />
+          <ErrorState
+            what="the tasks"
+            message={
+              tasks.length > 0 ? "We couldn't refresh the tasks." : undefined
+            }
+            size={tasks.length > 0 ? "compact" : "default"}
+            onRetry={refetch}
+          />
         )}
         {!isLoading && !error && tasks.length === 0 && (
           <EmptyState

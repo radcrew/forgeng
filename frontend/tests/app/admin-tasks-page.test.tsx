@@ -55,6 +55,19 @@ describe("admin tasks page", () => {
     expect(refetch).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps the old list and says only the refresh failed", () => {
+    // A failed reload after a save or delete keeps the tasks it had.
+    tasks = [makeTask()];
+    error = new Error("offline");
+    render(<Page />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "We couldn't refresh the tasks.",
+    );
+    expect(screen.queryByText(/We couldn't load/)).not.toBeInTheDocument();
+    expect(screen.getByText("Build a CLI")).toBeInTheDocument();
+  });
+
   it("says there are no tasks yet when the list is empty", () => {
     tasks = [];
     render(<Page />);

@@ -12,6 +12,15 @@ describe("ErrorState", () => {
     );
   });
 
+  it("shows a custom message in place of the default sentence", () => {
+    render(
+      <ErrorState what="the tasks" message="We couldn't refresh the tasks." />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /^We couldn't refresh the tasks\.$/,
+    );
+  });
+
   it("loads again when Try again is clicked", async () => {
     const onRetry = vi.fn();
     render(<ErrorState what="your tasks" onRetry={onRetry} />);
