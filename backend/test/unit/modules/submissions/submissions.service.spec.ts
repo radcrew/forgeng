@@ -117,6 +117,18 @@ describe('SubmissionsService', () => {
       );
     });
 
+    it('lists the latest send first, so resubmitted work moves up', async () => {
+      prisma.submission.findMany.mockResolvedValue([]);
+
+      await service.list(admin, {});
+
+      expect(prisma.submission.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
+        }),
+      );
+    });
+
     it('shows a student only the cohort they selected', async () => {
       prisma.submission.findMany.mockResolvedValue([]);
 

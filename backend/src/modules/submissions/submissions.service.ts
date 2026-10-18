@@ -59,7 +59,9 @@ export class SubmissionsService {
 
     const subs = await this.prisma.submission.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      // Latest send first, so resubmitted work moves back to the top of the
+      // review queue instead of staying where it was first sent.
+      orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
       include: { task: true, user: true },
     });
 

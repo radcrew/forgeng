@@ -66,7 +66,8 @@ const Page = () => {
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {format(new Date(sub.createdAt), "MMM d, yyyy")}
+                  {/* The list is ordered by the latest send, so show that. */}
+                  {format(new Date(sub.lastSubmittedAt), "MMM d, yyyy")}
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
