@@ -108,6 +108,15 @@ describe('UpdateWalletsDto', () => {
     expect(failingProps(UpdateWalletsDto, { wallets: [] })).toEqual([]);
   });
 
+  it('names the network BSC, as students see it, in the error', () => {
+    const instance = plainToInstance(UpdateWalletsDto, {
+      wallets: [{ chain: 'evm', address: '0x123' }],
+    });
+    const message = JSON.stringify(validateSync(instance));
+    expect(message).toContain('Invalid BSC address');
+    expect(message).not.toContain('EVM');
+  });
+
   it('rejects an invalid wallet address', () => {
     expect(
       failingProps(UpdateWalletsDto, {

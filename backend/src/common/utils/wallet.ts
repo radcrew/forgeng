@@ -4,8 +4,10 @@ import { registerDecorator, type ValidationArguments } from 'class-validator';
 export const SUPPORTED_CHAINS = ['evm', 'solana', 'tron'] as const;
 export type WalletChain = (typeof SUPPORTED_CHAINS)[number];
 
+// Students see the "evm" network as BSC (BNB Smart Chain), so the message
+// names it the same way.
 const ADDRESS_MESSAGES: Record<WalletChain, string> = {
-  evm: 'Invalid EVM address (0x + 40 hex characters)',
+  evm: 'Invalid BSC address (0x + 40 hex characters)',
   solana: 'Invalid Solana address',
   tron: 'Invalid Tron address (must start with T)',
 };
