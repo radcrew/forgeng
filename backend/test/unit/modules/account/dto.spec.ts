@@ -53,6 +53,10 @@ describe('UpdateProfileDto', () => {
     expect(failingProps(UpdateProfileDto, { name: '   ' })).toContain('name');
   });
 
+  it('rejects a null name, which would clear it', () => {
+    expect(failingProps(UpdateProfileDto, { name: null })).toContain('name');
+  });
+
   it('still lets the name be left out', () => {
     expect(failingProps(UpdateProfileDto, {})).not.toContain('name');
   });

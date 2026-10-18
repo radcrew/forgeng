@@ -5,6 +5,7 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -20,12 +21,13 @@ import {
 
 export class UpdateProfileDto {
   // Leaving the name out keeps it, but a sent name can't be blank: the header
-  // would show nothing, since "" doesn't fall back to "Unnamed".
-  @IsOptional()
+  // would show nothing, since "" doesn't fall back to "Unnamed". Not
+  // @IsOptional, which also lets null through and clears the name.
+  @ValidateIf((o: { name?: unknown }) => o.name !== undefined)
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
   )
-  @IsString()
+  @IsString({ message: 'Enter your name.' })
   @MinLength(1, { message: 'Enter your name.' })
   @MaxLength(120)
   name?: string;
