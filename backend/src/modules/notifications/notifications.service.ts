@@ -196,9 +196,11 @@ export class NotificationsService {
       .filter((e) => prefsFor(e.userId).taskEmail)
       .map((e) => e.user.email);
     // Emails go out after the response, so publishing doesn't wait for every
-    // student's email. waitUntil keeps the Vercel function alive until they
-    // finish; elsewhere it does nothing and the sends still run. sendEmail
-    // logs its own failures, so nothing here can reject.
+    // student's email. The backend runs on Vercel, where waitUntil keeps the
+    // function alive until they finish. On a long-running server (local dev,
+    // the Render blueprint) waitUntil does nothing and the sends still run in
+    // the background, but any still in flight are lost if the process stops.
+    // sendEmail logs its own failures, so nothing here can reject.
     waitUntil(Promise.all(recipients.map((to) => this.sendEmail(to, email))));
   }
 
