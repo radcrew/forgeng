@@ -53,6 +53,24 @@ beforeEach(() => {
 });
 
 describe("student SubmissionDetailSheet after the cohort ends", () => {
+  it("shows the resubmit date next to the first send date", () => {
+    render(
+      <SubmissionDetailSheet
+        submission={{
+          ...submission,
+          lastSubmittedAt: "2026-01-20T12:00:00.000Z",
+        }}
+        open
+        onClose={vi.fn()}
+        cohortEnded={false}
+      />,
+    );
+
+    expect(
+      screen.getByText("Submitted Jan 15, 2026 · Resubmitted Jan 20, 2026"),
+    ).toBeInTheDocument();
+  });
+
   it("explains that resubmitting is closed instead of showing the form", () => {
     feedbackState = { data: [], isLoading: false, error: null };
     render(

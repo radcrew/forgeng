@@ -9,3 +9,14 @@ const DAY_OVER_EVERYWHERE_MS = 36 * 60 * 60 * 1000;
  */
 export const isCalendarDayOver = (date: Date, now = Date.now()): boolean =>
   now >= date.getTime() + DAY_OVER_EVERYWHERE_MS;
+
+/**
+ * A cohort stops taking work once an admin marks it completed or its end
+ * date is over everywhere on Earth, so no student loses part of the last day.
+ */
+export const isCohortEnded = (
+  cohort: { status: string; endDate: Date | null },
+  now = Date.now(),
+): boolean =>
+  cohort.status === 'completed' ||
+  (cohort.endDate !== null && isCalendarDayOver(cohort.endDate, now));

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import {
   ChevronLeft,
   ChevronRight,
@@ -23,22 +22,17 @@ import {
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { STUDENT_SUBMISSION_FILTER_TABS } from "@constants/submissions";
 import { useSelectedCohort } from "@contexts";
-import { isCohortEnded } from "@features/cohorts";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import {
   SubmissionDetailSheet,
   SubmissionStatusBadge,
   filterSubmissions,
+  formatSentDates,
   useSubmissions,
 } from "@features/submissions";
-import type { Submission, SubmissionStatusFilter } from "@types";
+import type { SubmissionStatusFilter } from "@types";
 
 const PAGE_SIZE = 20;
-
-// The first send sets both dates to the same moment, so any difference means
-// the work was sent again.
-const wasResubmitted = (sub: Submission) =>
-  sub.lastSubmittedAt !== sub.createdAt;
 
 const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -164,9 +158,7 @@ const Page = () => {
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    Submitted {format(new Date(sub.createdAt), "MMM d, yyyy")}
-                    {wasResubmitted(sub) &&
-                      ` · Resubmitted ${format(new Date(sub.lastSubmittedAt), "MMM d, yyyy")}`}
+                    {formatSentDates(sub)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
@@ -224,8 +216,9 @@ const Page = () => {
           open={!!selectedId}
           onClose={() => setSelectedId(null)}
           onResubmitted={refetch}
-          // The list only shows the current cohort, so this is its cohort.
-          cohortEnded={!!dashboard?.cohort && isCohortEnded(dashboard.cohort)}
+          // From the submission's own cohort. A student with no current
+          // cohort sees work from every cohort, so the dashboard can't say.
+          cohortEnded={selected.cohortEnded}
         />
       )}
     </PageContainer>

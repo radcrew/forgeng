@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,6 +24,7 @@ import type { Submission } from "@types";
 
 import { resubmitSubmission } from "../../api";
 import { useSubmissionFeedback } from "../../hooks";
+import { formatSentDates } from "../../sent-dates";
 import { validateSubmission, type SubmissionErrors } from "../../validation";
 import { SubmissionStatusBadge } from "../status-badge";
 
@@ -105,7 +105,7 @@ export const SubmissionDetailSheet = ({
         <div className="flex items-center gap-2">
           <SubmissionStatusBadge status={submission.status} />
           <span className="text-sm text-muted-foreground">
-            Submitted {format(new Date(submission.createdAt), "MMM d, yyyy")}
+            {formatSentDates(submission)}
           </span>
           {showTaskLink && (
             <Link
