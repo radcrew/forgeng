@@ -257,6 +257,22 @@ describe('SubmissionsService', () => {
       expect(notifications.notifySubmissionReceived).toHaveBeenCalledTimes(1);
     });
 
+    it('gives a first send the same created and last-submitted time', async () => {
+      prisma.task.findUnique.mockResolvedValue(makeTask());
+      prisma.enrollment.findUnique.mockResolvedValue({ id: 1 });
+      prisma.submission.create.mockResolvedValue(makeSubmission());
+
+      await service.create({ taskId: 5, content: 'x' }, student);
+
+      const { data } = (
+        prisma.submission.create.mock.calls[0] as [
+          { data: { createdAt: Date; lastSubmittedAt: Date } },
+        ]
+      )[0];
+      expect(data.createdAt).toBeInstanceOf(Date);
+      expect(data.lastSubmittedAt).toBe(data.createdAt);
+    });
+
     it('does not let a notification failure break the submission', async () => {
       prisma.task.findUnique.mockResolvedValue(makeTask());
       prisma.enrollment.findUnique.mockResolvedValue({ id: 1 });

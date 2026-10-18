@@ -118,6 +118,9 @@ export class SubmissionsService {
       );
     }
 
+    // One timestamp for both dates, so they match exactly until the student
+    // resubmits. The page shows "resubmitted" whenever they differ.
+    const now = new Date();
     const created = await this.prisma.submission.create({
       data: {
         taskId: dto.taskId,
@@ -125,6 +128,8 @@ export class SubmissionsService {
         content: dto.content,
         repoUrl: dto.repoUrl,
         status: 'submitted',
+        createdAt: now,
+        lastSubmittedAt: now,
       },
     });
     await this.notifyAdminsOfSubmission(user, task.title);

@@ -35,11 +35,10 @@ import type { Submission, SubmissionStatusFilter } from "@types";
 
 const PAGE_SIZE = 20;
 
-// The first send sets both dates at almost the same moment, so only a clear
-// gap means the work was sent again.
+// The first send sets both dates to the same moment, so any difference means
+// the work was sent again.
 const wasResubmitted = (sub: Submission) =>
-  new Date(sub.lastSubmittedAt).getTime() - new Date(sub.createdAt).getTime() >
-  60_000;
+  sub.lastSubmittedAt !== sub.createdAt;
 
 const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);

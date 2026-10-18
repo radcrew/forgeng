@@ -208,6 +208,35 @@ describe("student submissions page", () => {
     expect(screen.getByText(/Submitted Jan 16, 2026$/)).toBeInTheDocument();
   });
 
+  it("marks work resubmitted even when it was sent again within a minute", () => {
+    selectedCohortId = 7;
+    dashboard = {
+      cohort: { id: 7, name: "Autumn" },
+      cohorts: [{ id: 7, name: "Autumn" }],
+    };
+    useSubmissions.mockReturnValue({
+      data: [
+        {
+          id: 1,
+          taskId: 1,
+          task: { id: 1, title: "Build a CLI", type: "coding" },
+          content: "My work",
+          repoUrl: null,
+          status: "submitted",
+          feedbackCount: 0,
+          createdAt: "2026-01-15T12:00:00.000Z",
+          lastSubmittedAt: "2026-01-15T12:00:30.000Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<Page />);
+
+    expect(screen.getByText(/Resubmitted Jan 15, 2026/)).toBeInTheDocument();
+  });
+
   it("says in words how many feedback comments a submission has", () => {
     selectedCohortId = 7;
     dashboard = {
