@@ -117,29 +117,41 @@ export class TasksService {
       dto.dueDate ?? exists.dueDate,
     );
 
-    const updated = await this.prisma.task.update({
-      where: { id },
-      data: {
-        title: dto.title,
-        description: dto.description,
-        type: dto.type,
-        status: dto.status,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-      },
-    });
+    // One transaction, so a task is never left published without its
+    // "published" mark (and so never announced) when the second write fails.
+    const { updated, firstPublish } = await this.prisma.$transaction(
+      async (tx) => {
+        const task = await tx.task.update({
+          where: { id },
+          data: {
+            title: dto.title,
+            description: dto.description,
+            type: dto.type,
+            status: dto.status,
+            dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          },
+        });
 
-    // Students hear about a task only the first time it is published, not
-    // again after it goes back to draft and is published once more. The
-    // mark is set only while still empty, so when two saves race (a
-    // double-click, two admins), just one of them sends the notice.
-    if (dto.status === 'published' && !exists.publishedAt) {
-      const { count } = await this.prisma.task.updateMany({
-        where: { id, publishedAt: null },
-        data: { publishedAt: new Date() },
-      });
-      if (count === 1) {
-        await this.notifications.notifyTaskPublished(updated);
-      }
+        // Students hear about a task only the first time it is published,
+        // not again after it goes back to draft and is published once more.
+        // The mark is set only while still empty, so when two saves race (a
+        // double-click, two admins), just one of them sends the notice: the
+        // second waits on the row lock and then finds the mark already set.
+        if (dto.status !== 'published' || exists.publishedAt) {
+          return { updated: task, firstPublish: false };
+        }
+        const { count } = await tx.task.updateMany({
+          where: { id, publishedAt: null },
+          data: { publishedAt: new Date() },
+        });
+        return { updated: task, firstPublish: count === 1 };
+      },
+    );
+
+    // Only after the transaction commits, so a rolled-back change is never
+    // announced.
+    if (firstPublish) {
+      await this.notifications.notifyTaskPublished(updated);
     }
     return this.serialize(updated);
   }

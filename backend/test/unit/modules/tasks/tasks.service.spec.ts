@@ -38,6 +38,7 @@ describe('TasksService', () => {
     };
     enrollment: { findMany: jest.Mock; findUnique: jest.Mock };
     submission: { count: jest.Mock };
+    $transaction: jest.Mock;
   };
   let notifications: { notifyTaskPublished: jest.Mock };
 
@@ -53,6 +54,11 @@ describe('TasksService', () => {
       },
       enrollment: { findMany: jest.fn(), findUnique: jest.fn() },
       submission: { count: jest.fn().mockResolvedValue(0) },
+      // The service passes a function that runs on the transaction client.
+      // Here that client is this same fake.
+      $transaction: jest.fn((fn: (client: unknown) => Promise<unknown>) =>
+        fn(prisma),
+      ),
     };
     notifications = {
       notifyTaskPublished: jest.fn().mockResolvedValue(undefined),
@@ -277,6 +283,24 @@ describe('TasksService', () => {
       ]);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+    });
+
+    it('saves the task and its published mark in one transaction', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', dueDate: new Date('2026-11-30') }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+      // The mark fails, for example because the connection dropped.
+      prisma.task.updateMany.mockRejectedValue(new Error('connection lost'));
+
+      await expect(
+        service.update(5, { status: 'published' } as never),
+      ).rejects.toThrow('connection lost');
+
+      // Both writes ran inside the one transaction, which the database then
+      // rolls back, and nobody was told about the task.
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
     });
 
     it('does not notify again when a task is published a second time', async () => {
