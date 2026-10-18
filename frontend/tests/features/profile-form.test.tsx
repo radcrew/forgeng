@@ -92,6 +92,35 @@ describe("ProfileForm", () => {
     expect(onSaved).toHaveBeenCalledTimes(1);
   });
 
+  it("shows only 'Profile saved' when the save works but the reload fails", async () => {
+    const onSaved = vi.fn().mockRejectedValue(new Error("network"));
+    render(<ProfileForm user={makeUser()} onSaved={onSaved} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(toastSuccess).toHaveBeenCalledWith("Profile saved.");
+    expect(toastError).not.toHaveBeenCalled();
+  });
+
+  it("shows only 'Avatar updated' when the upload works but the reload fails", async () => {
+    uploadAvatar.mockResolvedValue({ avatarUrl: "https://cdn.example.com/a.png" });
+    const onSaved = vi.fn().mockRejectedValue(new Error("network"));
+    const { container } = render(
+      <ProfileForm user={makeUser()} onSaved={onSaved} />,
+    );
+
+    const file = new File(["x"], "me.png", { type: "image/png" });
+    await userEvent.upload(
+      container.querySelector('input[type="file"]') as HTMLInputElement,
+      file,
+    );
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(toastSuccess).toHaveBeenCalledWith("Avatar updated.");
+    expect(toastError).not.toHaveBeenCalled();
+  });
+
   it("keeps unsaved edits when the user reloads, e.g. after a photo upload", async () => {
     const { rerender } = render(<ProfileForm user={makeUser()} />);
 

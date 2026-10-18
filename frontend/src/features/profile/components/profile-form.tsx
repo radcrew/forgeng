@@ -138,11 +138,19 @@ export const ProfileForm = ({
         telegram: payload.telegram ?? "",
         whatsapp: payload.whatsapp ?? "",
       });
-      await onSaved?.();
     } catch (err) {
       toast.error(
         err instanceof ApiError ? err.message : "Failed to save your profile.",
       );
+      return;
+    }
+    // Outside the try above: the save worked, so a failed reload must not
+    // show "Failed to save" next to "Profile saved". The form already shows
+    // the saved values.
+    try {
+      await onSaved?.();
+    } catch {
+      // The next reload catches up.
     }
   };
 
