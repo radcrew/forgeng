@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { createE2EApp, makeAuthUser, type E2EContext } from './support/e2e-app';
@@ -40,7 +41,6 @@ describe('Guard chain (e2e)', () => {
 
     it('allows an admin through the guard chain (201)', () => {
       ctx.setUser(makeAuthUser('admin'));
-      ctx.prisma.cohort.findUnique.mockResolvedValue({ id: 1 });
       ctx.prisma.task.create.mockResolvedValue({
         id: 1,
         cohortId: 1,
@@ -61,6 +61,22 @@ describe('Guard chain (e2e)', () => {
           const body = res.body as { id: number };
           expect(body.id).toBe(1);
         });
+    });
+
+    it('answers 404 when the cohort does not exist', () => {
+      ctx.setUser(makeAuthUser('admin'));
+      // What the database does for a task that links to a missing cohort.
+      ctx.prisma.task.create.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError(
+          'Foreign key constraint violated',
+          { code: 'P2003', clientVersion: 'test' },
+        ),
+      );
+
+      return request(http())
+        .post('/api/tasks')
+        .send({ ...validTask, cohortId: 99 })
+        .expect(404);
     });
 
     it('runs validation only after the guard passes (admin, bad body -> 400)', () => {

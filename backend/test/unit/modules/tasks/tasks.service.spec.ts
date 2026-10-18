@@ -1,5 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
-import type { Task } from '@prisma/client';
+import { Prisma, type Task } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
@@ -38,7 +38,6 @@ describe('TasksService', () => {
     };
     enrollment: { findMany: jest.Mock; findUnique: jest.Mock };
     submission: { count: jest.Mock };
-    cohort: { findUnique: jest.Mock };
   };
   let notifications: { notifyTaskPublished: jest.Mock };
 
@@ -54,7 +53,6 @@ describe('TasksService', () => {
       },
       enrollment: { findMany: jest.fn(), findUnique: jest.fn() },
       submission: { count: jest.fn().mockResolvedValue(0) },
-      cohort: { findUnique: jest.fn().mockResolvedValue({ id: 3 }) },
     };
     notifications = {
       notifyTaskPublished: jest.fn().mockResolvedValue(undefined),
@@ -177,13 +175,17 @@ describe('TasksService', () => {
   });
 
   describe('create', () => {
-    it('refuses a cohort that does not exist with a clear 404', async () => {
-      prisma.cohort.findUnique.mockResolvedValue(null);
+    it('passes the database error for a missing cohort on to the 404 filter', async () => {
+      const missingCohort = new Prisma.PrismaClientKnownRequestError(
+        'Foreign key constraint violated',
+        { code: 'P2003', clientVersion: 'test' },
+      );
+      prisma.task.create.mockRejectedValue(missingCohort);
 
       await expect(
         service.create({ cohortId: 99, title: 'x', type: 'project' } as never),
-      ).rejects.toThrow(new NotFoundException('Cohort not found.'));
-      expect(prisma.task.create).not.toHaveBeenCalled();
+      ).rejects.toBe(missingCohort);
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
     });
 
     it('defaults a new task to draft and does not notify', async () => {

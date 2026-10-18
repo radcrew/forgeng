@@ -69,14 +69,8 @@ export class TasksService {
   }
 
   async create(dto: CreateTaskDto): Promise<TaskDto> {
-    // Without this check the database refuses the task and the API answers
-    // with a general 500 error instead of saying what is wrong.
-    const cohort = await this.prisma.cohort.findUnique({
-      where: { id: dto.cohortId },
-      select: { id: true },
-    });
-    if (!cohort) throw new NotFoundException('Cohort not found.');
-
+    // A missing cohort makes the database refuse the task (P2003), and the
+    // Prisma exception filter answers 404 for it.
     const status = dto.status ?? 'draft';
     const created = await this.prisma.task.create({
       data: {
