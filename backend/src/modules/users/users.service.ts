@@ -195,50 +195,50 @@ export class UsersService {
     const exists = await this.prisma.user.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('User not found.');
 
-    // The site always needs an admin: without one, nobody can manage it or
-    // give the role back.
-    if (exists.role === 'admin' && dto.role !== 'admin') {
-      const admins = await this.prisma.user.count({ where: { role: 'admin' } });
-      if (admins <= 1) {
-        throw new BadRequestException(
-          'This is the only admin. Make another user an admin first.',
-        );
-      }
-    }
-
-    // A new role signs the user out everywhere: revoking their refresh tokens
-    // means they sign in again and get a token with the new role.
     const roleChanged = dto.role !== exists.role;
-    const [updated] = await this.prisma.$transaction([
-      this.prisma.user.update({
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // The site always needs an admin: without one, nobody can manage it or
+      // give the role back. Locking the admin rows makes a second role change
+      // wait for this one, so two admins can't remove each other at the same
+      // moment: each would otherwise still count the other as an admin.
+      if (exists.role === 'admin' && dto.role !== 'admin') {
+        const admins = await tx.$queryRaw<{ id: number }[]>`
+          SELECT "id" FROM "users" WHERE "role" = 'admin' FOR UPDATE`;
+        if (admins.length <= 1) {
+          throw new BadRequestException(
+            'This is the only admin. Make another user an admin first.',
+          );
+        }
+      }
+
+      const user = await tx.user.update({
         where: { id },
         data: { role: dto.role },
-      }),
-      ...(roleChanged
-        ? [
-            this.prisma.refreshToken.updateMany({
-              where: { userId: id, revokedAt: null },
-              data: { revokedAt: new Date() },
-            }),
-          ]
-        : []),
+      });
+      // A new role signs the user out everywhere: revoking their refresh
+      // tokens means they sign in again and get a token with the new role.
+      if (roleChanged) {
+        await tx.refreshToken.updateMany({
+          where: { userId: id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+      }
       // An applicant isn't in any cohort, so moving someone back to
       // applicant takes them out of their cohorts too.
-      ...(roleChanged && dto.role === 'applicant'
-        ? [this.prisma.enrollment.deleteMany({ where: { userId: id } })]
-        : []),
+      if (roleChanged && dto.role === 'applicant') {
+        await tx.enrollment.deleteMany({ where: { userId: id } });
+      }
       // Making an applicant a student accepts their application if it was
       // still waiting. Decided applications stay as they are: decisions are
       // final. No email, since the admin chose this directly.
-      ...(exists.role === 'applicant' && dto.role === 'student'
-        ? [
-            this.prisma.application.updateMany({
-              where: { userId: id, status: 'pending' },
-              data: { status: 'accepted' },
-            }),
-          ]
-        : []),
-    ]);
+      if (exists.role === 'applicant' && dto.role === 'student') {
+        await tx.application.updateMany({
+          where: { userId: id, status: 'pending' },
+          data: { status: 'accepted' },
+        });
+      }
+      return user;
+    });
     return toUserDto(updated);
   }
 

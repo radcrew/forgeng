@@ -55,6 +55,7 @@ describe('UsersService', () => {
     submission: { findMany: jest.Mock };
     notification: { findFirst: jest.Mock };
     refreshToken: { updateMany: jest.Mock };
+    $queryRaw: jest.Mock;
     $transaction: jest.Mock;
   };
   let mail: { send: jest.Mock };
@@ -80,8 +81,13 @@ describe('UsersService', () => {
       submission: { findMany: jest.fn().mockResolvedValue([]) },
       notification: { findFirst: jest.fn().mockResolvedValue(null) },
       refreshToken: { updateMany: jest.fn() },
-      // The service passes an array of prepared queries; resolve them in order.
-      $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
+      // The locked list of admin rows used by the "keep one admin" check.
+      $queryRaw: jest.fn().mockResolvedValue([]),
+      // The service passes a function that runs on the transaction client.
+      // Here that client is this same fake.
+      $transaction: jest.fn((fn: (client: unknown) => Promise<unknown>) =>
+        fn(prisma),
+      ),
     };
     mail = { send: jest.fn().mockResolvedValue(undefined) };
     const config = {
@@ -363,7 +369,6 @@ describe('UsersService', () => {
 
     it('leaves cohorts and applications alone for other changes', async () => {
       prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
-      prisma.user.count.mockResolvedValue(2);
       prisma.user.update.mockResolvedValue(makeUser({ role: 'admin' }));
 
       await service.updateRole(1, { role: 'admin' } as never);
@@ -374,26 +379,40 @@ describe('UsersService', () => {
 
     it('refuses to remove the role of the only admin', async () => {
       prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
-      prisma.user.count.mockResolvedValue(1);
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }]);
 
       await expect(
         service.updateRole(1, { role: 'student' } as never),
       ).rejects.toBeInstanceOf(BadRequestException);
-      expect(prisma.user.count).toHaveBeenCalledWith({
-        where: { role: 'admin' },
-      });
       expect(prisma.user.update).not.toHaveBeenCalled();
       expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
     });
 
     it('lets an admin lose the role when another admin remains', async () => {
       prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
-      prisma.user.count.mockResolvedValue(2);
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }, { id: 2 }]);
       prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
 
       const dto = await service.updateRole(1, { role: 'student' } as never);
 
       expect(dto.role).toBe('student');
+    });
+
+    it('locks the admin rows inside the same transaction as the change', async () => {
+      // Without the lock, two admins removing each other at the same moment
+      // would each still count two admins, and both changes would go through.
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      await service.updateRole(1, { role: 'student' } as never);
+
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      const sql = (prisma.$queryRaw.mock.calls[0] as [string[]])[0].join('');
+      expect(sql).toMatch(/FOR UPDATE/);
+      expect(prisma.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+        prisma.user.update.mock.invocationCallOrder[0],
+      );
     });
 
     it('does not count admins when the role stays admin', async () => {
@@ -402,7 +421,7 @@ describe('UsersService', () => {
 
       await service.updateRole(1, { role: 'admin' } as never);
 
-      expect(prisma.user.count).not.toHaveBeenCalled();
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
     });
   });
 
