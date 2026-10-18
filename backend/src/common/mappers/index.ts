@@ -10,6 +10,8 @@ import type {
   User,
 } from '@prisma/client';
 
+import { isCohortEnded } from '../utils/date';
+
 /**
  * Serializers that map Prisma row shapes to the OpenAPI / frontend contracts.
  * All `Date` values become ISO strings, optional foreign rows become `null`.
@@ -192,13 +194,21 @@ export interface SubmissionDto {
   task: TaskDto | null;
   user: UserDto | null;
   feedbackCount: number;
+  /**
+   * The task's cohort has ended, so the work can't be resubmitted. Worked
+   * out here so a page never has to guess it from the student's current
+   * cohort, which may be a different one, or none.
+   */
+  cohortEnded: boolean;
   lastSubmittedAt: string;
   createdAt: string;
 }
 
 export function toSubmissionDto(
   sub: Submission,
-  task: Task | null,
+  // The cohort is required, so every caller loads it and cohortEnded is
+  // never a guess.
+  task: (Task & { cohort: Pick<Cohort, 'status' | 'endDate'> }) | null,
   user: User | null,
   feedbackCount: number,
 ): SubmissionDto {
@@ -212,6 +222,7 @@ export function toSubmissionDto(
     task: task ? toTaskDto(task, 0) : null,
     user: user ? toUserDto(user) : null,
     feedbackCount,
+    cohortEnded: task ? isCohortEnded(task.cohort) : false,
     lastSubmittedAt: sub.lastSubmittedAt.toISOString(),
     createdAt: sub.createdAt.toISOString(),
   };

@@ -35,6 +35,8 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     status: 'published',
     dueDate: null,
     createdAt: DATE,
+    // Loaded with the task, so a submission can say if its cohort ended.
+    cohort: makeCohort({ id: 3 }),
     ...overrides,
   } as Task;
 }

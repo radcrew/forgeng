@@ -117,6 +117,41 @@ describe("student submissions page", () => {
     expect(refetchDashboard).toHaveBeenCalledTimes(1);
   });
 
+  it("closes resubmitting for ended-cohort work when the student has no current cohort", async () => {
+    // With no current cohort the page lists work from every cohort, so the
+    // panel must use each submission's own cohortEnded from the server.
+    selectedCohortId = undefined;
+    dashboard = { cohort: null, cohorts: [] };
+    useSubmissions.mockReturnValue({
+      data: [
+        {
+          id: 1,
+          taskId: 1,
+          task: { id: 1, title: "Old cohort task", type: "coding" },
+          content: "My work",
+          repoUrl: null,
+          status: "needs_work",
+          feedbackCount: 0,
+          cohortEnded: true,
+          createdAt: "2026-01-15T12:00:00.000Z",
+          lastSubmittedAt: "2026-01-15T12:00:00.000Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<Page />);
+
+    await userEvent.click(screen.getByText("Old cohort task"));
+
+    expect(
+      await screen.findByText(
+        "This cohort has ended, so it no longer accepts resubmissions.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("waits for the dashboard before loading any submissions", () => {
     // Without the dashboard the cohort is unknown, so loading now would
     // fetch every cohort's submissions only to throw them away.

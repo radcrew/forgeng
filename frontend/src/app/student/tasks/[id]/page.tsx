@@ -179,7 +179,7 @@ const Page = () => {
           onClose={() => setDetailOpen(false)}
           onResubmitted={refetchSubmissions}
           showTaskLink={false}
-          cohortEnded={cohortEnded}
+          cohortEnded={submission.cohortEnded}
         />
       )}
     </PageContainer>

@@ -11,21 +11,14 @@ import type { Cohort, Prisma, Submission, Task, User } from '@prisma/client';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { PrismaService } from '../../core/database/prisma.service';
 import { toSubmissionDto, type SubmissionDto } from '../../common/mappers';
-import { isCalendarDayOver } from '../../common/utils/date';
+import { isCohortEnded } from '../../common/utils/date';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
 
-/**
- * A cohort stops taking work once an admin marks it completed or its end
- * date is over everywhere on Earth, so no student loses part of the last day.
- */
 function assertCohortOpen(cohort: Pick<Cohort, 'status' | 'endDate'>): void {
-  const ended =
-    cohort.status === 'completed' ||
-    (cohort.endDate !== null && isCalendarDayOver(cohort.endDate));
-  if (ended) {
+  if (isCohortEnded(cohort)) {
     throw new ForbiddenException(
       'This cohort has ended, so it no longer accepts submissions.',
     );
@@ -62,7 +55,8 @@ export class SubmissionsService {
       // Latest send first, so resubmitted work moves back to the top of the
       // review queue instead of staying where it was first sent.
       orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
-      include: { task: true, user: true },
+      // The cohort tells the page whether each submission can be resubmitted.
+      include: { task: { include: { cohort: true } }, user: true },
     });
 
     return Promise.all(subs.map((s) => this.serialize(s, s.task, s.user)));
@@ -71,7 +65,7 @@ export class SubmissionsService {
   async findOne(id: number, user: AuthUser): Promise<SubmissionDto> {
     const sub = await this.prisma.submission.findUnique({
       where: { id },
-      include: { task: true, user: true },
+      include: { task: { include: { cohort: true } }, user: true },
     });
     if (!sub) throw new NotFoundException('Submission not found.');
     if (user.role === 'student' && sub.userId !== user.id) {
@@ -212,7 +206,7 @@ export class SubmissionsService {
 
   private async serialize(
     sub: Submission,
-    task: Task | null,
+    task: (Task & { cohort: Cohort }) | null,
     user: User | null,
   ): Promise<SubmissionDto> {
     const feedbackCount = await this.prisma.feedback.count({
