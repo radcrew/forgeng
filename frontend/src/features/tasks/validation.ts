@@ -17,6 +17,8 @@ export const validateTask = (values: {
   cohortId: string;
   status: TaskStatus;
   dueDate: string;
+  /** True when editing a task that is already published. */
+  wasPublished?: boolean;
 }): TaskErrors => {
   const errors: TaskErrors = {};
   const title = values.title.trim();
@@ -35,9 +37,14 @@ export const validateTask = (values: {
     errors.cohortId = "Select a cohort.";
   }
 
-  // The stipend counts tasks by the month they are due, so a published task
-  // needs a due date. Drafts can wait.
-  if (values.status === "published" && !values.dueDate) {
+  // The stipend counts tasks by the month they are due, so publishing needs a
+  // due date. Drafts can wait. A task published before this rule may have no
+  // date; it can still be edited, so a typo fix isn't blocked.
+  if (
+    values.status === "published" &&
+    !values.wasPublished &&
+    !values.dueDate
+  ) {
     errors.dueDate = "Add a due date before publishing.";
   }
 

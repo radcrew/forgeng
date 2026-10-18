@@ -51,4 +51,11 @@ describe("validateTask", () => {
       validateTask({ ...valid, status: "published", dueDate: "2026-02-01" }),
     ).toEqual({});
   });
+
+  it("lets an already published task with no due date be edited", () => {
+    // Tasks published before the rule may have no date. A typo fix must work.
+    expect(
+      validateTask({ ...valid, status: "published", wasPublished: true }),
+    ).toEqual({});
+  });
 });

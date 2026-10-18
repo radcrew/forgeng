@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Task } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
@@ -198,9 +198,22 @@ describe('TasksService', () => {
         title: 'x',
         type: 'project',
         status: 'published',
+        dueDate: '2026-11-30T00:00:00.000Z',
       } as never);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses to create a published task with no due date', async () => {
+      await expect(
+        service.create({
+          cohortId: 3,
+          title: 'x',
+          type: 'project',
+          status: 'published',
+        } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.task.create).not.toHaveBeenCalled();
     });
   });
 
@@ -213,7 +226,9 @@ describe('TasksService', () => {
     });
 
     it('notifies on the draft -> published transition', async () => {
-      prisma.task.findUnique.mockResolvedValue(makeTask({ status: 'draft' }));
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', dueDate: new Date('2026-11-30') }),
+      );
       prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
 
       await service.update(5, { status: 'published' } as never);
@@ -230,6 +245,40 @@ describe('TasksService', () => {
       await service.update(5, { title: 'new title' });
 
       expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
+    });
+
+    it('refuses to publish a draft that has no due date', async () => {
+      prisma.task.findUnique.mockResolvedValue(makeTask({ status: 'draft' }));
+
+      await expect(
+        service.update(5, { status: 'published' } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('publishes a draft when the due date comes with the change', async () => {
+      prisma.task.findUnique.mockResolvedValue(makeTask({ status: 'draft' }));
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+
+      await service.update(5, {
+        status: 'published',
+        dueDate: '2026-11-30T00:00:00.000Z',
+      } as never);
+
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('still lets an old published task with no due date be edited', async () => {
+      // makeTask is published with no due date, like tasks from before the rule.
+      prisma.task.findUnique.mockResolvedValue(makeTask());
+      prisma.task.update.mockResolvedValue(makeTask({ title: 'Fixed typo' }));
+
+      await service.update(5, {
+        title: 'Fixed typo',
+        status: 'published',
+      } as never);
+
+      expect(prisma.task.update).toHaveBeenCalledTimes(1);
     });
   });
 

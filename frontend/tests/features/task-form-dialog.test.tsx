@@ -120,7 +120,8 @@ describe("task FormDialog", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("asks for a due date before a task can be published", async () => {
+  it("still saves a task published before the due date rule", async () => {
+    // Older published tasks may have no due date. Fixing a typo must work.
     render(
       <FormDialog
         task={makeTask({ status: "published", dueDate: null })}
@@ -132,9 +133,9 @@ describe("task FormDialog", () => {
     await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
     expect(
-      screen.getByText("Add a due date before publishing."),
-    ).toBeInTheDocument();
-    expect(updateTask).not.toHaveBeenCalled();
+      screen.queryByText("Add a due date before publishing."),
+    ).not.toBeInTheDocument();
+    await waitFor(() => expect(updateTask).toHaveBeenCalledTimes(1));
   });
 
   it("lets a draft be saved without a due date", () => {
