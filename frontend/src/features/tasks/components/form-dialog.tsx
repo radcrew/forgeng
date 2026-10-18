@@ -23,6 +23,8 @@ import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
 import { ApiError } from "@lib/api-client";
 import { createTask, updateTask } from "../api";
+import { isNewPastDueDate, todayAsDateInput } from "../due-date";
+import { unpublishHidesWork } from "../unpublish";
 import { validateTask, type TaskErrors } from "../validation";
 import type { Task, TaskStatus, TaskType } from "@types";
 

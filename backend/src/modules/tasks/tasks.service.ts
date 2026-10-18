@@ -86,7 +86,10 @@ export class TasksService {
   }
 
   async create(dto: CreateTaskDto): Promise<TaskDto> {
-    assertDueDateToPublish(dto.status === 'published', dto.dueDate);
+    // A missing cohort makes the database refuse the task (P2003), and the
+    // Prisma exception filter answers 404 for it.
+    const status = dto.status ?? 'draft';
+    assertDueDateToPublish(status === 'published', dto.dueDate);
     const created = await this.prisma.task.create({
       data: {
         cohortId: dto.cohortId,

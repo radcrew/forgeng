@@ -1,5 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import type { Prisma, Task } from '@prisma/client';
+import { Prisma, type Task } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
@@ -263,7 +263,9 @@ describe('TasksService', () => {
 
     it('sends the notice once when two saves publish at the same time', async () => {
       // Both saves read the task before either marked it.
-      prisma.task.findUnique.mockResolvedValue(makeTask({ status: 'draft' }));
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', dueDate: new Date('2026-11-30') }),
+      );
       prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
       prisma.task.updateMany
         .mockResolvedValueOnce({ count: 1 })
@@ -279,7 +281,11 @@ describe('TasksService', () => {
 
     it('does not notify again when a task is published a second time', async () => {
       prisma.task.findUnique.mockResolvedValue(
-        makeTask({ status: 'draft', publishedAt: DATE }),
+        makeTask({
+          status: 'draft',
+          publishedAt: DATE,
+          dueDate: new Date('2026-11-30'),
+        }),
       );
       prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
 
