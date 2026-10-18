@@ -33,6 +33,7 @@ describe('TasksService', () => {
       findUnique: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
       delete: jest.Mock;
     };
     enrollment: { findMany: jest.Mock; findUnique: jest.Mock };
@@ -48,6 +49,7 @@ describe('TasksService', () => {
         findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         delete: jest.fn(),
       },
       enrollment: { findMany: jest.fn(), findUnique: jest.fn() },
@@ -235,10 +237,27 @@ describe('TasksService', () => {
       await service.update(5, { status: 'published' } as never);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
-      const data = (
-        prisma.task.update.mock.calls[0] as [{ data: { publishedAt: unknown } }]
-      )[0].data;
-      expect(data.publishedAt).toBeInstanceOf(Date);
+      // The mark is set only while it is still empty.
+      expect(prisma.task.updateMany).toHaveBeenCalledWith({
+        where: { id: 5, publishedAt: null },
+        data: { publishedAt: expect.any(Date) as unknown },
+      });
+    });
+
+    it('sends the notice once when two saves publish at the same time', async () => {
+      // Both saves read the task before either marked it.
+      prisma.task.findUnique.mockResolvedValue(makeTask({ status: 'draft' }));
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+      prisma.task.updateMany
+        .mockResolvedValueOnce({ count: 1 })
+        .mockResolvedValueOnce({ count: 0 });
+
+      await Promise.all([
+        service.update(5, { status: 'published' } as never),
+        service.update(5, { status: 'published' } as never),
+      ]);
+
+      expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
     });
 
     it('does not notify again when a task is published a second time', async () => {
@@ -250,10 +269,7 @@ describe('TasksService', () => {
       await service.update(5, { status: 'published' } as never);
 
       expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
-      const data = (
-        prisma.task.update.mock.calls[0] as [{ data: { publishedAt: unknown } }]
-      )[0].data;
-      expect(data.publishedAt).toBeUndefined();
+      expect(prisma.task.updateMany).not.toHaveBeenCalled();
     });
 
     it('does not notify when saving a task that is already published', async () => {

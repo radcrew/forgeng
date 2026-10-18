@@ -99,10 +99,6 @@ export class TasksService {
     const exists = await this.prisma.task.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Task not found.');
 
-    // Students hear about a task only the first time it is published, not
-    // again after it goes back to draft and is published once more.
-    const firstPublish = dto.status === 'published' && !exists.publishedAt;
-
     const updated = await this.prisma.task.update({
       where: { id },
       data: {
@@ -111,11 +107,21 @@ export class TasksService {
         type: dto.type,
         status: dto.status,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        publishedAt: firstPublish ? new Date() : undefined,
       },
     });
-    if (firstPublish) {
-      await this.notifications.notifyTaskPublished(updated);
+
+    // Students hear about a task only the first time it is published, not
+    // again after it goes back to draft and is published once more. The
+    // mark is set only while still empty, so when two saves race (a
+    // double-click, two admins), just one of them sends the notice.
+    if (dto.status === 'published' && !exists.publishedAt) {
+      const { count } = await this.prisma.task.updateMany({
+        where: { id, publishedAt: null },
+        data: { publishedAt: new Date() },
+      });
+      if (count === 1) {
+        await this.notifications.notifyTaskPublished(updated);
+      }
     }
     return this.serialize(updated);
   }
