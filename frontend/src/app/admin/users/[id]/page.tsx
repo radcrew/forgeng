@@ -52,11 +52,15 @@ import { PaymentStatsChart } from "./_components/payment-stats-chart";
 import { RoleControl } from "./_components/role-control";
 import { WalletSection } from "./_components/wallet-section";
 
-/** Last month as "YYYY-MM", the value a month input expects. */
-const lastMonthInput = (now = new Date()) => {
-  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+/** A month as "YYYY-MM", the value a month input expects. */
+const monthInput = (monthsAgo: number, now = new Date()) => {
+  const d = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
+
+// The payment chart shows this month and the 5 before it, so a stipend can
+// only be recorded for one of those months. The server checks the same.
+const OLDEST_PAYMENT_MONTHS_AGO = 5;
 
 export default function UserDetailPage({
   params,
@@ -121,7 +125,7 @@ export default function UserDetailPage({
     setTxLink("");
     setNote("");
     // Stipends are usually paid for the month that just ended.
-    setForMonth(lastMonthInput());
+    setForMonth(monthInput(1));
     setDialogOpen(true);
   };
 
@@ -132,6 +136,13 @@ export default function UserDetailPage({
       return;
     }
     if (!forMonth) {
+      forMonthRef.current?.focus();
+      return;
+    }
+    const oldest = monthInput(OLDEST_PAYMENT_MONTHS_AGO);
+    const newest = monthInput(0);
+    if (forMonth < oldest || forMonth > newest) {
+      toast.error(`Pick a month from ${oldest} to ${newest}.`);
       forMonthRef.current?.focus();
       return;
     }
@@ -443,6 +454,8 @@ export default function UserDetailPage({
                 id="forMonth"
                 ref={forMonthRef}
                 type="month"
+                min={monthInput(OLDEST_PAYMENT_MONTHS_AGO)}
+                max={monthInput(0)}
                 value={forMonth}
                 onChange={(e) => setForMonth(e.target.value)}
               />

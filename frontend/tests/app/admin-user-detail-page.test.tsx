@@ -175,8 +175,11 @@ describe("admin user detail page", () => {
     const monthInput = screen.getByLabelText("Stipend for");
     expect(monthInput).toHaveValue(lastMonth);
 
+    // Two months ago is always inside the months the chart shows.
+    const earlier = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    const twoMonthsAgo = `${earlier.getFullYear()}-${String(earlier.getMonth() + 1).padStart(2, "0")}`;
     await userEvent.clear(monthInput);
-    await userEvent.type(monthInput, "2026-05");
+    await userEvent.type(monthInput, twoMonthsAgo);
     await userEvent.type(screen.getByLabelText("Amount"), "50");
     await userEvent.click(
       screen.getByRole("button", { name: "Confirm & notify" }),
@@ -184,8 +187,38 @@ describe("admin user detail page", () => {
 
     expect(record).toHaveBeenCalledWith(
       7,
-      expect.objectContaining({ amount: 50, forMonth: "2026-05" }),
+      expect.objectContaining({ amount: 50, forMonth: twoMonthsAgo }),
     );
+  });
+
+  it("refuses a stipend month that the payment chart doesn't show", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    statsState = {
+      data: {
+        wallets: [{ chain: "evm", address: "0xabc" }],
+        monthlyStats: [],
+      },
+    };
+    await renderPage();
+
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: /Record payment & notify student/,
+      }),
+    );
+    // Next month: saved but never shown, so it could be paid twice.
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const nextMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
+    const monthInput = screen.getByLabelText("Stipend for");
+    await userEvent.clear(monthInput);
+    await userEvent.type(monthInput, nextMonth);
+    await userEvent.type(screen.getByLabelText("Amount"), "50");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Confirm & notify" }),
+    );
+
+    expect(record).not.toHaveBeenCalled();
   });
 
   it("fills in a stipend amount without changing the currency", async () => {

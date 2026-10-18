@@ -113,6 +113,23 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found.');
 
+    // The payment chart only shows the last few months. A payment for any
+    // other month would be saved but never shown, and could be paid twice.
+    const now = new Date();
+    const forMonth = dto.forMonth ?? monthKey(now);
+    const oldest = monthKey(
+      new Date(
+        now.getFullYear(),
+        now.getMonth() - (PAYMENT_HISTORY_MONTHS - 1),
+        1,
+      ),
+    );
+    if (forMonth < oldest || forMonth > monthKey(now)) {
+      throw new BadRequestException(
+        `Pick a month from ${oldest} to ${monthKey(now)}.`,
+      );
+    }
+
     const payment = await this.prisma.payment.create({
       data: {
         userId: id,
@@ -120,7 +137,7 @@ export class UsersService {
         currency: dto.currency,
         txLink: dto.txLink,
         note: dto.note,
-        forMonth: dto.forMonth ?? monthKey(new Date()),
+        forMonth,
       },
     });
 

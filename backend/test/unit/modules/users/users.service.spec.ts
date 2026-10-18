@@ -32,6 +32,13 @@ function makePayment(overrides: Partial<Payment> = {}): Payment {
   } as unknown as Payment;
 }
 
+/** The month `ago` months before now, as "YYYY-MM" (negative is ahead). */
+function monthsAgo(ago: number): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() - ago, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
 describe('UsersService', () => {
   let service: UsersService;
   let prisma: {
@@ -163,23 +170,57 @@ describe('UsersService', () => {
     });
 
     it('saves the stipend month the admin picked', async () => {
+      const picked = monthsAgo(2);
       prisma.user.findUnique.mockResolvedValue(makeUser());
       prisma.payment.create.mockResolvedValue(
-        makePayment({ forMonth: '2026-05' }),
+        makePayment({ forMonth: picked }),
       );
 
       const dto = await service.recordPayment(1, {
         amount: 250,
         currency: 'USDT',
-        forMonth: '2026-05',
+        forMonth: picked,
       });
 
       const data = (
         prisma.payment.create.mock.calls[0] as [{ data: { forMonth: string } }]
       )[0].data;
-      expect(data.forMonth).toBe('2026-05');
-      expect(dto.forMonth).toBe('2026-05');
+      expect(data.forMonth).toBe(picked);
+      expect(dto.forMonth).toBe(picked);
     });
+
+    it('accepts the oldest month the payment chart shows', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(makePayment());
+
+      await service.recordPayment(1, {
+        amount: 250,
+        currency: 'USDT',
+        forMonth: monthsAgo(5),
+      });
+
+      expect(prisma.payment.create).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['next month', -1],
+      ['a month older than the chart', 6],
+    ])(
+      'refuses %s, which the payment chart would never show',
+      async (_, ago) => {
+        prisma.user.findUnique.mockResolvedValue(makeUser());
+
+        await expect(
+          service.recordPayment(1, {
+            amount: 250,
+            currency: 'USDT',
+            forMonth: monthsAgo(ago),
+          }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(prisma.payment.create).not.toHaveBeenCalled();
+        expect(mail.send).not.toHaveBeenCalled();
+      },
+    );
 
     it('uses the current month when none is given', async () => {
       prisma.user.findUnique.mockResolvedValue(makeUser());
