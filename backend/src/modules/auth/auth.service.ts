@@ -12,7 +12,10 @@ import { AuthProvider, type User, VerificationTokenType } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
 import { PrismaService } from '../../core/database/prisma.service';
 import { toUserDto, type UserDto } from '../../common/mappers';
-import { resolveRegistrationIp } from '../../common/utils/public-ip';
+import {
+  needsPublicIpLookup,
+  resolveRegistrationIp,
+} from '../../common/utils/public-ip';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 import { EmailService } from './services/email.service';
@@ -185,8 +188,17 @@ export class AuthService {
     const email = profile.email.toLowerCase();
     const provider =
       profile.provider === 'google' ? AuthProvider.google : AuthProvider.github;
-    // Looked up before the transaction, so no network call holds it open.
-    const registrationIp = await resolveRegistrationIp(ctx.ip);
+    // Only a new account needs it, so a returning user doesn't wait for the
+    // lookup. Done before the transaction, so no network call holds it open.
+    const isNewUser =
+      needsPublicIpLookup(ctx.ip) &&
+      !(await this.prisma.user.findUnique({
+        where: { email },
+        select: { id: true },
+      }));
+    const registrationIp = isNewUser
+      ? await resolveRegistrationIp(ctx.ip)
+      : ctx.ip;
 
     const user = await this.prisma.$transaction(async (tx) => {
       const existingIdentity = await tx.authIdentity.findUnique({

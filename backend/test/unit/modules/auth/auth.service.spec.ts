@@ -237,5 +237,61 @@ describe('AuthService', () => {
         ),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    describe('public IP lookup for local sign-ins', () => {
+      const profile = {
+        provider: 'google',
+        providerAccountId: 'g1',
+        email: 'ada@example.com',
+        name: 'Ada',
+        emailVerified: true,
+      } as never;
+      const fetchMock = jest.fn();
+      let tx: {
+        authIdentity: { findUnique: jest.Mock; create: jest.Mock };
+        user: { findUnique: jest.Mock; create: jest.Mock };
+      };
+
+      beforeEach(() => {
+        fetchMock.mockReset();
+        global.fetch = fetchMock;
+        tx = {
+          authIdentity: {
+            findUnique: jest.fn().mockResolvedValue(null),
+            create: jest.fn(),
+          },
+          user: {
+            findUnique: jest.fn().mockResolvedValue(null),
+            create: jest.fn().mockResolvedValue(makeUser()),
+          },
+        };
+        (prisma as unknown as { $transaction: jest.Mock }).$transaction =
+          jest.fn((fn: (client: typeof tx) => Promise<unknown>) => fn(tx));
+      });
+
+      it('skips the lookup for a returning user', async () => {
+        prisma.user.findUnique.mockResolvedValue(makeUser());
+        tx.authIdentity.findUnique.mockResolvedValue({ user: makeUser() });
+
+        await service.signInWithOAuth(profile, { ip: '127.0.0.1' });
+
+        expect(fetchMock).not.toHaveBeenCalled();
+      });
+
+      it('records the public IP for a new user', async () => {
+        prisma.user.findUnique.mockResolvedValue(null);
+        fetchMock.mockResolvedValue({
+          ok: true,
+          text: () => Promise.resolve('198.51.100.7'),
+        });
+
+        await service.signInWithOAuth(profile, { ip: '127.0.0.1' });
+
+        const { data } = (
+          tx.user.create.mock.calls[0] as [{ data: { registrationIp: string } }]
+        )[0];
+        expect(data.registrationIp).toBe('198.51.100.7');
+      });
+    });
   });
 });

@@ -38,6 +38,19 @@ describe('resolveRegistrationIp', () => {
     );
   });
 
+  it('never looks up in production, so a proxy setup mistake stays visible', async () => {
+    const before = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      await expect(resolveRegistrationIp('127.0.0.1')).resolves.toBe(
+        '127.0.0.1',
+      );
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      process.env.NODE_ENV = before;
+    }
+  });
+
   it('falls back to 127.0.0.1 when offline', async () => {
     fetchMock.mockRejectedValue(new TypeError('fetch failed'));
     await expect(resolveRegistrationIp('::1')).resolves.toBe('127.0.0.1');

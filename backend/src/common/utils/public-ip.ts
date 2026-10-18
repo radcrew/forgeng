@@ -9,14 +9,25 @@ export function isLoopbackIp(ip: string): boolean {
 }
 
 /**
- * The IP to record for a new account. A request from this machine (local
- * development) carries 127.0.0.1, so ask a public service for the machine's
+ * True when a signup from this IP should get the machine's public IP instead:
+ * a local request (127.0.0.1) outside production.
+ */
+export function needsPublicIpLookup(ip: string | undefined): boolean {
+  return !!ip && isLoopbackIp(ip) && process.env.NODE_ENV !== 'production';
+}
+
+/**
+ * The IP to record for a new account. In local development a request from
+ * this machine carries 127.0.0.1, so ask a public service for the machine's
  * public IP instead. Offline or on failure, keep 127.0.0.1.
+ *
+ * Never in production: there, 127.0.0.1 means TRUST_PROXY is set wrong. It
+ * must stay visible, not be replaced by the server's own IP and country.
  */
 export async function resolveRegistrationIp(
   ip: string | undefined,
 ): Promise<string | undefined> {
-  if (!ip || !isLoopbackIp(ip)) return ip;
+  if (!needsPublicIpLookup(ip)) return ip;
   try {
     const res = await fetch(LOOKUP_URL, {
       signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
