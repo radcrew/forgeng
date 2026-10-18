@@ -11,6 +11,9 @@ import {
 
 export class UpdateTaskDto {
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   @MinLength(1)
   @MaxLength(200)

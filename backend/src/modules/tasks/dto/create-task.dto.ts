@@ -16,6 +16,9 @@ export class CreateTaskDto {
   @Min(1)
   cohortId!: number;
 
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
   @MinLength(1)
   @MaxLength(200)

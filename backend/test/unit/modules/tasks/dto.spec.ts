@@ -27,21 +27,16 @@ describe('CreateTaskDto', () => {
     expect(failingProps({ ...valid, title: '' })).toContain('title');
   });
 
-  it('turns a description of only spaces into no description', () => {
-    const dto = plainToInstance(CreateTaskDto, {
-      ...valid,
-      description: '   ',
-    });
-    expect(dto.description).toBeNull();
-    expect(failingProps({ ...valid, description: '   ' })).toEqual([]);
+  it('rejects a title that is only spaces', () => {
+    expect(failingProps({ ...valid, title: '   ' })).toContain('title');
   });
 
-  it('trims spaces around the description', () => {
+  it('trims spaces around the title', () => {
     const dto = plainToInstance(CreateTaskDto, {
       ...valid,
-      description: '  Build it  ',
+      title: '  Build a CLI  ',
     });
-    expect(dto.description).toBe('Build it');
+    expect(dto.title).toBe('Build a CLI');
   });
 
   it('rejects an unknown task type', () => {

@@ -13,7 +13,11 @@ export {
   type TaskInput,
 } from "./api";
 export { useTasks, useTask } from "./hooks";
-export { sortTasks } from "./sort";
+export {
+  ALL_TASKS_FILTER,
+  filterTasks,
+  type TaskListFilter,
+} from "./filter";
 
 export { TaskFormDialog } from "./components/form-dialog";
 export type { TaskFormDialogProps } from "./components/form-dialog";

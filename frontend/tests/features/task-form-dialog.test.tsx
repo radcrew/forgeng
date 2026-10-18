@@ -59,15 +59,38 @@ describe("task FormDialog", () => {
     ).toBeDisabled();
   });
 
-  it("keeps create submit disabled with a title but no cohort selected", async () => {
+  it("asks for a cohort before creating a task", async () => {
     render(<FormDialog open onOpenChange={vi.fn()} />);
     await userEvent.type(
       screen.getByPlaceholderText("Task title..."),
       "New task",
     );
+    await userEvent.click(screen.getByRole("button", { name: "Create Task" }));
+
+    expect(screen.getByText("Select a cohort.")).toBeInTheDocument();
+    expect(createTask).not.toHaveBeenCalled();
+  });
+
+  it("keeps create disabled while the title is only spaces", async () => {
+    render(<FormDialog open onOpenChange={vi.fn()} />);
+    await userEvent.type(screen.getByPlaceholderText("Task title..."), "   ");
+
     expect(
       screen.getByRole("button", { name: "Create Task" }),
     ).toBeDisabled();
+  });
+
+  it("sends the title without spaces around it", async () => {
+    render(<FormDialog task={makeTask()} open onOpenChange={vi.fn()} />);
+    const input = screen.getByPlaceholderText("Task title...");
+    await userEvent.clear(input);
+    await userEvent.type(input, "  Build a CLI  ");
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(updateTask).toHaveBeenCalledWith(
+      5,
+      expect.objectContaining({ title: "Build a CLI" }),
+    );
   });
 
   it("edits an existing task: updateTask with a null-cleared description", async () => {
@@ -97,10 +120,11 @@ describe("task FormDialog", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("sends no description when it is only spaces", async () => {
+  it("still saves a task published before the due date rule", async () => {
+    // Older published tasks may have no due date. Fixing a typo must work.
     render(
       <FormDialog
-        task={makeTask({ description: "   " })}
+        task={makeTask({ status: "published", dueDate: null })}
         open
         onOpenChange={vi.fn()}
       />,
@@ -108,10 +132,40 @@ describe("task FormDialog", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
-    expect(updateTask).toHaveBeenCalledWith(
-      5,
-      expect.objectContaining({ description: null }),
+    expect(
+      screen.queryByText("Add a due date before publishing."),
+    ).not.toBeInTheDocument();
+    await waitFor(() => expect(updateTask).toHaveBeenCalledTimes(1));
+  });
+
+  it("lets a draft be saved without a due date", () => {
+    render(
+      <FormDialog
+        task={makeTask({ status: "draft", dueDate: null })}
+        open
+        onOpenChange={vi.fn()}
+      />,
     );
+
+    expect(
+      screen.queryByText("Add a due date before publishing."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save Changes" })).toBeEnabled();
+  });
+
+  it("locks the cohort when editing a task", () => {
+    render(<FormDialog task={makeTask()} open onOpenChange={vi.fn()} />);
+
+    expect(screen.getByRole("combobox", { name: "Cohort" })).toBeDisabled();
+    expect(
+      screen.getByText("A task can't move to another cohort."),
+    ).toBeInTheDocument();
+  });
+
+  it("lets the cohort be chosen when creating a task", () => {
+    render(<FormDialog open onOpenChange={vi.fn()} />);
+
+    expect(screen.getByRole("combobox", { name: "Cohort" })).toBeEnabled();
   });
 
   it("toasts an error when the update fails", async () => {
