@@ -233,27 +233,32 @@ export class ApplicationsService {
     // The emails go out after the response, so the decision doesn't wait for
     // the mail server.
     if (updated.status === ApplicationStatus.accepted) {
-      try {
-        const cohort = updated.cohortId
-          ? await this.prisma.cohort.findUnique({
-              where: { id: updated.cohortId },
-              select: { name: true },
-            })
-          : null;
-        this.mail.sendInBackground({
-          to: updated.email,
-          ...applicationAcceptedEmail({
-            applicantName,
-            dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
-            cohortName: cohort?.name,
-          }),
-        });
-      } catch (err) {
-        this.logger.error(
-          `Failed to send acceptance email to ${updated.email}`,
-          err instanceof Error ? err.stack : String(err),
-        );
+      // The cohort name only makes the email nicer. If it can't be read, the
+      // email still goes out without it, and the saved decision stays a
+      // success.
+      let cohortName: string | undefined;
+      if (updated.cohortId) {
+        try {
+          const cohort = await this.prisma.cohort.findUnique({
+            where: { id: updated.cohortId },
+            select: { name: true },
+          });
+          cohortName = cohort?.name;
+        } catch (err) {
+          this.logger.error(
+            `Failed to look up the cohort for the acceptance email to ${updated.email}`,
+            err instanceof Error ? err.stack : String(err),
+          );
+        }
       }
+      this.mail.sendInBackground({
+        to: updated.email,
+        ...applicationAcceptedEmail({
+          applicantName,
+          dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
+          cohortName,
+        }),
+      });
     } else if (updated.status === ApplicationStatus.rejected) {
       this.mail.sendInBackground({
         to: updated.email,

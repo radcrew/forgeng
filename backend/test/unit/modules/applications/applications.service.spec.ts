@@ -99,6 +99,8 @@ describe('ApplicationsService', () => {
       groupBy: jest.Mock;
     };
     user: { update: jest.Mock };
+    // Read after the decision is saved, for the acceptance email.
+    cohort: { findUnique: jest.Mock };
     $transaction: jest.Mock;
   };
   let tx: {
@@ -125,6 +127,7 @@ describe('ApplicationsService', () => {
         groupBy: jest.fn(),
       },
       user: { update: jest.fn() },
+      cohort: { findUnique: jest.fn().mockResolvedValue(null) },
       $transaction: jest.fn((fn: (client: typeof tx) => Promise<unknown>) =>
         fn(tx),
       ),
@@ -402,6 +405,52 @@ describe('ApplicationsService', () => {
         );
       },
     );
+
+    it('names the cohort in the acceptance email', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 5 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue({ userId: 1 });
+      prisma.cohort.findUnique.mockResolvedValue({ name: 'Autumn' });
+
+      await service.updateStatus(10, { status: 'accepted', cohortId: 5 });
+
+      expect(mail.sendInBackground).toHaveBeenCalledWith(
+        expect.objectContaining({
+          text: expect.stringContaining(
+            'You have been added to the Autumn cohort.',
+          ) as unknown,
+        }),
+      );
+    });
+
+    it('still sends the acceptance email when the cohort lookup fails', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'accepted', cohortId: 5 }),
+      );
+      tx.enrollment.findUnique.mockResolvedValue({ userId: 1 });
+      prisma.cohort.findUnique.mockRejectedValue(new Error('db down'));
+      const logError = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+
+      const dto = await service.updateStatus(10, {
+        status: 'accepted',
+        cohortId: 5,
+      });
+
+      // The decision is saved, and the email goes out without the name.
+      expect(dto.status).toBe('accepted');
+      expect(mail.sendInBackground).toHaveBeenCalledWith(
+        expect.objectContaining({ to: 'ada@example.com' }),
+      );
+      expect(logError).toHaveBeenCalledWith(
+        'Failed to look up the cohort for the acceptance email to ada@example.com',
+        expect.any(String),
+      );
+    });
 
     it('accepting makes the applicant a student and enrolls them', async () => {
       prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
