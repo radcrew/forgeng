@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Search } from "lucide-react";
 
 import {
   ContentDialog,
@@ -12,7 +12,9 @@ import {
   FormField,
   ListRow,
 } from "@components/common";
+import { ErrorState } from "@components/shared";
 import { Button } from "@components/ui/button";
+import { Input } from "@components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,6 +30,10 @@ import { enrollStudent, unenrollStudent } from "../api";
 import { useEnrollments } from "../hooks";
 import type { Cohort } from "@types";
 
+const SEARCH_DELAY_MS = 300;
+// How many students the picker shows at once. Searching finds the others.
+const STUDENT_RESULTS = 20;
+
 export type EnrollmentsProps = {
   cohort: Cohort;
   open: boolean;
@@ -42,15 +48,36 @@ export const Enrollments = ({
   onEnrolled,
 }: EnrollmentsProps) => {
   const { data: enrollments = [], refetch } = useEnrollments(cohort.id);
-  // Pull a large page so the enrollment picker lists every student to choose
-  // from, not just the first page of the paginated users endpoint.
-  const { data: studentPage } = useUsers("student", 1, 100);
+  // What the admin types, and the search actually sent. The second one waits
+  // until typing pauses, so each key press doesn't send a request.
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(searchTimer.current), []);
+  // The server finds the students, so a cohort can reach every student, not
+  // only the first page of them.
+  const {
+    data: studentPage,
+    error: studentsError,
+    refetch: refetchStudents,
+  } = useUsers("student", 1, STUDENT_RESULTS, search);
   const students = studentPage?.items ?? [];
   const enrolledIds = new Set(enrollments.map((e) => e.userId));
   const availableStudents = students.filter((u) => !enrolledIds.has(u.id));
+  const hasMoreStudents = (studentPage?.total ?? 0) > students.length;
   const isFull = enrollments.length >= cohort.capacity;
 
   const [userId, setUserId] = useState("");
+
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setSearch(value);
+      // The picked student may not be in the new results.
+      setUserId("");
+    }, SEARCH_DELAY_MS);
+  };
   const [isEnrolling, setIsEnrolling] = useState(false);
   // Removing takes two clicks: Remove, then Confirm on the same row.
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
@@ -175,26 +202,63 @@ export const Enrollments = ({
           </>
         )}
 
-        {!isFull && availableStudents.length > 0 && (
+        {!isFull && (
           <>
             <Separator />
             <FormField label="Enroll a Student">
-              <div className="flex gap-2">
-                <Select value={userId} onValueChange={setUserId}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select student..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableStudents.map((u) => (
-                      <SelectItem key={u.id} value={u.id.toString()}>
-                        {u.name ?? u.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleEnroll} disabled={!userId || isEnrolling}>
-                  Enroll
-                </Button>
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchInput}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    placeholder="Search by name or email..."
+                    aria-label="Search students by name or email"
+                    className="pl-9"
+                  />
+                </div>
+                {studentsError ? (
+                  <ErrorState
+                    what="the students"
+                    onRetry={refetchStudents}
+                    size="compact"
+                  />
+                ) : availableStudents.length > 0 ? (
+                  <>
+                    <div className="flex gap-2">
+                      <Select value={userId} onValueChange={setUserId}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select student..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableStudents.map((u) => (
+                            <SelectItem key={u.id} value={u.id.toString()}>
+                              {u.name ?? u.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        onClick={handleEnroll}
+                        disabled={!userId || isEnrolling}
+                      >
+                        Enroll
+                      </Button>
+                    </div>
+                    {hasMoreStudents && (
+                      <p className="text-xs text-muted-foreground">
+                        Showing the first {STUDENT_RESULTS} students. Search to
+                        find others.
+                      </p>
+                    )}
+                  </>
+                ) : studentPage ? (
+                  <p className="text-sm text-muted-foreground">
+                    {search.trim()
+                      ? `No students to enroll match "${search.trim()}".`
+                      : "No students left to enroll."}
+                  </p>
+                ) : null}
               </div>
             </FormField>
           </>
