@@ -35,15 +35,19 @@ const MAX_MESSAGES_PER_SECOND = 10;
 /**
  * Outbox retry rules. A failed email is tried again up to MAX_ATTEMPTS times
  * in total, but only while it is recent: an old stipend or task email is no
- * longer useful. A "pending" row older than STUCK_AFTER_MS was cut off
- * mid-send (for example, the function hit its time limit), so it is retried
- * too. Every row is deleted after KEEP_MS, whatever its status: by then it
+ * longer useful.
+ *
+ * A row that stays "pending" is never retried. Either its send was cut off
+ * (for example, the function hit its time limit), or the email went out and
+ * saving "sent" failed. Nothing tells the two apart, and sending a payment or
+ * stipend email twice is worse than rarely losing one.
+ *
+ * Every row is deleted after KEEP_MS, whatever its status: by then it
  * is long past the retry window, and it still holds an email address and
  * the email's text.
  */
 const MAX_ATTEMPTS = 5;
 const RETRY_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
-const STUCK_AFTER_MS = 60 * 60 * 1000;
 const RETRY_BATCH = 200;
 const KEEP_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -121,22 +125,16 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
-   * Sends the outbox emails that failed or got stuck, and deletes old sent
-   * ones. Vercel Cron calls this through the retry route.
+   * Sends the outbox emails that failed again, and deletes old ones. Vercel
+   * Cron calls this through the retry route.
    */
   async retryFailed(): Promise<{ retried: number; sent: number }> {
     const now = Date.now();
     const rows = await this.prisma.emailOutbox.findMany({
       where: {
+        status: 'failed',
         attempts: { lt: MAX_ATTEMPTS },
         createdAt: { gte: new Date(now - RETRY_WINDOW_MS) },
-        OR: [
-          { status: 'failed' },
-          {
-            status: 'pending',
-            createdAt: { lt: new Date(now - STUCK_AFTER_MS) },
-          },
-        ],
       },
       orderBy: { id: 'asc' },
       take: RETRY_BATCH,
@@ -198,7 +196,8 @@ export class MailService implements OnModuleDestroy {
     if (id === null) return error === null;
 
     // Separate from the send: a failed status update must not mark a sent
-    // email as failed, or the retry would send it twice.
+    // email as failed. The row then stays "pending", which the retry never
+    // sends again.
     try {
       await this.prisma.emailOutbox.update({
         where: { id },

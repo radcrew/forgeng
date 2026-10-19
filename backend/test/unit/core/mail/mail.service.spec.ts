@@ -156,21 +156,17 @@ describe('MailService', () => {
       html: null,
     });
 
-    it('looks only at recent failed or stuck emails with tries left', async () => {
+    it('looks only at recent failed emails with tries left', async () => {
       await service.retryFailed();
 
+      // Never "pending" ones: such an email may already have gone out, and
+      // sending it again would send it twice.
       expect(prisma.emailOutbox.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
+            status: 'failed',
             attempts: { lt: 5 },
             createdAt: { gte: expect.any(Date) as unknown },
-            OR: [
-              { status: 'failed' },
-              {
-                status: 'pending',
-                createdAt: { lt: expect.any(Date) as unknown },
-              },
-            ],
           },
         }),
       );
