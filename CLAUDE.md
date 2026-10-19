@@ -52,6 +52,27 @@ Always use plain, simple English when talking to me.
 - Do not change technical meaning just to make a sentence shorter.
 - Assume English is not my first language.
 
+### Do not compress your English
+
+Short is good, but compressed is not. Compressed English packs many facts into few words, and it is hard for me to read. Write the way you would talk to a person.
+
+- Write full sentences. Do not drop small words like "the", "a", "is", or "it".
+- Put one fact in each sentence. Do not join several facts with commas, slashes, or brackets.
+- Do not use symbols in place of words. Write "so" or "then", not "→". Write "or", not "/". Write "and", not "+".
+- Do not hide meaning in brackets. If a detail matters, give it its own sentence. If it does not matter, leave it out.
+- Do not use shorthand like "FE", "BE", "e2e", "PR head", "w/", or "e.g.". Write the full words.
+- Do not stack code names, file paths, and line numbers in one sentence. Name a file only when I need it, and say in words what it does.
+- Use fewer bold labels like "**Status:**" or "**Where:**". Write a normal sentence instead.
+- Say why something matters, in plain words, before you give details.
+
+Example of compressed English (do not write like this):
+
+> FE: lint ✓, tsc clean, 379/379. BE e2e 1 ✕ (pre-existing on main, unrelated).
+
+The same thing in plain English (write like this):
+
+> The frontend checks all passed. One backend test failed, but it also fails on the main branch. So this pull request did not cause it.
+
 The goal is to help me understand, not to impress me with complex English.
 
 ## Commands

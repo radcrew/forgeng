@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { format } from "date-fns";
+import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,12 +16,15 @@ import {
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { Separator } from "@components/ui/separator";
+import { Skeleton } from "@components/ui/skeleton";
+import { ErrorState } from "@components/shared";
 import { Textarea } from "@components/ui/textarea";
 import { ApiError } from "@lib/api-client";
 import type { Submission } from "@types";
 
 import { resubmitSubmission } from "../../api";
 import { useSubmissionFeedback } from "../../hooks";
+import { formatSentDates } from "../../sent-dates";
 import { validateSubmission, type SubmissionErrors } from "../../validation";
 import { SubmissionStatusBadge } from "../status-badge";
 
@@ -31,6 +34,14 @@ export type SubmissionDetailSheetProps = {
   onClose: () => void;
   /** Called after a successful resubmission so the caller can refetch. */
   onResubmitted?: () => void;
+  /** Off on the task page itself, where the link would lead back to it. */
+  showTaskLink?: boolean;
+  /**
+   * The submission's cohort has ended, so resubmitting isn't possible.
+   * Required on purpose: a caller that left it out would show a resubmit
+   * form that the server then refuses.
+   */
+  cohortEnded: boolean;
 };
 
 export const SubmissionDetailSheet = ({
@@ -38,10 +49,15 @@ export const SubmissionDetailSheet = ({
   open,
   onClose,
   onResubmitted,
+  showTaskLink = true,
+  cohortEnded,
 }: SubmissionDetailSheetProps) => {
-  const { data: feedback = [] } = useSubmissionFeedback(
-    open ? submission.id : null,
-  );
+  const {
+    data: feedback = [],
+    isLoading: feedbackLoading,
+    error: feedbackError,
+    refetch: refetchFeedback,
+  } = useSubmissionFeedback(open ? submission.id : null);
 
   const [content, setContent] = useState(submission.content ?? "");
   const [repoUrl, setRepoUrl] = useState(submission.repoUrl ?? "");
@@ -59,9 +75,11 @@ export const SubmissionDetailSheet = ({
     sending.current = true;
     setIsResubmitting(true);
     try {
+      // Send null (not undefined) so a cleared field is removed. The server
+      // treats a missing field as "keep the old value".
       await resubmitSubmission(submission.id, {
-        content: content.trim() || undefined,
-        repoUrl: repoUrl.trim() || undefined,
+        content: content.trim() || null,
+        repoUrl: repoUrl.trim() || null,
       });
       toast.success("Resubmitted!", {
         description: "Your revised work is back in the review queue.",
@@ -87,8 +105,16 @@ export const SubmissionDetailSheet = ({
         <div className="flex items-center gap-2">
           <SubmissionStatusBadge status={submission.status} />
           <span className="text-sm text-muted-foreground">
-            Submitted {format(new Date(submission.createdAt), "MMM d, yyyy")}
+            {formatSentDates(submission)}
           </span>
+          {showTaskLink && (
+            <Link
+              href={`/student/tasks/${submission.taskId}`}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View task
+            </Link>
+          )}
         </div>
       }
     >
@@ -106,9 +132,28 @@ export const SubmissionDetailSheet = ({
       <div>
         <SectionTitle className="mb-3 flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
-          Feedback ({feedback.length})
+          Feedback
+          {!feedbackLoading && !feedbackError && ` (${feedback.length})`}
         </SectionTitle>
-        {feedback.length === 0 ? (
+        {/* "No feedback yet" only once we know there is none, not while it
+            loads or after it failed to load. */}
+        {feedbackLoading ? (
+          <div className="space-y-4">
+            {[0, 1].map((i) => (
+              <Skeleton
+                key={i}
+                className="h-24 w-full rounded-lg"
+                data-testid="feedback-placeholder"
+              />
+            ))}
+          </div>
+        ) : feedbackError ? (
+          <ErrorState
+            what="the feedback"
+            onRetry={refetchFeedback}
+            size="compact"
+          />
+        ) : feedback.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No feedback yet. Check back after your submission is reviewed.
           </p>
@@ -127,7 +172,18 @@ export const SubmissionDetailSheet = ({
         )}
       </div>
 
-      {submission.status === "needs_work" && (
+      {/* The server refuses resubmits once the cohort has ended, so say so
+          instead of showing a form that can only fail. */}
+      {submission.status === "needs_work" && cohortEnded && (
+        <>
+          <Separator />
+          <p className="text-sm text-muted-foreground">
+            This cohort has ended, so it no longer accepts resubmissions.
+          </p>
+        </>
+      )}
+
+      {submission.status === "needs_work" && !cohortEnded && (
         <>
           <Separator />
           <div className="space-y-4">

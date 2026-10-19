@@ -37,7 +37,7 @@ import { APP_ART } from "@constants/shared/app-illustrations";
 import { isCohortEnded } from "@features/cohorts";
 import { CohortSwitcher, useStudentDashboard } from "@features/dashboard";
 import { useSubmissions } from "@features/submissions";
-import { useTasks } from "@features/tasks";
+import { sortTasks, useTasks } from "@features/tasks";
 import { useSelectedCohort } from "@contexts";
 import { cn, formatCalendarDate, isCalendarDayOver } from "@utils";
 import type { Submission, Task, TaskType } from "@types";
@@ -89,16 +89,7 @@ const Page = () => {
       return true;
     });
 
-    if (sort === "due") {
-      // Soonest due date first; tasks without a due date sink to the bottom.
-      return [...filtered].sort((a, b) => {
-        const aTime = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
-        const bTime = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
-        return aTime - bTime;
-      });
-    }
-    // "recent" — the backend already returns tasks newest-first.
-    return filtered;
+    return sortTasks(filtered, sort);
   }, [tasks, submissionByTaskId, search, typeFilter, progressFilter, sort]);
 
   // Keep stale data on screen while switching cohorts so the page (and the

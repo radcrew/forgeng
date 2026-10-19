@@ -38,10 +38,16 @@ export const createSubmission = async (
 ): Promise<Submission> =>
   apiClient.post<Submission>("/submissions", { taskId, ...input });
 
+/** Like SubmissionInput, but null removes a field from the earlier send. */
+export interface ResubmissionInput {
+  content?: string | null;
+  repoUrl?: string | null;
+}
+
 /** Resubmit work against a `needs_work` submission, sending it back for review. */
 export const resubmitSubmission = async (
   id: number,
-  input: SubmissionInput,
+  input: ResubmissionInput,
 ): Promise<Submission> =>
   apiClient.patch<Submission>(`/submissions/${id}`, input);
 

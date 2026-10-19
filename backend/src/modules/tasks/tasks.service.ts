@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Prisma, Task } from '@prisma/client';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { toTaskDto, type TaskDto } from '../../common/mappers';
@@ -8,8 +13,23 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { ListTasksQuery } from './dto/list-tasks.query';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
+/**
+ * The stipend counts tasks by the month they are due, so a task can't be
+ * published without a due date. Same rule as the admin task form.
+ */
+function assertDueDateToPublish(
+  publishing: boolean,
+  dueDate: string | Date | null | undefined,
+): void {
+  if (publishing && !dueDate) {
+    throw new BadRequestException('Add a due date before publishing.');
+  }
+}
+
 @Injectable()
 export class TasksService {
+  private readonly logger = new Logger(TasksService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
@@ -69,18 +89,23 @@ export class TasksService {
   }
 
   async create(dto: CreateTaskDto): Promise<TaskDto> {
+    // A missing cohort makes the database refuse the task (P2003), and the
+    // Prisma exception filter answers 404 for it.
+    const status = dto.status ?? 'draft';
+    assertDueDateToPublish(status === 'published', dto.dueDate);
     const created = await this.prisma.task.create({
       data: {
         cohortId: dto.cohortId,
         title: dto.title,
         description: dto.description,
         type: dto.type,
-        status: dto.status ?? 'draft',
+        status,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        publishedAt: status === 'published' ? new Date() : undefined,
       },
     });
     if (created.status === 'published') {
-      await this.notifications.notifyTaskPublished(created);
+      await this.announce(created);
     }
     return this.serialize(created);
   }
@@ -88,20 +113,48 @@ export class TasksService {
   async update(id: number, dto: UpdateTaskDto): Promise<TaskDto> {
     const exists = await this.prisma.task.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Task not found.');
+    // Only on the draft -> published step: a task published before this rule
+    // may have no date and must stay editable.
+    assertDueDateToPublish(
+      exists.status !== 'published' && dto.status === 'published',
+      dto.dueDate ?? exists.dueDate,
+    );
 
-    const updated = await this.prisma.task.update({
-      where: { id },
-      data: {
-        title: dto.title,
-        description: dto.description,
-        type: dto.type,
-        status: dto.status,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+    // One transaction, so a task is never left published without its
+    // "published" mark (and so never announced) when the second write fails.
+    const { updated, firstPublish } = await this.prisma.$transaction(
+      async (tx) => {
+        const task = await tx.task.update({
+          where: { id },
+          data: {
+            title: dto.title,
+            description: dto.description,
+            type: dto.type,
+            status: dto.status,
+            dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          },
+        });
+
+        // Students hear about a task only the first time it is published,
+        // not again after it goes back to draft and is published once more.
+        // The mark is set only while still empty, so when two saves race (a
+        // double-click, two admins), just one of them sends the notice: the
+        // second waits on the row lock and then finds the mark already set.
+        if (dto.status !== 'published' || exists.publishedAt) {
+          return { updated: task, firstPublish: false };
+        }
+        const { count } = await tx.task.updateMany({
+          where: { id, publishedAt: null },
+          data: { publishedAt: new Date() },
+        });
+        return { updated: task, firstPublish: count === 1 };
       },
-    });
-    // Notify enrolled students only on the draft -> published transition.
-    if (exists.status !== 'published' && updated.status === 'published') {
-      await this.notifications.notifyTaskPublished(updated);
+    );
+
+    // Only after the transaction commits, so a rolled-back change is never
+    // announced.
+    if (firstPublish) {
+      await this.announce(updated);
     }
     return this.serialize(updated);
   }
@@ -110,6 +163,22 @@ export class TasksService {
     const exists = await this.prisma.task.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Task not found.');
     await this.prisma.task.delete({ where: { id } });
+  }
+
+  /**
+   * Best-effort: the task is already saved and marked as published, so a
+   * failed notice must not report the save as failed. Saving again would not
+   * announce it either, since the task is already marked.
+   */
+  private async announce(task: Task): Promise<void> {
+    try {
+      await this.notifications.notifyTaskPublished(task);
+    } catch (err) {
+      this.logger.error(
+        `Failed to announce task ${task.id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   private async serialize(task: Task): Promise<TaskDto> {

@@ -188,8 +188,14 @@ describe('toSubmissionDto', () => {
     content: 'done',
     repoUrl: null,
     status: 'submitted',
+    lastSubmittedAt: new Date('2026-01-20T08:00:00.000Z'),
     createdAt: DATE,
   } as Submission;
+
+  it('sends when the work was last sent', () => {
+    const dto = toSubmissionDto(submission, null, null, 0);
+    expect(dto.lastSubmittedAt).toBe('2026-01-20T08:00:00.000Z');
+  });
 
   it('maps nested task and user when present', () => {
     const task = {
@@ -202,16 +208,56 @@ describe('toSubmissionDto', () => {
       dueDate: null,
       createdAt: DATE,
     } as Task;
-    const dto = toSubmissionDto(submission, task, makeUser(), 2);
+    const dto = toSubmissionDto(
+      submission,
+      {
+        ...task,
+        cohort: { id: 3, name: 'Cohort 1', status: 'active', endDate: null },
+      },
+      makeUser(),
+      2,
+    );
     expect(dto.task?.id).toBe(5);
     expect(dto.user?.id).toBe(1);
     expect(dto.feedbackCount).toBe(2);
+    expect(dto.cohortEnded).toBe(false);
+    expect(dto.cohort).toEqual({ id: 3, name: 'Cohort 1' });
+  });
+
+  it('says the cohort ended once it is completed or its end date is over', () => {
+    const task = { id: 5, cohortId: 3, createdAt: DATE } as Task;
+    const completed = toSubmissionDto(
+      submission,
+      {
+        ...task,
+        cohort: { id: 3, name: 'Cohort 1', status: 'completed', endDate: null },
+      },
+      null,
+      0,
+    );
+    const pastEnd = toSubmissionDto(
+      submission,
+      {
+        ...task,
+        cohort: {
+          id: 3,
+          name: 'Cohort 1',
+          status: 'active',
+          endDate: new Date('2020-01-01'),
+        },
+      },
+      null,
+      0,
+    );
+    expect(completed.cohortEnded).toBe(true);
+    expect(pastEnd.cohortEnded).toBe(true);
   });
 
   it('leaves task and user null when absent', () => {
     const dto = toSubmissionDto(submission, null, null, 0);
     expect(dto.task).toBeNull();
     expect(dto.user).toBeNull();
+    expect(dto.cohort).toBeNull();
   });
 });
 

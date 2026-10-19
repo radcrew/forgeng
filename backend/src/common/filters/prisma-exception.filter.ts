@@ -12,6 +12,9 @@ import type { Response } from 'express';
  * Translate Prisma errors into clean HTTP responses.
  * - P2002 (unique violation) → 409 Conflict
  * - P2025 (record not found) → 404 Not Found
+ * - P2003 (foreign key) → 404 Not Found: the row links to a record that
+ *   doesn't exist, such as a task for a missing cohort. Every relation in the
+ *   schema cascades or sets null on delete, so a delete never raises it.
  * - everything else → 500 with a generic message (code logged server-side only)
  */
 @Catch(Prisma.PrismaClientKnownRequestError)
@@ -38,6 +41,13 @@ export class PrismaExceptionFilter implements ExceptionFilter {
           statusCode: HttpStatus.NOT_FOUND,
           error: 'Not Found',
           message: 'Record not found.',
+        });
+        return;
+      case 'P2003':
+        res.status(HttpStatus.NOT_FOUND).json({
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'Not Found',
+          message: 'A linked record was not found.',
         });
         return;
       default:

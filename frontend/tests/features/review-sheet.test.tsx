@@ -82,6 +82,30 @@ describe("ReviewSheet", () => {
     expect(screen.getByRole("button", { name: /submit/i })).toBeDisabled();
   });
 
+  it("counts the feedback characters without the spaces around them", async () => {
+    render(<ReviewSheet submission={makeSubmission()} open onClose={vi.fn()} />);
+    expect(screen.getByText("0 / 4,000 characters")).toBeInTheDocument();
+
+    await userEvent.type(
+      screen.getByPlaceholderText(/write your feedback/i),
+      "  Good  ",
+    );
+    expect(screen.getByText("4 / 4,000 characters")).toBeInTheDocument();
+  });
+
+  it("disables submit when the feedback is over the limit", async () => {
+    render(<ReviewSheet submission={makeSubmission()} open onClose={vi.fn()} />);
+    const box = screen.getByPlaceholderText(/write your feedback/i);
+    await userEvent.click(box);
+    await userEvent.paste("a".repeat(4001));
+
+    expect(screen.getByText("4,001 / 4,000 characters")).toHaveClass(
+      "text-destructive",
+    );
+    expect(box).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("button", { name: /submit/i })).toBeDisabled();
+  });
+
   it("submits feedback and closes on success", async () => {
     const onClose = vi.fn();
     const onReviewed = vi.fn();

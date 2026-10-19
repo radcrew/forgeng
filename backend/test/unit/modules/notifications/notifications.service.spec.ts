@@ -4,6 +4,9 @@ import { MailService } from '@core/mail';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import type { AuthUser } from '@core/auth/auth.types';
+import { waitUntil } from '@vercel/functions';
+
+jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
 
 const user: AuthUser = { id: 2, role: 'student' } as AuthUser;
 
@@ -170,6 +173,20 @@ describe('NotificationsService', () => {
 
       expect(prisma.notification.createMany).toHaveBeenCalledTimes(1);
       expect(mail.send).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns without waiting for the emails and hands them to waitUntil', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        { userId: 2, user: { email: 'a@example.com' } },
+      ]);
+      prisma.notificationPreference.findMany.mockResolvedValue([]);
+      // An email server that never answers.
+      mail.send.mockReturnValue(new Promise(() => undefined));
+
+      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
+
+      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise));
     });
   });
 

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type {
+  Cohort,
   CohortStatus,
   Submission,
   SubmissionStatus,
@@ -140,8 +141,10 @@ export class DashboardService {
     });
     const mySubmissions = await this.prisma.submission.findMany({
       where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      include: { task: true },
+      // Latest send first, like the submissions page, so a resubmit shows up
+      // in the recent list.
+      orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
+      include: { task: { include: { cohort: true } } },
     });
 
     // Progress counts only this cohort's published tasks. Submissions from
@@ -312,9 +315,11 @@ export class DashboardService {
       }),
       this.prisma.submission.findMany({
         where: { status: 'submitted' },
-        orderBy: { createdAt: 'desc' },
+        // Latest send first, like the review queue, so resubmitted work
+        // waiting for review shows up here too.
+        orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
         take: 5,
-        include: { task: true, user: true },
+        include: { task: { include: { cohort: true } }, user: true },
       }),
     ]);
 
@@ -388,7 +393,7 @@ export class DashboardService {
 
   private async serializeSubmission(
     sub: Submission,
-    task: Task | null,
+    task: (Task & { cohort: Cohort }) | null,
     user: User | null,
   ): Promise<SubmissionDto> {
     const feedbackCount = await this.prisma.feedback.count({
