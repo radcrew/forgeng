@@ -14,7 +14,12 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { SUBMISSION_STATUS_FILTER_TABS } from "@constants/submissions";
 import { useCohorts } from "@features/cohorts";
@@ -31,7 +36,12 @@ const Page = () => {
     useState<SubmissionStatusFilter>("submitted");
   const [cohortFilter, setCohortFilter] = useState("all");
   const { data: cohorts = [] } = useCohorts();
-  const { data: submissions = [], isLoading, refetch } = useSubmissions({
+  const {
+    data: submissions = [],
+    isLoading,
+    error,
+    refetch,
+  } = useSubmissions({
     status: statusFilter,
     cohortId: cohortFilter === "all" ? undefined : Number(cohortFilter),
   });
@@ -74,6 +84,8 @@ const Page = () => {
 
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
+      ) : error ? (
+        <ErrorState what="submissions" onRetry={refetch} />
       ) : submissions.length === 0 ? (
         <EmptyState message="No submissions in this category." art={APP_ART.reviews} />
       ) : (
