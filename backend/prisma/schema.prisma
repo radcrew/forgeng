@@ -92,6 +92,9 @@ model User {
   bio           String?
   githubUrl     String?  @map("github_url")
   avatarUrl            String?  @map("avatar_url")
+  // An admin's Google Calendar booking page, where students pick a free time
+  // for a meeting. Null for everyone else.
+  bookingUrl           String?  @map("booking_url") @db.VarChar(500)
   // Profile links (linkedin, github, telegram, ...) for accounts without an
   // application. With an application, the links live on it instead.
   profileLinks         Json?    @map("profile_links")
