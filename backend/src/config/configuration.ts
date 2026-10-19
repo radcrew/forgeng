@@ -1,7 +1,9 @@
 import { join } from 'node:path';
 
+import { parseEncryptionKey } from '../common/crypto';
 import type {
   AppConfiguration,
+  GoogleCalendarConfig,
   OAuthProviderConfig,
   SmtpConfig,
 } from './config.types';
@@ -49,6 +51,19 @@ function parseOAuth(
 ): OAuthProviderConfig | null {
   if (!clientId || !clientSecret || !callbackUrl) return null;
   return { clientId, clientSecret, callbackUrl };
+}
+
+function parseGoogleCalendar(): GoogleCalendarConfig | null {
+  const oauth = parseOAuth(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_CALENDAR_CALLBACK_URL,
+  );
+  const rawKey = process.env.GOOGLE_TOKEN_KEY;
+  if (!oauth || !rawKey) return null;
+  // A bad key stops the server at startup instead of failing at the first
+  // connection.
+  return { ...oauth, tokenKey: parseEncryptionKey(rawKey) };
 }
 
 function parseSmtp(): SmtpConfig | null {
@@ -133,6 +148,7 @@ export default (): AppConfiguration => {
         process.env.GITHUB_CALLBACK_URL,
       ),
     },
+    googleCalendar: parseGoogleCalendar(),
     smtp: parseSmtp(),
     emailFrom: process.env.EMAIL_FROM ?? DEFAULT_EMAIL_FROM,
     ipQualityScore: {

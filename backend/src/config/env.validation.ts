@@ -115,6 +115,14 @@ class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  GOOGLE_CALENDAR_CALLBACK_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_TOKEN_KEY?: string;
+
+  @IsOptional()
+  @IsString()
   GITHUB_CLIENT_ID?: string;
 
   @IsOptional()

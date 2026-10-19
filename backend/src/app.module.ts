@@ -17,6 +17,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { MentorsModule } from './modules/mentors/mentors.module';
+import { MeetingsModule } from './modules/meetings/meetings.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MentorsModule } from './modules/mentors/mentors.module';
     NotificationsModule,
     SettingsModule,
     MentorsModule,
+    MeetingsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

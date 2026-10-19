@@ -29,6 +29,12 @@ export interface AppConfiguration {
     google: OAuthProviderConfig | null;
     github: OAuthProviderConfig | null;
   };
+  /**
+   * Google Calendar for admins' meetings. It reuses the Google sign-in
+   * client with its own callback. Null when a setting is missing: the
+   * feature is then off.
+   */
+  googleCalendar: GoogleCalendarConfig | null;
   smtp: SmtpConfig | null;
   emailFrom: string;
   ipQualityScore: {
@@ -46,6 +52,11 @@ export interface OAuthProviderConfig {
   clientId: string;
   clientSecret: string;
   callbackUrl: string;
+}
+
+export interface GoogleCalendarConfig extends OAuthProviderConfig {
+  /** 32-byte key that encrypts the stored Google refresh tokens. */
+  tokenKey: Buffer;
 }
 
 export interface SmtpConfig {
