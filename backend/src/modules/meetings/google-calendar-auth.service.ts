@@ -4,14 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { decryptSecret, encryptSecret } from '../../common/crypto';
 import type { AppConfiguration, GoogleCalendarConfig } from '../../config';
 import { PrismaService } from '../../core/database/prisma.service';
+import {
+  AUTH_URL,
+  CALENDAR_SCOPE,
+  GOOGLE_TIMEOUT_MS,
+  REVOKE_URL,
+  TOKEN_URL,
+} from './google-api';
 import { createOAuthState, verifyOAuthState } from './oauth-state';
-
-const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
-const TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const REVOKE_URL = 'https://oauth2.googleapis.com/revoke';
-/** Create, change and delete events. Not read access to the whole calendar. */
-export const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
-const GOOGLE_TIMEOUT_MS = 10_000;
 
 export interface GoogleCalendarStatus {
   /** False when the server has no Google Calendar settings. */

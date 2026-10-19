@@ -2,10 +2,8 @@ import { Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { decryptSecret, encryptSecret } from '@common/crypto';
 import { PrismaService } from '@core/database/prisma.service';
-import {
-  CALENDAR_SCOPE,
-  GoogleCalendarAuthService,
-} from '@modules/meetings/google-calendar-auth.service';
+import { CALENDAR_SCOPE } from '@modules/meetings/google-api';
+import { GoogleCalendarAuthService } from '@modules/meetings/google-calendar-auth.service';
 import { createOAuthState } from '@modules/meetings/oauth-state';
 
 const tokenKey = randomBytes(32);
