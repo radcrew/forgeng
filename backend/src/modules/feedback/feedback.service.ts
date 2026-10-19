@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -111,22 +112,30 @@ export class FeedbackService {
     });
     if (!submission) throw new NotFoundException('Submission not found.');
 
-    const [, created] = await this.prisma.$transaction([
-      this.prisma.submission.update({
-        where: { id: submissionId },
+    const created = await this.prisma.$transaction(async (tx) => {
+      // Only a submission that is waiting for review can be reviewed. The
+      // status check and the update are one statement, so when two admins
+      // review at the same time, only the first one wins.
+      const { count } = await tx.submission.updateMany({
+        where: { id: submissionId, status: 'submitted' },
         data: {
           status: dto.verdict === 'approved' ? 'approved' : 'needs_work',
         },
-      }),
-      this.prisma.feedback.create({
+      });
+      if (count === 0) {
+        throw new ConflictException(
+          'This submission was already reviewed. Refresh the page to see the review.',
+        );
+      }
+      return tx.feedback.create({
         data: {
           submissionId,
           reviewerId: reviewer.id,
           content: dto.content,
           verdict: dto.verdict,
         },
-      }),
-    ]);
+      });
+    });
 
     await this.notifications.notifyFeedbackReceived({
       userId: submission.userId,

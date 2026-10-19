@@ -1,4 +1,8 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Feedback, Submission, User } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
@@ -46,7 +50,7 @@ describe('FeedbackService', () => {
   let prisma: {
     submission: {
       findUnique: jest.Mock;
-      update: jest.Mock;
+      updateMany: jest.Mock;
       findMany: jest.Mock;
     };
     feedback: { findMany: jest.Mock; create: jest.Mock };
@@ -64,15 +68,15 @@ describe('FeedbackService', () => {
     prisma = {
       submission: {
         findUnique: jest.fn(),
-        update: jest.fn(),
+        updateMany: jest.fn(),
         findMany: jest.fn(),
       },
       feedback: { findMany: jest.fn(), create: jest.fn() },
       task: { findUnique: jest.fn(), findMany: jest.fn() },
       notification: { findFirst: jest.fn() },
       user: { findUnique: jest.fn() },
-      // The service passes an array of prepared queries; resolve them in order.
-      $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
+      // The service runs its queries in a callback; give it the same mock.
+      $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn(prisma)),
     };
     notifications = {
       notifyFeedbackReceived: jest.fn().mockResolvedValue(undefined),
@@ -129,7 +133,7 @@ describe('FeedbackService', () => {
         taskId: 5,
       } as Submission;
       prisma.submission.findUnique.mockResolvedValue(submission);
-      prisma.submission.update.mockReturnValue('update-op');
+      prisma.submission.updateMany.mockResolvedValue({ count: 1 });
       prisma.feedback.create.mockReturnValue(makeFeedback());
       // Task has no due date, so the payment-eligible check is a no-op.
       prisma.task.findUnique.mockResolvedValue({ cohortId: 3, dueDate: null });
@@ -150,7 +154,7 @@ describe('FeedbackService', () => {
         userId: student.id,
         taskId: 5,
       });
-      prisma.submission.update.mockReturnValue('update-op');
+      prisma.submission.updateMany.mockResolvedValue({ count: 1 });
       prisma.feedback.create.mockReturnValue(makeFeedback());
       prisma.task.findUnique.mockResolvedValue({ cohortId: 3, dueDate: null });
 
@@ -160,7 +164,9 @@ describe('FeedbackService', () => {
       } as never);
 
       const updateArg = (
-        prisma.submission.update.mock.calls[0] as [{ data: { status: string } }]
+        prisma.submission.updateMany.mock.calls[0] as [
+          { data: { status: string } },
+        ]
       )[0].data;
       expect(updateArg.status).toBe('approved');
     });
@@ -171,7 +177,7 @@ describe('FeedbackService', () => {
         userId: student.id,
         taskId: 5,
       });
-      prisma.submission.update.mockReturnValue('update-op');
+      prisma.submission.updateMany.mockResolvedValue({ count: 1 });
       prisma.feedback.create.mockReturnValue(makeFeedback());
       // Due in May 2026; the review happens whenever the test runs.
       prisma.task.findUnique.mockResolvedValue({
@@ -218,7 +224,7 @@ describe('FeedbackService', () => {
         userId: student.id,
         taskId: 5,
       });
-      prisma.submission.update.mockReturnValue('update-op');
+      prisma.submission.updateMany.mockResolvedValue({ count: 1 });
       prisma.feedback.create.mockReturnValue(makeFeedback());
       prisma.task.findUnique.mockResolvedValue({
         cohortId: 3,
@@ -239,13 +245,37 @@ describe('FeedbackService', () => {
       expect(notifications.notifyPaymentEligible).not.toHaveBeenCalled();
     });
 
+    it('refuses a second review when the submission was already reviewed', async () => {
+      prisma.submission.findUnique.mockResolvedValue({
+        id: 10,
+        userId: student.id,
+        taskId: 5,
+      });
+      // Another admin changed the status first, so nothing matches.
+      prisma.submission.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(
+        service.create(10, reviewer, {
+          content: 'ok',
+          verdict: 'approved',
+        } as never),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(prisma.submission.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 10, status: 'submitted' },
+        }),
+      );
+      expect(prisma.feedback.create).not.toHaveBeenCalled();
+      expect(notifications.notifyFeedbackReceived).not.toHaveBeenCalled();
+    });
+
     it('maps a non-approved verdict to needs_work', async () => {
       prisma.submission.findUnique.mockResolvedValue({
         id: 10,
         userId: student.id,
         taskId: 5,
       });
-      prisma.submission.update.mockReturnValue('update-op');
+      prisma.submission.updateMany.mockResolvedValue({ count: 1 });
       prisma.feedback.create.mockReturnValue(
         makeFeedback({ verdict: 'needs_work' }),
       );
@@ -256,7 +286,9 @@ describe('FeedbackService', () => {
       } as never);
 
       const updateArg = (
-        prisma.submission.update.mock.calls[0] as [{ data: { status: string } }]
+        prisma.submission.updateMany.mock.calls[0] as [
+          { data: { status: string } },
+        ]
       )[0].data;
       expect(updateArg.status).toBe('needs_work');
       // Non-approved verdicts skip the payment-eligible path entirely.
