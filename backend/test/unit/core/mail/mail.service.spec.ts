@@ -165,7 +165,7 @@ describe('MailService', () => {
         expect.objectContaining({
           where: {
             status: 'failed',
-            attempts: { lt: 5 },
+            attempts: { lt: 4 },
             createdAt: { gte: expect.any(Date) as unknown },
           },
         }),

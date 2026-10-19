@@ -33,9 +33,10 @@ const MAX_CONNECTIONS = 3;
 const MAX_MESSAGES_PER_SECOND = 10;
 
 /**
- * Outbox retry rules. A failed email is tried again up to MAX_ATTEMPTS times
- * in total, but only while it is recent: an old stipend or task email is no
- * longer useful.
+ * Outbox retry rules. A failed email is tried up to MAX_ATTEMPTS times in
+ * total, but only while it is recent: an old stipend or task email is no
+ * longer useful. The retry runs once a day and the window is 3 days, so an
+ * email gets its first send and at most 3 retries. MAX_ATTEMPTS matches that.
  *
  * A row that stays "pending" is never retried. Either its send was cut off
  * (for example, the function hit its time limit), or the email went out and
@@ -46,7 +47,7 @@ const MAX_MESSAGES_PER_SECOND = 10;
  * is long past the retry window, and it still holds an email address and
  * the email's text.
  */
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 4;
 const RETRY_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 const RETRY_BATCH = 200;
 const KEEP_MS = 30 * 24 * 60 * 60 * 1000;
