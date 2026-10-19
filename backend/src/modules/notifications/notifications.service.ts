@@ -259,6 +259,21 @@ export class NotificationsService {
     );
   }
 
+  /**
+   * Tells a student in the app that a mentor scheduled, moved or cancelled
+   * a meeting. In-app only: Google already emails the calendar invite.
+   */
+  async notifyMeeting(params: {
+    userId: number;
+    type: 'meeting_scheduled' | 'meeting_changed' | 'meeting_cancelled';
+    title: string;
+    body: string;
+  }): Promise<void> {
+    await this.prisma.notification.create({
+      data: { ...params, link: STUDENT_ROUTES.DASHBOARD },
+    });
+  }
+
   private async notifyAdmins(notification: {
     type: 'submission_received' | 'application_received' | 'payment_eligible';
     title: string;

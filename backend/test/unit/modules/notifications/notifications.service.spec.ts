@@ -215,6 +215,29 @@ describe('NotificationsService', () => {
     });
   });
 
+  describe('notifyMeeting', () => {
+    it('tells the student in the app, with a link to the dashboard', async () => {
+      await service.notifyMeeting({
+        userId: 7,
+        type: 'meeting_scheduled',
+        title: 'New meeting',
+        body: 'Mentoring call with Grace',
+      });
+
+      expect(prisma.notification.create).toHaveBeenCalledWith({
+        data: {
+          userId: 7,
+          type: 'meeting_scheduled',
+          title: 'New meeting',
+          body: 'Mentoring call with Grace',
+          link: '/student',
+        },
+      });
+      // Google already emails the calendar invite.
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+  });
+
   describe('notifyPaymentEligible', () => {
     it('notifies admins and emails the student', async () => {
       prisma.user.findMany.mockResolvedValue([{ id: 10 }]);
