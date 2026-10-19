@@ -56,6 +56,8 @@ describe('AuthService', () => {
   let regionRestriction: { check: jest.Mock };
 
   beforeEach(() => {
+    // So a waitUntil check sees only its own test's calls.
+    (waitUntil as jest.Mock).mockClear();
     prisma = { user: { findUnique: jest.fn(), create: jest.fn() } };
     password = {
       hash: jest.fn().mockResolvedValue('hashed'),
@@ -229,6 +231,8 @@ describe('AuthService', () => {
       prisma.user.findUnique.mockResolvedValue(makeUser());
       await service.requestPasswordReset('ada@example.com');
       expect(email.sendPasswordResetEmail).toHaveBeenCalledTimes(1);
+      // On Vercel, waitUntil stops the function from freezing mid-send.
+      expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise));
     });
 
     it('resolves when the reset email fails to send', async () => {
