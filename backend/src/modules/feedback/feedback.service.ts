@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { AuthUser } from '../../core/auth/auth.types';
@@ -12,6 +13,8 @@ import { CreateFeedbackDto } from './dto/create-feedback.dto';
 
 @Injectable()
 export class FeedbackService {
+  private readonly logger = new Logger(FeedbackService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
@@ -137,17 +140,33 @@ export class FeedbackService {
       });
     });
 
-    await this.notifications.notifyFeedbackReceived({
-      userId: submission.userId,
-      submissionId,
-      verdict: dto.verdict,
-    });
+    // The review is saved by now. A failed message must not report the
+    // save as failed, or the reviewer tries again and gets a conflict.
+    try {
+      await this.notifications.notifyFeedbackReceived({
+        userId: submission.userId,
+        submissionId,
+        verdict: dto.verdict,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Failed to notify the student of feedback',
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
 
     if (dto.verdict === 'approved') {
-      await this.checkAndNotifyPaymentEligible(
-        submission.userId,
-        submission.taskId,
-      );
+      try {
+        await this.checkAndNotifyPaymentEligible(
+          submission.userId,
+          submission.taskId,
+        );
+      } catch (err) {
+        this.logger.error(
+          'Failed to check payment eligibility',
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
     }
 
     return toFeedbackDto(created, reviewer);

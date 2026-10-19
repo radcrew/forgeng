@@ -269,6 +269,27 @@ describe('FeedbackService', () => {
       expect(notifications.notifyFeedbackReceived).not.toHaveBeenCalled();
     });
 
+    it('returns the saved review when the messages fail', async () => {
+      prisma.submission.findUnique.mockResolvedValue({
+        id: 10,
+        userId: student.id,
+        taskId: 5,
+      });
+      prisma.submission.updateMany.mockResolvedValue({ count: 1 });
+      prisma.feedback.create.mockResolvedValue(makeFeedback());
+      notifications.notifyFeedbackReceived.mockRejectedValue(
+        new Error('mail down'),
+      );
+      prisma.task.findUnique.mockRejectedValue(new Error('db down'));
+
+      const result = await service.create(10, reviewer, {
+        content: 'ok',
+        verdict: 'approved',
+      } as never);
+
+      expect(result.id).toBe(7);
+    });
+
     it('maps a non-approved verdict to needs_work', async () => {
       prisma.submission.findUnique.mockResolvedValue({
         id: 10,
