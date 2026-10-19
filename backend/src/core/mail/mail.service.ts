@@ -22,6 +22,15 @@ const GREETING_TIMEOUT_MS = 10_000;
 const SOCKET_TIMEOUT_MS = 20_000;
 
 /**
+ * Reuse a few SMTP connections instead of opening one per email. Publishing a
+ * task emails every student in the cohort at once, and mail providers refuse
+ * too many connections or messages per second. Sends past these limits wait
+ * in the pool's queue.
+ */
+const MAX_CONNECTIONS = 3;
+const MAX_MESSAGES_PER_SECOND = 10;
+
+/**
  * Generic transactional email sender. Wraps a single nodemailer transport so
  * every feature shares one connection pool and a consistent `from` address.
  * When SMTP is unconfigured (dev), emails are logged instead of sent.
@@ -38,6 +47,10 @@ export class MailService implements OnModuleDestroy {
 
     if (smtp) {
       this.transporter = createTransport({
+        pool: true,
+        maxConnections: MAX_CONNECTIONS,
+        rateDelta: 1000,
+        rateLimit: MAX_MESSAGES_PER_SECOND,
         host: smtp.host,
         port: smtp.port,
         secure: smtp.secure,
