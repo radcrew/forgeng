@@ -74,6 +74,12 @@ enum NotificationType {
   payment_eligible
 }
 
+enum EmailStatus {
+  pending
+  sent
+  failed
+}
+
 // -----------------------------------------------------------------------------
 // Models
 // -----------------------------------------------------------------------------
@@ -320,6 +326,24 @@ model Payment {
 
   @@index([userId])
   @@map("payments")
+}
+
+// An email sent after a save, kept so a failed send can be tried again. The
+// save already answered, so nobody is watching for the error.
+model EmailOutbox {
+  id        Int         @id @default(autoincrement())
+  to        String
+  subject   String
+  text      String
+  html      String?
+  status    EmailStatus @default(pending)
+  attempts  Int         @default(0)
+  lastError String?     @map("last_error")
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  sentAt    DateTime?   @map("sent_at") @db.Timestamptz
+
+  @@index([status, createdAt])
+  @@map("email_outbox")
 }
 
 // Singleton platform-wide configuration. There is always exactly one row (id=1).
