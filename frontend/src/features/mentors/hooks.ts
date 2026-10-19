@@ -2,7 +2,9 @@
 
 import { useCallback, useState } from "react";
 import { useAsyncResource } from "@hooks/use-async-resource";
-import { getMyBookingUrl, updateMyBookingUrl } from "./api";
+import { getMyBookingUrl, listMentors, updateMyBookingUrl } from "./api";
+
+export const useMentors = () => useAsyncResource(listMentors, []);
 
 export const useMyBookingUrl = () => useAsyncResource(getMyBookingUrl, []);
 

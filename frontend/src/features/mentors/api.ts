@@ -1,5 +1,9 @@
 import { apiClient } from "@lib/api-client";
-import type { BookingUrl } from "./types";
+import type { BookingUrl, Mentor } from "./types";
+
+/** Mentors who added a booking page. */
+export const listMentors = (): Promise<Mentor[]> =>
+  apiClient.get<Mentor[]>("/mentors");
 
 export const getMyBookingUrl = (): Promise<BookingUrl> =>
   apiClient.get<BookingUrl>("/mentors/me/booking-url");
