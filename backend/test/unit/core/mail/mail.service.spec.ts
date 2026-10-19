@@ -196,11 +196,20 @@ describe('MailService', () => {
       );
     });
 
-    it('deletes old sent emails', async () => {
-      await service.retryFailed();
+    it('deletes every email older than 30 days, failed ones too', async () => {
+      jest.useFakeTimers({
+        now: new Date('2026-10-31T06:00:00.000Z'),
+        doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'],
+      });
+      try {
+        await service.retryFailed();
+      } finally {
+        jest.useRealTimers();
+      }
 
+      // No status filter: old failed rows must not keep addresses forever.
       expect(prisma.emailOutbox.deleteMany).toHaveBeenCalledWith({
-        where: { status: 'sent', sentAt: { lt: expect.any(Date) as unknown } },
+        where: { createdAt: { lt: new Date('2026-10-01T06:00:00.000Z') } },
       });
     });
   });

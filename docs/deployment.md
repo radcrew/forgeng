@@ -78,8 +78,12 @@ provisions the web service and the Postgres database in one click.
    | Variable      | Value                                                  |
    | ------------- | ------------------------------------------------------ |
    | `CORS_ORIGIN` | `https://<your-vercel-domain>` (comma-separated for many) |
+   | `SMTP_HOST`   | your mail server, e.g. `smtp.example.com` (required)    |
+   | `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` | your mail server's settings |
 
-   Hit **Save Changes** — Render redeploys with the new value.
+   Hit **Save Changes** — Render redeploys with the new value. Without
+   `SMTP_HOST` the backend refuses to start in production. See
+   [Email](#email) below.
 
 7. Back in Vercel, set `BACKEND_ORIGIN` to the Render URL (step 1.4 above)
    and redeploy the frontend.
@@ -104,6 +108,22 @@ deploy you'll likely want to upgrade:
 | Web service       | Sleeps after 15 min idle, ~50s cold start       | Starter ($7/mo) |
 
 Upgrades are a single click in the Render dashboard — no code changes.
+
+## Email
+
+The backend sends email through SMTP. These settings apply wherever the
+backend runs:
+
+- **`SMTP_HOST` is required in production.** Without it the backend refuses
+  to start, so a deploy can't silently skip every email. Set `SMTP_PORT`,
+  `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE` and `EMAIL_FROM` with it.
+- **Failed emails are retried once a day.** Emails sent after a save are kept
+  in the `email_outbox` table. `backend/vercel.json` sets up a Vercel Cron Job
+  that calls `/api/cron/retry-emails`. Set `CRON_SECRET` in the Vercel backend
+  project to a long random value: Vercel sends it to the route, and the route
+  refuses every call without it.
+- **On Render there is no retry.** Vercel Cron runs only on Vercel, so on
+  Render failed emails stay in the outbox and are not sent again.
 
 ## 3. Auth cookies require a shared domain
 

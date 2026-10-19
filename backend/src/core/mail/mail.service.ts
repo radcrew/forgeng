@@ -37,13 +37,15 @@ const MAX_MESSAGES_PER_SECOND = 10;
  * in total, but only while it is recent: an old stipend or task email is no
  * longer useful. A "pending" row older than STUCK_AFTER_MS was cut off
  * mid-send (for example, the function hit its time limit), so it is retried
- * too. Sent rows are deleted after KEEP_SENT_MS.
+ * too. Every row is deleted after KEEP_MS, whatever its status: by then it
+ * is long past the retry window, and it still holds an email address and
+ * the email's text.
  */
 const MAX_ATTEMPTS = 5;
 const RETRY_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 const STUCK_AFTER_MS = 60 * 60 * 1000;
 const RETRY_BATCH = 200;
-const KEEP_SENT_MS = 30 * 24 * 60 * 60 * 1000;
+const KEEP_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
  * Generic transactional email sender. Wraps a single nodemailer transport so
@@ -151,7 +153,7 @@ export class MailService implements OnModuleDestroy {
       ),
     );
     await this.prisma.emailOutbox.deleteMany({
-      where: { status: 'sent', sentAt: { lt: new Date(now - KEEP_SENT_MS) } },
+      where: { createdAt: { lt: new Date(now - KEEP_MS) } },
     });
     return { retried: rows.length, sent: results.filter(Boolean).length };
   }
