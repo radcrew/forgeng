@@ -30,6 +30,7 @@ describe('MailService', () => {
     emailOutbox: {
       create: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
       findMany: jest.Mock;
       deleteMany: jest.Mock;
     };
@@ -44,6 +45,7 @@ describe('MailService', () => {
       emailOutbox: {
         create: jest.fn().mockResolvedValue({ id: 1 }),
         update: jest.fn().mockResolvedValue({}),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         findMany: jest.fn().mockResolvedValue([]),
         deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
       },
@@ -174,9 +176,12 @@ describe('MailService', () => {
 
     it('sends them again and reports how many went out', async () => {
       prisma.emailOutbox.findMany.mockResolvedValue([row(1), row(2)]);
-      transport.sendMail
-        .mockResolvedValueOnce(undefined)
-        .mockRejectedValueOnce(new Error('smtp down'));
+      // By address, since the sends don't run in a fixed order.
+      transport.sendMail.mockImplementation(({ to }: { to: string }) =>
+        to === 's2@example.com'
+          ? Promise.reject(new Error('smtp down'))
+          : Promise.resolve(),
+      );
 
       const result = await service.retryFailed();
 
@@ -190,6 +195,76 @@ describe('MailService', () => {
           data: expect.objectContaining({ status: 'failed' }) as unknown,
         }),
       );
+    });
+
+    it('claims each row before sending it', async () => {
+      prisma.emailOutbox.findMany.mockResolvedValue([row(1)]);
+      // A send that never ends, as when Vercel stops the function.
+      transport.sendMail.mockReturnValue(new Promise(() => undefined));
+
+      void service.retryFailed();
+      await new Promise((resolve) => setImmediate(resolve));
+
+      // The row is already "pending", so the next run won't send it again.
+      expect(prisma.emailOutbox.updateMany).toHaveBeenCalledWith({
+        where: { id: 1, status: 'failed' },
+        data: { status: 'pending' },
+      });
+      expect(transport.sendMail).toHaveBeenCalledTimes(1);
+      expect(prisma.emailOutbox.update).not.toHaveBeenCalled();
+    });
+
+    it('sends each email once when two runs overlap', async () => {
+      // Vercel can deliver the same cron call twice.
+      const rows = [row(1), row(2), row(3), row(4)];
+      prisma.emailOutbox.findMany.mockResolvedValue(rows);
+      const status = new Map(rows.map((r) => [r.id, 'failed']));
+      prisma.emailOutbox.updateMany.mockImplementation(
+        ({ where }: { where: { id: number; status: string } }) => {
+          if (status.get(where.id) !== where.status) {
+            return Promise.resolve({ count: 0 });
+          }
+          status.set(where.id, 'pending');
+          return Promise.resolve({ count: 1 });
+        },
+      );
+
+      const [first, second] = await Promise.all([
+        service.retryFailed(),
+        service.retryFailed(),
+      ]);
+
+      const sentTo = transport.sendMail.mock.calls.map(
+        ([mail]) => (mail as { to: string }).to,
+      );
+      expect(sentTo.sort()).toEqual([
+        's1@example.com',
+        's2@example.com',
+        's3@example.com',
+        's4@example.com',
+      ]);
+      expect(first.retried + second.retried).toBe(4);
+    });
+
+    it('sends at most 3 at a time', async () => {
+      prisma.emailOutbox.findMany.mockResolvedValue(
+        Array.from({ length: 10 }, (_, i) => row(i + 1)),
+      );
+      let inFlight = 0;
+      let peak = 0;
+      transport.sendMail.mockImplementation(async () => {
+        inFlight++;
+        peak = Math.max(peak, inFlight);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        inFlight--;
+      });
+
+      const result = await service.retryFailed();
+
+      // So a run cut off at the time limit loses at most the ones in
+      // progress. The others stay "failed" for the next run.
+      expect(result.retried).toBe(10);
+      expect(peak).toBe(3);
     });
 
     it('deletes every email older than 30 days, failed ones too', async () => {

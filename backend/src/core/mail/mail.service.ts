@@ -140,21 +140,38 @@ export class MailService implements OnModuleDestroy {
       orderBy: { id: 'asc' },
       take: RETRY_BATCH,
     });
-    // The pool limits how many go out at once.
-    const results = await Promise.all(
-      rows.map((row) =>
-        this.deliver(row.id, {
-          to: row.to,
-          subject: row.subject,
-          text: row.text,
-          html: row.html ?? undefined,
-        }),
-      ),
-    );
+    // Each row is claimed just before its send, and only a few at a time:
+    // - A claimed row is "pending", which is never sent again. So a run cut
+    //   off mid-send (for example, at Vercel's time limit) can't send it
+    //   twice the next day, and it loses at most the few in progress. The
+    //   rest stay "failed" for the next run.
+    // - The claim only works while the row is still "failed". So when Vercel
+    //   delivers the cron call twice, the two runs never send the same row.
+    let next = 0;
+    const results: boolean[] = [];
+    const worker = async () => {
+      while (next < rows.length) {
+        const row = rows[next++];
+        const { count } = await this.prisma.emailOutbox.updateMany({
+          where: { id: row.id, status: 'failed' },
+          data: { status: 'pending' },
+        });
+        if (count === 0) continue; // Another run claimed it.
+        results.push(
+          await this.deliver(row.id, {
+            to: row.to,
+            subject: row.subject,
+            text: row.text,
+            html: row.html ?? undefined,
+          }),
+        );
+      }
+    };
+    await Promise.all(Array.from({ length: MAX_CONNECTIONS }, worker));
     await this.prisma.emailOutbox.deleteMany({
       where: { createdAt: { lt: new Date(now - KEEP_MS) } },
     });
-    return { retried: rows.length, sent: results.filter(Boolean).length };
+    return { retried: results.length, sent: results.filter(Boolean).length };
   }
 
   private async recordAndDeliver(options: SendMailOptions): Promise<void> {
