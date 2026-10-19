@@ -6,10 +6,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApplicationStatus, Role, type User } from '@prisma/client';
+import { ApplicationStatus, Prisma, Role, type User } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
 import { PrismaService } from '../../core/database/prisma.service';
-import { toApplicationDto, type ApplicationDto } from '../../common/mappers';
+import {
+  profileLinksOf,
+  toApplicationDto,
+  walletsOf,
+  type ApplicationDto,
+} from '../../common/mappers';
 import { splitName } from '../../common/string';
 import { MailService } from '../../core/mail';
 import { assertCohortHasRoom } from '../cohorts/cohort-capacity';
@@ -86,6 +91,13 @@ export class ApplicationsService {
     await this.video.assertOwnUpload(user.id, dto.videoUrl);
 
     const { firstName, lastName } = splitName(user.name, user.email);
+    // Links and a wallet saved on the profile before applying move to the
+    // application, which is where they are read from once it exists. What the
+    // form sends wins; the saved value fills a field the form left empty.
+    const savedLinks = profileLinksOf(user);
+    const savedWallets = walletsOf(user.wallets);
+    const formWallets =
+      dto.wallets?.map((w) => ({ chain: w.chain, address: w.address })) ?? [];
     const created = await this.prisma.application.create({
       data: {
         userId: user.id,
@@ -96,21 +108,26 @@ export class ApplicationsService {
         motivation: dto.motivation,
         background: dto.background,
         experience: dto.experience,
-        linkedin: dto.linkedin,
-        twitter: dto.twitter,
-        facebook: dto.facebook,
-        github: dto.github,
-        portfolio: dto.portfolio,
-        telegram: dto.telegram,
-        whatsapp: dto.whatsapp,
+        linkedin: dto.linkedin || savedLinks.linkedin,
+        twitter: dto.twitter || savedLinks.twitter,
+        facebook: dto.facebook || savedLinks.facebook,
+        github: dto.github || savedLinks.github,
+        portfolio: dto.portfolio || savedLinks.portfolio,
+        telegram: dto.telegram || savedLinks.telegram,
+        whatsapp: dto.whatsapp || savedLinks.whatsapp,
         country: dto.country,
         videoUrl: dto.videoUrl,
-        wallets:
-          dto.wallets?.map((w) => ({ chain: w.chain, address: w.address })) ??
-          [],
+        wallets: formWallets.length > 0 ? formWallets : savedWallets,
         status: 'pending',
       },
     });
+    // The application holds them now, so drop the copy on the user.
+    if (user.profileLinks || user.wallets) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { profileLinks: Prisma.DbNull, wallets: Prisma.DbNull },
+      });
+    }
 
     // Best-effort: a notification failure must never break the application.
     try {

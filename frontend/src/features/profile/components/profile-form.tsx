@@ -48,7 +48,11 @@ type SocialFieldConfig = {
 
 const SOCIAL_FIELDS: SocialFieldConfig[] = [
   { name: "github", label: "GitHub", placeholder: "https://github.com/you" },
-  { name: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/you" },
+  {
+    name: "linkedin",
+    label: "LinkedIn",
+    placeholder: "https://linkedin.com/in/you",
+  },
   { name: "twitter", label: "X (Twitter)", placeholder: "https://x.com/you" },
   { name: "telegram", label: "Telegram", placeholder: "@yourusername" },
   {
@@ -81,15 +85,20 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
   });
 
   useEffect(() => {
-    form.reset({
-      name: user.name ?? "",
-      linkedin: user.linkedin ?? "",
-      twitter: user.twitter ?? "",
-      github: user.github ?? "",
-      portfolio: user.portfolio ?? "",
-      telegram: user.telegram ?? "",
-      whatsapp: user.whatsapp ?? "",
-    });
+    form.reset(
+      {
+        name: user.name ?? "",
+        linkedin: user.linkedin ?? "",
+        twitter: user.twitter ?? "",
+        github: user.github ?? "",
+        portfolio: user.portfolio ?? "",
+        telegram: user.telegram ?? "",
+        whatsapp: user.whatsapp ?? "",
+      },
+      // A reload (a photo upload, another tab) keeps what the student typed
+      // but hasn't saved yet, and updates only the fields they didn't touch.
+      { keepDirtyValues: true },
+    );
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -109,11 +118,30 @@ export const ProfileForm = ({ user, onSaved }: ProfileFormProps) => {
     try {
       await updateProfile(payload);
       toast.success("Profile saved.");
-      await onSaved?.();
+      // Show exactly what was saved. Nothing is unsaved now, so the reload
+      // that follows can update every field.
+      form.reset({
+        name: payload.name ?? "",
+        linkedin: payload.linkedin ?? "",
+        twitter: payload.twitter ?? "",
+        github: payload.github ?? "",
+        portfolio: payload.portfolio ?? "",
+        telegram: payload.telegram ?? "",
+        whatsapp: payload.whatsapp ?? "",
+      });
     } catch (err) {
       toast.error(
         err instanceof ApiError ? err.message : "Failed to save your profile.",
       );
+      return;
+    }
+    // Outside the try above: the save worked, so a failed reload must not
+    // show "Failed to save" next to "Profile saved". The form already shows
+    // the saved values.
+    try {
+      await onSaved?.();
+    } catch {
+      // The next reload catches up.
     }
   };
 

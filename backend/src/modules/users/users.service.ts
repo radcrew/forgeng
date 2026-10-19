@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { Prisma } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
 import {
+  profileLinksOf,
   toCohortDto,
+  walletsOf,
   toUserDto,
   type ProfileEnrollmentDto,
   type UserDto,
@@ -35,12 +43,13 @@ export interface MonthlyPaymentStat {
   tasksApproved: number;
   eligible: boolean;
   notifiedAt: string | null;
-  payment: {
+  /** Every payment for this stipend month, oldest first. */
+  payments: Array<{
     amount: string;
     currency: string;
     txLink: string | null;
     paidAt: string;
-  } | null;
+  }>;
 }
 
 export interface UserPaymentStats {
@@ -54,11 +63,26 @@ export interface PaymentDto {
   currency: string;
   txLink: string | null;
   note: string | null;
+  forMonth: string;
   paidAt: string;
 }
 
+/**
+ * A month as "YYYY-MM", matching the keys of the monthly stats. Months are in
+ * UTC everywhere: here, in the payment month migration, and in the stipend
+ * check in the feedback service. So a payment near a month edge lands in the
+ * same month whatever time zone the server runs in.
+ */
+const monthKey = (d: Date) =>
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+
+/** The first moment (UTC) of the month `ago` months before `now`. */
+const monthStartUtc = (now: Date, ago: number) =>
+  new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - ago, 1));
+
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   private readonly frontendUrl: string;
 
   constructor(
@@ -90,12 +114,24 @@ export class UsersService {
       }),
     ]);
     if (!user) throw new NotFoundException('User not found.');
-    return toUserDto(user, socials);
+    // Without an application, the links are kept on the user.
+    return toUserDto(user, socials ?? profileLinksOf(user));
   }
 
   async recordPayment(id: number, dto: RecordPaymentDto): Promise<PaymentDto> {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found.');
+
+    // The payment chart only shows the last few months. A payment for any
+    // other month would be saved but never shown, and could be paid twice.
+    const now = new Date();
+    const forMonth = dto.forMonth ?? monthKey(now);
+    const oldest = monthKey(monthStartUtc(now, PAYMENT_HISTORY_MONTHS - 1));
+    if (forMonth < oldest || forMonth > monthKey(now)) {
+      throw new BadRequestException(
+        `Pick a month from ${oldest} to ${monthKey(now)}.`,
+      );
+    }
 
     const payment = await this.prisma.payment.create({
       data: {
@@ -104,6 +140,7 @@ export class UsersService {
         currency: dto.currency,
         txLink: dto.txLink,
         note: dto.note,
+        forMonth,
       },
     });
 
@@ -111,7 +148,16 @@ export class UsersService {
       studentName: user.name ?? user.email,
       url: this.absoluteUrl(STUDENT_ROUTES.DASHBOARD),
     });
-    await this.mail.send({ to: user.email, ...email });
+    // The payment is already saved. A failed email must not report it as
+    // failed, or the admin records it again and the student is paid twice.
+    try {
+      await this.mail.send({ to: user.email, ...email });
+    } catch (err) {
+      this.logger.error(
+        `Failed to send payment email to ${user.email}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
 
     return {
       id: payment.id,
@@ -119,6 +165,7 @@ export class UsersService {
       currency: payment.currency,
       txLink: payment.txLink,
       note: payment.note,
+      forMonth: payment.forMonth,
       paidAt: payment.paidAt.toISOString(),
     };
   }
@@ -126,7 +173,14 @@ export class UsersService {
   async list(query: ListUsersQuery): Promise<PaginatedUsers> {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? DEFAULT_PAGE_SIZE;
-    const where = query.role ? { role: query.role } : undefined;
+    const where: Prisma.UserWhereInput = {};
+    if (query.role) where.role = query.role;
+    if (query.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -144,22 +198,56 @@ export class UsersService {
     const exists = await this.prisma.user.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('User not found.');
 
-    // A new role signs the user out everywhere: revoking their refresh tokens
-    // means they sign in again and get a token with the new role.
-    const [updated] = await this.prisma.$transaction([
-      this.prisma.user.update({
+    const roleChanged = dto.role !== exists.role;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // The site always needs an admin: without one, nobody can manage it or
+      // give the role back. Locking the admin rows makes a second role change
+      // wait for this one, so two admins can't remove each other at the same
+      // moment: each would otherwise still count the other as an admin.
+      if (exists.role === 'admin' && dto.role !== 'admin') {
+        const admins = await tx.$queryRaw<{ id: number }[]>`
+          SELECT "id" FROM "users" WHERE "role" = 'admin' FOR UPDATE`;
+        if (admins.length <= 1) {
+          throw new BadRequestException(
+            'This is the only admin. Make another user an admin first.',
+          );
+        }
+      }
+
+      const user = await tx.user.update({
         where: { id },
         data: { role: dto.role },
-      }),
-      ...(dto.role === exists.role
-        ? []
-        : [
-            this.prisma.refreshToken.updateMany({
-              where: { userId: id, revokedAt: null },
-              data: { revokedAt: new Date() },
-            }),
-          ]),
-    ]);
+      });
+      // A new role signs the user out everywhere: revoking their refresh
+      // tokens means they sign in again and get a token with the new role.
+      if (roleChanged) {
+        await tx.refreshToken.updateMany({
+          where: { userId: id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+      }
+      // An applicant isn't in any cohort, so moving someone back to
+      // applicant takes them out of their cohorts too. An accepted
+      // application goes back to pending: kept as accepted, it told them to
+      // open a student portal they can no longer enter. A rejected one stays.
+      if (roleChanged && dto.role === 'applicant') {
+        await tx.enrollment.deleteMany({ where: { userId: id } });
+        await tx.application.updateMany({
+          where: { userId: id, status: 'accepted' },
+          data: { status: 'pending' },
+        });
+      }
+      // Making an applicant a student accepts their application if it was
+      // still waiting. Decided applications stay as they are: decisions are
+      // final. No email, since the admin chose this directly.
+      if (exists.role === 'applicant' && dto.role === 'student') {
+        await tx.application.updateMany({
+          where: { userId: id, status: 'pending' },
+          data: { status: 'accepted' },
+        });
+      }
+      return user;
+    });
     return toUserDto(updated);
   }
 
@@ -176,7 +264,7 @@ export class UsersService {
   }
 
   async paymentStats(userId: number): Promise<UserPaymentStats> {
-    const [application, enrollments] = await Promise.all([
+    const [application, enrollments, user] = await Promise.all([
       this.prisma.application.findUnique({
         where: { userId },
         select: { wallets: true },
@@ -185,6 +273,11 @@ export class UsersService {
         where: { userId },
         select: { cohortId: true },
       }),
+      // Holds the wallet when there is no application.
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { wallets: true },
+      }),
     ]);
 
     const cohortIds = enrollments.map((e) => e.cohortId);
@@ -192,18 +285,9 @@ export class UsersService {
     const monthlyStats: MonthlyPaymentStat[] = [];
 
     for (let i = PAYMENT_HISTORY_MONTHS - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
-      const monthEnd = new Date(
-        d.getFullYear(),
-        d.getMonth() + 1,
-        0,
-        23,
-        59,
-        59,
-        999,
-      );
-      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const monthStart = monthStartUtc(now, i);
+      const monthEnd = new Date(monthStartUtc(now, i - 1).getTime() - 1);
+      const month = monthKey(monthStart);
 
       const tasks =
         cohortIds.length > 0
@@ -230,7 +314,7 @@ export class UsersService {
             ).length
           : 0;
 
-      const [notification, payment] = await Promise.all([
+      const [notification, payments] = await Promise.all([
         this.prisma.notification.findFirst({
           where: {
             type: 'payment_eligible',
@@ -239,12 +323,11 @@ export class UsersService {
           },
           orderBy: { createdAt: 'desc' },
         }),
-        this.prisma.payment.findFirst({
-          where: {
-            userId,
-            paidAt: { gte: monthStart, lte: monthEnd },
-          },
-          orderBy: { paidAt: 'desc' },
+        // By the stipend month, not the day paid, and all of them: a late
+        // payment or a second one in a month used to show wrong or not at all.
+        this.prisma.payment.findMany({
+          where: { userId, forMonth: month },
+          orderBy: { paidAt: 'asc' },
         }),
       ]);
 
@@ -254,23 +337,17 @@ export class UsersService {
         tasksApproved,
         eligible: tasks.length > 0 && tasksApproved === tasks.length,
         notifiedAt: notification?.createdAt.toISOString() ?? null,
-        payment: payment
-          ? {
-              amount: payment.amount.toString(),
-              currency: payment.currency,
-              txLink: payment.txLink,
-              paidAt: payment.paidAt.toISOString(),
-            }
-          : null,
+        payments: payments.map((p) => ({
+          amount: p.amount.toString(),
+          currency: p.currency,
+          txLink: p.txLink,
+          paidAt: p.paidAt.toISOString(),
+        })),
       });
     }
 
     return {
-      wallets:
-        (application?.wallets as Array<{
-          chain: string;
-          address: string;
-        }> | null) ?? [],
+      wallets: walletsOf(application ? application.wallets : user?.wallets),
       monthlyStats,
     };
   }

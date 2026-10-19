@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { User } from '@prisma/client';
+import { Prisma, type User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { MailService } from '@core/mail';
 import { NotificationsService } from '@modules/notifications/notifications.service';
@@ -98,6 +98,7 @@ describe('ApplicationsService', () => {
       create: jest.Mock;
       groupBy: jest.Mock;
     };
+    user: { update: jest.Mock };
     $transaction: jest.Mock;
   };
   let tx: {
@@ -123,6 +124,7 @@ describe('ApplicationsService', () => {
         create: jest.fn(),
         groupBy: jest.fn(),
       },
+      user: { update: jest.fn() },
       $transaction: jest.fn((fn: (client: typeof tx) => Promise<unknown>) =>
         fn(tx),
       ),
@@ -208,6 +210,54 @@ describe('ApplicationsService', () => {
 
       expect(dto.id).toBe(10);
       expect(notifications.notifyApplicationReceived).toHaveBeenCalledTimes(1);
+      // Nothing was saved on the profile, so the user isn't touched.
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('moves links and a wallet saved on the profile into the application', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+      prisma.application.create.mockResolvedValue(makeApplicationRow());
+      const user = makeUser({
+        profileLinks: {
+          github: 'https://github.com/ada',
+          telegram: '@saved_handle',
+        },
+        wallets: [{ chain: 'evm', address: '0xabc' }],
+      });
+
+      // The form sends its own Telegram handle and no wallet.
+      await service.create(user, { telegram: '@ada_dev' } as never);
+
+      const { data } = (
+        prisma.application.create.mock.calls[0] as [
+          { data: Record<string, unknown> },
+        ]
+      )[0];
+      expect(data.github).toBe('https://github.com/ada');
+      expect(data.telegram).toBe('@ada_dev');
+      expect(data.wallets).toEqual([{ chain: 'evm', address: '0xabc' }]);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { profileLinks: Prisma.DbNull, wallets: Prisma.DbNull },
+      });
+    });
+
+    it('keeps the wallet from the form over the one saved on the profile', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+      prisma.application.create.mockResolvedValue(makeApplicationRow());
+      const user = makeUser({ wallets: [{ chain: 'evm', address: '0xold' }] });
+
+      await service.create(user, {
+        telegram: '@ada_dev',
+        wallets: [{ chain: 'tron', address: 'Tnew' }],
+      } as never);
+
+      const { data } = (
+        prisma.application.create.mock.calls[0] as [
+          { data: { wallets: unknown } },
+        ]
+      )[0];
+      expect(data.wallets).toEqual([{ chain: 'tron', address: 'Tnew' }]);
     });
 
     it('requires a Telegram or WhatsApp contact', async () => {

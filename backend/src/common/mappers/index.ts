@@ -17,7 +17,7 @@ import { isCohortEnded } from '../utils/date';
  * All `Date` values become ISO strings, optional foreign rows become `null`.
  */
 
-type ApplicationSocials = Pick<
+export type ApplicationSocials = Pick<
   Application,
   | 'linkedin'
   | 'twitter'
@@ -27,6 +27,50 @@ type ApplicationSocials = Pick<
   | 'telegram'
   | 'whatsapp'
 >;
+
+export const SOCIAL_LINK_KEYS = [
+  'linkedin',
+  'twitter',
+  'facebook',
+  'github',
+  'portfolio',
+  'telegram',
+  'whatsapp',
+] as const satisfies ReadonlyArray<keyof ApplicationSocials>;
+
+/**
+ * Reads a stored wallets value (on an application or a user). Anything that
+ * isn't a list of { chain, address } strings is left out.
+ */
+export function walletsOf(
+  value: unknown,
+): Array<{ chain: string; address: string }> {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (w): w is { chain: string; address: string } =>
+      !!w &&
+      typeof (w as { chain?: unknown }).chain === 'string' &&
+      typeof (w as { address?: unknown }).address === 'string',
+  );
+}
+
+/**
+ * The profile links stored on the user, used when there is no application
+ * to hold them. Anything that isn't a string reads as no link.
+ */
+export function profileLinksOf(
+  user: Pick<User, 'profileLinks'>,
+): ApplicationSocials {
+  const raw =
+    user.profileLinks && typeof user.profileLinks === 'object'
+      ? (user.profileLinks as Record<string, unknown>)
+      : {};
+  const links = {} as ApplicationSocials;
+  for (const key of SOCIAL_LINK_KEYS) {
+    links[key] = typeof raw[key] === 'string' ? raw[key] : null;
+  }
+  return links;
+}
 
 export interface UserDto {
   id: number;

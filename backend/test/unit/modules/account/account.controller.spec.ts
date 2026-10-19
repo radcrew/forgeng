@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import type { User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { AccountController } from '@modules/account/account.controller';
@@ -69,6 +68,15 @@ describe('AccountController', () => {
         expect.objectContaining({ where: { userId: 2 } }),
       );
     });
+
+    it('returns the links kept on the user when there is no application', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+      const dto = await controller.getMe(
+        makeUser({ profileLinks: { telegram: '@ada_dev' } }),
+      );
+      expect(dto.telegram).toBe('@ada_dev');
+      expect(dto.github).toBeNull();
+    });
   });
 
   describe('getWallets', () => {
@@ -77,6 +85,15 @@ describe('AccountController', () => {
       await expect(controller.getWallets(user)).resolves.toEqual({
         wallets: [],
       });
+    });
+
+    it('returns the wallet kept on the user when there is no application', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+      await expect(
+        controller.getWallets(
+          makeUser({ wallets: [{ chain: 'tron', address: 'T123' }] }),
+        ),
+      ).resolves.toEqual({ wallets: [{ chain: 'tron', address: 'T123' }] });
     });
 
     it('returns the stored wallets', async () => {
@@ -100,6 +117,31 @@ describe('AccountController', () => {
         expect.objectContaining({ where: { userId: 2 } }),
       );
       expect(result.wallets).toEqual([{ chain: 'evm', address: '0xabc' }]);
+    });
+
+    it('keeps the wallet on the user when there is no application', async () => {
+      prisma.application.updateMany.mockResolvedValue({ count: 0 });
+      const dto = {
+        wallets: [{ chain: 'evm', address: '0xabc' }],
+      } as never;
+
+      const result = await controller.updateWallets(user, dto);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 2 },
+        data: { wallets: [{ chain: 'evm', address: '0xabc' }] },
+      });
+      expect(result.wallets).toEqual([{ chain: 'evm', address: '0xabc' }]);
+    });
+
+    it('does not touch the user when the application holds the wallet', async () => {
+      const dto = {
+        wallets: [{ chain: 'evm', address: '0xabc' }],
+      } as never;
+
+      await controller.updateWallets(user, dto);
+
+      expect(prisma.user.update).not.toHaveBeenCalled();
     });
   });
 
@@ -131,14 +173,55 @@ describe('AccountController', () => {
       );
     });
 
-    it('refuses social links without an application and creates none', async () => {
+    it('keeps links on the user when there is no application, and creates none', async () => {
       prisma.application.count.mockResolvedValue(0);
+      prisma.user.update.mockResolvedValue(
+        makeUser({
+          name: 'Ada B',
+          profileLinks: { github: 'https://github.com/ada' },
+        }),
+      );
 
-      await expect(
-        controller.updateProfile(user, { github: 'https://github.com/ada' }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      const dto = await controller.updateProfile(user, {
+        name: 'Ada B',
+        github: 'https://github.com/ada',
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 2 },
+        data: {
+          name: 'Ada B',
+          profileLinks: { github: 'https://github.com/ada' },
+        },
+      });
       expect(prisma.application.update).not.toHaveBeenCalled();
-      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(dto.github).toBe('https://github.com/ada');
+    });
+
+    it('updates and removes stored links without touching the others', async () => {
+      prisma.application.count.mockResolvedValue(0);
+      const withLinks = makeUser({
+        profileLinks: {
+          github: 'https://github.com/ada',
+          telegram: '@ada_dev',
+        },
+      });
+
+      await controller.updateProfile(withLinks, {
+        github: null,
+        linkedin: 'https://linkedin.com/in/ada',
+      } as never);
+
+      // GitHub removed, LinkedIn added, Telegram kept.
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 2 },
+        data: {
+          profileLinks: {
+            linkedin: 'https://linkedin.com/in/ada',
+            telegram: '@ada_dev',
+          },
+        },
+      });
     });
 
     it('saves the name without an application when no links are given', async () => {

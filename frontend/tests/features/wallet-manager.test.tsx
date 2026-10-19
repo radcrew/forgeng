@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -104,11 +104,35 @@ describe("WalletManager", () => {
       expect(screen.getByDisplayValue(EVM_ADDRESS)).toBeInTheDocument(),
     );
 
-    // The remove button is the icon-only button after Save.
-    const buttons = screen.getAllByRole("button");
-    await userEvent.click(buttons[buttons.length - 1]);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Remove wallet address" }),
+    );
+
+    // It asks first; nothing is removed yet.
+    expect(screen.getByText("Remove your wallet address?")).toBeInTheDocument();
+    expect(updateWallets).not.toHaveBeenCalled();
+
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Remove" }),
+    );
 
     await waitFor(() => expect(updateWallets).toHaveBeenCalledWith([]));
     await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith("Wallet removed."));
+  });
+
+  it("keeps the wallet when the removal is cancelled", async () => {
+    getWallets.mockResolvedValue([{ chain: "evm", address: EVM_ADDRESS }]);
+    render(<WalletManager />);
+
+    await waitFor(() =>
+      expect(screen.getByDisplayValue(EVM_ADDRESS)).toBeInTheDocument(),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Remove wallet address" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(updateWallets).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue(EVM_ADDRESS)).toBeInTheDocument();
   });
 });

@@ -43,9 +43,16 @@ export const SOCIAL_PROFILE_MESSAGES = {
   whatsapp: "Enter a number with country code (e.g. +1234567890)",
 } as const;
 
-/** A string field that is allowed to be blank but, if filled, must match `re`. */
+/**
+ * A string field that is allowed to be blank but, if filled, must match `re`.
+ * Trims first, so a pasted link with a space at either end isn't refused
+ * with a wrong "Enter your … URL" message; the patterns end with `$`.
+ */
 export const optionalMatching = (re: RegExp, message: string) =>
-  z.string().refine((val) => !val || re.test(val), message);
+  z
+    .string()
+    .trim()
+    .refine((val) => !val || re.test(val), message);
 
 /**
  * A string field that is allowed to be blank but, if filled, must be a URL.

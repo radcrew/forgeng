@@ -3,7 +3,6 @@
 import { use, useRef, useState } from "react";
 import { format } from "date-fns";
 import {
-  AlertCircle,
   AlertTriangle,
   Mail,
   MapPin,
@@ -19,7 +18,8 @@ import {
   ProseBlock,
   SectionTitle,
 } from "@components/common";
-import { PageContainer } from "@components/shared";
+import { EmptyState, ErrorState, PageContainer } from "@components/shared";
+import { APP_ART } from "@constants/shared/app-illustrations";
 import { Avatar } from "@components/ui/avatar";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
@@ -49,6 +49,23 @@ import { ApiError } from "@lib/api-client";
 import { isProfileComplete } from "@utils/user";
 
 import { PaymentStatsChart } from "./_components/payment-stats-chart";
+import { RoleControl } from "./_components/role-control";
+import { WalletSection } from "./_components/wallet-section";
+
+/**
+ * A month as "YYYY-MM", the value a month input expects. In UTC, like the
+ * server, so near a month edge the admin can't pick a month it refuses.
+ */
+const monthInput = (monthsAgo: number, now = new Date()) => {
+  const d = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsAgo, 1),
+  );
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+};
+
+// The payment chart shows this month and the 5 before it, so a stipend can
+// only be recorded for one of those months. The server checks the same.
+const OLDEST_PAYMENT_MONTHS_AGO = 5;
 
 export default function UserDetailPage({
   params,
@@ -58,11 +75,24 @@ export default function UserDetailPage({
   const { id } = use(params);
   const userId = Number(id);
 
-  const { data: user, isLoading } = useUser(userId);
-  const { data: enrollments = [], isLoading: enrollmentsLoading } =
-    useUserEnrollments(userId);
-  const { data: paymentStats, refetch: refetchStats } =
-    useUserPaymentStats(userId);
+  const {
+    data: user,
+    isLoading,
+    error: userError,
+    refetch: refetchUser,
+  } = useUser(userId);
+  const {
+    data: enrollments = [],
+    isLoading: enrollmentsLoading,
+    error: enrollmentsError,
+    refetch: refetchEnrollments,
+  } = useUserEnrollments(userId);
+  const {
+    data: paymentStats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useUserPaymentStats(userId);
 
   const { record, isPending: submitting } = useRecordPayment();
   const { notify: notifyWallet, isPending: sendingWalletReminder } = useNotifyWalletMissing();
@@ -73,10 +103,15 @@ export default function UserDetailPage({
   const [currency, setCurrency] = useState("USDT");
   const [txLink, setTxLink] = useState("");
   const [note, setNote] = useState("");
+  const [forMonth, setForMonth] = useState("");
   const amountRef = useRef<HTMLInputElement>(null);
+  const forMonthRef = useRef<HTMLInputElement>(null);
 
-  const walletsEmpty =
-    !paymentStats || paymentStats.wallets.length === 0;
+  // Only true once the payment info has loaded without a wallet. Before that,
+  // or after a failed load, the wallet section says so instead.
+  const walletsEmpty = !!paymentStats && paymentStats.wallets.length === 0;
+  const canRecordPayment =
+    !statsError && !!paymentStats && paymentStats.wallets.length > 0;
 
   const handleNotifyWalletMissing = async () => {
     try {
@@ -94,6 +129,8 @@ export default function UserDetailPage({
     setCurrency("USDT");
     setTxLink("");
     setNote("");
+    // Stipends are usually paid for the month that just ended.
+    setForMonth(monthInput(1));
     setDialogOpen(true);
   };
 
@@ -103,10 +140,22 @@ export default function UserDetailPage({
       amountRef.current?.focus();
       return;
     }
+    if (!forMonth) {
+      forMonthRef.current?.focus();
+      return;
+    }
+    const oldest = monthInput(OLDEST_PAYMENT_MONTHS_AGO);
+    const newest = monthInput(0);
+    if (forMonth < oldest || forMonth > newest) {
+      toast.error(`Pick a month from ${oldest} to ${newest}.`);
+      forMonthRef.current?.focus();
+      return;
+    }
     try {
       await record(userId, {
         amount: parsed,
         currency,
+        forMonth,
         txLink: txLink.trim() || undefined,
         note: note.trim() || undefined,
       });
@@ -119,6 +168,34 @@ export default function UserDetailPage({
       );
     }
   };
+
+  // Without this, a failed load kept showing "Loading user…" forever.
+  if (userError) {
+    // A bad id in the link is refused before the server looks it up (400).
+    const notFound =
+      userError instanceof ApiError &&
+      (userError.status === 404 || userError.status === 400);
+    return (
+      <PageContainer>
+        <div className="space-y-6">
+          <Link
+            href="/admin/users"
+            className="text-sm text-muted-foreground hover:text-foreground inline-block"
+          >
+            ← Back to Users
+          </Link>
+          {notFound ? (
+            <EmptyState
+              message="This user doesn't exist. They may have been deleted."
+              art={APP_ART.notFoundItem}
+            />
+          ) : (
+            <ErrorState what="this user" onRetry={refetchUser} />
+          )}
+        </div>
+      </PageContainer>
+    );
+  }
 
   if (isLoading || !user) {
     return (
@@ -175,6 +252,15 @@ export default function UserDetailPage({
         <div className="grid md:grid-cols-2 gap-6">
           {/* Left column */}
           <div className="space-y-6">
+            <RoleControl
+              // A new key resets the picker to the saved role after a change.
+              key={user.role}
+              userId={user.id}
+              userName={displayName}
+              role={user.role}
+              onChanged={refetchUser}
+            />
+
             <div>
               <SectionTitle>Joined</SectionTitle>
               <p className="text-sm text-muted-foreground">
@@ -258,39 +344,14 @@ export default function UserDetailPage({
               </div>
             )}
 
-            {/* Wallet addresses */}
-            <div className="space-y-2">
-              <SectionTitle>Wallet address</SectionTitle>
-              {walletsEmpty ? (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-3 space-y-2.5">
-                  <p className="flex items-center gap-2 text-sm text-destructive">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    No wallet address added — payment cannot be processed.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    disabled={sendingWalletReminder}
-                    onClick={handleNotifyWalletMissing}
-                  >
-                    <Mail className="h-3.5 w-3.5 mr-1.5" />
-                    {sendingWalletReminder ? "Sending…" : "Email student to add wallet"}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {paymentStats!.wallets.map((w) => (
-                    <div key={w.chain}>
-                      <p className="text-xs font-medium capitalize">{w.chain}</p>
-                      <p className="text-xs text-muted-foreground font-mono break-all mt-0.5">
-                        {w.address}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <WalletSection
+              wallets={paymentStats?.wallets}
+              isLoading={statsLoading}
+              error={statsError}
+              onRetry={refetchStats}
+              onRemind={handleNotifyWalletMissing}
+              reminding={sendingWalletReminder}
+            />
           </div>
 
           {/* Right column */}
@@ -316,12 +377,14 @@ export default function UserDetailPage({
 
                 <Button
                   onClick={openDialog}
-                  disabled={walletsEmpty}
+                  disabled={!canRecordPayment}
                   className="w-full"
                   title={
                     walletsEmpty
                       ? "Student must add a wallet address first"
-                      : undefined
+                      : statsError
+                        ? "Payment info didn't load. Try again above."
+                        : undefined
                   }
                 >
                   <Send className="h-4 w-4 mr-2" />
@@ -335,6 +398,13 @@ export default function UserDetailPage({
               <SectionTitle>Enrollments</SectionTitle>
               {enrollmentsLoading ? (
                 <LoadingState message="Loading enrollments…" />
+              ) : enrollmentsError ? (
+                // A failed load must not read as "not enrolled".
+                <ErrorState
+                  what="the enrollments"
+                  onRetry={refetchEnrollments}
+                  size="compact"
+                />
               ) : enrollments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   Not enrolled in any cohort.
@@ -371,13 +441,31 @@ export default function UserDetailPage({
       </div>
 
       {/* Record payment dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Stays open while saving: closing it mid-request hid whether the
+          payment was recorded, so the admin might record it again. */}
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => !submitting && setDialogOpen(open)}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Record Payment</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="forMonth">Stipend for</Label>
+              <Input
+                id="forMonth"
+                ref={forMonthRef}
+                type="month"
+                min={monthInput(OLDEST_PAYMENT_MONTHS_AGO)}
+                max={monthInput(0)}
+                value={forMonth}
+                onChange={(e) => setForMonth(e.target.value)}
+              />
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="amount">Amount</Label>
               <div className="flex gap-2">
@@ -415,13 +503,12 @@ export default function UserDetailPage({
                     <button
                       key={label}
                       type="button"
-                      onClick={() => {
-                        setAmount(value);
-                        setCurrency("USD");
-                      }}
+                      // Fills in the amount only. It used to switch the
+                      // currency to USD without saying so.
+                      onClick={() => setAmount(value)}
                       className="rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     >
-                      {label} (${value})
+                      {label} ({value} {currency})
                     </button>
                   ))}
                 </div>

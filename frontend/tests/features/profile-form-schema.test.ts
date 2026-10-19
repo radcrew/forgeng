@@ -1,7 +1,7 @@
 import { PROFILE_FORM_SCHEMA } from "@features/profile/form-schema";
 
 const blank = {
-  name: "",
+  name: "Ada",
   github: "",
   linkedin: "",
   twitter: "",
@@ -11,8 +11,16 @@ const blank = {
 };
 
 describe("PROFILE_FORM_SCHEMA", () => {
-  it("accepts an all-blank profile (every field optional to save)", () => {
+  it("accepts a profile with only a name (every link optional to save)", () => {
     expect(PROFILE_FORM_SCHEMA.safeParse(blank).success).toBe(true);
+  });
+
+  it("asks for a name when it is empty or only spaces", () => {
+    for (const name of ["", "   "]) {
+      const result = PROFILE_FORM_SCHEMA.safeParse({ ...blank, name });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues[0]?.message).toBe("Enter your name.");
+    }
   });
 
   it("accepts a fully-populated valid profile", () => {

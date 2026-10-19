@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 import { Button } from "@components/ui/button";
+import { Input } from "@components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,15 +12,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@components/ui/select";
-import { EmptyState, PageContainer, PageHeader } from "@components/shared";
+import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
+import {
+  EmptyState,
+  ErrorState,
+  PageContainer,
+  PageHeader,
+} from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { PAGE_SIZE_OPTIONS } from "@constants/shared/pagination";
-import { UserRow, useUsers } from "@features/users";
+import { USER_ROLE_FILTER_TABS } from "@constants/users";
+import { UserRow, useUsers, type UserRoleFilter } from "@features/users";
+
+const SEARCH_DELAY_MS = 300;
+
+// Wording for the count and the empty message on each tab.
+const ROLE_NOUNS: Record<UserRoleFilter, [string, string]> = {
+  all: ["user", "users"],
+  applicant: ["applicant", "applicants"],
+  student: ["student", "students"],
+  admin: ["admin", "admins"],
+};
 
 const Page = () => {
+  // Students stay the first view, as before; the other tabs are one click away.
+  const [role, setRole] = useState<UserRoleFilter>("student");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const { data, isLoading } = useUsers("student", page, pageSize);
+  // What the admin types, and the search actually sent. The second one waits
+  // until typing pauses, so each key press doesn't send a request.
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(searchTimer.current), []);
+  const { data, isLoading, error, refetch } = useUsers(
+    role,
+    page,
+    pageSize,
+    search,
+  );
+  const [singular, plural] = ROLE_NOUNS[role];
+
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setSearch(value);
+      // New results start at page 1.
+      setPage(1);
+    }, SEARCH_DELAY_MS);
+  };
 
   const users = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -34,18 +76,58 @@ const Page = () => {
   return (
     <PageContainer>
       <PageHeader
-        title="Students"
-        description="Manage students and their roles."
+        title="Users"
+        description="Manage applicants, students, and admins."
       />
 
-      <p className="text-sm text-muted-foreground">
-        {isLoading
-          ? "Loading…"
-          : `${total} ${total === 1 ? "student" : "students"}`}
-      </p>
+      <Tabs
+        value={role}
+        onValueChange={(v) => {
+          setRole(v as UserRoleFilter);
+          // A new tab starts at page 1 so a shorter list isn't hidden.
+          setPage(1);
+        }}
+      >
+        <TabsList>
+          {USER_ROLE_FILTER_TABS.map(({ value, label }) => (
+            <TabsTrigger key={value} value={value}>
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
-      {!isLoading && users.length === 0 ? (
-        <EmptyState message="No students yet." art={APP_ART.cohort} />
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder="Search by name or email..."
+          aria-label="Search users by name or email"
+          className="pl-9"
+        />
+      </div>
+
+      {!error && (
+        <p className="text-sm text-muted-foreground">
+          {isLoading
+            ? "Loading…"
+            : `${total} ${total === 1 ? singular : plural}`}
+        </p>
+      )}
+
+      {/* A failed load must not look like an empty list. */}
+      {!isLoading && error ? (
+        <ErrorState what="the users" onRetry={refetch} />
+      ) : !isLoading && users.length === 0 ? (
+        <EmptyState
+          message={
+            search.trim()
+              ? `No ${plural} match "${search.trim()}".`
+              : `No ${plural} yet.`
+          }
+          art={search.trim() ? APP_ART.noResults : APP_ART.cohort}
+        />
       ) : (
         <div className="space-y-2">
           {users.map((user) => (
@@ -54,7 +136,7 @@ const Page = () => {
         </div>
       )}
 
-      {total > 0 && (
+      {!error && total > 0 && (
         <div className="flex items-center justify-between gap-4 pt-2">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Per page</span>

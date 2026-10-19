@@ -48,6 +48,31 @@ describe('UpdateProfileDto', () => {
     );
   });
 
+  it('rejects a blank name or one of only spaces', () => {
+    expect(failingProps(UpdateProfileDto, { name: '' })).toContain('name');
+    expect(failingProps(UpdateProfileDto, { name: '   ' })).toContain('name');
+  });
+
+  it('rejects a null name, which would clear it', () => {
+    expect(failingProps(UpdateProfileDto, { name: null })).toContain('name');
+  });
+
+  it('still lets the name be left out', () => {
+    expect(failingProps(UpdateProfileDto, {})).not.toContain('name');
+  });
+
+  it('refuses an avatar link, which must go through the upload', () => {
+    const instance = plainToInstance(UpdateProfileDto, {
+      avatarUrl: 'https://tracker.example.com/pixel.png',
+    });
+    // The app validates with these options, so unknown fields are refused.
+    const errors = validateSync(instance, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    expect(errors.map((e) => e.property)).toContain('avatarUrl');
+  });
+
   it('accepts a portfolio URL with incidental surrounding whitespace', () => {
     expect(
       failingProps(UpdateProfileDto, { portfolio: '  https://ada.dev  ' }),
@@ -85,6 +110,15 @@ describe('UpdateWalletsDto', () => {
 
   it('accepts an empty wallet array', () => {
     expect(failingProps(UpdateWalletsDto, { wallets: [] })).toEqual([]);
+  });
+
+  it('names the network BSC, as students see it, in the error', () => {
+    const instance = plainToInstance(UpdateWalletsDto, {
+      wallets: [{ chain: 'evm', address: '0x123' }],
+    });
+    const message = JSON.stringify(validateSync(instance));
+    expect(message).toContain('Invalid BSC address');
+    expect(message).not.toContain('EVM');
   });
 
   it('rejects an invalid wallet address', () => {

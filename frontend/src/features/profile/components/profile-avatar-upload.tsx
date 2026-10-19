@@ -46,13 +46,20 @@ export const ProfileAvatarUpload = ({
       const updated = await uploadAvatar(file);
       setAvatarUrl(updated.avatarUrl ?? "");
       toast.success("Avatar updated.");
-      await onUploaded?.();
     } catch (err) {
       toast.error(
         err instanceof ApiError ? err.message : "Failed to upload your avatar.",
       );
+      return;
     } finally {
       setIsUploading(false);
+    }
+    // The upload worked and the new photo already shows, so a failed reload
+    // must not add "Failed to upload" next to "Avatar updated".
+    try {
+      await onUploaded?.();
+    } catch {
+      // The next reload catches up.
     }
   };
 

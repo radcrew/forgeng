@@ -17,5 +17,4 @@ export interface ProfileUpdate {
   portfolio?: string | null;
   telegram?: string | null;
   whatsapp?: string | null;
-  avatarUrl?: string;
 }

@@ -52,24 +52,28 @@ export function PaymentStatsChart({ stats }: { stats: MonthlyPaymentStat[] }) {
               </div>
             </div>
 
-            {stat.payment && (
-              <div className="ml-[64px] flex items-center gap-2 flex-wrap">
+            {/* Every payment for this stipend month, each with its own link. */}
+            {stat.payments.map((payment, i) => (
+              <div
+                key={`${payment.paidAt}-${i}`}
+                className="ml-[64px] flex items-center gap-2 flex-wrap"
+              >
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary-strong">
-                  {stat.payment.amount} {stat.payment.currency} paid
+                  {payment.amount} {payment.currency} paid
                 </span>
-                {stat.payment.txLink && isSafeHref(stat.payment.txLink) && (
+                {payment.txLink && isSafeHref(payment.txLink) && (
                   <a
-                    href={stat.payment.txLink}
+                    href={payment.txLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors truncate max-w-[160px]"
-                    title={stat.payment.txLink}
+                    title={payment.txLink}
                   >
                     View transaction
                   </a>
                 )}
               </div>
-            )}
+            ))}
           </div>
         );
       })}

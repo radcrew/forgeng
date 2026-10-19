@@ -9,6 +9,7 @@ import type {
   User,
 } from '@prisma/client';
 import {
+  profileLinksOf,
   toApplicationDto,
   toCohortDto,
   toFeedbackDto,
@@ -68,6 +69,22 @@ function makeApplication(overrides: Partial<Application> = {}): Application {
     ...overrides,
   } as Application;
 }
+
+describe('profileLinksOf', () => {
+  it('reads the stored links and fills the rest with null', () => {
+    const links = profileLinksOf({
+      profileLinks: { github: 'https://github.com/ada', telegram: '@ada_dev' },
+    });
+    expect(links.github).toBe('https://github.com/ada');
+    expect(links.telegram).toBe('@ada_dev');
+    expect(links.linkedin).toBeNull();
+  });
+
+  it('treats a missing or broken value as no links', () => {
+    expect(profileLinksOf({ profileLinks: null }).github).toBeNull();
+    expect(profileLinksOf({ profileLinks: { github: 42 } }).github).toBeNull();
+  });
+});
 
 describe('toUserDto', () => {
   it('converts createdAt to an ISO string', () => {

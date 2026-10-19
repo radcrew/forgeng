@@ -15,7 +15,11 @@ import {
 // time — but any social link that is provided must be a real profile URL, the
 // same rules the application form enforces.
 export const PROFILE_FORM_SCHEMA = z.object({
-  name: z.string().trim().max(120, "Name must be under 120 characters"),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Enter your name.")
+    .max(120, "Name must be under 120 characters"),
   github: optionalMatching(GITHUB_PROFILE_RE, SOCIAL_PROFILE_MESSAGES.github),
   linkedin: optionalMatching(LINKEDIN_PROFILE_RE, SOCIAL_PROFILE_MESSAGES.linkedin),
   twitter: optionalMatching(TWITTER_PROFILE_RE, SOCIAL_PROFILE_MESSAGES.twitter),

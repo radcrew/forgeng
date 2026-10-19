@@ -101,6 +101,10 @@ describe("APPLICATION_FORM_SCHEMA", () => {
       wallet: { chain: "evm", address: "0x123" },
     });
     expect(result.success).toBe(false);
+    // The wizard calls this network BSC, so the message does too.
+    expect(result.error?.issues.map((i) => i.message)).toContain(
+      "Enter a valid BSC address (0x + 40 hex characters)",
+    );
   });
 
   it("allows a blank wallet address (skipped withdrawal address)", () => {

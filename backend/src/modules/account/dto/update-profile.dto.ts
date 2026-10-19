@@ -4,6 +4,8 @@ import {
   IsUrl,
   Matches,
   MaxLength,
+  MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -18,8 +20,15 @@ import {
 } from '../../../common/constants/social-profiles';
 
 export class UpdateProfileDto {
-  @IsOptional()
-  @IsString()
+  // Leaving the name out keeps it, but a sent name can't be blank: the header
+  // would show nothing, since "" doesn't fall back to "Unnamed". Not
+  // @IsOptional, which also lets null through and clears the name.
+  @ValidateIf((o: { name?: unknown }) => o.name !== undefined)
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString({ message: 'Enter your name.' })
+  @MinLength(1, { message: 'Enter your name.' })
   @MaxLength(120)
   name?: string;
 
@@ -76,8 +85,7 @@ export class UpdateProfileDto {
   @Matches(WHATSAPP_REGEX, { message: SOCIAL_PROFILE_MESSAGES.whatsapp })
   whatsapp?: string;
 
-  @IsOptional()
-  @IsUrl()
-  @MaxLength(2000)
-  avatarUrl?: string;
+  // No avatarUrl here: a photo can only change through the upload route,
+  // which checks the file. Setting a link here skipped those checks and
+  // could point at any outside image.
 }

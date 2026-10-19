@@ -17,7 +17,8 @@ export const WALLET_CHAINS = ["evm", "solana", "tron"] as const;
 export type WalletChain = (typeof WALLET_CHAINS)[number];
 
 const ADDRESS_MESSAGES: Record<WalletChain, string> = {
-  evm: "Enter a valid EVM address (0x + 40 hex characters)",
+  // The wizard shows this network as BSC, so the message matches.
+  evm: "Enter a valid BSC address (0x + 40 hex characters)",
   solana: "Enter a valid Solana address",
   tron: "Enter a valid Tron address (starts with T)",
 };

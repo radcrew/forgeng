@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 
 import { Avatar } from "@components/ui/avatar";
+import { Badge } from "@components/ui/badge";
 import { Card } from "@components/ui/card";
 import type { UserProfile } from "@types";
 
@@ -31,6 +32,9 @@ export const UserRow = ({ user }: UserRowProps) => {
             )}
           </div>
         </Link>
+        <Badge variant="outline" className="shrink-0 capitalize">
+          {user.role}
+        </Badge>
         <span className="text-xs text-muted-foreground hidden shrink-0 sm:block">
           {format(new Date(user.createdAt), "MMM d, yyyy")}
         </span>

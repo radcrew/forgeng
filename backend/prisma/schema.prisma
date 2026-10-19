@@ -92,6 +92,12 @@ model User {
   bio           String?
   githubUrl     String?  @map("github_url")
   avatarUrl            String?  @map("avatar_url")
+  // Profile links (linkedin, github, telegram, ...) for accounts without an
+  // application. With an application, the links live on it instead.
+  profileLinks         Json?    @map("profile_links")
+  // Stipend wallets for accounts without an application, same shape as
+  // Application.wallets. With an application, they live on it instead.
+  wallets              Json?
   registrationIp       String?  @map("registration_ip")
   registrationCountry  String?  @map("registration_country")
   registrationCity     String?  @map("registration_city")
@@ -304,6 +310,9 @@ model Payment {
   currency  String   @default("USDT") @db.VarChar(20)
   txLink    String?  @map("tx_link") @db.VarChar(500)
   note      String?
+  // The stipend month this payment is for, as "YYYY-MM". It can differ from
+  // the month it was paid, e.g. a May stipend paid in June.
+  forMonth  String   @map("for_month") @db.VarChar(7)
   paidAt    DateTime @default(now()) @map("paid_at") @db.Timestamptz
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 

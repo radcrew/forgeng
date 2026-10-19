@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Payment, User } from '@prisma/client';
 import { MailService } from '@core/mail';
@@ -26,9 +26,19 @@ function makePayment(overrides: Partial<Payment> = {}): Payment {
     currency: 'USDC',
     txLink: null,
     note: null,
+    forMonth: '2026-01',
     paidAt: DATE,
     ...overrides,
   } as unknown as Payment;
+}
+
+/** The UTC month `ago` months before now, as "YYYY-MM" (negative is ahead). */
+function monthsAgo(ago: number): string {
+  const now = new Date();
+  const d = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - ago, 1),
+  );
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
 describe('UsersService', () => {
@@ -40,9 +50,14 @@ describe('UsersService', () => {
       update: jest.Mock;
       count: jest.Mock;
     };
-    application: { findUnique: jest.Mock };
-    payment: { create: jest.Mock };
+    application: { findUnique: jest.Mock; updateMany: jest.Mock };
+    enrollment: { deleteMany: jest.Mock; findMany: jest.Mock };
+    payment: { create: jest.Mock; findMany: jest.Mock };
+    task: { findMany: jest.Mock };
+    submission: { findMany: jest.Mock };
+    notification: { findFirst: jest.Mock };
     refreshToken: { updateMany: jest.Mock };
+    $queryRaw: jest.Mock;
     $transaction: jest.Mock;
   };
   let mail: { send: jest.Mock };
@@ -55,11 +70,26 @@ describe('UsersService', () => {
         update: jest.fn(),
         count: jest.fn(),
       },
-      application: { findUnique: jest.fn().mockResolvedValue(null) },
-      payment: { create: jest.fn() },
+      application: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        updateMany: jest.fn(),
+      },
+      enrollment: {
+        deleteMany: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      payment: { create: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
+      task: { findMany: jest.fn().mockResolvedValue([]) },
+      submission: { findMany: jest.fn().mockResolvedValue([]) },
+      notification: { findFirst: jest.fn().mockResolvedValue(null) },
       refreshToken: { updateMany: jest.fn() },
-      // The service passes an array of prepared queries; resolve them in order.
-      $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
+      // The locked list of admin rows used by the "keep one admin" check.
+      $queryRaw: jest.fn().mockResolvedValue([]),
+      // The service passes a function that runs on the transaction client.
+      // Here that client is this same fake.
+      $transaction: jest.fn((fn: (client: unknown) => Promise<unknown>) =>
+        fn(prisma),
+      ),
     };
     mail = { send: jest.fn().mockResolvedValue(undefined) };
     const config = {
@@ -146,6 +176,109 @@ describe('UsersService', () => {
         expect.objectContaining({ to: 'ada@example.com' }),
       );
     });
+
+    it('saves the stipend month the admin picked', async () => {
+      const picked = monthsAgo(2);
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(
+        makePayment({ forMonth: picked }),
+      );
+
+      const dto = await service.recordPayment(1, {
+        amount: 250,
+        currency: 'USDT',
+        forMonth: picked,
+      });
+
+      const data = (
+        prisma.payment.create.mock.calls[0] as [{ data: { forMonth: string } }]
+      )[0].data;
+      expect(data.forMonth).toBe(picked);
+      expect(dto.forMonth).toBe(picked);
+    });
+
+    it('accepts the oldest month the payment chart shows', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(makePayment());
+
+      await service.recordPayment(1, {
+        amount: 250,
+        currency: 'USDT',
+        forMonth: monthsAgo(5),
+      });
+
+      expect(prisma.payment.create).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['next month', -1],
+      ['a month older than the chart', 6],
+    ])(
+      'refuses %s, which the payment chart would never show',
+      async (_, ago) => {
+        prisma.user.findUnique.mockResolvedValue(makeUser());
+
+        await expect(
+          service.recordPayment(1, {
+            amount: 250,
+            currency: 'USDT',
+            forMonth: monthsAgo(ago),
+          }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(prisma.payment.create).not.toHaveBeenCalled();
+        expect(mail.send).not.toHaveBeenCalled();
+      },
+    );
+
+    it('uses the current month when none is given', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(makePayment());
+
+      await service.recordPayment(1, {
+        amount: 250,
+        currency: 'USDT',
+      });
+
+      const data = (
+        prisma.payment.create.mock.calls[0] as [{ data: { forMonth: string } }]
+      )[0].data;
+      expect(data.forMonth).toMatch(/^\d{4}-\d{2}$/);
+    });
+
+    it('picks the default month in UTC, whatever the server time zone', async () => {
+      // 02:00 UTC on 1 June is still 31 May in time zones behind UTC.
+      jest.useFakeTimers({
+        now: new Date('2026-06-01T02:00:00.000Z'),
+        doNotFake: ['nextTick', 'setImmediate'],
+      });
+      try {
+        prisma.user.findUnique.mockResolvedValue(makeUser());
+        prisma.payment.create.mockResolvedValue(makePayment());
+
+        await service.recordPayment(1, { amount: 250, currency: 'USDT' });
+
+        const data = (
+          prisma.payment.create.mock.calls[0] as [
+            { data: { forMonth: string } },
+          ]
+        )[0].data;
+        expect(data.forMonth).toBe('2026-06');
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('still returns the saved payment when the email fails', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(makePayment());
+      mail.send.mockRejectedValue(new Error('smtp down'));
+      jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+      await expect(
+        service.recordPayment(1, { amount: '250', currency: 'USDC' } as never),
+      ).resolves.toMatchObject({ amount: '250' });
+      expect(prisma.payment.create).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('list', () => {
@@ -169,6 +302,25 @@ describe('UsersService', () => {
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { role: 'admin' } }),
       );
+    });
+
+    it('searches names and emails, ignoring case, within the role', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+      prisma.user.count.mockResolvedValue(0);
+
+      await service.list({ role: 'student', search: 'ada' } as never);
+
+      const where = {
+        role: 'student',
+        OR: [
+          { name: { contains: 'ada', mode: 'insensitive' } },
+          { email: { contains: 'ada', mode: 'insensitive' } },
+        ],
+      };
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where }),
+      );
+      expect(prisma.user.count).toHaveBeenCalledWith({ where });
     });
   });
 
@@ -211,6 +363,148 @@ describe('UsersService', () => {
       await service.updateRole(1, { role: 'student' } as never);
 
       expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('takes a student moved back to applicant out of their cohorts', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'applicant' }));
+
+      await service.updateRole(1, { role: 'applicant' } as never);
+
+      expect(prisma.enrollment.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 1 },
+      });
+    });
+
+    it('sets an accepted application back to pending for a new applicant', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'applicant' }));
+
+      await service.updateRole(1, { role: 'applicant' } as never);
+
+      // Only an accepted application changes; a rejected one stays.
+      expect(prisma.application.updateMany).toHaveBeenCalledWith({
+        where: { userId: 1, status: 'accepted' },
+        data: { status: 'pending' },
+      });
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it('accepts a pending application when an applicant becomes a student', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'applicant' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      await service.updateRole(1, { role: 'student' } as never);
+
+      // Only a pending application changes; decided ones stay final.
+      expect(prisma.application.updateMany).toHaveBeenCalledWith({
+        where: { userId: 1, status: 'pending' },
+        data: { status: 'accepted' },
+      });
+      expect(prisma.enrollment.deleteMany).not.toHaveBeenCalled();
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it('leaves cohorts and applications alone for other changes', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'admin' }));
+
+      await service.updateRole(1, { role: 'admin' } as never);
+
+      expect(prisma.enrollment.deleteMany).not.toHaveBeenCalled();
+      expect(prisma.application.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses to remove the role of the only admin', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }]);
+
+      await expect(
+        service.updateRole(1, { role: 'student' } as never),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('lets an admin lose the role when another admin remains', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      const dto = await service.updateRole(1, { role: 'student' } as never);
+
+      expect(dto.role).toBe('student');
+    });
+
+    it('locks the admin rows inside the same transaction as the change', async () => {
+      // Without the lock, two admins removing each other at the same moment
+      // would each still count two admins, and both changes would go through.
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      await service.updateRole(1, { role: 'student' } as never);
+
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      const sql = (prisma.$queryRaw.mock.calls[0] as [string[]])[0].join('');
+      expect(sql).toMatch(/FOR UPDATE/);
+      expect(prisma.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+        prisma.user.update.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('does not count admins when the role stays admin', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'admin' }));
+
+      await service.updateRole(1, { role: 'admin' } as never);
+
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('paymentStats', () => {
+    it('lists every payment under the stipend month it is for', async () => {
+      const thisMonth = monthsAgo(0);
+      prisma.payment.findMany.mockImplementation(
+        ({ where }: { where: { forMonth: string } }) =>
+          Promise.resolve(
+            where.forMonth === thisMonth
+              ? [
+                  makePayment({ id: 1, currency: 'USDT' }),
+                  makePayment({ id: 2, currency: 'USD' }),
+                ]
+              : [],
+          ),
+      );
+
+      const stats = await service.paymentStats(1);
+
+      expect(prisma.payment.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 1, forMonth: thisMonth },
+        }),
+      );
+      const current = stats.monthlyStats.find((m) => m.month === thisMonth);
+      // Both payments show, not only the latest one.
+      expect(current?.payments.map((p) => p.currency)).toEqual(['USDT', 'USD']);
+      expect(
+        stats.monthlyStats
+          .filter((m) => m.month !== thisMonth)
+          .every((m) => m.payments.length === 0),
+      ).toBe(true);
+    });
+
+    it('shows the wallet kept on the user when there is no application', async () => {
+      prisma.application.findUnique.mockResolvedValue(null);
+      prisma.user.findUnique.mockResolvedValue({
+        wallets: [{ chain: 'evm', address: '0xabc' }],
+      });
+      prisma.payment.findMany.mockResolvedValue([]);
+
+      const stats = await service.paymentStats(1);
+
+      expect(stats.wallets).toEqual([{ chain: 'evm', address: '0xabc' }]);
     });
   });
 
