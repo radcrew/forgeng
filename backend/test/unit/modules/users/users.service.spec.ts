@@ -177,6 +177,17 @@ describe('UsersService', () => {
       );
     });
 
+    it('returns without waiting for a mail server that never answers', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser());
+      prisma.payment.create.mockResolvedValue(makePayment());
+      mail.send.mockReturnValue(new Promise(() => undefined));
+
+      await expect(
+        service.recordPayment(1, { amount: '250', currency: 'USDC' } as never),
+      ).resolves.toMatchObject({ amount: '250' });
+      expect(mail.send).toHaveBeenCalledTimes(1);
+    });
+
     it('saves the stipend month the admin picked', async () => {
       const picked = monthsAgo(2);
       prisma.user.findUnique.mockResolvedValue(makeUser());

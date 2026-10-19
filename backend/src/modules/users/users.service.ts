@@ -15,7 +15,7 @@ import {
   type ProfileEnrollmentDto,
   type UserDto,
 } from '../../common/mappers';
-import { MailService } from '../../core/mail';
+import { MailService, sendInBackground } from '../../core/mail';
 import { PrismaService } from '../../core/database/prisma.service';
 import {
   paymentReleasedEmail,
@@ -150,14 +150,8 @@ export class UsersService {
     });
     // The payment is already saved. A failed email must not report it as
     // failed, or the admin records it again and the student is paid twice.
-    try {
-      await this.mail.send({ to: user.email, ...email });
-    } catch (err) {
-      this.logger.error(
-        `Failed to send payment email to ${user.email}`,
-        err instanceof Error ? err.stack : String(err),
-      );
-    }
+    // It goes out after the response, so the save doesn't wait for it.
+    sendInBackground(this.mail, { to: user.email, ...email }, this.logger);
 
     return {
       id: payment.id,

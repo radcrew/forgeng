@@ -387,6 +387,20 @@ describe('ApplicationsService', () => {
       expect(mail.send).toHaveBeenCalledTimes(1);
     });
 
+    it.each(['accepted', 'rejected'] as const)(
+      'decides an application as %s without waiting for the mail server',
+      async (status) => {
+        prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+        tx.application.update.mockResolvedValue(makeApplicationRow({ status }));
+        mail.send.mockReturnValue(new Promise(() => undefined));
+
+        const dto = await service.updateStatus(10, { status });
+
+        expect(dto.status).toBe(status);
+        expect(mail.send).toHaveBeenCalledTimes(1);
+      },
+    );
+
     it('accepting makes the applicant a student and enrolls them', async () => {
       prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
       tx.application.update.mockResolvedValue(

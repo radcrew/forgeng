@@ -16,7 +16,7 @@ import {
   type ApplicationDto,
 } from '../../common/mappers';
 import { splitName } from '../../common/string';
-import { MailService } from '../../core/mail';
+import { MailService, sendInBackground } from '../../core/mail';
 import { assertCohortHasRoom } from '../cohorts/cohort-capacity';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
@@ -230,6 +230,8 @@ export class ApplicationsService {
     // Only a new decision emails the applicant, not a later note edit.
     if (!statusChanged) return toApplicationDto(updated);
 
+    // The emails go out after the response, so the decision doesn't wait for
+    // the mail server.
     if (updated.status === ApplicationStatus.accepted) {
       try {
         const cohort = updated.cohortId
@@ -238,14 +240,18 @@ export class ApplicationsService {
               select: { name: true },
             })
           : null;
-        await this.mail.send({
-          to: updated.email,
-          ...applicationAcceptedEmail({
-            applicantName,
-            dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
-            cohortName: cohort?.name,
-          }),
-        });
+        sendInBackground(
+          this.mail,
+          {
+            to: updated.email,
+            ...applicationAcceptedEmail({
+              applicantName,
+              dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
+              cohortName: cohort?.name,
+            }),
+          },
+          this.logger,
+        );
       } catch (err) {
         this.logger.error(
           `Failed to send acceptance email to ${updated.email}`,
@@ -253,19 +259,16 @@ export class ApplicationsService {
         );
       }
     } else if (updated.status === ApplicationStatus.rejected) {
-      try {
-        await this.mail.send({
+      sendInBackground(
+        this.mail,
+        {
           to: updated.email,
           ...applicationRejectedEmail({
             applicantName,
           }),
-        });
-      } catch (err) {
-        this.logger.error(
-          `Failed to send rejection email to ${updated.email}`,
-          err instanceof Error ? err.stack : String(err),
-        );
-      }
+        },
+        this.logger,
+      );
     }
 
     return toApplicationDto(updated);

@@ -240,6 +240,22 @@ describe('NotificationsService', () => {
   });
 
   describe('sendEmail resilience', () => {
+    it('returns without waiting for the email', async () => {
+      prisma.notificationPreference.findUnique.mockResolvedValue(null);
+      prisma.user.findUnique.mockResolvedValue({ email: 'ada@example.com' });
+      mail.send.mockReturnValue(new Promise(() => undefined));
+
+      await expect(
+        service.notifyFeedbackReceived({
+          userId: 2,
+          submissionId: 5,
+          verdict: 'approved',
+        }),
+      ).resolves.toBeUndefined();
+      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise));
+    });
+
     it('swallows email failures so the trigger still succeeds', async () => {
       prisma.notificationPreference.findUnique.mockResolvedValue(null);
       prisma.user.findUnique.mockResolvedValue({ email: 'ada@example.com' });

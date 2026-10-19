@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthProvider, type User, VerificationTokenType } from '@prisma/client';
+import { waitUntil } from '@vercel/functions';
 
 import type { AppConfiguration } from '../../config';
 import { PrismaService } from '../../core/database/prisma.service';
@@ -267,13 +268,17 @@ export class AuthService {
     // Delivery takes seconds on a good day and stalls indefinitely on a blocked
     // SMTP port, so don't hold the response open for it. The token is already
     // persisted, and the check-email page offers a resend if nothing arrives.
-    void this.email
-      .sendVerificationEmail(user.email, verifyUrl)
-      .catch((err: Error) => {
-        this.logger.error(
-          `Failed to send verification email to ${user.email}: ${err.message}`,
-        );
-      });
+    // waitUntil keeps a Vercel function alive until the send finishes, so the
+    // email isn't lost when the function stops after the response.
+    waitUntil(
+      this.email
+        .sendVerificationEmail(user.email, verifyUrl)
+        .catch((err: Error) => {
+          this.logger.error(
+            `Failed to send verification email to ${user.email}: ${err.message}`,
+          );
+        }),
+    );
   }
 
   private async sendPasswordResetEmail(user: User): Promise<void> {
@@ -288,13 +293,15 @@ export class AuthService {
     // Detached for the same reason as the verification email above: the caller
     // deliberately reports nothing about the address, so a delivery failure has
     // no bearing on the response either way.
-    void this.email
-      .sendPasswordResetEmail(user.email, resetUrl)
-      .catch((err: Error) => {
-        this.logger.error(
-          `Failed to send password reset email to ${user.email}: ${err.message}`,
-        );
-      });
+    waitUntil(
+      this.email
+        .sendPasswordResetEmail(user.email, resetUrl)
+        .catch((err: Error) => {
+          this.logger.error(
+            `Failed to send password reset email to ${user.email}: ${err.message}`,
+          );
+        }),
+    );
   }
 
   private async assertRegionAllowed(ip: string | undefined): Promise<void> {

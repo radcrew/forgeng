@@ -1,11 +1,14 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Verdict } from '@prisma/client';
-import { waitUntil } from '@vercel/functions';
 
 import type { AppConfiguration } from '../../config';
 import type { AuthUser } from '../../core/auth/auth.types';
-import { MailService, type RenderedEmail } from '../../core/mail';
+import {
+  MailService,
+  sendInBackground,
+  type RenderedEmail,
+} from '../../core/mail';
 import {
   toNotificationDto,
   toNotificationPreferenceDto,
@@ -148,7 +151,7 @@ export class NotificationsService {
     }
 
     if (prefs.feedbackEmail && user) {
-      await this.sendEmail(
+      this.sendEmail(
         user.email,
         feedbackReceivedEmail({ approved, url: this.absoluteUrl(link) }),
       );
@@ -196,12 +199,8 @@ export class NotificationsService {
       .filter((e) => prefsFor(e.userId).taskEmail)
       .map((e) => e.user.email);
     // Emails go out after the response, so publishing doesn't wait for every
-    // student's email. The backend runs on Vercel, where waitUntil keeps the
-    // function alive until they finish. On a long-running server (local dev,
-    // the Render blueprint) waitUntil does nothing and the sends still run in
-    // the background, but any still in flight are lost if the process stops.
-    // sendEmail logs its own failures, so nothing here can reject.
-    waitUntil(Promise.all(recipients.map((to) => this.sendEmail(to, email))));
+    // student's email.
+    for (const to of recipients) this.sendEmail(to, email);
   }
 
   /**
@@ -249,7 +248,7 @@ export class NotificationsService {
     });
 
     const url = this.absoluteUrl(STUDENT_ROUTES.DASHBOARD);
-    await this.sendEmail(
+    this.sendEmail(
       params.studentEmail,
       paymentEligibleEmail({
         studentName: params.studentName,
@@ -280,15 +279,11 @@ export class NotificationsService {
     return `${base}${path}`;
   }
 
-  /** Best-effort send: a failed email must never break the triggering action. */
-  private async sendEmail(to: string, email: RenderedEmail): Promise<void> {
-    try {
-      await this.mail.send({ to, ...email });
-    } catch (err) {
-      this.logger.error(
-        `Failed to send notification email to ${to}`,
-        err instanceof Error ? err.stack : String(err),
-      );
-    }
+  /**
+   * Best-effort send after the response: a failed or slow email must never
+   * break or hold up the triggering action.
+   */
+  private sendEmail(to: string, email: RenderedEmail): void {
+    sendInBackground(this.mail, { to, ...email }, this.logger);
   }
 }
