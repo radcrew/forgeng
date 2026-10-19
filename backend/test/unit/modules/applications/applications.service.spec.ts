@@ -112,7 +112,7 @@ describe('ApplicationsService', () => {
     cohort: { findUnique: jest.Mock };
   };
   let notifications: { notifyApplicationReceived: jest.Mock };
-  let mail: { send: jest.Mock };
+  let mail: { sendInBackground: jest.Mock };
   let video: { assertOwnUpload: jest.Mock; viewUrl: jest.Mock };
 
   beforeEach(() => {
@@ -142,7 +142,7 @@ describe('ApplicationsService', () => {
     notifications = {
       notifyApplicationReceived: jest.fn().mockResolvedValue(undefined),
     };
-    mail = { send: jest.fn().mockResolvedValue(undefined) };
+    mail = { sendInBackground: jest.fn() };
     video = {
       assertOwnUpload: jest.fn().mockResolvedValue(undefined),
       viewUrl: jest.fn((url: string | null) => Promise.resolve(url)),
@@ -355,7 +355,7 @@ describe('ApplicationsService', () => {
           service.updateStatus(10, { status: 'pending' }),
         ).rejects.toBeInstanceOf(ConflictException);
         expect(tx.application.update).not.toHaveBeenCalled();
-        expect(mail.send).not.toHaveBeenCalled();
+        expect(mail.sendInBackground).not.toHaveBeenCalled();
       },
     );
 
@@ -373,7 +373,7 @@ describe('ApplicationsService', () => {
       });
 
       expect(dto.status).toBe('rejected');
-      expect(mail.send).not.toHaveBeenCalled();
+      expect(mail.sendInBackground).not.toHaveBeenCalled();
     });
 
     it('decides a pending application and emails the applicant', async () => {
@@ -384,20 +384,22 @@ describe('ApplicationsService', () => {
 
       await service.updateStatus(10, { status: 'rejected' });
 
-      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(mail.sendInBackground).toHaveBeenCalledTimes(1);
     });
 
     it.each(['accepted', 'rejected'] as const)(
-      'decides an application as %s without waiting for the mail server',
+      'emails the applicant in the background when %s',
       async (status) => {
         prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
         tx.application.update.mockResolvedValue(makeApplicationRow({ status }));
-        mail.send.mockReturnValue(new Promise(() => undefined));
 
         const dto = await service.updateStatus(10, { status });
 
+        // So the decision doesn't wait for the mail server or fail with it.
         expect(dto.status).toBe(status);
-        expect(mail.send).toHaveBeenCalledTimes(1);
+        expect(mail.sendInBackground).toHaveBeenCalledWith(
+          expect.objectContaining({ to: 'ada@example.com' }),
+        );
       },
     );
 

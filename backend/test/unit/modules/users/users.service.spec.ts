@@ -1,4 +1,4 @@
-import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Payment, User } from '@prisma/client';
 import { MailService } from '@core/mail';
@@ -60,7 +60,7 @@ describe('UsersService', () => {
     $queryRaw: jest.Mock;
     $transaction: jest.Mock;
   };
-  let mail: { send: jest.Mock };
+  let mail: { send: jest.Mock; sendInBackground: jest.Mock };
 
   beforeEach(() => {
     prisma = {
@@ -91,7 +91,10 @@ describe('UsersService', () => {
         fn(prisma),
       ),
     };
-    mail = { send: jest.fn().mockResolvedValue(undefined) };
+    mail = {
+      send: jest.fn().mockResolvedValue(undefined),
+      sendInBackground: jest.fn(),
+    };
     const config = {
       get: jest.fn().mockReturnValue('https://app.forgeng.test'),
     };
@@ -172,20 +175,12 @@ describe('UsersService', () => {
       } as never);
 
       expect(dto.amount).toBe('250');
-      expect(mail.send).toHaveBeenCalledWith(
+      // In the background, so a slow or failed email can't hold up or fail
+      // the saved payment.
+      expect(mail.sendInBackground).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'ada@example.com' }),
       );
-    });
-
-    it('returns without waiting for a mail server that never answers', async () => {
-      prisma.user.findUnique.mockResolvedValue(makeUser());
-      prisma.payment.create.mockResolvedValue(makePayment());
-      mail.send.mockReturnValue(new Promise(() => undefined));
-
-      await expect(
-        service.recordPayment(1, { amount: '250', currency: 'USDC' } as never),
-      ).resolves.toMatchObject({ amount: '250' });
-      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(mail.send).not.toHaveBeenCalled();
     });
 
     it('saves the stipend month the admin picked', async () => {
@@ -237,7 +232,7 @@ describe('UsersService', () => {
           }),
         ).rejects.toBeInstanceOf(BadRequestException);
         expect(prisma.payment.create).not.toHaveBeenCalled();
-        expect(mail.send).not.toHaveBeenCalled();
+        expect(mail.sendInBackground).not.toHaveBeenCalled();
       },
     );
 
@@ -277,18 +272,6 @@ describe('UsersService', () => {
       } finally {
         jest.useRealTimers();
       }
-    });
-
-    it('still returns the saved payment when the email fails', async () => {
-      prisma.user.findUnique.mockResolvedValue(makeUser());
-      prisma.payment.create.mockResolvedValue(makePayment());
-      mail.send.mockRejectedValue(new Error('smtp down'));
-      jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-
-      await expect(
-        service.recordPayment(1, { amount: '250', currency: 'USDC' } as never),
-      ).resolves.toMatchObject({ amount: '250' });
-      expect(prisma.payment.create).toHaveBeenCalledTimes(1);
     });
   });
 

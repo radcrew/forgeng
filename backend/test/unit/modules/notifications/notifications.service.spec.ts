@@ -4,9 +4,6 @@ import { MailService } from '@core/mail';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import type { AuthUser } from '@core/auth/auth.types';
-import { waitUntil } from '@vercel/functions';
-
-jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
 
 const user: AuthUser = { id: 2, role: 'student' } as AuthUser;
 
@@ -32,7 +29,7 @@ describe('NotificationsService', () => {
     user: { findUnique: jest.Mock; findMany: jest.Mock };
     enrollment: { findMany: jest.Mock };
   };
-  let mail: { send: jest.Mock };
+  let mail: { sendInBackground: jest.Mock };
 
   beforeEach(() => {
     prisma = {
@@ -55,7 +52,9 @@ describe('NotificationsService', () => {
       user: { findUnique: jest.fn(), findMany: jest.fn() },
       enrollment: { findMany: jest.fn() },
     };
-    mail = { send: jest.fn().mockResolvedValue(undefined) };
+    // The mail service sends in the background, so a slow or failed email
+    // never holds up or fails the notice. Its own tests cover that.
+    mail = { sendInBackground: jest.fn() };
     const config = { get: jest.fn().mockReturnValue('https://app') };
 
     service = new NotificationsService(
@@ -128,7 +127,7 @@ describe('NotificationsService', () => {
       });
 
       expect(prisma.notification.create).toHaveBeenCalledTimes(1);
-      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(mail.sendInBackground).toHaveBeenCalledTimes(1);
     });
 
     it('respects disabled in-app and email preferences', async () => {
@@ -148,7 +147,7 @@ describe('NotificationsService', () => {
       });
 
       expect(prisma.notification.create).not.toHaveBeenCalled();
-      expect(mail.send).not.toHaveBeenCalled();
+      expect(mail.sendInBackground).not.toHaveBeenCalled();
     });
   });
 
@@ -159,7 +158,7 @@ describe('NotificationsService', () => {
       await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
 
       expect(prisma.notification.createMany).not.toHaveBeenCalled();
-      expect(mail.send).not.toHaveBeenCalled();
+      expect(mail.sendInBackground).not.toHaveBeenCalled();
     });
 
     it('notifies enrolled students in-app and by email by default', async () => {
@@ -172,21 +171,7 @@ describe('NotificationsService', () => {
       await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
 
       expect(prisma.notification.createMany).toHaveBeenCalledTimes(1);
-      expect(mail.send).toHaveBeenCalledTimes(2);
-    });
-
-    it('returns without waiting for the emails and hands them to waitUntil', async () => {
-      prisma.enrollment.findMany.mockResolvedValue([
-        { userId: 2, user: { email: 'a@example.com' } },
-      ]);
-      prisma.notificationPreference.findMany.mockResolvedValue([]);
-      // An email server that never answers.
-      mail.send.mockReturnValue(new Promise(() => undefined));
-
-      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
-
-      expect(mail.send).toHaveBeenCalledTimes(1);
-      expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise));
+      expect(mail.sendInBackground).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -233,41 +218,9 @@ describe('NotificationsService', () => {
           }),
         ],
       });
-      expect(mail.send).toHaveBeenCalledWith(
+      expect(mail.sendInBackground).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'ada@example.com' }),
       );
-    });
-  });
-
-  describe('sendEmail resilience', () => {
-    it('returns without waiting for the email', async () => {
-      prisma.notificationPreference.findUnique.mockResolvedValue(null);
-      prisma.user.findUnique.mockResolvedValue({ email: 'ada@example.com' });
-      mail.send.mockReturnValue(new Promise(() => undefined));
-
-      await expect(
-        service.notifyFeedbackReceived({
-          userId: 2,
-          submissionId: 5,
-          verdict: 'approved',
-        }),
-      ).resolves.toBeUndefined();
-      expect(mail.send).toHaveBeenCalledTimes(1);
-      expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise));
-    });
-
-    it('swallows email failures so the trigger still succeeds', async () => {
-      prisma.notificationPreference.findUnique.mockResolvedValue(null);
-      prisma.user.findUnique.mockResolvedValue({ email: 'ada@example.com' });
-      mail.send.mockRejectedValue(new Error('smtp down'));
-
-      await expect(
-        service.notifyFeedbackReceived({
-          userId: 2,
-          submissionId: 5,
-          verdict: 'approved',
-        }),
-      ).resolves.toBeUndefined();
     });
   });
 });

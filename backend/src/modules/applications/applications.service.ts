@@ -16,7 +16,7 @@ import {
   type ApplicationDto,
 } from '../../common/mappers';
 import { splitName } from '../../common/string';
-import { MailService, sendInBackground } from '../../core/mail';
+import { MailService } from '../../core/mail';
 import { assertCohortHasRoom } from '../cohorts/cohort-capacity';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
@@ -240,18 +240,14 @@ export class ApplicationsService {
               select: { name: true },
             })
           : null;
-        sendInBackground(
-          this.mail,
-          {
-            to: updated.email,
-            ...applicationAcceptedEmail({
-              applicantName,
-              dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
-              cohortName: cohort?.name,
-            }),
-          },
-          this.logger,
-        );
+        this.mail.sendInBackground({
+          to: updated.email,
+          ...applicationAcceptedEmail({
+            applicantName,
+            dashboardUrl: `${this.frontendUrl}${STUDENT_ROUTES.DASHBOARD}`,
+            cohortName: cohort?.name,
+          }),
+        });
       } catch (err) {
         this.logger.error(
           `Failed to send acceptance email to ${updated.email}`,
@@ -259,16 +255,12 @@ export class ApplicationsService {
         );
       }
     } else if (updated.status === ApplicationStatus.rejected) {
-      sendInBackground(
-        this.mail,
-        {
-          to: updated.email,
-          ...applicationRejectedEmail({
-            applicantName,
-          }),
-        },
-        this.logger,
-      );
+      this.mail.sendInBackground({
+        to: updated.email,
+        ...applicationRejectedEmail({
+          applicantName,
+        }),
+      });
     }
 
     return toApplicationDto(updated);

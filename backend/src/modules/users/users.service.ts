@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,7 +14,7 @@ import {
   type ProfileEnrollmentDto,
   type UserDto,
 } from '../../common/mappers';
-import { MailService, sendInBackground } from '../../core/mail';
+import { MailService } from '../../core/mail';
 import { PrismaService } from '../../core/database/prisma.service';
 import {
   paymentReleasedEmail,
@@ -82,7 +81,6 @@ const monthStartUtc = (now: Date, ago: number) =>
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
   private readonly frontendUrl: string;
 
   constructor(
@@ -151,7 +149,7 @@ export class UsersService {
     // The payment is already saved. A failed email must not report it as
     // failed, or the admin records it again and the student is paid twice.
     // It goes out after the response, so the save doesn't wait for it.
-    sendInBackground(this.mail, { to: user.email, ...email }, this.logger);
+    this.mail.sendInBackground({ to: user.email, ...email });
 
     return {
       id: payment.id,

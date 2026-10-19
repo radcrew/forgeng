@@ -1,14 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Verdict } from '@prisma/client';
 
 import type { AppConfiguration } from '../../config';
 import type { AuthUser } from '../../core/auth/auth.types';
-import {
-  MailService,
-  sendInBackground,
-  type RenderedEmail,
-} from '../../core/mail';
+import { MailService, type RenderedEmail } from '../../core/mail';
 import {
   toNotificationDto,
   toNotificationPreferenceDto,
@@ -27,8 +23,6 @@ import {
 
 @Injectable()
 export class NotificationsService {
-  private readonly logger = new Logger(NotificationsService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
@@ -284,6 +278,6 @@ export class NotificationsService {
    * break or hold up the triggering action.
    */
   private sendEmail(to: string, email: RenderedEmail): void {
-    sendInBackground(this.mail, { to, ...email }, this.logger);
+    this.mail.sendInBackground({ to, ...email });
   }
 }
