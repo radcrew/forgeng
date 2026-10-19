@@ -154,6 +154,39 @@ describe('DashboardService', () => {
       expect(result.cohort?.name).toBe('Spring');
     });
 
+    it('counts the stipend month in UTC', async () => {
+      // Still May in UTC-5, but already June in UTC.
+      jest.useFakeTimers({
+        now: new Date('2026-06-01T00:30:00.000Z'),
+        doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'],
+      });
+      try {
+        prisma.enrollment.findMany.mockResolvedValue([
+          {
+            cohortId: 3,
+            cohort: makeCohort({ id: 3 }),
+            enrolledAt: new Date('2026-05-31T23:00:00.000Z'),
+          },
+        ]);
+        prisma.task.findMany.mockResolvedValue([
+          makeTask({ id: 1, dueDate: new Date('2026-05-31T23:00:00.000Z') }),
+          makeTask({ id: 2, dueDate: new Date('2026-06-01T01:00:00.000Z') }),
+        ]);
+        prisma.submission.findMany.mockResolvedValue([]);
+
+        const result = await service.student(student);
+
+        // Only the June task counts, and June ends at the UTC month end.
+        expect(result.monthlyPayment.tasksThisMonth).toBe(1);
+        expect(result.monthlyPayment.paymentDate).toBe(
+          '2026-06-30T23:59:59.999Z',
+        );
+        expect(result.monthlyPayment.enrollmentMonth).toBe(2);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     it('ignores submissions outside the selected cohort, so progress stays within 100%', async () => {
       prisma.enrollment.findMany.mockResolvedValue([
         {

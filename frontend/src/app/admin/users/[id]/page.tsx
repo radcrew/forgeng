@@ -52,10 +52,15 @@ import { PaymentStatsChart } from "./_components/payment-stats-chart";
 import { RoleControl } from "./_components/role-control";
 import { WalletSection } from "./_components/wallet-section";
 
-/** A month as "YYYY-MM", the value a month input expects. */
+/**
+ * A month as "YYYY-MM", the value a month input expects. In UTC, like the
+ * server, so near a month edge the admin can't pick a month it refuses.
+ */
 const monthInput = (monthsAgo: number, now = new Date()) => {
-  const d = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const d = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsAgo, 1),
+  );
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 };
 
 // The payment chart shows this month and the 5 before it, so a stipend can

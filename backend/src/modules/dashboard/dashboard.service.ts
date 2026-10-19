@@ -247,16 +247,15 @@ export class DashboardService {
     approvedIds: Set<number>,
     enrolledAt: Date,
   ): MonthlyPayment {
+    // In UTC, like the admin payment chart and the stipend check, so the
+    // student and the admin see the same month whatever the server's time
+    // zone.
     const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
     const monthEnd = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999,
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) - 1,
     );
     const tasksThisMonth = tasks.filter(
       (t) => t.dueDate && t.dueDate >= monthStart && t.dueDate <= monthEnd,
@@ -265,8 +264,8 @@ export class DashboardService {
       approvedIds.has(t.id),
     ).length;
     const monthsElapsed =
-      (now.getFullYear() - enrolledAt.getFullYear()) * 12 +
-      (now.getMonth() - enrolledAt.getMonth());
+      (now.getUTCFullYear() - enrolledAt.getUTCFullYear()) * 12 +
+      (now.getUTCMonth() - enrolledAt.getUTCMonth());
     return {
       tasksThisMonth: tasksThisMonth.length,
       approvedThisMonth,

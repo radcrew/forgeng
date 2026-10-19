@@ -70,6 +70,15 @@ vi.mock("@features/settings", () => ({
 
 import UserDetailPage from "../../src/app/admin/users/[id]/page";
 
+/** The UTC month `monthsAgo` months before now, as "YYYY-MM". */
+const utcMonth = (monthsAgo: number) => {
+  const now = new Date();
+  const d = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsAgo, 1),
+  );
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+};
+
 // The page reads its id from a promise, so wait for it inside Suspense.
 const renderPage = async (id = "7") => {
   await act(async () => {
@@ -169,15 +178,12 @@ describe("admin user detail page", () => {
       }),
     );
 
-    const now = new Date();
-    const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonth = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, "0")}`;
+    const lastMonth = utcMonth(1);
     const monthInput = screen.getByLabelText("Stipend for");
     expect(monthInput).toHaveValue(lastMonth);
 
     // Two months ago is always inside the months the chart shows.
-    const earlier = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    const twoMonthsAgo = `${earlier.getFullYear()}-${String(earlier.getMonth() + 1).padStart(2, "0")}`;
+    const twoMonthsAgo = utcMonth(2);
     await userEvent.clear(monthInput);
     await userEvent.type(monthInput, twoMonthsAgo);
     await userEvent.type(screen.getByLabelText("Amount"), "50");
@@ -189,6 +195,40 @@ describe("admin user detail page", () => {
       7,
       expect.objectContaining({ amount: 50, forMonth: twoMonthsAgo }),
     );
+  });
+
+  // Near midnight UTC, local time is in the next month east of UTC and in
+  // the month before west of it. The dialog must follow UTC in both cases.
+  it.each([
+    // Already November east of UTC.
+    ["2026-10-31T23:30:00.000Z", "2026-09", "2026-10", "2026-05"],
+    // Still October west of UTC.
+    ["2026-11-01T02:00:00.000Z", "2026-10", "2026-11", "2026-06"],
+  ])("picks stipend months in UTC at %s", async (now, last, max, min) => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date(now) });
+    try {
+      userState = { data: sampleUser, isLoading: false, error: null };
+      statsState = {
+        data: {
+          wallets: [{ chain: "evm", address: "0xabc" }],
+          monthlyStats: [],
+        },
+      };
+      await renderPage();
+
+      await userEvent.click(
+        await screen.findByRole("button", {
+          name: /Record payment & notify student/,
+        }),
+      );
+
+      const monthInput = screen.getByLabelText("Stipend for");
+      expect(monthInput).toHaveValue(last);
+      expect(monthInput).toHaveAttribute("max", max);
+      expect(monthInput).toHaveAttribute("min", min);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("refuses a stipend month that the payment chart doesn't show", async () => {
@@ -207,9 +247,7 @@ describe("admin user detail page", () => {
       }),
     );
     // Next month: saved but never shown, so it could be paid twice.
-    const now = new Date();
-    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const nextMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
+    const nextMonth = utcMonth(-1);
     const monthInput = screen.getByLabelText("Stipend for");
     await userEvent.clear(monthInput);
     await userEvent.type(monthInput, nextMonth);
