@@ -193,7 +193,10 @@ describe('toSubmissionDto', () => {
     } as Task;
     const dto = toSubmissionDto(
       submission,
-      { ...task, cohort: { status: 'active', endDate: null } },
+      {
+        ...task,
+        cohort: { id: 3, name: 'Cohort 1', status: 'active', endDate: null },
+      },
       makeUser(),
       2,
     );
@@ -201,13 +204,17 @@ describe('toSubmissionDto', () => {
     expect(dto.user?.id).toBe(1);
     expect(dto.feedbackCount).toBe(2);
     expect(dto.cohortEnded).toBe(false);
+    expect(dto.cohort).toEqual({ id: 3, name: 'Cohort 1' });
   });
 
   it('says the cohort ended once it is completed or its end date is over', () => {
     const task = { id: 5, cohortId: 3, createdAt: DATE } as Task;
     const completed = toSubmissionDto(
       submission,
-      { ...task, cohort: { status: 'completed', endDate: null } },
+      {
+        ...task,
+        cohort: { id: 3, name: 'Cohort 1', status: 'completed', endDate: null },
+      },
       null,
       0,
     );
@@ -215,7 +222,12 @@ describe('toSubmissionDto', () => {
       submission,
       {
         ...task,
-        cohort: { status: 'active', endDate: new Date('2020-01-01') },
+        cohort: {
+          id: 3,
+          name: 'Cohort 1',
+          status: 'active',
+          endDate: new Date('2020-01-01'),
+        },
       },
       null,
       0,
@@ -228,6 +240,7 @@ describe('toSubmissionDto', () => {
     const dto = toSubmissionDto(submission, null, null, 0);
     expect(dto.task).toBeNull();
     expect(dto.user).toBeNull();
+    expect(dto.cohort).toBeNull();
   });
 });
 

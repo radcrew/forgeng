@@ -6,10 +6,18 @@ import { Clock } from "lucide-react";
 
 import { ClickableCard, LoadingState } from "@components/common";
 import { Button } from "@components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import { EmptyState, PageContainer, PageHeader } from "@components/shared";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { SUBMISSION_STATUS_FILTER_TABS } from "@constants/submissions";
+import { useCohorts } from "@features/cohorts";
 import {
   ReviewSheet,
   SubmissionStatusBadge,
@@ -21,8 +29,11 @@ const Page = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] =
     useState<SubmissionStatusFilter>("submitted");
+  const [cohortFilter, setCohortFilter] = useState("all");
+  const { data: cohorts = [] } = useCohorts();
   const { data: submissions = [], isLoading, refetch } = useSubmissions({
     status: statusFilter,
+    cohortId: cohortFilter === "all" ? undefined : Number(cohortFilter),
   });
   const selected = submissions.find((s) => s.id === selectedId);
 
@@ -33,18 +44,33 @@ const Page = () => {
         description="Review student submissions and leave feedback."
       />
 
-      <Tabs
-        value={statusFilter}
-        onValueChange={(v) => setStatusFilter(v as SubmissionStatusFilter)}
-      >
-        <TabsList>
-          {SUBMISSION_STATUS_FILTER_TABS.map(({ value, label }) => (
-            <TabsTrigger key={value} value={value}>
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Tabs
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as SubmissionStatusFilter)}
+        >
+          <TabsList>
+            {SUBMISSION_STATUS_FILTER_TABS.map(({ value, label }) => (
+              <TabsTrigger key={value} value={value}>
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <Select value={cohortFilter} onValueChange={setCohortFilter}>
+          <SelectTrigger className="sm:w-48" aria-label="Filter by cohort">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All cohorts</SelectItem>
+            {cohorts.map((c) => (
+              <SelectItem key={c.id} value={c.id.toString()}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {isLoading ? (
         <LoadingState message="Loading submissions…" />
@@ -61,8 +87,9 @@ const Page = () => {
                 <p className="font-semibold truncate">
                   {sub.task?.title ?? "Unknown Task"}
                 </p>
-                <p className="text-sm text-muted-foreground mt-0.5">
+                <p className="text-sm text-muted-foreground mt-0.5 truncate">
                   {sub.user?.name ?? sub.user?.email}
+                  {sub.cohort && ` · ${sub.cohort.name}`}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                   <Clock className="h-3 w-3" />

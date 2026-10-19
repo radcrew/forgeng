@@ -200,6 +200,8 @@ export interface SubmissionDto {
    * cohort, which may be a different one, or none.
    */
   cohortEnded: boolean;
+  /** The cohort of the task, so a reviewer can tell cohorts apart. */
+  cohort: { id: number; name: string } | null;
   lastSubmittedAt: string;
   createdAt: string;
 }
@@ -208,7 +210,11 @@ export function toSubmissionDto(
   sub: Submission,
   // The cohort is required, so every caller loads it and cohortEnded is
   // never a guess.
-  task: (Task & { cohort: Pick<Cohort, 'status' | 'endDate'> }) | null,
+  task:
+    | (Task & {
+        cohort: Pick<Cohort, 'id' | 'name' | 'status' | 'endDate'>;
+      })
+    | null,
   user: User | null,
   feedbackCount: number,
 ): SubmissionDto {
@@ -223,6 +229,7 @@ export function toSubmissionDto(
     user: user ? toUserDto(user) : null,
     feedbackCount,
     cohortEnded: task ? isCohortEnded(task.cohort) : false,
+    cohort: task ? { id: task.cohort.id, name: task.cohort.name } : null,
     lastSubmittedAt: sub.lastSubmittedAt.toISOString(),
     createdAt: sub.createdAt.toISOString(),
   };

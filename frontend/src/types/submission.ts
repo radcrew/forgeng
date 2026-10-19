@@ -14,9 +14,11 @@ export interface Submission {
   repoUrl: string | null;
   status: SubmissionStatus;
   feedbackCount: number;
-  /** The first send or the latest resubmit. */
   /** The task's cohort has ended, so the work can't be resubmitted. */
   cohortEnded: boolean;
+  /** The cohort of the task. */
+  cohort: { id: number; name: string } | null;
+  /** The first send or the latest resubmit. */
   lastSubmittedAt: string;
   createdAt: string;
 }
