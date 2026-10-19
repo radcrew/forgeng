@@ -72,6 +72,14 @@ enum NotificationType {
   submission_received
   application_received
   payment_eligible
+  meeting_scheduled
+  meeting_changed
+  meeting_cancelled
+}
+
+enum MeetingStatus {
+  scheduled
+  cancelled
 }
 
 // -----------------------------------------------------------------------------
@@ -117,8 +125,54 @@ model User {
   notifications  Notification[]
   notificationPreference NotificationPreference?
   payments       Payment[]
+  googleCalendar   GoogleCalendarConnection?
+  meetingsHosted   Meeting[] @relation("MeetingHost")
+  meetingsAttended Meeting[] @relation("MeetingAttendee")
 
   @@map("users")
+}
+
+// An admin's link to their Google Calendar, so Forgeng can add meetings to
+// it. The refresh token is encrypted, because it must be read back to call
+// Google, so a hash is not enough.
+model GoogleCalendarConnection {
+  userId                Int       @id @map("user_id")
+  // The Google account that was connected. It can differ from the Forgeng
+  // email.
+  googleEmail           String    @map("google_email")
+  refreshTokenEncrypted String    @map("refresh_token_encrypted")
+  connectedAt           DateTime  @default(now()) @map("connected_at") @db.Timestamptz
+  // Set when Google refuses the token, for example after the admin removed
+  // Forgeng's access. The admin must connect again.
+  brokenAt              DateTime? @map("broken_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_calendar_connections")
+}
+
+// A meeting an admin (the host) scheduled with a student or applicant (the
+// attendee). The event itself lives in the host's Google Calendar.
+model Meeting {
+  id            Int           @id @default(autoincrement())
+  hostId        Int           @map("host_id")
+  attendeeId    Int           @map("attendee_id")
+  title         String        @db.VarChar(200)
+  note          String?
+  startsAt      DateTime      @map("starts_at") @db.Timestamptz
+  endsAt        DateTime      @map("ends_at") @db.Timestamptz
+  googleEventId String?       @map("google_event_id")
+  meetUrl       String?       @map("meet_url") @db.VarChar(500)
+  status        MeetingStatus @default(scheduled)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  host     User @relation("MeetingHost", fields: [hostId], references: [id], onDelete: Cascade)
+  attendee User @relation("MeetingAttendee", fields: [attendeeId], references: [id], onDelete: Cascade)
+
+  @@index([hostId, startsAt])
+  @@index([attendeeId, startsAt])
+  @@map("meetings")
 }
 
 model AuthIdentity {
