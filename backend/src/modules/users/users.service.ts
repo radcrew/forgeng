@@ -227,11 +227,15 @@ export class UsersService {
         });
       }
       // An applicant isn't in any cohort, so moving someone back to
-      // applicant takes them out of their cohorts too. Their application
-      // stays as it is, even when it was accepted: decisions are final, and
-      // this changes the role, not the review.
+      // applicant takes them out of their cohorts too. An accepted
+      // application goes back to pending: kept as accepted, it told them to
+      // open a student portal they can no longer enter. A rejected one stays.
       if (roleChanged && dto.role === 'applicant') {
         await tx.enrollment.deleteMany({ where: { userId: id } });
+        await tx.application.updateMany({
+          where: { userId: id, status: 'accepted' },
+          data: { status: 'pending' },
+        });
       }
       // Making an applicant a student accepts their application if it was
       // still waiting. Decided applications stay as they are: decisions are

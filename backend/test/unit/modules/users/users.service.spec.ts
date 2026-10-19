@@ -374,7 +374,20 @@ describe('UsersService', () => {
       expect(prisma.enrollment.deleteMany).toHaveBeenCalledWith({
         where: { userId: 1 },
       });
-      expect(prisma.application.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('sets an accepted application back to pending for a new applicant', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'applicant' }));
+
+      await service.updateRole(1, { role: 'applicant' } as never);
+
+      // Only an accepted application changes; a rejected one stays.
+      expect(prisma.application.updateMany).toHaveBeenCalledWith({
+        where: { userId: 1, status: 'accepted' },
+        data: { status: 'pending' },
+      });
+      expect(mail.send).not.toHaveBeenCalled();
     });
 
     it('accepts a pending application when an applicant becomes a student', async () => {

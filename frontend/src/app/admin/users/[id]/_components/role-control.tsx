@@ -107,9 +107,12 @@ export const RoleControl = ({
           </p>
           {/* The server does these too; say so before the admin confirms. */}
           {nextRole === "applicant" && (
-            <p className="font-medium text-destructive">
-              They will also be removed from all their cohorts.
-            </p>
+            <>
+              <p className="font-medium text-destructive">
+                They will also be removed from all their cohorts.
+              </p>
+              <p>If their application was accepted, it will be pending again.</p>
+            </>
           )}
           {role === "applicant" && nextRole === "student" && (
             <p>If their application is still pending, it will be accepted.</p>

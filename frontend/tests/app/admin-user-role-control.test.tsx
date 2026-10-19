@@ -127,6 +127,11 @@ describe("RoleControl", () => {
     expect(
       screen.getByText("They will also be removed from all their cohorts."),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "If their application was accepted, it will be pending again.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("says a pending application is accepted when an applicant becomes a student", async () => {
