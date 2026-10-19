@@ -283,5 +283,17 @@ describe('MailService', () => {
         where: { createdAt: { lt: new Date('2026-10-01T06:00:00.000Z') } },
       });
     });
+
+    it('deletes old emails even when the sends never finish', async () => {
+      prisma.emailOutbox.findMany.mockResolvedValue([row(1)]);
+      // A send that never ends, as when Vercel stops the function.
+      transport.sendMail.mockReturnValue(new Promise(() => undefined));
+
+      void service.retryFailed();
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(prisma.emailOutbox.deleteMany).toHaveBeenCalledTimes(1);
+      expect(transport.sendMail).toHaveBeenCalledTimes(1);
+    });
   });
 });

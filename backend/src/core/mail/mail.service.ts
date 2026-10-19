@@ -126,11 +126,16 @@ export class MailService implements OnModuleDestroy {
   }
 
   /**
-   * Sends the outbox emails that failed again, and deletes old ones. Vercel
-   * Cron calls this through the retry route.
+   * Deletes old outbox emails, then sends the failed ones again. Vercel Cron
+   * calls this through the retry route.
    */
   async retryFailed(): Promise<{ retried: number; sent: number }> {
     const now = Date.now();
+    // First, so it happens even when the sends below are cut off at Vercel's
+    // time limit. Otherwise old addresses could stay past 30 days.
+    await this.prisma.emailOutbox.deleteMany({
+      where: { createdAt: { lt: new Date(now - KEEP_MS) } },
+    });
     const rows = await this.prisma.emailOutbox.findMany({
       where: {
         status: 'failed',
@@ -168,9 +173,6 @@ export class MailService implements OnModuleDestroy {
       }
     };
     await Promise.all(Array.from({ length: MAX_CONNECTIONS }, worker));
-    await this.prisma.emailOutbox.deleteMany({
-      where: { createdAt: { lt: new Date(now - KEEP_MS) } },
-    });
     return { retried: results.length, sent: results.filter(Boolean).length };
   }
 
