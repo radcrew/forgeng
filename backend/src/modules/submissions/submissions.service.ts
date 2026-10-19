@@ -11,21 +11,14 @@ import type { Cohort, Prisma, Submission, Task, User } from '@prisma/client';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { PrismaService } from '../../core/database/prisma.service';
 import { toSubmissionDto, type SubmissionDto } from '../../common/mappers';
-import { isCalendarDayOver } from '../../common/utils/date';
+import { isCohortEnded } from '../../common/utils/date';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { ListSubmissionsQuery } from './dto/list-submissions.query';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
 
-/**
- * A cohort stops taking work once an admin marks it completed or its end
- * date is over everywhere on Earth, so no student loses part of the last day.
- */
 function assertCohortOpen(cohort: Pick<Cohort, 'status' | 'endDate'>): void {
-  const ended =
-    cohort.status === 'completed' ||
-    (cohort.endDate !== null && isCalendarDayOver(cohort.endDate));
-  if (ended) {
+  if (isCohortEnded(cohort)) {
     throw new ForbiddenException(
       'This cohort has ended, so it no longer accepts submissions.',
     );
@@ -49,6 +42,8 @@ export class SubmissionsService {
 
     if (user.role === 'student') {
       where.userId = user.id;
+      // A student in several cohorts sees the one they selected.
+      if (query.cohortId) where.task = { cohortId: query.cohortId };
     } else {
       if (query.taskId) where.taskId = query.taskId;
       if (query.status) where.status = query.status;
@@ -57,8 +52,11 @@ export class SubmissionsService {
 
     const subs = await this.prisma.submission.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
-      include: { task: true, user: true },
+      // Latest send first, so resubmitted work moves back to the top of the
+      // review queue instead of staying where it was first sent.
+      orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
+      // The cohort tells the page whether each submission can be resubmitted.
+      include: { task: { include: { cohort: true } }, user: true },
     });
 
     return Promise.all(subs.map((s) => this.serialize(s, s.task, s.user)));
@@ -67,7 +65,7 @@ export class SubmissionsService {
   async findOne(id: number, user: AuthUser): Promise<SubmissionDto> {
     const sub = await this.prisma.submission.findUnique({
       where: { id },
-      include: { task: true, user: true },
+      include: { task: { include: { cohort: true } }, user: true },
     });
     if (!sub) throw new NotFoundException('Submission not found.');
     if (user.role === 'student' && sub.userId !== user.id) {
@@ -116,6 +114,9 @@ export class SubmissionsService {
       );
     }
 
+    // One timestamp for both dates, so they match exactly until the student
+    // resubmits. The page shows "resubmitted" whenever they differ.
+    const now = new Date();
     const created = await this.prisma.submission.create({
       data: {
         taskId: dto.taskId,
@@ -123,6 +124,8 @@ export class SubmissionsService {
         content: dto.content,
         repoUrl: dto.repoUrl,
         status: 'submitted',
+        createdAt: now,
+        lastSubmittedAt: now,
       },
     });
     await this.notifyAdminsOfSubmission(user, task.title);
@@ -154,13 +157,19 @@ export class SubmissionsService {
       );
     }
 
-    const content = dto.content ?? sub.content;
-    const repoUrl = dto.repoUrl ?? sub.repoUrl;
+    // null removes a field; leaving it out keeps the old value.
+    const content = dto.content === undefined ? sub.content : dto.content;
+    const repoUrl = dto.repoUrl === undefined ? sub.repoUrl : dto.repoUrl;
     this.assertHasWork(content, repoUrl);
 
     const updated = await this.prisma.submission.update({
       where: { id },
-      data: { content, repoUrl, status: 'submitted' },
+      data: {
+        content,
+        repoUrl,
+        status: 'submitted',
+        lastSubmittedAt: new Date(),
+      },
     });
     // A resubmission re-enters the review queue, so admins should hear about it.
     await this.notifyAdminsOfSubmission(user, sub.task?.title ?? 'a task');
@@ -197,7 +206,7 @@ export class SubmissionsService {
 
   private async serialize(
     sub: Submission,
-    task: Task | null,
+    task: (Task & { cohort: Cohort }) | null,
     user: User | null,
   ): Promise<SubmissionDto> {
     const feedbackCount = await this.prisma.feedback.count({

@@ -16,8 +16,10 @@ import {
 import { Button } from "@components/ui/button";
 import { Separator } from "@components/ui/separator";
 import { Textarea } from "@components/ui/textarea";
+import { FEEDBACK_MAX_LENGTH } from "@constants/submissions";
 import { ApiError } from "@lib/api-client";
 import type { FeedbackVerdict, Submission } from "@types";
+import { cn } from "@utils";
 
 import { createFeedback } from "../api";
 import { useSubmissionFeedback } from "../hooks";
@@ -42,9 +44,12 @@ export const ReviewSheet = ({
   const [feedbackContent, setFeedbackContent] = useState("");
   const [verdict, setVerdict] = useState<FeedbackVerdict>("approved");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // The server trims the feedback, so count it the same way.
+  const feedbackLength = feedbackContent.trim().length;
+  const tooLong = feedbackLength > FEEDBACK_MAX_LENGTH;
 
   const handleSubmitFeedback = async () => {
-    if (!feedbackContent.trim()) return;
+    if (!feedbackContent.trim() || tooLong) return;
     setIsSubmitting(true);
     try {
       await createFeedback(submission.id, {
@@ -121,11 +126,23 @@ export const ReviewSheet = ({
               rows={5}
               value={feedbackContent}
               onChange={(e) => setFeedbackContent(e.target.value)}
+              aria-describedby="feedback-count"
+              aria-invalid={tooLong}
             />
+            <p
+              id="feedback-count"
+              className={cn(
+                "text-right text-xs",
+                tooLong ? "text-destructive" : "text-muted-foreground",
+              )}
+            >
+              {feedbackLength.toLocaleString("en-US")} /{" "}
+              {FEEDBACK_MAX_LENGTH.toLocaleString("en-US")} characters
+            </p>
           </FormField>
           <Button
             onClick={handleSubmitFeedback}
-            disabled={!feedbackContent.trim() || isSubmitting}
+            disabled={!feedbackContent.trim() || tooLong || isSubmitting}
             className="w-full"
             variant={verdict === "needs_work" ? "destructive" : "default"}
           >

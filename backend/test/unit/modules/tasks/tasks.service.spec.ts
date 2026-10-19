@@ -1,5 +1,5 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import type { Task } from '@prisma/client';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import { Prisma, type Task } from '@prisma/client';
 import type { AuthUser } from '@core/auth/auth.types';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
@@ -16,6 +16,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     type: 'project',
     status: 'published',
     dueDate: null,
+    publishedAt: null,
     createdAt: DATE,
     ...overrides,
   } as Task;
@@ -32,10 +33,12 @@ describe('TasksService', () => {
       findUnique: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
       delete: jest.Mock;
     };
     enrollment: { findMany: jest.Mock; findUnique: jest.Mock };
     submission: { count: jest.Mock };
+    $transaction: jest.Mock;
   };
   let notifications: { notifyTaskPublished: jest.Mock };
 
@@ -46,10 +49,16 @@ describe('TasksService', () => {
         findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         delete: jest.fn(),
       },
       enrollment: { findMany: jest.fn(), findUnique: jest.fn() },
       submission: { count: jest.fn().mockResolvedValue(0) },
+      // The service passes a function that runs on the transaction client.
+      // Here that client is this same fake.
+      $transaction: jest.fn((fn: (client: unknown) => Promise<unknown>) =>
+        fn(prisma),
+      ),
     };
     notifications = {
       notifyTaskPublished: jest.fn().mockResolvedValue(undefined),
@@ -172,6 +181,19 @@ describe('TasksService', () => {
   });
 
   describe('create', () => {
+    it('passes the database error for a missing cohort on to the 404 filter', async () => {
+      const missingCohort = new Prisma.PrismaClientKnownRequestError(
+        'Foreign key constraint violated',
+        { code: 'P2003', clientVersion: 'test' },
+      );
+      prisma.task.create.mockRejectedValue(missingCohort);
+
+      await expect(
+        service.create({ cohortId: 99, title: 'x', type: 'project' } as never),
+      ).rejects.toBe(missingCohort);
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
+    });
+
     it('defaults a new task to draft and does not notify', async () => {
       prisma.task.create.mockResolvedValue(makeTask({ status: 'draft' }));
 
@@ -202,6 +224,30 @@ describe('TasksService', () => {
       } as never);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+      const data = (
+        prisma.task.create.mock.calls[0] as [{ data: { publishedAt: unknown } }]
+      )[0].data;
+      expect(data.publishedAt).toBeInstanceOf(Date);
+    });
+
+    it('still creates a published task when the notice fails', async () => {
+      prisma.task.create.mockResolvedValue(makeTask({ status: 'published' }));
+      notifications.notifyTaskPublished.mockRejectedValue(new Error('db blip'));
+      const logged = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+
+      const dto = await service.create({
+        cohortId: 3,
+        title: 'x',
+        type: 'project',
+        status: 'published',
+        dueDate: '2026-11-30T00:00:00.000Z',
+      } as never);
+
+      expect(dto.status).toBe('published');
+      expect(logged).toHaveBeenCalled();
+      logged.mockRestore();
     });
 
     it('refuses to create a published task with no due date', async () => {
@@ -234,6 +280,91 @@ describe('TasksService', () => {
       await service.update(5, { status: 'published' } as never);
 
       expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+      // The mark is set only while it is still empty.
+      expect(prisma.task.updateMany).toHaveBeenCalledWith({
+        where: { id: 5, publishedAt: null },
+        data: { publishedAt: expect.any(Date) as unknown },
+      });
+    });
+
+    it('sends the notice once when two saves publish at the same time', async () => {
+      // Both saves read the task before either marked it.
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', dueDate: new Date('2026-11-30') }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+      prisma.task.updateMany
+        .mockResolvedValueOnce({ count: 1 })
+        .mockResolvedValueOnce({ count: 0 });
+
+      await Promise.all([
+        service.update(5, { status: 'published' } as never),
+        service.update(5, { status: 'published' } as never),
+      ]);
+
+      expect(notifications.notifyTaskPublished).toHaveBeenCalledTimes(1);
+    });
+
+    it('still reports a publish as saved when the notice fails', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', dueDate: new Date('2026-11-30') }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+      notifications.notifyTaskPublished.mockRejectedValue(new Error('db blip'));
+      const logged = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+
+      const dto = await service.update(5, { status: 'published' } as never);
+
+      expect(dto.status).toBe('published');
+      expect(logged).toHaveBeenCalled();
+      logged.mockRestore();
+    });
+
+    it('saves the task and its published mark in one transaction', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'draft', dueDate: new Date('2026-11-30') }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+      // The mark fails, for example because the connection dropped.
+      prisma.task.updateMany.mockRejectedValue(new Error('connection lost'));
+
+      await expect(
+        service.update(5, { status: 'published' } as never),
+      ).rejects.toThrow('connection lost');
+
+      // Both writes ran inside the one transaction, which the database then
+      // rolls back, and nobody was told about the task.
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
+    });
+
+    it('does not notify again when a task is published a second time', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({
+          status: 'draft',
+          publishedAt: DATE,
+          dueDate: new Date('2026-11-30'),
+        }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+
+      await service.update(5, { status: 'published' } as never);
+
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
+      expect(prisma.task.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('does not notify when saving a task that is already published', async () => {
+      prisma.task.findUnique.mockResolvedValue(
+        makeTask({ status: 'published', publishedAt: DATE }),
+      );
+      prisma.task.update.mockResolvedValue(makeTask({ status: 'published' }));
+
+      await service.update(5, { status: 'published', title: 'x' } as never);
+
+      expect(notifications.notifyTaskPublished).not.toHaveBeenCalled();
     });
 
     it('does not re-notify when the task was already published', async () => {

@@ -18,6 +18,7 @@ export {
   filterTasks,
   type TaskListFilter,
 } from "./filter";
+export { sortTasks } from "./sort";
 
 export { TaskFormDialog } from "./components/form-dialog";
 export type { TaskFormDialogProps } from "./components/form-dialog";

@@ -19,12 +19,14 @@ import {
   PageContainer,
   PageHeader,
 } from "@components/shared";
+import { TASK_SORT_OPTIONS, type TaskSort } from "@constants/tasks";
 import { APP_ART } from "@constants/shared/app-illustrations";
 import { useCohorts } from "@features/cohorts";
 import {
   ALL_TASKS_FILTER,
   TASK_STATUS_OPTIONS,
   TaskFormDialog,
+  sortTasks,
   TaskRow,
   filterTasks,
   useTasks,
@@ -40,10 +42,12 @@ const Page = () => {
   const cohortNames = new Map(cohorts.map((c) => [c.id, c.name]));
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<Task | undefined>(undefined);
+  const [sort, setSort] = useState<TaskSort>("recent");
   const [filter, setFilter] = useState<TaskListFilter>(ALL_TASKS_FILTER);
   const [page, setPage] = useState(1);
 
-  const matching = filterTasks(tasks, filter);
+  // Filter, then sort, then split into pages.
+  const matching = sortTasks(filterTasks(tasks, filter), sort);
   const totalPages = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
   // Deleting the last task on the last page must not leave an empty page.
   const currentPage = Math.min(page, totalPages);
@@ -117,6 +121,24 @@ const Page = () => {
             {TASK_STATUS_OPTIONS.map(({ value, label }) => (
               <SelectItem key={value} value={value}>
                 {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={sort}
+          onValueChange={(v) => {
+            setSort(v as TaskSort);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="sm:w-48" aria-label="Sort tasks">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TASK_SORT_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                Sort: {o.label}
               </SelectItem>
             ))}
           </SelectContent>

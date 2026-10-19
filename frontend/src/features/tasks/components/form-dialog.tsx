@@ -23,6 +23,8 @@ import { Textarea } from "@components/ui/textarea";
 import { useCohorts } from "@features/cohorts";
 import { ApiError } from "@lib/api-client";
 import { createTask, updateTask } from "../api";
+import { isNewPastDueDate, todayAsDateInput } from "../due-date";
+import { unpublishHidesWork } from "../unpublish";
 import { validateTask, type TaskErrors } from "../validation";
 import type { Task, TaskStatus, TaskType } from "@types";
 
@@ -49,6 +51,12 @@ export const TaskFormDialog = ({
   const [dueDate, setDueDate] = useState(task?.dueDate?.slice(0, 10) ?? "");
   const [errors, setErrors] = useState<TaskErrors>({});
   const [isSaving, setIsSaving] = useState(false);
+  const hidesSubmittedWork = !!task && unpublishHidesWork(task, status);
+  const dueDateIsPast = isNewPastDueDate(
+    dueDate,
+    task?.dueDate?.slice(0, 10) ?? "",
+    todayAsDateInput(),
+  );
 
   const handleSave = async () => {
     const found = validateTask({
@@ -68,7 +76,7 @@ export const TaskFormDialog = ({
         title: title.trim(),
         // Send null (not undefined) so clearing the field persists — Prisma
         // treats undefined as "leave unchanged".
-        description: description || null,
+        description: description.trim() || null,
         type,
         status,
         dueDate: dueDate || undefined,
@@ -173,6 +181,15 @@ export const TaskFormDialog = ({
                 ))}
               </SelectContent>
             </Select>
+            {hidesSubmittedWork && (
+              <p role="alert" className="text-xs text-destructive">
+                {task.submissionCount === 1
+                  ? "1 student has"
+                  : `${task.submissionCount} students have`}{" "}
+                already submitted this task. Moving it back to draft hides it
+                from them until you publish it again.
+              </p>
+            )}
           </FormField>
         </FormGrid>
         <FormGrid>
@@ -216,6 +233,12 @@ export const TaskFormDialog = ({
                 setErrors({});
               }}
             />
+            {dueDateIsPast && (
+              <p role="alert" className="text-xs text-destructive">
+                This date has already passed. Students will see the task as
+                overdue.
+              </p>
+            )}
           </FormField>
         </FormGrid>
       </FormBody>

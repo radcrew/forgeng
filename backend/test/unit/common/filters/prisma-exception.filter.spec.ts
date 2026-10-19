@@ -44,6 +44,17 @@ describe('PrismaExceptionFilter', () => {
     );
   });
 
+  it('maps P2003 (link to a missing record) to 404 Not Found', () => {
+    const { host, status, json } = makeHost();
+
+    filter.catch(makeError('P2003'), host as never);
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'A linked record was not found.' }),
+    );
+  });
+
   it('maps an unknown code to 500 with a generic message', () => {
     const { host, status, json } = makeHost();
 

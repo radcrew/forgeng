@@ -60,6 +60,7 @@ function makeSubmission(
     content: 'my work',
     repoUrl: null,
     status: 'submitted',
+    lastSubmittedAt: DATE,
     createdAt: DATE,
     ...overrides,
   } as Submission;
@@ -113,6 +114,31 @@ describe('SubmissionsService', () => {
 
       expect(prisma.submission.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { userId: student.id } }),
+      );
+    });
+
+    it('lists the latest send first, so resubmitted work moves up', async () => {
+      prisma.submission.findMany.mockResolvedValue([]);
+
+      await service.list(admin, {});
+
+      expect(prisma.submission.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: [{ lastSubmittedAt: 'desc' }, { id: 'desc' }],
+        }),
+      );
+    });
+
+    it('shows a student only the cohort they selected', async () => {
+      prisma.submission.findMany.mockResolvedValue([]);
+
+      await service.list(student, { cohortId: 7, status: 'approved' });
+
+      // Students can filter by cohort, but not by other admin filters.
+      expect(prisma.submission.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: student.id, task: { cohortId: 7 } },
+        }),
       );
     });
 
@@ -243,6 +269,22 @@ describe('SubmissionsService', () => {
       expect(notifications.notifySubmissionReceived).toHaveBeenCalledTimes(1);
     });
 
+    it('gives a first send the same created and last-submitted time', async () => {
+      prisma.task.findUnique.mockResolvedValue(makeTask());
+      prisma.enrollment.findUnique.mockResolvedValue({ id: 1 });
+      prisma.submission.create.mockResolvedValue(makeSubmission());
+
+      await service.create({ taskId: 5, content: 'x' }, student);
+
+      const { data } = (
+        prisma.submission.create.mock.calls[0] as [
+          { data: { createdAt: Date; lastSubmittedAt: Date } },
+        ]
+      )[0];
+      expect(data.createdAt).toBeInstanceOf(Date);
+      expect(data.lastSubmittedAt).toBe(data.createdAt);
+    });
+
     it('does not let a notification failure break the submission', async () => {
       prisma.task.findUnique.mockResolvedValue(makeTask());
       prisma.enrollment.findUnique.mockResolvedValue({ id: 1 });
@@ -293,6 +335,45 @@ describe('SubmissionsService', () => {
       expect(prisma.submission.update).not.toHaveBeenCalled();
     });
 
+    it('removes the repo link when it is sent as null', async () => {
+      prisma.submission.findUnique.mockResolvedValue(
+        makeSubmission({
+          status: 'needs_work',
+          content: 'my work',
+          repoUrl: 'https://github.com/me/old',
+          task: makeTask(),
+          user: makeUser(),
+        }),
+      );
+      prisma.submission.update.mockResolvedValue(makeSubmission());
+
+      await service.resubmit(10, { repoUrl: null }, student);
+
+      const data = (
+        prisma.submission.update.mock.calls[0] as [
+          { data: { content: unknown; repoUrl: unknown } },
+        ]
+      )[0].data;
+      expect(data.repoUrl).toBeNull();
+      // Left out, so the write-up stays.
+      expect(data.content).toBe('my work');
+    });
+
+    it('refuses to remove both the write-up and the repo link', async () => {
+      prisma.submission.findUnique.mockResolvedValue(
+        makeSubmission({
+          status: 'needs_work',
+          content: 'my work',
+          repoUrl: 'https://github.com/me/old',
+        }),
+      );
+
+      await expect(
+        service.resubmit(10, { content: null, repoUrl: null }, student),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.submission.update).not.toHaveBeenCalled();
+    });
+
     it('forbids resubmitting once the cohort has ended', async () => {
       prisma.submission.findUnique.mockResolvedValue(
         makeSubmission({
@@ -321,9 +402,12 @@ describe('SubmissionsService', () => {
       await service.resubmit(10, { content: 'redone' }, student);
 
       const data = (
-        prisma.submission.update.mock.calls[0] as [{ data: { status: string } }]
+        prisma.submission.update.mock.calls[0] as [
+          { data: { status: string; lastSubmittedAt: unknown } },
+        ]
       )[0].data;
       expect(data.status).toBe('submitted');
+      expect(data.lastSubmittedAt).toBeInstanceOf(Date);
       expect(notifications.notifySubmissionReceived).toHaveBeenCalledTimes(1);
     });
   });

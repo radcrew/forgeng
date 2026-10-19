@@ -77,6 +77,50 @@ describe("useAsyncResource", () => {
     await waitFor(() => expect(result.current.data).toBe("item-2"));
   });
 
+  it("never shows the old data as current after a dependency changes", async () => {
+    const fetcher = (id: number) => Promise.resolve(`item-${id}`);
+    const renders: { id: number; data?: string; isLoading: boolean }[] = [];
+
+    const { result, rerender } = renderHook(
+      ({ id }) => {
+        const state = useAsyncResource(() => fetcher(id), [id]);
+        renders.push({ id, data: state.data, isLoading: state.isLoading });
+        return state;
+      },
+      { initialProps: { id: 1 } },
+    );
+    await waitFor(() => expect(result.current.data).toBe("item-1"));
+
+    rerender({ id: 2 });
+    await waitFor(() => expect(result.current.data).toBe("item-2"));
+
+    // Item 1's data may stay on screen while item 2 loads, but never as if
+    // it were item 2's finished result.
+    const stale = renders.filter(
+      (r) => r.id === 2 && r.data === "item-1" && !r.isLoading,
+    );
+    expect(stale).toEqual([]);
+  });
+
+  it("waits while enabled is false, then loads once it turns true", async () => {
+    const fetcher = vi.fn<() => Promise<number>>().mockResolvedValue(7);
+
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useAsyncResource(fetcher, [], { enabled }),
+      { initialProps: { enabled: false } },
+    );
+
+    expect(fetcher).not.toHaveBeenCalled();
+    // Waiting isn't loading.
+    expect(result.current.isLoading).toBe(false);
+
+    rerender({ enabled: true });
+
+    expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.data).toBe(7));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it("ignores a resolution after unmount (no state update)", async () => {
     let resolve!: (value: number) => void;
     const fetcher = () =>

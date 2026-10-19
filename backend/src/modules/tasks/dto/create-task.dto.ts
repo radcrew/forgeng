@@ -24,10 +24,14 @@ export class CreateTaskDto {
   @MaxLength(200)
   title!: string;
 
+  // Spaces alone count as no description.
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() || null : value,
+  )
   @IsOptional()
   @IsString()
   @MaxLength(8000)
-  description?: string;
+  description?: string | null;
 
   @IsEnum(TaskType)
   type!: TaskType;

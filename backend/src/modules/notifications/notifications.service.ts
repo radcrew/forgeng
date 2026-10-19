@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Verdict } from '@prisma/client';
+import { waitUntil } from '@vercel/functions';
 
 import type { AppConfiguration } from '../../config';
 import type { AuthUser } from '../../core/auth/auth.types';
@@ -194,7 +195,13 @@ export class NotificationsService {
     const recipients = enrollments
       .filter((e) => prefsFor(e.userId).taskEmail)
       .map((e) => e.user.email);
-    await Promise.all(recipients.map((to) => this.sendEmail(to, email)));
+    // Emails go out after the response, so publishing doesn't wait for every
+    // student's email. The backend runs on Vercel, where waitUntil keeps the
+    // function alive until they finish. On a long-running server (local dev,
+    // the Render blueprint) waitUntil does nothing and the sends still run in
+    // the background, but any still in flight are lost if the process stops.
+    // sendEmail logs its own failures, so nothing here can reject.
+    waitUntil(Promise.all(recipients.map((to) => this.sendEmail(to, email))));
   }
 
   /**

@@ -1,6 +1,8 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { AuthUser } from '../../core/auth/auth.types';
@@ -11,6 +13,8 @@ import { CreateFeedbackDto } from './dto/create-feedback.dto';
 
 @Injectable()
 export class FeedbackService {
+  private readonly logger = new Logger(FeedbackService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
@@ -111,34 +115,58 @@ export class FeedbackService {
     });
     if (!submission) throw new NotFoundException('Submission not found.');
 
-    const [, created] = await this.prisma.$transaction([
-      this.prisma.submission.update({
-        where: { id: submissionId },
+    const created = await this.prisma.$transaction(async (tx) => {
+      // Only a submission that is waiting for review can be reviewed. The
+      // status check and the update are one statement, so when two admins
+      // review at the same time, only the first one wins.
+      const { count } = await tx.submission.updateMany({
+        where: { id: submissionId, status: 'submitted' },
         data: {
           status: dto.verdict === 'approved' ? 'approved' : 'needs_work',
         },
-      }),
-      this.prisma.feedback.create({
+      });
+      if (count === 0) {
+        throw new ConflictException(
+          'This submission was already reviewed. Refresh the page to see the review.',
+        );
+      }
+      return tx.feedback.create({
         data: {
           submissionId,
           reviewerId: reviewer.id,
           content: dto.content,
           verdict: dto.verdict,
         },
-      }),
-    ]);
-
-    await this.notifications.notifyFeedbackReceived({
-      userId: submission.userId,
-      submissionId,
-      verdict: dto.verdict,
+      });
     });
 
-    if (dto.verdict === 'approved') {
-      await this.checkAndNotifyPaymentEligible(
-        submission.userId,
-        submission.taskId,
+    // The review is saved by now. A failed message must not report the
+    // save as failed, or the reviewer tries again and gets a conflict.
+    try {
+      await this.notifications.notifyFeedbackReceived({
+        userId: submission.userId,
+        submissionId,
+        verdict: dto.verdict,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Failed to notify the student of feedback',
+        err instanceof Error ? err.stack : String(err),
       );
+    }
+
+    if (dto.verdict === 'approved') {
+      try {
+        await this.checkAndNotifyPaymentEligible(
+          submission.userId,
+          submission.taskId,
+        );
+      } catch (err) {
+        this.logger.error(
+          'Failed to check payment eligibility',
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
     }
 
     return toFeedbackDto(created, reviewer);
