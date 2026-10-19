@@ -124,6 +124,13 @@ backend runs:
   refuses every call without it.
 - **On Render there is no retry.** Vercel Cron runs only on Vercel, so on
   Render failed emails stay in the outbox and are not sent again.
+- **Vercel preview deployments need `SMTP_HOST` too.** Vercel sets
+  `NODE_ENV=production` on previews as well, so a preview backend without
+  `SMTP_HOST` fails at startup, even though its build passes. Set the SMTP
+  settings for the **Preview** environment in the Vercel backend project.
+  Use a sandbox inbox there, such as Mailtrap's, so testing a preview never
+  emails real people. Vercel Cron only runs on the production deployment, so
+  previews don't retry failed emails.
 
 ## 3. Auth cookies require a shared domain
 
