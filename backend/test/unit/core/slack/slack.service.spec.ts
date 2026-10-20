@@ -1,6 +1,11 @@
 import { Logger } from '@nestjs/common';
 import { waitUntil } from '@vercel/functions';
-import { escapeSlackText, SlackService } from '@core/slack';
+import {
+  escapeSlackText,
+  parseSubmissionKey,
+  SlackService,
+  submissionKey,
+} from '@core/slack';
 
 jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
 
@@ -336,4 +341,20 @@ describe('escapeSlackText', () => {
       'a &amp; b &lt;@U123&gt; c',
     );
   });
+});
+
+describe('submissionKey', () => {
+  it('names a submission and when it was sent, and reads back', () => {
+    const key = submissionKey(9, new Date(1000));
+
+    expect(key).toBe('9@1000');
+    expect(parseSubmissionKey(key)).toEqual({ id: 9, sentAt: 1000 });
+  });
+
+  it.each(['9', 'abc', '9@', '@1000', '9@1000@1'])(
+    'reads %p as no key',
+    (key) => {
+      expect(parseSubmissionKey(key)).toBeNull();
+    },
+  );
 });

@@ -188,6 +188,7 @@ describe('NotificationsService', () => {
 
       await service.notifySubmissionReceived({
         submissionId: 9,
+        submittedAt: new Date(1000),
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -202,6 +203,7 @@ describe('NotificationsService', () => {
       prisma.user.findMany.mockResolvedValue([]);
       await service.notifySubmissionReceived({
         submissionId: 9,
+        submittedAt: new Date(1000),
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -281,6 +283,7 @@ describe('NotificationsService', () => {
 
       await service.notifySubmissionReceived({
         submissionId: 9,
+        submittedAt: new Date(1000),
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -292,7 +295,7 @@ describe('NotificationsService', () => {
         action: {
           label: 'Approve',
           actionId: 'approve_submission',
-          value: '9',
+          value: '9@1000',
         },
       });
     });
@@ -407,6 +410,7 @@ describe('NotificationsService', () => {
       await expect(
         service.notifySubmissionReceived({
           submissionId: 9,
+          submittedAt: new Date(1000),
           studentName: 'Ada',
           taskTitle: 'CLI',
         }),

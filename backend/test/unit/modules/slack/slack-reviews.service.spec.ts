@@ -9,6 +9,9 @@ jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
 
 const SUBMISSION = {
   status: 'submitted',
+  lastSubmittedAt: new Date(1000),
+  content: 'I used commander for the flags.',
+  repoUrl: 'https://github.com/ada/cli',
   task: { title: 'Build a CLI' },
   user: { name: 'Ada', email: 'ada@example.com' },
 };
@@ -39,11 +42,11 @@ describe('SlackReviewsService', () => {
     );
   });
 
-  const open = (submissionId = '9') =>
+  const open = (submissionKey = '9@1000') =>
     service.openApproveForm({
       triggerId: 'trigger-1',
       slackUserId: 'U0MENTOR',
-      submissionId,
+      submissionKey,
     });
 
   /** The view handed to Slack. */
@@ -60,7 +63,7 @@ describe('SlackReviewsService', () => {
     expect(opened()).toMatchObject({
       type: 'modal',
       callback_id: 'approve_submission',
-      private_metadata: '9',
+      private_metadata: '9@1000',
       submit: { text: 'Approve' },
     });
     expect(JSON.stringify(opened())).toContain('Ada submitted');
@@ -102,11 +105,47 @@ describe('SlackReviewsService', () => {
     expect(JSON.stringify(opened())).toContain('already reviewed');
   });
 
-  it('does not look up a submission id that is not a number', async () => {
-    await open('abc');
+  it.each(['abc', '9'])(
+    'does not look up a submission for the key %p',
+    async (key) => {
+      await open(key);
 
-    expect(prisma.submission.findUnique).not.toHaveBeenCalled();
-    expect(JSON.stringify(opened())).toContain('already reviewed');
+      expect(prisma.submission.findUnique).not.toHaveBeenCalled();
+      expect(JSON.stringify(opened())).toContain('already reviewed');
+    },
+  );
+
+  it('shows the student work in the form', async () => {
+    await open();
+
+    const form = JSON.stringify(opened());
+    expect(form).toContain('https://github.com/ada/cli');
+    expect(form).toContain('I used commander for the flags.');
+  });
+
+  it('shortens a long note in the form', async () => {
+    prisma.submission.findUnique.mockResolvedValue({
+      ...SUBMISSION,
+      content: 'a'.repeat(1500),
+    });
+
+    await open();
+
+    const form = JSON.stringify(opened());
+    expect(form).not.toContain('a'.repeat(1001));
+    expect(form).toContain('open Forgeng to read the rest');
+  });
+
+  it('refuses a button from before the student sent new work', async () => {
+    prisma.submission.findUnique.mockResolvedValue({
+      ...SUBMISSION,
+      lastSubmittedAt: new Date(2000),
+    });
+
+    await open('9@1000');
+
+    expect(opened()).not.toHaveProperty('submit');
+    expect(JSON.stringify(opened())).toContain('sent new work');
   });
 
   describe('approveFromForm', () => {
@@ -115,7 +154,7 @@ describe('SlackReviewsService', () => {
     const submit = (text: string | null = '  Great work on the CLI!  ') =>
       service.approveFromForm({
         slackUserId: 'U0MENTOR',
-        submissionId: '9',
+        submissionKey: '9@1000',
         values: { feedback: { feedback_input: { value: text } } },
       });
 
@@ -197,6 +236,16 @@ describe('SlackReviewsService', () => {
         expect(waitUntil).not.toHaveBeenCalled();
       },
     );
+
+    it('keeps the form open when the student sent new work meanwhile', async () => {
+      prisma.submission.findUnique.mockResolvedValue({
+        ...SUBMISSION,
+        lastSubmittedAt: new Date(2000),
+      });
+
+      expect(errorOf(await submit())).toMatch(/sent new work/);
+      expect(waitUntil).not.toHaveBeenCalled();
+    });
 
     it.each([
       [

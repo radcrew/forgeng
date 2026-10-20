@@ -7,7 +7,7 @@ import {
 import { waitUntil } from '@vercel/functions';
 
 import { PrismaService } from '../../core/database/prisma.service';
-import { SlackService } from '../../core/slack';
+import { parseSubmissionKey, SlackService } from '../../core/slack';
 import { FeedbackService } from '../feedback/feedback.service';
 import {
   FEEDBACK_BLOCK,
@@ -52,7 +52,7 @@ export class SlackReviewsService {
    */
   async approveFromForm(params: {
     slackUserId: string;
-    submissionId: string;
+    submissionKey: string;
     /** The form's values, as Slack sends them. */
     values: Record<string, Record<string, { value?: string | null }>>;
   }): Promise<FormAnswer> {
@@ -72,22 +72,27 @@ export class SlackReviewsService {
       return formError(`Keep the feedback under ${FEEDBACK_MAX} characters.`);
     }
 
-    const submissionId = Number(params.submissionId);
-    const submission = Number.isInteger(submissionId)
+    const sent = parseSubmissionKey(params.submissionKey);
+    const submission = sent
       ? await this.prisma.submission.findUnique({
-          where: { id: submissionId },
-          select: { status: true },
+          where: { id: sent.id },
+          select: { status: true, lastSubmittedAt: true },
         })
       : null;
-    if (!submission) return formError('This submission no longer exists.');
+    if (!sent || !submission) {
+      return formError('This submission no longer exists.');
+    }
     // For example another mentor approved it while this form was open.
     if (submission.status !== 'submitted') {
       return formError('This submission was already reviewed.');
     }
+    if (submission.lastSubmittedAt.getTime() !== sent.sentAt) {
+      return formError(
+        'The student sent new work after this message. Close this form and use the newest message.',
+      );
+    }
 
-    waitUntil(
-      this.saveApproval(submissionId, mentor, params.slackUserId, content),
-    );
+    waitUntil(this.saveApproval(sent.id, mentor, params.slackUserId, content));
     return undefined;
   }
 
@@ -136,19 +141,16 @@ export class SlackReviewsService {
   async openApproveForm(params: {
     triggerId: string;
     slackUserId: string;
-    submissionId: string;
+    submissionKey: string;
   }): Promise<void> {
     const view = await this.approveView(
       params.slackUserId,
-      params.submissionId,
+      params.submissionKey,
     );
     await this.slack.openView(params.triggerId, view);
   }
 
-  private async approveView(
-    slackUserId: string,
-    rawSubmissionId: string,
-  ): Promise<object> {
+  private async approveView(slackUserId: string, key: string): Promise<object> {
     // Only a Forgeng admin, linked by joining Slack with their Forgeng email.
     const mentor = await this.prisma.user.findUnique({
       where: { slackUserId },
@@ -160,12 +162,15 @@ export class SlackReviewsService {
       );
     }
 
-    const submissionId = Number(rawSubmissionId);
-    const submission = Number.isInteger(submissionId)
+    const sent = parseSubmissionKey(key);
+    const submission = sent
       ? await this.prisma.submission.findUnique({
-          where: { id: submissionId },
+          where: { id: sent.id },
           select: {
             status: true,
+            lastSubmittedAt: true,
+            content: true,
+            repoUrl: true,
             task: { select: { title: true } },
             user: { select: { name: true, email: true } },
           },
@@ -177,11 +182,19 @@ export class SlackReviewsService {
         'This submission was already reviewed, or it no longer exists.',
       );
     }
+    // A button from before the student sent their work again.
+    if (submission.lastSubmittedAt.getTime() !== sent?.sentAt) {
+      return infoView(
+        'The student sent new work after this message. Use the newest message in this channel, so you approve the latest work.',
+      );
+    }
 
     return approveFormView({
-      submissionId,
+      submissionKey: key,
       studentName: submission.user.name ?? submission.user.email,
       taskTitle: submission.task.title,
+      repoUrl: submission.repoUrl,
+      note: submission.content,
     });
   }
 }

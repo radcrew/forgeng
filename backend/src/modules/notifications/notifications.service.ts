@@ -5,7 +5,7 @@ import type { Verdict } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { MailService, type RenderedEmail } from '../../core/mail';
-import { SLACK_ACTIONS, SlackService } from '../../core/slack';
+import { SLACK_ACTIONS, SlackService, submissionKey } from '../../core/slack';
 import {
   toNotificationDto,
   toNotificationPreferenceDto,
@@ -227,6 +227,8 @@ export class NotificationsService {
    */
   async notifySubmissionReceived(params: {
     submissionId: number;
+    /** When the student sent this version, so old Approve buttons can be told apart. */
+    submittedAt: Date;
     studentName: string;
     taskTitle: string;
   }): Promise<void> {
@@ -241,7 +243,7 @@ export class NotificationsService {
       action: {
         label: 'Approve',
         actionId: SLACK_ACTIONS.APPROVE_SUBMISSION,
-        value: String(params.submissionId),
+        value: submissionKey(params.submissionId, params.submittedAt),
       },
     });
     await this.notifyAdmins({

@@ -128,7 +128,7 @@ export class SubmissionsService {
         lastSubmittedAt: now,
       },
     });
-    await this.notifyAdminsOfSubmission(user, task.title, created.id);
+    await this.notifyAdminsOfSubmission(user, task.title, created);
     return this.serialize(created, task, user);
   }
 
@@ -175,7 +175,7 @@ export class SubmissionsService {
     await this.notifyAdminsOfSubmission(
       user,
       sub.task?.title ?? 'a task',
-      updated.id,
+      updated,
     );
     return this.serialize(updated, sub.task, sub.user);
   }
@@ -194,11 +194,12 @@ export class SubmissionsService {
   private async notifyAdminsOfSubmission(
     student: AuthUser,
     taskTitle: string,
-    submissionId: number,
+    submission: Pick<Submission, 'id' | 'lastSubmittedAt'>,
   ): Promise<void> {
     try {
       await this.notifications.notifySubmissionReceived({
-        submissionId,
+        submissionId: submission.id,
+        submittedAt: submission.lastSubmittedAt,
         studentName: student.name ?? student.email,
         taskTitle,
       });

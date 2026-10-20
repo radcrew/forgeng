@@ -19,7 +19,7 @@ const CLICK = {
   type: 'block_actions',
   trigger_id: 'trigger-1',
   user: { id: 'U0MENTOR' },
-  actions: [{ action_id: 'approve_submission', value: '9' }],
+  actions: [{ action_id: 'approve_submission', value: '9@1000' }],
 };
 
 /** Slack's interactions route, with real signed form posts. */
@@ -74,6 +74,7 @@ describe('Slack interactions (e2e)', () => {
     ctx.prisma.user.findUnique.mockResolvedValue({ role: 'admin' });
     ctx.prisma.submission.findUnique.mockResolvedValue({
       status: 'submitted',
+      lastSubmittedAt: new Date(1000),
       task: { title: 'Build a CLI' },
       user: { name: 'Ada', email: 'ada@example.com' },
     });
@@ -84,7 +85,7 @@ describe('Slack interactions (e2e)', () => {
     expect(url).toBe('https://slack.com/api/views.open');
     expect(JSON.parse(init.body)).toMatchObject({
       trigger_id: 'trigger-1',
-      view: { callback_id: 'approve_submission', private_metadata: '9' },
+      view: { callback_id: 'approve_submission', private_metadata: '9@1000' },
     });
   });
 
@@ -105,7 +106,7 @@ describe('Slack interactions (e2e)', () => {
       user: { id: 'U0MENTOR' },
       view: {
         callback_id: 'approve_submission',
-        private_metadata: '9',
+        private_metadata: '9@1000',
         state: {
           values: { feedback: { feedback_input: { value: feedback } } },
         },

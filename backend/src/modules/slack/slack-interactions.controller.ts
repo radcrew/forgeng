@@ -64,7 +64,7 @@ export class SlackInteractionsController {
     ) {
       return this.reviews.approveFromForm({
         slackUserId: interaction.user.id,
-        submissionId: interaction.view.private_metadata ?? '',
+        submissionKey: interaction.view.private_metadata ?? '',
         values: interaction.view.state?.values ?? {},
       });
     }
@@ -83,7 +83,7 @@ export class SlackInteractionsController {
         await this.reviews.openApproveForm({
           triggerId: interaction.trigger_id,
           slackUserId: interaction.user.id,
-          submissionId: action.value,
+          submissionKey: action.value,
         });
       } catch (err) {
         // The mentor can still review in the app with the Review button.

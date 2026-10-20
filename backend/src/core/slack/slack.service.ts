@@ -44,9 +44,29 @@ export interface SlackMessage {
 
 /** The action IDs of Forgeng's Slack buttons and forms. */
 export const SLACK_ACTIONS = {
-  /** The Approve button under a new submission. Its value is the id. */
+  /**
+   * The Approve button under a new submission. Its value is a
+   * `submissionKey`.
+   */
   APPROVE_SUBMISSION: 'approve_submission',
 } as const;
+
+/**
+ * Names one sending of a submission: its id and when the student sent it.
+ * A resubmit keeps the id but changes the time, so a button from an older
+ * Slack message can be told apart from the newest one.
+ */
+export function submissionKey(id: number, sentAt: Date): string {
+  return `${id}@${sentAt.getTime()}`;
+}
+
+/** Reads a `submissionKey`. Null when it isn't one. */
+export function parseSubmissionKey(
+  key: string,
+): { id: number; sentAt: number } | null {
+  const match = /^(\d+)@(\d+)$/.exec(key);
+  return match ? { id: Number(match[1]), sentAt: Number(match[2]) } : null;
+}
 
 /**
  * Escapes the three characters Slack reads as codes. Without this, a name
