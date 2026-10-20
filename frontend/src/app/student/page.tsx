@@ -8,6 +8,7 @@ import {
   StudentView,
   useStudentDashboard,
 } from "@features/dashboard";
+import { JoinSlackCard } from "@features/slack";
 import { useCurrentUser, useSelectedCohort } from "@contexts";
 import { isProfileComplete } from "@utils/user";
 
@@ -78,6 +79,10 @@ const Page = () => {
           <StudentView dashboard={dashboard} />
         </>
       )}
+
+      {/* Also before enrollment: a student waiting for a cohort can already
+          meet the community. */}
+      <JoinSlackCard />
     </PageContainer>
   );
 };

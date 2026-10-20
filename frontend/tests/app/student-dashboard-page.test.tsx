@@ -24,6 +24,12 @@ vi.mock("@features/dashboard", async (importOriginal) => ({
   StudentView: () => <div>Your tasks and progress</div>,
 }));
 
+// Its own tests cover it. Here it only stands in, so the page test makes no
+// network call.
+vi.mock("@features/slack", () => ({
+  JoinSlackCard: () => <div>Join the Forgeng Slack</div>,
+}));
+
 import Page from "../../src/app/student/page";
 
 const withCohort = {
@@ -57,5 +63,15 @@ describe("student dashboard page", () => {
     render(<Page />);
 
     expect(screen.getByText("Finish your profile to get placed.")).toBeInTheDocument();
+  });
+
+  it.each([
+    ["with a cohort", withCohort],
+    ["before a cohort", { cohort: null, cohorts: [] }],
+  ])("invites the student to Slack %s", (_, value) => {
+    dashboard = value;
+    render(<Page />);
+
+    expect(screen.getByText("Join the Forgeng Slack")).toBeInTheDocument();
   });
 });
