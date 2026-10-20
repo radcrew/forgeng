@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '@core/mail';
 import { SlackService } from '@core/slack';
@@ -32,7 +32,11 @@ describe('NotificationsService', () => {
     cohort: { findUnique: jest.Mock };
   };
   let mail: { sendInBackground: jest.Mock };
-  let slack: { postInBackground: jest.Mock; postToMentors: jest.Mock };
+  let slack: {
+    enabled: boolean;
+    postInBackground: jest.Mock;
+    postToMentors: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = {
@@ -60,7 +64,11 @@ describe('NotificationsService', () => {
     // failed send never holds up or fails the notice. Their own tests cover
     // that.
     mail = { sendInBackground: jest.fn() };
-    slack = { postInBackground: jest.fn(), postToMentors: jest.fn() };
+    slack = {
+      enabled: true,
+      postInBackground: jest.fn(),
+      postToMentors: jest.fn(),
+    };
     const config = { get: jest.fn().mockReturnValue('https://app') };
 
     service = new NotificationsService(
@@ -263,6 +271,33 @@ describe('NotificationsService', () => {
         null,
         expect.anything(),
       );
+    });
+
+    it('still tells the students when the channel lookup fails', async () => {
+      const logError = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+      prisma.cohort.findUnique.mockRejectedValue(new Error('db down'));
+      prisma.enrollment.findMany.mockResolvedValue([
+        { userId: 1, user: { email: 'ada@example.com' } },
+      ]);
+
+      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
+
+      expect(slack.postInBackground).not.toHaveBeenCalled();
+      expect(prisma.notification.createMany).toHaveBeenCalledTimes(1);
+      expect(logError).toHaveBeenCalled();
+      logError.mockRestore();
+    });
+
+    it('does not look up the channel when Slack is not set up', async () => {
+      slack.enabled = false;
+      prisma.enrollment.findMany.mockResolvedValue([]);
+
+      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
+
+      expect(prisma.cohort.findUnique).not.toHaveBeenCalled();
+      expect(slack.postInBackground).not.toHaveBeenCalled();
     });
 
     it('tells the mentors about a new application', async () => {

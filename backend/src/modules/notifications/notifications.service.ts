@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Verdict } from '@prisma/client';
 
@@ -24,6 +24,8 @@ import {
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
@@ -165,6 +167,34 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Posts a new task to its cohort's Slack channel. Never throws: a failed
+   * lookup must not skip the students' in-app notices and emails.
+   */
+  private async postTaskToSlack(
+    cohortId: number,
+    title: string,
+    link: string,
+  ): Promise<void> {
+    // Without Slack there is nothing to post, so no lookup either.
+    if (!this.slack.enabled) return;
+    try {
+      const cohort = await this.prisma.cohort.findUnique({
+        where: { id: cohortId },
+        select: { slackChannelId: true },
+      });
+      this.slack.postInBackground(cohort?.slackChannelId ?? null, {
+        text: `New task: ${title}`,
+        link: { label: 'Open task', url: this.absoluteUrl(link) },
+      });
+    } catch (err) {
+      this.logger.error(
+        `Failed to post the new task to the Slack channel of cohort ${cohortId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+  }
+
   /** Notify every enrolled student in a cohort that a new task is published. */
   async notifyTaskPublished(task: {
     id: number;
@@ -175,14 +205,7 @@ export class NotificationsService {
 
     // To the cohort's channel, even before anyone is enrolled: students who
     // join later still see it there.
-    const cohort = await this.prisma.cohort.findUnique({
-      where: { id: task.cohortId },
-      select: { slackChannelId: true },
-    });
-    this.slack.postInBackground(cohort?.slackChannelId ?? null, {
-      text: `New task: ${task.title}`,
-      link: { label: 'Open task', url: this.absoluteUrl(link) },
-    });
+    await this.postTaskToSlack(task.cohortId, task.title, link);
 
     const enrollments = await this.prisma.enrollment.findMany({
       where: { cohortId: task.cohortId },
