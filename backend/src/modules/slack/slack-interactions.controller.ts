@@ -2,6 +2,7 @@ import { Controller, HttpCode, Logger, Post, Req } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 import type { AppConfiguration } from '../../config';
@@ -32,6 +33,10 @@ interface SlackInteraction {
  * Slack posts a form field named `payload` with JSON inside.
  */
 @ApiExcludeController()
+// Slack calls from a few addresses, so the per-address limit would refuse
+// its traffic when many people join or click at once. Every call must be
+// signed by Slack, and unsigned calls are refused cheaply.
+@SkipThrottle()
 @Controller('slack')
 export class SlackInteractionsController {
   private readonly logger = new Logger(SlackInteractionsController.name);

@@ -2,6 +2,7 @@ import { Controller, HttpCode, Logger, Post, Req } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { waitUntil } from '@vercel/functions';
 import type { Request } from 'express';
 
@@ -23,6 +24,10 @@ interface SlackEnvelope {
  * Slack waits only 3 seconds, so slow work runs after the answer.
  */
 @ApiExcludeController()
+// Slack calls from a few addresses, so the per-address limit would refuse
+// its traffic when many people join or click at once. Every call must be
+// signed by Slack, and unsigned calls are refused cheaply.
+@SkipThrottle()
 @Controller('slack')
 export class SlackEventsController {
   private readonly logger = new Logger(SlackEventsController.name);

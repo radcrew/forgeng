@@ -104,4 +104,14 @@ describe('Slack events (e2e)', () => {
       signed({ type: 'url_verification', challenge: 'abc123' }, tenMinutesAgo),
     ).expect(401);
   });
+
+  it("is not slowed by the app's per-address limit (100 a minute)", async () => {
+    // All Slack traffic comes from a few addresses.
+    const statuses = new Set<number>();
+    for (let i = 0; i < 110; i++) {
+      const res = await post(signed({ type: 'event_callback', event: {} }));
+      statuses.add(res.status);
+    }
+    expect([...statuses]).toEqual([200]);
+  });
 });
