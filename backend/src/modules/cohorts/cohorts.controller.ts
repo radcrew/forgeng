@@ -11,6 +11,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import type { AuthUser } from '../../core/auth/auth.types';
+import { CurrentUser } from '../../core/auth/current-user.decorator';
 import { Roles } from '../../core/auth/roles.decorator';
 import type { CohortDto, EnrollmentDto } from '../../common/mappers';
 import { CohortsService } from './cohorts.service';
@@ -31,8 +33,11 @@ export class CohortsController {
   @Roles('admin')
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: CreateCohortDto): Promise<CohortDto> {
-    return this.service.create(dto);
+  create(
+    @Body() dto: CreateCohortDto,
+    @CurrentUser() admin: AuthUser,
+  ): Promise<CohortDto> {
+    return this.service.create(dto, admin);
   }
 
   @Get(':id')

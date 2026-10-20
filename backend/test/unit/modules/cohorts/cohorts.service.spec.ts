@@ -6,6 +6,7 @@ import {
 import type { Cohort, Enrollment, User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { SlackChannelsService } from '@core/slack';
+import type { AuthUser } from '@core/auth/auth.types';
 import { CohortsService } from '@modules/cohorts/cohorts.service';
 
 const DATE = new Date('2026-01-15T10:30:00.000Z');
@@ -49,6 +50,7 @@ describe('CohortsService', () => {
     syncInBackground: jest.Mock;
     linkedStudents: jest.Mock;
     moveInBackground: jest.Mock;
+    createForCohort: jest.Mock;
   };
   let prisma: {
     cohort: {
@@ -99,6 +101,7 @@ describe('CohortsService', () => {
       syncInBackground: jest.fn(),
       linkedStudents: jest.fn().mockResolvedValue(['U0ADA']),
       moveInBackground: jest.fn(),
+      createForCohort: jest.fn().mockResolvedValue(null),
     };
     service = new CohortsService(
       prisma as unknown as PrismaService,
@@ -143,11 +146,15 @@ describe('CohortsService', () => {
     });
   });
 
+  const ADMIN = { id: 9, role: 'admin' } as AuthUser;
+  const create = (dto: Parameters<CohortsService['create']>[0]) =>
+    service.create(dto, ADMIN);
+
   describe('create', () => {
     it('refuses a Slack channel another cohort uses, and names it', async () => {
       prisma.cohort.findFirst.mockResolvedValue({ name: 'Autumn 2026' });
 
-      const result = service.create({
+      const result = create({
         name: 'Spring 2026',
         slackChannelId: 'C0123ABCD',
       });
@@ -163,15 +170,58 @@ describe('CohortsService', () => {
     it('does not look for a channel when none is given', async () => {
       prisma.cohort.create.mockResolvedValue(makeCohort());
 
-      await service.create({ name: 'Spring 2026' });
+      await create({ name: 'Spring 2026' });
 
       expect(prisma.cohort.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('creates a Slack channel when none is given, and saves it', async () => {
+      prisma.cohort.create.mockResolvedValue(
+        makeCohort({ id: 7, name: 'Golang', slackChannelId: null }),
+      );
+      slackChannels.createForCohort.mockResolvedValue('CGOLANG');
+      prisma.cohort.update.mockResolvedValue(
+        makeCohort({ id: 7, name: 'Golang', slackChannelId: 'CGOLANG' }),
+      );
+
+      const dto = await create({ name: 'Golang' });
+
+      expect(slackChannels.createForCohort).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 7, name: 'Golang' }),
+        9,
+      );
+      expect(prisma.cohort.update).toHaveBeenCalledWith({
+        where: { id: 7 },
+        data: { slackChannelId: 'CGOLANG' },
+      });
+      expect(dto.slackChannelId).toBe('CGOLANG');
+    });
+
+    it('still creates the cohort when no channel could be made', async () => {
+      prisma.cohort.create.mockResolvedValue(
+        makeCohort({ id: 7, slackChannelId: null }),
+      );
+
+      const dto = await create({ name: 'Golang' });
+
+      expect(dto.id).toBe(7);
+      expect(prisma.cohort.update).not.toHaveBeenCalled();
+    });
+
+    it('uses the given channel, without creating one', async () => {
+      prisma.cohort.create.mockResolvedValue(
+        makeCohort({ slackChannelId: 'C0123ABCD' }),
+      );
+
+      await create({ name: 'Golang', slackChannelId: 'C0123ABCD' });
+
+      expect(slackChannels.createForCohort).not.toHaveBeenCalled();
     });
 
     it('defaults status to draft when omitted', async () => {
       prisma.cohort.create.mockResolvedValue(makeCohort());
 
-      await service.create({ name: 'Spring 2026', capacity: 30 });
+      await create({ name: 'Spring 2026', capacity: 30 });
 
       const data = (
         prisma.cohort.create.mock.calls[0] as [{ data: { status: string } }]
@@ -182,7 +232,7 @@ describe('CohortsService', () => {
     it('parses provided start and end dates', async () => {
       prisma.cohort.create.mockResolvedValue(makeCohort());
 
-      await service.create({
+      await create({
         name: 'Spring 2026',
         capacity: 30,
         startDate: '2026-02-01T00:00:00.000Z',
@@ -201,7 +251,7 @@ describe('CohortsService', () => {
     it('saves the Slack channel', async () => {
       prisma.cohort.create.mockResolvedValue(makeCohort());
 
-      await service.create({
+      await create({
         name: 'Spring 2026',
         capacity: 30,
         slackChannelId: 'C0123ABCD',
@@ -217,7 +267,7 @@ describe('CohortsService', () => {
 
     it('rejects an end date before the start date', async () => {
       await expect(
-        service.create({
+        create({
           name: 'Spring 2026',
           capacity: 30,
           startDate: '2026-05-01T00:00:00.000Z',

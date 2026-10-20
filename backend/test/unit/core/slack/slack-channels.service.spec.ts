@@ -21,6 +21,7 @@ describe('SlackChannelsService', () => {
     inviteToChannel: jest.Mock;
     removeFromChannel: jest.Mock;
     listChannelMembers: jest.Mock;
+    createPrivateChannel: jest.Mock;
   };
   let logError: jest.SpyInstance;
   let service: SlackChannelsService;
@@ -48,6 +49,7 @@ describe('SlackChannelsService', () => {
       inviteToChannel: jest.fn().mockResolvedValue(undefined),
       removeFromChannel: jest.fn().mockResolvedValue(undefined),
       listChannelMembers: jest.fn().mockResolvedValue([]),
+      createPrivateChannel: jest.fn().mockResolvedValue('CGOLANG'),
     };
     service = new SlackChannelsService(
       prisma as unknown as PrismaService,
@@ -125,6 +127,76 @@ describe('SlackChannelsService', () => {
       'Failed to sync the Slack channels of user 7',
       expect.stringContaining('db down'),
     );
+  });
+
+  describe('createForCohort', () => {
+    const create = (name = 'Golang Autumn') =>
+      service.createForCohort({ id: 7, name }, 9);
+
+    it('creates a channel named after the cohort, then a numbered one', async () => {
+      await expect(create()).resolves.toBe('CGOLANG');
+
+      expect(slack.createPrivateChannel).toHaveBeenCalledWith([
+        'golang-autumn',
+        'golang-autumn-7',
+      ]);
+    });
+
+    it('uses "cohort-7" for a name with nothing usable', async () => {
+      await create('日本語');
+
+      expect(slack.createPrivateChannel).toHaveBeenCalledWith(['cohort-7']);
+    });
+
+    it('keeps the numbered name within 80 characters', async () => {
+      await create('a'.repeat(100));
+
+      const [names] = slack.createPrivateChannel.mock.calls[0] as [string[]];
+      expect(names[1]).toBe(`${'a'.repeat(78)}-7`);
+    });
+
+    it('invites the admin who created the cohort, if linked', async () => {
+      prisma.user.findUnique.mockResolvedValue({ slackUserId: 'U0ADMIN' });
+
+      await create();
+
+      expect(prisma.user.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 9 } }),
+      );
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CGOLANG', 'U0ADMIN');
+    });
+
+    it('invites nobody when the admin has no linked Slack', async () => {
+      prisma.user.findUnique.mockResolvedValue({ slackUserId: null });
+
+      await expect(create()).resolves.toBe('CGOLANG');
+
+      expect(slack.inviteToChannel).not.toHaveBeenCalled();
+    });
+
+    it('still returns the channel when the invite fails', async () => {
+      slack.inviteToChannel.mockRejectedValue(new Error('cant_invite'));
+
+      await expect(create()).resolves.toBe('CGOLANG');
+      expect(logError).toHaveBeenCalled();
+    });
+
+    it('returns null and logs when Slack refuses', async () => {
+      slack.createPrivateChannel.mockRejectedValue(new Error('missing_scope'));
+
+      await expect(create()).resolves.toBeNull();
+      expect(logError).toHaveBeenCalledWith(
+        'Failed to create a Slack channel for cohort 7',
+        expect.stringContaining('missing_scope'),
+      );
+    });
+
+    it('does nothing when Slack is not set up', async () => {
+      slack.enabled = false;
+
+      await expect(create()).resolves.toBeNull();
+      expect(slack.createPrivateChannel).not.toHaveBeenCalled();
+    });
   });
 
   describe('moving a cohort to another channel', () => {

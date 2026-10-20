@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { Cohort } from '@prisma/client';
+import type { AuthUser } from '../../core/auth/auth.types';
 import { PrismaService } from '../../core/database/prisma.service';
 import { SlackChannelsService } from '../../core/slack';
 import {
@@ -38,7 +39,11 @@ export class CohortsService {
     return this.serialize(cohort);
   }
 
-  async create(dto: CreateCohortDto): Promise<CohortDto> {
+  /**
+   * Creates a cohort. Without a Slack channel ID, it also creates a private
+   * Slack channel for the cohort, when Slack is set up.
+   */
+  async create(dto: CreateCohortDto, admin: AuthUser): Promise<CohortDto> {
     this.assertDateOrder(
       dto.startDate ? new Date(dto.startDate) : null,
       dto.endDate ? new Date(dto.endDate) : null,
@@ -55,7 +60,19 @@ export class CohortsService {
         slackChannelId: dto.slackChannelId ?? undefined,
       },
     });
-    return this.serialize(created);
+    if (created.slackChannelId) return this.serialize(created);
+
+    // After the cohort is saved, so a Slack problem never blocks it.
+    const channelId = await this.slackChannels.createForCohort(
+      created,
+      admin.id,
+    );
+    if (!channelId) return this.serialize(created);
+    const linked = await this.prisma.cohort.update({
+      where: { id: created.id },
+      data: { slackChannelId: channelId },
+    });
+    return this.serialize(linked);
   }
 
   async update(id: number, dto: UpdateCohortDto): Promise<CohortDto> {

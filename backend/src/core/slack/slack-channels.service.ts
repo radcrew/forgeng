@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { waitUntil } from '@vercel/functions';
 
 import { PrismaService } from '../database/prisma.service';
-import { SlackService } from './slack.service';
+import { SlackService, toSlackChannelName } from './slack.service';
+
+/** Slack's longest channel name. */
+const CHANNEL_NAME_MAX = 80;
 
 /**
  * Keeps a user's cohort channel memberships in step with their enrollments.
@@ -39,6 +42,56 @@ export class SlackChannelsService {
         );
       }),
     );
+  }
+
+  /**
+   * Creates a private channel for a new cohort, named after it, and invites
+   * the admin who created the cohort, if their Slack is linked. Without that
+   * they could not see the private channel. Returns the channel ID, or null
+   * when Slack is not set up or refused. Never throws: a cohort is created
+   * with or without its channel.
+   */
+  async createForCohort(
+    cohort: { id: number; name: string },
+    adminUserId: number,
+  ): Promise<string | null> {
+    if (!this.slack.enabled) return null;
+
+    // "golang", then "golang-7" if that is taken. A name with nothing
+    // usable, such as one in another alphabet, becomes "cohort-7".
+    const suffix = `-${cohort.id}`;
+    const base = toSlackChannelName(cohort.name);
+    const names = base
+      ? [
+          base,
+          base
+            .slice(0, CHANNEL_NAME_MAX - suffix.length)
+            .replace(/[-_]+$/, '') + suffix,
+        ]
+      : [`cohort${suffix}`];
+
+    let channelId: string;
+    try {
+      channelId = await this.slack.createPrivateChannel(names);
+    } catch (err) {
+      this.logger.error(
+        `Failed to create a Slack channel for cohort ${cohort.id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      return null;
+    }
+
+    const admin = await this.prisma.user
+      .findUnique({ where: { id: adminUserId }, select: { slackUserId: true } })
+      .catch(() => null);
+    if (admin?.slackUserId) {
+      const slackUserId = admin.slackUserId;
+      await this.tryCall(
+        () => this.slack.inviteToChannel(channelId, slackUserId),
+        `add Slack member ${slackUserId} to channel ${channelId}`,
+      );
+    }
+    return channelId;
   }
 
   /**
