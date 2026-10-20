@@ -63,6 +63,11 @@ export interface SlackConfig {
   botToken: string;
   /** The private channel for mentors' alerts. Null: those aren't posted. */
   mentorsChannelId: string | null;
+  /**
+   * Proves that an event really comes from Slack. Null: the events route
+   * refuses every call.
+   */
+  signingSecret: string | null;
 }
 
 export interface SmtpConfig {

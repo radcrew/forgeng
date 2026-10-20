@@ -165,6 +165,10 @@ class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  SLACK_SIGNING_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
   IPQUALITYSCORE_API_KEY?: string;
 
   @IsOptional()

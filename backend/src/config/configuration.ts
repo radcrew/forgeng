@@ -140,6 +140,7 @@ export default (): AppConfiguration => {
       ? {
           botToken: process.env.SLACK_BOT_TOKEN,
           mentorsChannelId: process.env.SLACK_MENTORS_CHANNEL_ID || null,
+          signingSecret: process.env.SLACK_SIGNING_SECRET || null,
         }
       : null,
     ipQualityScore: {
