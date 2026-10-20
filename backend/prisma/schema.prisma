@@ -372,6 +372,9 @@ model NotificationPreference {
   userId        Int      @id @map("user_id")
   feedbackInApp Boolean  @default(true) @map("feedback_in_app")
   feedbackEmail Boolean  @default(true) @map("feedback_email")
+  // A Slack direct message, once the student has joined the Forgeng Slack.
+  // New tasks need no such switch: they are posted in the cohort channel.
+  feedbackSlack Boolean  @default(true) @map("feedback_slack")
   taskInApp     Boolean  @default(true) @map("task_in_app")
   taskEmail     Boolean  @default(true) @map("task_email")
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz

@@ -336,6 +336,7 @@ export function toNotificationDto(notification: Notification): NotificationDto {
 export interface NotificationPreferenceDto {
   feedbackInApp: boolean;
   feedbackEmail: boolean;
+  feedbackSlack: boolean;
   taskInApp: boolean;
   taskEmail: boolean;
 }
@@ -347,6 +348,7 @@ export function toNotificationPreferenceDto(
   return {
     feedbackInApp: pref?.feedbackInApp ?? true,
     feedbackEmail: pref?.feedbackEmail ?? true,
+    feedbackSlack: pref?.feedbackSlack ?? true,
     taskInApp: pref?.taskInApp ?? true,
     taskEmail: pref?.taskEmail ?? true,
   };

@@ -11,6 +11,10 @@ export class UpdateNotificationPreferencesDto {
 
   @IsOptional()
   @IsBoolean()
+  feedbackSlack?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
   taskInApp?: boolean;
 
   @IsOptional()

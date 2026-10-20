@@ -331,6 +331,7 @@ describe('toNotificationPreferenceDto', () => {
     expect(toNotificationPreferenceDto(null)).toEqual({
       feedbackInApp: true,
       feedbackEmail: true,
+      feedbackSlack: true,
       taskInApp: true,
       taskEmail: true,
     });
@@ -340,12 +341,14 @@ describe('toNotificationPreferenceDto', () => {
     const pref = {
       feedbackInApp: false,
       feedbackEmail: true,
+      feedbackSlack: false,
       taskInApp: false,
       taskEmail: false,
     } as NotificationPreference;
     expect(toNotificationPreferenceDto(pref)).toEqual({
       feedbackInApp: false,
       feedbackEmail: true,
+      feedbackSlack: false,
       taskInApp: false,
       taskEmail: false,
     });
