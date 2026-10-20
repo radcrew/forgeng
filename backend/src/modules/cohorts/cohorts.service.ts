@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -42,6 +43,7 @@ export class CohortsService {
       dto.startDate ? new Date(dto.startDate) : null,
       dto.endDate ? new Date(dto.endDate) : null,
     );
+    await this.assertSlackChannelFree(dto.slackChannelId);
     const created = await this.prisma.cohort.create({
       data: {
         name: dto.name,
@@ -79,6 +81,8 @@ export class CohortsService {
     const channelChanged =
       dto.slackChannelId !== undefined &&
       dto.slackChannelId !== exists.slackChannelId;
+    if (channelChanged)
+      await this.assertSlackChannelFree(dto.slackChannelId, id);
     const students = channelChanged
       ? await this.slackChannels.linkedStudents(id)
       : [];
@@ -155,6 +159,29 @@ export class CohortsService {
       throw new NotFoundException('This student is not in the cohort.');
     }
     this.slackChannels.syncInBackground(userId, [cohortId]);
+  }
+
+  /**
+   * Gives a clear message when another cohort already uses the channel. The
+   * unique index also refuses it, for two saves at the same moment.
+   */
+  private async assertSlackChannelFree(
+    channelId: string | null | undefined,
+    cohortId?: number,
+  ): Promise<void> {
+    if (!channelId) return;
+    const other = await this.prisma.cohort.findFirst({
+      where: {
+        slackChannelId: channelId,
+        ...(cohortId ? { id: { not: cohortId } } : {}),
+      },
+      select: { name: true },
+    });
+    if (other) {
+      throw new ConflictException(
+        `The cohort "${other.name}" already uses this Slack channel. Each cohort needs its own channel.`,
+      );
+    }
   }
 
   private assertDateOrder(start: Date | null, end: Date | null): void {
