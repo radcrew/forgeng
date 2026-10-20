@@ -45,6 +45,7 @@ import { COHORT_STATUS_VARIANT } from "@constants/cohorts";
 import { CURRENCIES } from "@constants/payments";
 import { useUser, useUserEnrollments, useUserPaymentStats, useRecordPayment, useNotifyWalletMissing } from "@features/users/hooks";
 import { useSettings } from "@features/settings";
+import { StudentMeetings } from "@features/meetings";
 import { ApiError } from "@lib/api-client";
 import { isProfileComplete } from "@utils/user";
 
@@ -436,6 +437,11 @@ export default function UserDetailPage({
                 </div>
               )}
             </div>
+
+            {/* Meetings are with students only, for now. */}
+            {user.role === "student" && (
+              <StudentMeetings studentId={user.id} studentName={displayName} />
+            )}
           </div>
         </div>
       </div>

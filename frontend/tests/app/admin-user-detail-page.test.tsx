@@ -68,6 +68,13 @@ vi.mock("@features/settings", () => ({
   useSettings: () => ({ ...idle, ...settingsState }),
 }));
 
+// Its own tests cover it. Here it only stands in.
+vi.mock("@features/meetings", () => ({
+  StudentMeetings: ({ studentName }: { studentName: string }) => (
+    <div>Meetings with {studentName}</div>
+  ),
+}));
+
 import UserDetailPage from "../../src/app/admin/users/[id]/page";
 
 /** The UTC month `monthsAgo` months before now, as "YYYY-MM". */
@@ -343,5 +350,26 @@ describe("admin user detail page", () => {
     await renderPage();
 
     expect(await screen.findByText("Loading user…")).toBeInTheDocument();
+  });
+
+  it("shows the meetings section for a student", async () => {
+    userState = { data: sampleUser, isLoading: false, error: null };
+    await renderPage();
+
+    expect(
+      await screen.findByText("Meetings with Ada Lovelace"),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the meetings section for an admin", async () => {
+    userState = {
+      data: { ...sampleUser, role: "admin" },
+      isLoading: false,
+      error: null,
+    };
+    await renderPage();
+
+    await screen.findByText("Ada Lovelace");
+    expect(screen.queryByText(/Meetings with/)).not.toBeInTheDocument();
   });
 });

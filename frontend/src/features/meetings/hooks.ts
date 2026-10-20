@@ -2,7 +2,14 @@
 
 import { useCallback, useState } from "react";
 import { useAsyncResource } from "@hooks/use-async-resource";
-import { disconnectGoogleCalendar, getGoogleCalendarStatus } from "./api";
+import {
+  disconnectGoogleCalendar,
+  getGoogleCalendarStatus,
+  listMeetings,
+} from "./api";
+
+export const useMeetings = (attendeeId?: number) =>
+  useAsyncResource(() => listMeetings(attendeeId), [attendeeId]);
 
 export const useGoogleCalendarStatus = () =>
   useAsyncResource(getGoogleCalendarStatus, []);
