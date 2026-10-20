@@ -18,7 +18,7 @@ const replace = vi.fn();
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(search),
   useRouter: () => ({ replace }),
-  usePathname: () => "/admin/settings",
+  usePathname: () => "/admin/meetings",
 }));
 
 const toastSuccess = vi.fn();
@@ -137,7 +137,7 @@ describe("GoogleCalendarCard", () => {
       await waitFor(() =>
         expect(toastSuccess).toHaveBeenCalledWith("Google Calendar connected."),
       );
-      expect(replace).toHaveBeenCalledWith("/admin/settings");
+      expect(replace).toHaveBeenCalledWith("/admin/meetings");
       // Once, even though the mocked address never changes.
       await screen.findByRole("link", { name: "Connect Google Calendar" });
       expect(toastSuccess).toHaveBeenCalledTimes(1);

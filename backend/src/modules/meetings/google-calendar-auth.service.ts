@@ -22,7 +22,7 @@ export interface GoogleCalendarStatus {
   broken: boolean;
 }
 
-/** Why a connection failed. It is shown in the settings page's link. */
+/** Why a connection failed. It is shown in the meetings page's link. */
 export type ConnectFailure =
   | 'not_configured'
   | 'denied'

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
+  CalendarDays,
   CheckSquare,
   ClipboardList,
   FileText,
@@ -59,6 +60,7 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { title: "Tasks", href: "/admin/tasks", icon: CheckSquare },
     { title: "Notifications", href: "/admin/notifications", icon: Bell },
     { title: "Users", href: "/admin/users", icon: Users },
+    { title: "Meetings", href: "/admin/meetings", icon: CalendarDays },
     { title: "Settings", href: "/admin/settings", icon: Settings },
   ],
 };

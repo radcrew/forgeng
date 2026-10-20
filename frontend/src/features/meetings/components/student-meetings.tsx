@@ -83,10 +83,10 @@ export const StudentMeetings = ({
                 ? "Your Google Calendar connection stopped working. "
                 : "To schedule a meeting, connect your Google Calendar first. "}
               <Link
-                href="/admin/settings"
+                href="/admin/meetings"
                 className="underline underline-offset-2 hover:text-foreground"
               >
-                Open Settings
+                Open Meetings
               </Link>
             </>
           )}

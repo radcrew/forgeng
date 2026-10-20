@@ -46,13 +46,13 @@ describe('Google Calendar connection (e2e)', () => {
     return request(http()).get(`${base}/connect`).expect(404);
   });
 
-  it('sends the browser back to settings with the reason when it fails', () => {
+  it('sends the browser back to the meetings page with the reason when it fails', () => {
     // Public: Google sends the browser here without a Forgeng login.
     ctx.setUser(null);
     return request(http())
       .get(`${base}/callback?code=c&state=s`)
       .expect(302)
-      .expect('Location', /\/admin\/settings\?googleCalendar=not_configured$/);
+      .expect('Location', /\/admin\/meetings\?googleCalendar=not_configured$/);
   });
 
   it('forbids a student from disconnecting (403)', () => {

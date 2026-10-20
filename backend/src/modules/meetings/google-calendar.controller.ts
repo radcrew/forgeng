@@ -98,7 +98,7 @@ export class GoogleCalendarController {
       if (!(err instanceof GoogleCalendarConnectError)) throw err;
       result = err.reason;
     }
-    res.redirect(`${this.frontendUrl}/admin/settings?googleCalendar=${result}`);
+    res.redirect(`${this.frontendUrl}/admin/meetings?googleCalendar=${result}`);
   }
 
   @Roles('admin')

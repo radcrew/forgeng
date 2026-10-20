@@ -99,13 +99,13 @@ describe("StudentMeetings", () => {
     expect(await screen.findByText("No upcoming meetings.")).toBeInTheDocument();
   });
 
-  it("points to Settings when the admin's calendar isn't connected", async () => {
+  it("points to the Meetings page when the admin's calendar isn't connected", async () => {
     getGoogleCalendarStatus.mockResolvedValue({ ...connected, connected: false });
     renderSection();
 
     expect(
-      await screen.findByRole("link", { name: "Open Settings" }),
-    ).toHaveAttribute("href", "/admin/settings");
+      await screen.findByRole("link", { name: "Open Meetings" }),
+    ).toHaveAttribute("href", "/admin/meetings");
     expect(
       screen.queryByRole("button", { name: "Schedule a meeting" }),
     ).not.toBeInTheDocument();

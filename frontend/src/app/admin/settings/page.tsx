@@ -15,8 +15,6 @@ import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { PageContainer, PageHeader } from "@components/shared";
 import { LoadingState } from "@components/common";
-import { GoogleCalendarCard } from "@features/meetings";
-import { BookingUrlCard } from "@features/mentors";
 import { useSettings, useUpdateSettings, type PlatformSettings } from "@features/settings";
 import { ApiError } from "@lib/api-client";
 
@@ -125,15 +123,13 @@ const Page = () => {
     <PageContainer maxWidth="reading" spacing="8">
       <PageHeader
         title="Settings"
-        description="Stipend payouts for the platform, and your own calendar and booking page."
+        description="Platform-wide configuration for stipend payouts."
       />
       {isLoading || !settings ? (
         <LoadingState message="Loading settings…" />
       ) : (
         <SettingsForm settings={settings} onSaved={refetch} />
       )}
-      <GoogleCalendarCard />
-      <BookingUrlCard />
     </PageContainer>
   );
 };
