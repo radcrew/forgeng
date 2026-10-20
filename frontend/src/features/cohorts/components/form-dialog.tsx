@@ -47,12 +47,22 @@ export const CohortFormDialog = ({
     cohort?.startDate?.slice(0, 10) ?? "",
   );
   const [endDate, setEndDate] = useState(cohort?.endDate?.slice(0, 10) ?? "");
+  const [slackChannelId, setSlackChannelId] = useState(
+    cohort?.slackChannelId ?? "",
+  );
   const [errors, setErrors] = useState<CohortErrors>({});
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     const found = validateCohort(
-      { name, description: description ?? "", capacity, startDate, endDate },
+      {
+        name,
+        description: description ?? "",
+        capacity,
+        startDate,
+        endDate,
+        slackChannelId,
+      },
       cohort?.enrolledCount ?? 0,
     );
     setErrors(found);
@@ -70,6 +80,8 @@ export const CohortFormDialog = ({
         status,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
+        // null, like the description, so clearing the field is saved.
+        slackChannelId: slackChannelId.trim() || null,
       };
       if (isEdit) {
         await updateCohort(cohort.id, payload);
@@ -190,6 +202,27 @@ export const CohortFormDialog = ({
             />
           </FormField>
         </FormGrid>
+        <FormField
+          label="Slack channel ID (optional)"
+          htmlFor="cohort-slack-channel"
+          error={errors.slackChannelId}
+        >
+          <Input
+            id="cohort-slack-channel"
+            value={slackChannelId}
+            aria-invalid={!!errors.slackChannelId}
+            onChange={(e) => {
+              setSlackChannelId(e.target.value);
+              setErrors({});
+            }}
+            placeholder="e.g. C0123ABCD"
+          />
+          <p className="text-xs text-muted-foreground">
+            New tasks are posted to this channel. In Slack, open the channel
+            details: the ID is at the bottom. Invite the Forgeng app to the
+            channel too.
+          </p>
+        </FormField>
       </FormBody>
     </FormDialog>
   );

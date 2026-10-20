@@ -185,6 +185,8 @@ export interface CohortDto {
   enrolledCount: number;
   startDate: string | null;
   endDate: string | null;
+  /** Where new tasks are posted in Slack. */
+  slackChannelId: string | null;
   createdAt: string;
 }
 
@@ -198,6 +200,8 @@ export function toCohortDto(cohort: Cohort, enrolledCount: number): CohortDto {
     enrolledCount,
     startDate: cohort.startDate?.toISOString() ?? null,
     endDate: cohort.endDate?.toISOString() ?? null,
+    // `?? null` also covers a cohort row loaded without this column.
+    slackChannelId: cohort.slackChannelId ?? null,
     createdAt: cohort.createdAt.toISOString(),
   };
 }

@@ -154,6 +154,23 @@ describe('CohortsService', () => {
       expect(data.endDate).toBeInstanceOf(Date);
     });
 
+    it('saves the Slack channel', async () => {
+      prisma.cohort.create.mockResolvedValue(makeCohort());
+
+      await service.create({
+        name: 'Spring 2026',
+        capacity: 30,
+        slackChannelId: 'C0123ABCD',
+      });
+
+      const data = (
+        prisma.cohort.create.mock.calls[0] as [
+          { data: { slackChannelId?: string } },
+        ]
+      )[0].data;
+      expect(data.slackChannelId).toBe('C0123ABCD');
+    });
+
     it('rejects an end date before the start date', async () => {
       await expect(
         service.create({
@@ -186,6 +203,24 @@ describe('CohortsService', () => {
       expect(prisma.cohort.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 3 } }),
       );
+    });
+
+    it.each([
+      ['saves a new Slack channel', 'C0123ABCD', 'C0123ABCD'],
+      ['removes the Slack channel', null, null],
+      ['keeps the Slack channel when it is left out', undefined, undefined],
+    ])('%s', async (_, sent, saved) => {
+      prisma.cohort.findUnique.mockResolvedValue(makeCohort());
+      prisma.cohort.update.mockResolvedValue(makeCohort());
+
+      await service.update(3, { slackChannelId: sent });
+
+      const data = (
+        prisma.cohort.update.mock.calls[0] as [
+          { data: { slackChannelId?: string | null } },
+        ]
+      )[0].data;
+      expect(data.slackChannelId).toBe(saved);
     });
 
     it('rejects an end date before the saved start date', async () => {

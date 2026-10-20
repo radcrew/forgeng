@@ -157,6 +157,13 @@ describe('toCohortDto', () => {
     expect(dto.startDate).toBe(ISO);
     expect(dto.endDate).toBeNull();
   });
+
+  it('includes the Slack channel, or null without one', () => {
+    expect(
+      toCohortDto({ ...cohort, slackChannelId: 'C0123ABCD' }, 0).slackChannelId,
+    ).toBe('C0123ABCD');
+    expect(toCohortDto(cohort, 0).slackChannelId).toBeNull();
+  });
 });
 
 describe('toTaskDto', () => {

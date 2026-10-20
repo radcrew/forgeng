@@ -89,6 +89,56 @@ describe("cohort FormDialog", () => {
     );
   });
 
+  it("saves a trimmed Slack channel ID", async () => {
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+
+    await userEvent.type(
+      screen.getByLabelText("Slack channel ID (optional)"),
+      " C0123ABCD ",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(updateCohort).toHaveBeenCalledWith(
+      3,
+      expect.objectContaining({ slackChannelId: "C0123ABCD" }),
+    );
+  });
+
+  it("removes the Slack channel when the field is cleared", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({ slackChannelId: "C0123ABCD" })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    const field = screen.getByLabelText("Slack channel ID (optional)");
+    expect(field).toHaveValue("C0123ABCD");
+    await userEvent.clear(field);
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(updateCohort).toHaveBeenCalledWith(
+      3,
+      expect.objectContaining({ slackChannelId: null }),
+    );
+  });
+
+  it("refuses a channel name instead of a channel ID", async () => {
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+
+    await userEvent.type(
+      screen.getByLabelText("Slack channel ID (optional)"),
+      "#spring-cohort",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(
+      screen.getByText(/Use the channel ID, for example C0123ABCD/),
+    ).toBeInTheDocument();
+    expect(updateCohort).not.toHaveBeenCalled();
+  });
+
   it("keeps create disabled for a name that is only spaces", async () => {
     render(<FormDialog open onOpenChange={vi.fn()} />);
 

@@ -215,6 +215,9 @@ model Cohort {
   capacity    Int          @default(20)
   startDate   DateTime?    @map("start_date") @db.Timestamptz
   endDate     DateTime?    @map("end_date") @db.Timestamptz
+  // The cohort's Slack channel ID (starts with C), where new tasks are
+  // posted. Null: nothing is posted for this cohort.
+  slackChannelId String?   @map("slack_channel_id") @db.VarChar(32)
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz
 

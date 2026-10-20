@@ -11,6 +11,8 @@ import {
   MinLength,
 } from 'class-validator';
 
+import { SlackChannelId } from './slack-channel';
+
 export class CreateCohortDto {
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
@@ -40,4 +42,7 @@ export class CreateCohortDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @SlackChannelId()
+  slackChannelId?: string | null;
 }

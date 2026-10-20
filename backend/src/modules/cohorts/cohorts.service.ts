@@ -46,6 +46,7 @@ export class CohortsService {
         status: dto.status ?? 'draft',
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        slackChannelId: dto.slackChannelId ?? undefined,
       },
     });
     return this.serialize(created);
@@ -79,6 +80,8 @@ export class CohortsService {
         status: dto.status,
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        // Left out keeps the channel, null removes it.
+        slackChannelId: dto.slackChannelId,
       },
     });
     return this.serialize(updated);
