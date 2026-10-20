@@ -7,5 +7,7 @@ import { FeedbackService } from './feedback.service';
   imports: [NotificationsModule],
   controllers: [FeedbackController],
   providers: [FeedbackService],
+  // Slack's Approve form saves reviews through the same service.
+  exports: [FeedbackService],
 })
 export class FeedbackModule {}

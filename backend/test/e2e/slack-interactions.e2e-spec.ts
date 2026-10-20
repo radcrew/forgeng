@@ -99,6 +99,42 @@ describe('Slack interactions (e2e)', () => {
     await post(signed(CLICK)).expect(200);
   });
 
+  describe('the approve form is submitted', () => {
+    const SUBMIT = (feedback: string) => ({
+      type: 'view_submission',
+      user: { id: 'U0MENTOR' },
+      view: {
+        callback_id: 'approve_submission',
+        private_metadata: '9',
+        state: {
+          values: { feedback: { feedback_input: { value: feedback } } },
+        },
+      },
+    });
+
+    it('keeps the form open with a message for a non-mentor', async () => {
+      ctx.prisma.user.findUnique.mockResolvedValue(null);
+
+      await post(signed(SUBMIT('Great work')))
+        .expect(200)
+        .expect({
+          response_action: 'errors',
+          errors: { feedback: 'Only Forgeng mentors can approve submissions.' },
+        });
+    });
+
+    it('keeps the form open when the feedback is only spaces', async () => {
+      ctx.prisma.user.findUnique.mockResolvedValue({ id: 1, role: 'admin' });
+
+      await post(signed(SUBMIT('   ')))
+        .expect(200)
+        .expect({
+          response_action: 'errors',
+          errors: { feedback: 'Write some feedback for the student.' },
+        });
+    });
+  });
+
   it('refuses an unsigned post (401)', async () => {
     await request(http())
       .post('/api/slack/interactions')

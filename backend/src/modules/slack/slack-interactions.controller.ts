@@ -7,7 +7,7 @@ import type { Request } from 'express';
 import type { AppConfiguration } from '../../config';
 import { Public } from '../../core/auth/public.decorator';
 import { SLACK_ACTIONS } from '../../core/slack';
-import { SlackReviewsService } from './slack-reviews.service';
+import { SlackReviewsService, type FormAnswer } from './slack-reviews.service';
 import { assertFromSlack } from './slack-signature';
 
 /** The parts of Slack's interaction payload that Forgeng reads. */
@@ -16,6 +16,14 @@ interface SlackInteraction {
   trigger_id?: string;
   user?: { id?: string };
   actions?: Array<{ action_id?: string; value?: string }>;
+  /** Sent with a form submit. */
+  view?: {
+    callback_id?: string;
+    private_metadata?: string;
+    state?: {
+      values?: Record<string, Record<string, { value?: string | null }>>;
+    };
+  };
 }
 
 /**
@@ -42,10 +50,25 @@ export class SlackInteractionsController {
   @Public()
   @Post('interactions')
   @HttpCode(200)
-  async receive(@Req() req: RawBodyRequest<Request>): Promise<void> {
+  async receive(@Req() req: RawBodyRequest<Request>): Promise<FormAnswer> {
     assertFromSlack(req, this.signingSecret);
 
     const interaction = parsePayload(req.body);
+
+    // The approve form was submitted. Slack waits for this answer to close
+    // the form or show its errors, so it isn't sent in the background.
+    if (
+      interaction?.type === 'view_submission' &&
+      interaction.view?.callback_id === SLACK_ACTIONS.APPROVE_SUBMISSION &&
+      interaction.user?.id
+    ) {
+      return this.reviews.approveFromForm({
+        slackUserId: interaction.user.id,
+        submissionId: interaction.view.private_metadata ?? '',
+        values: interaction.view.state?.values ?? {},
+      });
+    }
+
     const action = interaction?.actions?.[0];
     if (
       interaction?.type === 'block_actions' &&
@@ -71,6 +94,7 @@ export class SlackInteractionsController {
       }
     }
     // An empty 200 for everything else, so Slack shows no error.
+    return undefined;
   }
 }
 
