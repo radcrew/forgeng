@@ -135,6 +135,7 @@ export default (): AppConfiguration => {
     },
     smtp: parseSmtp(),
     emailFrom: process.env.EMAIL_FROM ?? DEFAULT_EMAIL_FROM,
+    cronSecret: process.env.CRON_SECRET || undefined,
     ipQualityScore: {
       apiKey: process.env.IPQUALITYSCORE_API_KEY,
     },
