@@ -1,5 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
+import { UnauthorizedException, type RawBodyRequest } from '@nestjs/common';
+import type { Request } from 'express';
+
 /** Slack's events are refused when older than this, so they can't be replayed. */
 export const MAX_EVENT_AGE_SECONDS = 5 * 60;
 
@@ -37,4 +40,29 @@ export function verifySlackSignature(params: {
   const given = Buffer.from(signature);
   // Constant time, so the answer time doesn't leak the right signature.
   return expected.length === given.length && timingSafeEqual(expected, given);
+}
+
+/**
+ * Refuses a request to a Slack route that Slack didn't sign. Without a
+ * signing secret, every request is refused.
+ */
+export function assertFromSlack(
+  req: RawBodyRequest<Request>,
+  signingSecret: string | null,
+): void {
+  const header = (name: string) => {
+    const value = req.headers[name];
+    return typeof value === 'string' ? value : undefined;
+  };
+  if (
+    !signingSecret ||
+    !verifySlackSignature({
+      rawBody: req.rawBody,
+      timestamp: header('x-slack-request-timestamp'),
+      signature: header('x-slack-signature'),
+      signingSecret,
+    })
+  ) {
+    throw new UnauthorizedException();
+  }
 }

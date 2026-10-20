@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Headers,
-  HttpCode,
-  Logger,
-  Post,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, HttpCode, Logger, Post, Req } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
@@ -16,7 +8,7 @@ import type { Request } from 'express';
 import type { AppConfiguration } from '../../config';
 import { Public } from '../../core/auth/public.decorator';
 import { SlackMembersService, type SlackMember } from './slack-members.service';
-import { verifySlackSignature } from './slack-signature';
+import { assertFromSlack } from './slack-signature';
 
 interface SlackEnvelope {
   type?: string;
@@ -50,20 +42,8 @@ export class SlackEventsController {
   @HttpCode(200)
   receive(
     @Req() req: RawBodyRequest<Request>,
-    @Headers('x-slack-request-timestamp') timestamp: string | undefined,
-    @Headers('x-slack-signature') signature: string | undefined,
   ): { challenge: string } | undefined {
-    if (
-      !this.signingSecret ||
-      !verifySlackSignature({
-        rawBody: req.rawBody,
-        timestamp,
-        signature,
-        signingSecret: this.signingSecret,
-      })
-    ) {
-      throw new UnauthorizedException();
-    }
+    assertFromSlack(req, this.signingSecret);
 
     const envelope = req.body as SlackEnvelope;
     // Slack checks the Request URL once, when it is saved in the app.

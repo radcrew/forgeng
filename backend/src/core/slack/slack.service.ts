@@ -112,6 +112,15 @@ export class SlackService {
     );
   }
 
+  /**
+   * Opens a Slack form (a "modal") for the person who clicked a button.
+   * Slack's trigger id is only valid for 3 seconds after the click, so call
+   * this before answering Slack, not in the background.
+   */
+  async openView(triggerId: string, view: object): Promise<void> {
+    await this.call('views.open', { trigger_id: triggerId, view });
+  }
+
   /** Every member of a channel, following Slack's pages. */
   async listChannelMembers(channelId: string): Promise<string[]> {
     const members: string[] = [];

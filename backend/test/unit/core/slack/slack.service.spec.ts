@@ -233,6 +233,29 @@ describe('SlackService', () => {
     });
   });
 
+  describe('openView', () => {
+    it('opens the form for the click that triggered it', async () => {
+      await makeService(SLACK).openView('trigger-1', { type: 'modal' });
+
+      const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+      expect(url).toBe('https://slack.com/api/views.open');
+      expect(JSON.parse(init.body)).toEqual({
+        trigger_id: 'trigger-1',
+        view: { type: 'modal' },
+      });
+    });
+
+    it('throws when Slack refuses, so the caller can log it', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'expired_trigger_id' }),
+      );
+
+      await expect(
+        makeService(SLACK).openView('trigger-1', { type: 'modal' }),
+      ).rejects.toThrow('expired_trigger_id');
+    });
+  });
+
   describe('removeFromChannel', () => {
     it('removes the member from the channel', async () => {
       await makeService(SLACK).removeFromChannel('CCOHORT', 'U0ADA');
