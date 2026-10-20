@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { waitUntil } from '@vercel/functions';
 
 import { PrismaService } from '../../core/database/prisma.service';
 import { SlackService } from '../../core/slack';
@@ -41,9 +42,13 @@ export class SlackReviewsService {
   ) {}
 
   /**
-   * After the approve form is submitted: saves the review as the mentor who
-   * sent it, through the same service as the app, so the same rules apply
-   * and the student is told the same way. Problems are shown in the form.
+   * After the approve form is submitted: checks it, closes it, then saves
+   * the review as the mentor who sent it, through the same service as the
+   * app, so the same rules apply and the student is told the same way.
+   *
+   * Slack waits only 3 seconds for this answer, and saving also notifies
+   * the student and runs the stipend check. So the quick checks show their
+   * problems in the form, and the save runs after the answer.
    */
   async approveFromForm(params: {
     slackUserId: string;
@@ -68,31 +73,59 @@ export class SlackReviewsService {
     }
 
     const submissionId = Number(params.submissionId);
-    if (!Number.isInteger(submissionId)) {
-      return formError('This submission no longer exists.');
+    const submission = Number.isInteger(submissionId)
+      ? await this.prisma.submission.findUnique({
+          where: { id: submissionId },
+          select: { status: true },
+        })
+      : null;
+    if (!submission) return formError('This submission no longer exists.');
+    // For example another mentor approved it while this form was open.
+    if (submission.status !== 'submitted') {
+      return formError('This submission was already reviewed.');
     }
 
+    waitUntil(
+      this.saveApproval(submissionId, mentor, params.slackUserId, content),
+    );
+    return undefined;
+  }
+
+  /**
+   * Saves the review after the form has closed. A problem now can't be shown
+   * in the form, so the mentor gets a Slack message with their feedback, so
+   * it isn't lost. Never throws.
+   */
+  private async saveApproval(
+    submissionId: number,
+    mentor: Parameters<FeedbackService['create']>[1],
+    slackUserId: string,
+    content: string,
+  ): Promise<void> {
     try {
       await this.feedback.create(submissionId, mentor, {
         content,
         verdict: 'approved',
       });
-      return undefined;
+      return;
     } catch (err) {
-      // For example another mentor approved it while this form was open.
+      let problem: string;
       if (err instanceof ConflictException) {
-        return formError('This submission was already reviewed.');
+        // Another mentor approved it in the same moment.
+        problem = 'Another mentor reviewed this submission first.';
+      } else if (err instanceof NotFoundException) {
+        problem = 'This submission no longer exists.';
+      } else {
+        this.logger.error(
+          `Failed to save a review from Slack for submission ${submissionId}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+        problem =
+          'Something went wrong. Please review this submission in Forgeng.';
       }
-      if (err instanceof NotFoundException) {
-        return formError('This submission no longer exists.');
-      }
-      this.logger.error(
-        `Failed to save a review from Slack for submission ${submissionId}`,
-        err instanceof Error ? err.stack : String(err),
-      );
-      return formError(
-        'Something went wrong. Please review this submission in Forgeng.',
-      );
+      this.slack.postInBackground(slackUserId, {
+        text: `Your approval was not saved. ${problem}\n\nYour feedback:\n${content}`,
+      });
     }
   }
 

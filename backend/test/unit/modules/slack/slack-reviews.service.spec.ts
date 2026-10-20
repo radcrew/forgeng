@@ -1,8 +1,11 @@
 import { ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@core/database/prisma.service';
 import { SlackService } from '@core/slack';
+import { waitUntil } from '@vercel/functions';
 import { FeedbackService } from '@modules/feedback/feedback.service';
 import { SlackReviewsService } from '@modules/slack/slack-reviews.service';
+
+jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
 
 const SUBMISSION = {
   status: 'submitted',
@@ -15,7 +18,7 @@ describe('SlackReviewsService', () => {
     user: { findUnique: jest.Mock };
     submission: { findUnique: jest.Mock };
   };
-  let slack: { openView: jest.Mock };
+  let slack: { openView: jest.Mock; postInBackground: jest.Mock };
   let feedback: { create: jest.Mock };
   let service: SlackReviewsService;
 
@@ -24,7 +27,10 @@ describe('SlackReviewsService', () => {
       user: { findUnique: jest.fn().mockResolvedValue({ role: 'admin' }) },
       submission: { findUnique: jest.fn().mockResolvedValue(SUBMISSION) },
     };
-    slack = { openView: jest.fn().mockResolvedValue(undefined) };
+    slack = {
+      openView: jest.fn().mockResolvedValue(undefined),
+      postInBackground: jest.fn(),
+    };
     feedback = { create: jest.fn().mockResolvedValue({ id: 1 }) };
     service = new SlackReviewsService(
       prisma as unknown as PrismaService,
@@ -117,17 +123,31 @@ describe('SlackReviewsService', () => {
     const errorOf = (answer: unknown) =>
       (answer as { errors: { feedback: string } }).errors.feedback;
 
+    /** Waits for the save that runs after the form has closed. */
+    const saved = () => {
+      const calls = (waitUntil as jest.Mock).mock.calls as [Promise<void>][];
+      return calls[calls.length - 1][0];
+    };
+
+    /** The message sent to the mentor when the save fails. */
+    const toldMentor = () =>
+      (slack.postInBackground.mock.calls[0] as [string, { text: string }])[1]
+        .text;
+
     beforeEach(() => {
+      (waitUntil as jest.Mock).mockClear();
       prisma.user.findUnique.mockResolvedValue(MENTOR);
     });
 
-    it('saves the review as the mentor, then closes the form', async () => {
+    it('closes the form first, then saves the review as the mentor', async () => {
       await expect(submit()).resolves.toBeUndefined();
+      await saved();
 
       expect(feedback.create).toHaveBeenCalledWith(9, MENTOR, {
         content: 'Great work on the CLI!',
         verdict: 'approved',
       });
+      expect(slack.postInBackground).not.toHaveBeenCalled();
     });
 
     it.each([
@@ -141,7 +161,7 @@ describe('SlackReviewsService', () => {
       expect(errorOf(answer)).toBe(
         'Only Forgeng mentors can approve submissions.',
       );
-      expect(feedback.create).not.toHaveBeenCalled();
+      expect(waitUntil).not.toHaveBeenCalled();
     });
 
     it.each([null, '', '    '])(
@@ -150,7 +170,7 @@ describe('SlackReviewsService', () => {
         const answer = await submit(text);
 
         expect(errorOf(answer)).toBe('Write some feedback for the student.');
-        expect(feedback.create).not.toHaveBeenCalled();
+        expect(waitUntil).not.toHaveBeenCalled();
       },
     );
 
@@ -158,34 +178,64 @@ describe('SlackReviewsService', () => {
       const answer = await submit('a'.repeat(4001));
 
       expect(errorOf(answer)).toMatch(/under 4000 characters/);
-      expect(feedback.create).not.toHaveBeenCalled();
+      expect(waitUntil).not.toHaveBeenCalled();
     });
 
     it.each([
       [
         'already reviewed',
-        new ConflictException(),
+        { ...SUBMISSION, status: 'approved' },
         'This submission was already reviewed.',
       ],
-      ['gone', new NotFoundException(), 'This submission no longer exists.'],
+      ['gone', null, 'This submission no longer exists.'],
     ])(
-      'says so in the form when the submission is %s',
-      async (_, err, message) => {
-        feedback.create.mockRejectedValue(err);
+      'keeps the form open when the submission is %s',
+      async (_, sub, message) => {
+        prisma.submission.findUnique.mockResolvedValue(sub);
 
         expect(errorOf(await submit())).toBe(message);
+        expect(waitUntil).not.toHaveBeenCalled();
       },
     );
 
-    it('logs any other error and points to the app', async () => {
+    it.each([
+      [
+        'another mentor was faster',
+        new ConflictException(),
+        'Another mentor reviewed this submission first.',
+      ],
+      [
+        'the submission was deleted',
+        new NotFoundException(),
+        'This submission no longer exists.',
+      ],
+    ])(
+      'tells the mentor in Slack, with their feedback, when %s',
+      async (_, err, problem) => {
+        feedback.create.mockRejectedValue(err);
+
+        await submit();
+        await saved();
+
+        expect(slack.postInBackground).toHaveBeenCalledWith(
+          'U0MENTOR',
+          expect.anything(),
+        );
+        expect(toldMentor()).toContain(problem);
+        expect(toldMentor()).toContain('Great work on the CLI!');
+      },
+    );
+
+    it('logs any other error and points the mentor to the app', async () => {
       const logError = jest
         .spyOn(Logger.prototype, 'error')
         .mockImplementation(() => undefined);
       feedback.create.mockRejectedValue(new Error('db down'));
 
-      const answer = await submit();
+      await submit();
+      await saved();
 
-      expect(errorOf(answer)).toMatch(/review this submission in Forgeng/);
+      expect(toldMentor()).toMatch(/review this submission in Forgeng/);
       expect(logError).toHaveBeenCalled();
       logError.mockRestore();
     });
