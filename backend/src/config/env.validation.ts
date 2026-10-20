@@ -157,6 +157,14 @@ class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  SLACK_BOT_TOKEN?: string;
+
+  @IsOptional()
+  @IsString()
+  SLACK_MENTORS_CHANNEL_ID?: string;
+
+  @IsOptional()
+  @IsString()
   IPQUALITYSCORE_API_KEY?: string;
 
   @IsOptional()

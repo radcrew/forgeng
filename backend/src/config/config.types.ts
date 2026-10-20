@@ -36,6 +36,11 @@ export interface AppConfiguration {
    * calls the email retry route. Unset means the route refuses every call.
    */
   cronSecret: string | undefined;
+  /**
+   * The Forgeng Slack app. Null when the bot token is missing: nothing is
+   * posted to Slack then.
+   */
+  slack: SlackConfig | null;
   ipQualityScore: {
     apiKey: string | undefined;
   };
@@ -51,6 +56,13 @@ export interface OAuthProviderConfig {
   clientId: string;
   clientSecret: string;
   callbackUrl: string;
+}
+
+export interface SlackConfig {
+  /** The bot's token, starting with "xoxb-". */
+  botToken: string;
+  /** The private channel for mentors' alerts. Null: those aren't posted. */
+  mentorsChannelId: string | null;
 }
 
 export interface SmtpConfig {

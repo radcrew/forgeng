@@ -136,6 +136,12 @@ export default (): AppConfiguration => {
     smtp: parseSmtp(),
     emailFrom: process.env.EMAIL_FROM ?? DEFAULT_EMAIL_FROM,
     cronSecret: process.env.CRON_SECRET || undefined,
+    slack: process.env.SLACK_BOT_TOKEN
+      ? {
+          botToken: process.env.SLACK_BOT_TOKEN,
+          mentorsChannelId: process.env.SLACK_MENTORS_CHANNEL_ID || null,
+        }
+      : null,
     ipQualityScore: {
       apiKey: process.env.IPQUALITYSCORE_API_KEY,
     },
