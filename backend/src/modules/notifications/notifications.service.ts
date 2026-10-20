@@ -5,6 +5,7 @@ import type { Verdict } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { MailService, type RenderedEmail } from '../../core/mail';
+import { SlackService } from '../../core/slack';
 import {
   toNotificationDto,
   toNotificationPreferenceDto,
@@ -27,6 +28,7 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly config: ConfigService<AppConfiguration, true>,
+    private readonly slack: SlackService,
   ) {}
 
   async list(
@@ -158,6 +160,19 @@ export class NotificationsService {
     cohortId: number;
     title: string;
   }): Promise<void> {
+    const link = STUDENT_ROUTES.TASK(task.id);
+
+    // To the cohort's channel, even before anyone is enrolled: students who
+    // join later still see it there.
+    const cohort = await this.prisma.cohort.findUnique({
+      where: { id: task.cohortId },
+      select: { slackChannelId: true },
+    });
+    this.slack.postInBackground(cohort?.slackChannelId ?? null, {
+      text: `New task: ${task.title}`,
+      link: { label: 'Open task', url: this.absoluteUrl(link) },
+    });
+
     const enrollments = await this.prisma.enrollment.findMany({
       where: { cohortId: task.cohortId },
       select: { userId: true, user: { select: { email: true } } },
@@ -171,8 +186,6 @@ export class NotificationsService {
     const prefByUser = new Map(prefRows.map((p) => [p.userId, p]));
     const prefsFor = (userId: number) =>
       toNotificationPreferenceDto(prefByUser.get(userId) ?? null);
-
-    const link = STUDENT_ROUTES.TASK(task.id);
 
     const inAppUserIds = userIds.filter((id) => prefsFor(id).taskInApp);
     if (inAppUserIds.length > 0) {
@@ -205,6 +218,14 @@ export class NotificationsService {
     studentName: string;
     taskTitle: string;
   }): Promise<void> {
+    // First: a failed in-app notice must not skip the Slack post.
+    this.slack.postToMentors({
+      text: `${params.studentName} submitted "${params.taskTitle}" for review`,
+      link: {
+        label: 'Review',
+        url: this.absoluteUrl(ADMIN_ROUTES.REVIEWS),
+      },
+    });
     await this.notifyAdmins({
       type: 'submission_received',
       title: 'New submission to review',
@@ -217,6 +238,13 @@ export class NotificationsService {
   async notifyApplicationReceived(params: {
     applicantName: string;
   }): Promise<void> {
+    this.slack.postToMentors({
+      text: `New application from ${params.applicantName}`,
+      link: {
+        label: 'Open applications',
+        url: this.absoluteUrl(ADMIN_ROUTES.APPLICATIONS),
+      },
+    });
     await this.notifyAdmins({
       type: 'application_received',
       title: 'New application received',
@@ -234,6 +262,13 @@ export class NotificationsService {
     /** The month the tasks were due, such as "May 2026". */
     month: string;
   }): Promise<void> {
+    this.slack.postToMentors({
+      text: `${params.studentName} completed all tasks due in ${params.month} and is eligible for the stipend`,
+      link: {
+        label: 'Open student',
+        url: this.absoluteUrl(ADMIN_ROUTES.USER(params.studentId)),
+      },
+    });
     await this.notifyAdmins({
       type: 'payment_eligible',
       title: 'Student eligible for monthly payment',
