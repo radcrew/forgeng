@@ -218,9 +218,9 @@ export const CohortFormDialog = ({
             placeholder="e.g. C0123ABCD"
           />
           <p className="text-xs text-muted-foreground">
-            New tasks are posted to this channel. In Slack, open the channel
-            details: the ID is at the bottom. Invite the Forgeng app to the
-            channel too.
+            {isEdit
+              ? "New tasks are posted to this channel. In Slack, open the channel details: the ID is at the bottom. Invite the Forgeng app to the channel too."
+              : "Leave it empty to create a private Slack channel for this cohort automatically. To use a channel you already have, paste its ID: in Slack, open the channel details, and the ID is at the bottom."}
           </p>
         </FormField>
       </FormBody>

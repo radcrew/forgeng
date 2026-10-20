@@ -139,6 +139,22 @@ describe("cohort FormDialog", () => {
     expect(updateCohort).not.toHaveBeenCalled();
   });
 
+  it("explains that an empty channel ID creates a channel, only when creating", () => {
+    const { unmount } = render(<FormDialog open onOpenChange={vi.fn()} />);
+    expect(
+      screen.getByText(/Leave it empty to create a private Slack channel/),
+    ).toBeInTheDocument();
+    unmount();
+
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+    expect(
+      screen.queryByText(/Leave it empty to create a private Slack channel/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/New tasks are posted to this channel/),
+    ).toBeInTheDocument();
+  });
+
   it("keeps create disabled for a name that is only spaces", async () => {
     render(<FormDialog open onOpenChange={vi.fn()} />);
 
