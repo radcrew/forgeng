@@ -16,6 +16,14 @@
 #   - NODE_ENV        set below to "production"
 #   - CORS_ORIGIN     MUST be set manually in the Render dashboard, e.g.
 #                     "https://forgeng.vercel.app" (comma-separated for many)
+#   - SMTP_HOST       MUST be set manually in the Render dashboard. With
+#                     NODE_ENV=production the server refuses to start
+#                     without it. SMTP_PORT, SMTP_USER, SMTP_PASS,
+#                     SMTP_SECURE and EMAIL_FROM are set there too.
+#
+# CRON_SECRET is not needed here. The daily email retry (backend/vercel.json)
+# runs only on Vercel, so on Render failed emails stay in the outbox and are
+# not sent again.
 #
 # The database is hosted on Supabase, not Render — there is no `databases:`
 # block here.
@@ -66,4 +74,16 @@ services:
       # Comma-separated list, e.g.
       #   https://forgeng.vercel.app,https://forgeng-staging.vercel.app
       - key: CORS_ORIGIN
+        sync: false
+      # Outgoing email. SMTP_HOST is required in production. Set these
+      # manually in the Render dashboard.
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
         sync: false

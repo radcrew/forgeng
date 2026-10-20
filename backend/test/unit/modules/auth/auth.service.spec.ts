@@ -6,12 +6,15 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
+import { waitUntil } from '@vercel/functions';
 import { PrismaService } from '@core/database/prisma.service';
 import { AuthService } from '@modules/auth/auth.service';
 import { EmailService } from '@modules/auth/services/email.service';
 import { RegionRestrictionService } from '@modules/auth/services/region-restriction.service';
 import { TokenService } from '@modules/auth/services/token.service';
 import { VerificationService } from '@modules/auth/services/verification.service';
+
+jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
 
 const DATE = new Date('2026-01-15T10:30:00.000Z');
 
@@ -53,6 +56,8 @@ describe('AuthService', () => {
   let regionRestriction: { check: jest.Mock };
 
   beforeEach(() => {
+    // So a waitUntil check sees only its own test's calls.
+    (waitUntil as jest.Mock).mockClear();
     prisma = { user: { findUnique: jest.fn(), create: jest.fn() } };
     password = {
       hash: jest.fn().mockResolvedValue('hashed'),
@@ -113,6 +118,16 @@ describe('AuthService', () => {
       expect(data.email).toBe('ada@example.com');
       expect(email.sendVerificationEmail).toHaveBeenCalledTimes(1);
       expect(result.user.email).toBe('ada@example.com');
+    });
+
+    it('keeps the function alive for the verification email', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue(makeUser({ emailVerified: false }));
+
+      await service.register({ email: 'ada@example.com', password: 'pw' }, {});
+
+      // On Vercel, waitUntil stops the function from freezing mid-send.
+      expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise));
     });
 
     it('still registers when the verification email fails to send', async () => {
@@ -216,6 +231,8 @@ describe('AuthService', () => {
       prisma.user.findUnique.mockResolvedValue(makeUser());
       await service.requestPasswordReset('ada@example.com');
       expect(email.sendPasswordResetEmail).toHaveBeenCalledTimes(1);
+      // On Vercel, waitUntil stops the function from freezing mid-send.
+      expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise));
     });
 
     it('resolves when the reset email fails to send', async () => {

@@ -161,6 +161,10 @@ class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  CRON_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
   IPQUALITYSCORE_API_KEY?: string;
 
   @IsOptional()
@@ -192,6 +196,9 @@ export function validateEnv(
     const missing: string[] = [];
     if (!validated.JWT_ACCESS_SECRET) missing.push('JWT_ACCESS_SECRET');
     if (!validated.JWT_REFRESH_SECRET) missing.push('JWT_REFRESH_SECRET');
+    // Without it, the mail service only logs each email and reports success,
+    // so a deploy would send no email and nothing would warn about it.
+    if (!validated.SMTP_HOST) missing.push('SMTP_HOST');
     if (missing.length > 0) {
       throw new Error(
         `Production requires the following env vars: ${missing.join(', ')}`,

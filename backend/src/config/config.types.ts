@@ -37,6 +37,11 @@ export interface AppConfiguration {
   googleCalendar: GoogleCalendarConfig | null;
   smtp: SmtpConfig | null;
   emailFrom: string;
+  /**
+   * Secret that Vercel Cron sends as `Authorization: Bearer <secret>` when it
+   * calls the email retry route. Unset means the route refuses every call.
+   */
+  cronSecret: string | undefined;
   ipQualityScore: {
     apiKey: string | undefined;
   };
