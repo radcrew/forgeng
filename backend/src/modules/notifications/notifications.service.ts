@@ -125,10 +125,21 @@ export class NotificationsService {
       this.prisma.notificationPreference.findUnique({ where: { userId } }),
       this.prisma.user.findUnique({
         where: { id: userId },
-        select: { email: true },
+        select: { email: true, slackUserId: true },
       }),
     ]);
     const prefs = toNotificationPreferenceDto(prefRow);
+
+    // First: a failed in-app notice must not skip the Slack message. Only
+    // for a student who has joined the Forgeng Slack.
+    if (prefs.feedbackSlack && user?.slackUserId) {
+      this.slack.postInBackground(user.slackUserId, {
+        text: approved
+          ? 'A reviewer approved your submission. Great work!'
+          : 'A reviewer asked for changes on your submission. Open it to read the feedback.',
+        link: { label: 'Open submissions', url: this.absoluteUrl(link) },
+      });
+    }
 
     if (prefs.feedbackInApp) {
       await this.prisma.notification.create({
@@ -269,6 +280,21 @@ export class NotificationsService {
         url: this.absoluteUrl(ADMIN_ROUTES.USER(params.studentId)),
       },
     });
+    // Like the stipend email, which has no switch: students always want to
+    // know their stipend is coming.
+    const student = await this.prisma.user.findUnique({
+      where: { id: params.studentId },
+      select: { slackUserId: true },
+    });
+    if (student?.slackUserId) {
+      this.slack.postInBackground(student.slackUserId, {
+        text: `You completed all your tasks for ${params.month}. Great work! Your monthly stipend will be sent within 2 business days.`,
+        link: {
+          label: 'Open dashboard',
+          url: this.absoluteUrl(STUDENT_ROUTES.DASHBOARD),
+        },
+      });
+    }
     await this.notifyAdmins({
       type: 'payment_eligible',
       title: 'Student eligible for monthly payment',
