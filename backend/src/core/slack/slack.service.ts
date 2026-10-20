@@ -78,6 +78,21 @@ export class SlackService {
     );
   }
 
+  /**
+   * Removes a member from a channel. Someone not in it counts as done.
+   * They stay in the workspace: the app can't remove people from it.
+   */
+  async removeFromChannel(
+    channelId: string,
+    slackUserId: string,
+  ): Promise<void> {
+    await this.call(
+      'conversations.kick',
+      { channel: channelId, user: slackUserId },
+      ['not_in_channel'],
+    );
+  }
+
   private async post(
     botToken: string,
     channelId: string,

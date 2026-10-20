@@ -17,6 +17,7 @@ import {
 } from '../../common/mappers';
 import { splitName } from '../../common/string';
 import { MailService } from '../../core/mail';
+import { SlackChannelsService } from '../../core/slack';
 import { assertCohortHasRoom } from '../cohorts/cohort-capacity';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
@@ -57,6 +58,7 @@ export class ApplicationsService {
     private readonly mail: MailService,
     private readonly config: ConfigService<AppConfiguration, true>,
     private readonly video: VideoService,
+    private readonly slackChannels: SlackChannelsService,
   ) {
     this.frontendUrl = this.config.get('frontendUrl', { infer: true });
   }
@@ -224,6 +226,15 @@ export class ApplicationsService {
 
       return app;
     });
+
+    // The old and the new cohort, since a move changes both channels. Also
+    // for a note edit, which can change the cohort of an accepted student.
+    if (updated.status === ApplicationStatus.accepted && updated.userId) {
+      this.slackChannels.syncInBackground(updated.userId, [
+        updated.cohortId,
+        exists.cohortId,
+      ]);
+    }
 
     const applicantName = `${updated.firstName} ${updated.lastName}`.trim();
 

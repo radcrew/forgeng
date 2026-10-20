@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Prisma, type User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { MailService } from '@core/mail';
+import { SlackChannelsService } from '@core/slack';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import { ApplicationsService } from '@modules/applications/applications.service';
 import { VideoService } from '@modules/applications/video.service';
@@ -116,6 +117,7 @@ describe('ApplicationsService', () => {
   let notifications: { notifyApplicationReceived: jest.Mock };
   let mail: { sendInBackground: jest.Mock };
   let video: { assertOwnUpload: jest.Mock; viewUrl: jest.Mock };
+  let slackChannels: { syncInBackground: jest.Mock };
 
   beforeEach(() => {
     prisma = {
@@ -154,12 +156,15 @@ describe('ApplicationsService', () => {
       get: jest.fn().mockReturnValue('https://app.example.com'),
     };
 
+    slackChannels = { syncInBackground: jest.fn() };
+
     service = new ApplicationsService(
       prisma as unknown as PrismaService,
       notifications as unknown as NotificationsService,
       mail as unknown as MailService,
       config as unknown as ConfigService<never, true>,
       video as unknown as VideoService,
+      slackChannels as unknown as SlackChannelsService,
     );
   });
 
@@ -474,6 +479,19 @@ describe('ApplicationsService', () => {
       expect(tx.enrollment.upsert).toHaveBeenCalledWith(
         expect.objectContaining({ create: { userId: 1, cohortId: 5 } }),
       );
+      // Adds the new student to the cohort's Slack channel.
+      expect(slackChannels.syncInBackground).toHaveBeenCalledWith(1, [5, null]);
+    });
+
+    it('touches no Slack channel for a rejected application', async () => {
+      prisma.application.findUnique.mockResolvedValue(makeApplicationRow());
+      tx.application.update.mockResolvedValue(
+        makeApplicationRow({ status: 'rejected' }),
+      );
+
+      await service.updateStatus(10, { status: 'rejected' });
+
+      expect(slackChannels.syncInBackground).not.toHaveBeenCalled();
     });
 
     it('moves an accepted student to the new cohort', async () => {
@@ -499,6 +517,8 @@ describe('ApplicationsService', () => {
       expect(tx.enrollment.deleteMany).toHaveBeenCalledWith({
         where: { userId: 1, cohortId: 3 },
       });
+      // Both channels: into the new cohort's, out of the old one's.
+      expect(slackChannels.syncInBackground).toHaveBeenCalledWith(1, [4, 3]);
     });
 
     it('removes the student from the cohort when it is cleared', async () => {

@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Cohort, Enrollment, User } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
+import { SlackChannelsService } from '@core/slack';
 import { CohortsService } from '@modules/cohorts/cohorts.service';
 
 const DATE = new Date('2026-01-15T10:30:00.000Z');
@@ -40,6 +41,7 @@ function makeUser(overrides: Partial<User> = {}): User {
 
 describe('CohortsService', () => {
   let service: CohortsService;
+  let slackChannels: { syncInBackground: jest.Mock };
   let prisma: {
     cohort: {
       findMany: jest.Mock;
@@ -83,7 +85,11 @@ describe('CohortsService', () => {
       ),
     };
 
-    service = new CohortsService(prisma as unknown as PrismaService);
+    slackChannels = { syncInBackground: jest.fn() };
+    service = new CohortsService(
+      prisma as unknown as PrismaService,
+      slackChannels as unknown as SlackChannelsService,
+    );
   });
 
   describe('list', () => {
@@ -319,6 +325,18 @@ describe('CohortsService', () => {
       expect(prisma.enrollment.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: { cohortId: 3, userId: 1 } }),
       );
+      // Adds the student to the cohort's Slack channel.
+      expect(slackChannels.syncInBackground).toHaveBeenCalledWith(1, [3]);
+    });
+
+    it('touches no Slack channel when the enrollment fails', async () => {
+      prisma.cohort.findUnique.mockResolvedValue({
+        ...makeCohort({ capacity: 1 }),
+        _count: { enrollments: 1 },
+      });
+
+      await expect(service.enroll(3, { userId: 1 })).rejects.toThrow();
+      expect(slackChannels.syncInBackground).not.toHaveBeenCalled();
     });
   });
 
@@ -336,6 +354,8 @@ describe('CohortsService', () => {
         where: { cohortId: 3, userId: 1 },
         data: { cohortId: null },
       });
+      // Takes the student out of the cohort's Slack channel.
+      expect(slackChannels.syncInBackground).toHaveBeenCalledWith(1, [3]);
     });
 
     it('throws NotFoundException when the student is not in the cohort', async () => {

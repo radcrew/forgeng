@@ -176,6 +176,29 @@ describe('SlackService', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
   });
+
+  describe('removeFromChannel', () => {
+    it('removes the member from the channel', async () => {
+      await makeService(SLACK).removeFromChannel('CCOHORT', 'U0ADA');
+
+      const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+      expect(url).toBe('https://slack.com/api/conversations.kick');
+      expect(JSON.parse(init.body)).toEqual({
+        channel: 'CCOHORT',
+        user: 'U0ADA',
+      });
+    });
+
+    it('counts someone not in the channel as done', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'not_in_channel' }),
+      );
+
+      await expect(
+        makeService(SLACK).removeFromChannel('CCOHORT', 'U0ADA'),
+      ).resolves.toBeUndefined();
+    });
+  });
 });
 
 describe('escapeSlackText', () => {

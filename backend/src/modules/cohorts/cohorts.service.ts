@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import type { Cohort } from '@prisma/client';
 import { PrismaService } from '../../core/database/prisma.service';
+import { SlackChannelsService } from '../../core/slack';
 import {
   toCohortDto,
   toEnrollmentDto,
@@ -18,7 +19,10 @@ import { UpdateCohortDto } from './dto/update-cohort.dto';
 
 @Injectable()
 export class CohortsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly slackChannels: SlackChannelsService,
+  ) {}
 
   async list(): Promise<CohortDto[]> {
     const cohorts = await this.prisma.cohort.findMany({
@@ -110,6 +114,7 @@ export class CohortsService {
         include: { user: true },
       });
     });
+    this.slackChannels.syncInBackground(dto.userId, [cohortId]);
     return toEnrollmentDto(enrollment, enrollment.user);
   }
 
@@ -129,6 +134,7 @@ export class CohortsService {
     if (removed.count === 0) {
       throw new NotFoundException('This student is not in the cohort.');
     }
+    this.slackChannels.syncInBackground(userId, [cohortId]);
   }
 
   private assertDateOrder(start: Date | null, end: Date | null): void {
