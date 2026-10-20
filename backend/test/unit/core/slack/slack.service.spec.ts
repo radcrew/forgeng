@@ -5,6 +5,7 @@ import {
   parseSubmissionKey,
   SlackService,
   submissionKey,
+  toSlackChannelName,
 } from '@core/slack';
 
 jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
@@ -288,6 +289,62 @@ describe('SlackService', () => {
     });
   });
 
+  describe('createPrivateChannel', () => {
+    it('creates a private channel and returns its id', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: true, channel: { id: 'CGOLANG' } }),
+      );
+
+      await expect(
+        makeService(SLACK).createPrivateChannel(['golang']),
+      ).resolves.toBe('CGOLANG');
+
+      const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+      expect(url).toBe('https://slack.com/api/conversations.create');
+      expect(JSON.parse(init.body)).toEqual({
+        name: 'golang',
+        is_private: true,
+      });
+    });
+
+    it('tries the next name when one is taken', async () => {
+      fetchMock
+        .mockReturnValueOnce(answer(200, { ok: false, error: 'name_taken' }))
+        .mockReturnValueOnce(
+          answer(200, { ok: true, channel: { id: 'CGOLANG7' } }),
+        );
+
+      await expect(
+        makeService(SLACK).createPrivateChannel(['golang', 'golang-7']),
+      ).resolves.toBe('CGOLANG7');
+      expect(
+        JSON.parse(
+          (fetchMock.mock.calls[1] as [string, { body: string }])[1].body,
+        ),
+      ).toMatchObject({ name: 'golang-7' });
+    });
+
+    it('throws when every name is taken', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'name_taken' }),
+      );
+
+      await expect(
+        makeService(SLACK).createPrivateChannel(['golang', 'golang-7']),
+      ).rejects.toThrow('every name was taken');
+    });
+
+    it('throws when Slack refuses, for example without the scope', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'missing_scope' }),
+      );
+
+      await expect(
+        makeService(SLACK).createPrivateChannel(['golang']),
+      ).rejects.toThrow('missing_scope');
+    });
+  });
+
   describe('openView', () => {
     it('opens the form for the click that triggered it', async () => {
       await makeService(SLACK).openView('trigger-1', { type: 'modal' });
@@ -357,4 +414,23 @@ describe('submissionKey', () => {
       expect(parseSubmissionKey(key)).toBeNull();
     },
   );
+});
+
+describe('toSlackChannelName', () => {
+  it.each([
+    ['Golang', 'golang'],
+    ['Golang Autumn 2026', 'golang-autumn-2026'],
+    ['  Go / Rust -- Spring!  ', 'go-rust-spring'],
+    ['Café Backend', 'cafe-backend'],
+    ['web_dev', 'web_dev'],
+    ['日本語', ''],
+  ])('turns %p into %p', (name, expected) => {
+    expect(toSlackChannelName(name)).toBe(expected);
+  });
+
+  it('keeps at most 80 characters, without a trailing dash', () => {
+    const name = toSlackChannelName(`${'a'.repeat(79)} b`);
+
+    expect(name).toBe('a'.repeat(79));
+  });
 });

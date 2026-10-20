@@ -6,6 +6,7 @@ export {
   escapeSlackText,
   parseSubmissionKey,
   submissionKey,
+  toSlackChannelName,
   type SlackMember,
   type SlackMessage,
 } from './slack.service';

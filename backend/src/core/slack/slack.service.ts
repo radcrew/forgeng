@@ -68,6 +68,27 @@ export function parseSubmissionKey(
   return match ? { id: Number(match[1]), sentAt: Number(match[2]) } : null;
 }
 
+/** Slack's longest channel name. */
+const CHANNEL_NAME_MAX = 80;
+
+/**
+ * Turns text, such as a cohort name, into a Slack channel name: lower case,
+ * with only letters, digits, "-" and "_", and at most 80 characters. For
+ * example "Golang Autumn 2026" becomes "golang-autumn-2026". Empty when
+ * nothing usable is left.
+ */
+export function toSlackChannelName(text: string): string {
+  return text
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^[-_]+|[-_]+$/g, '')
+    .slice(0, CHANNEL_NAME_MAX)
+    .replace(/[-_]+$/, '');
+}
+
 /**
  * Escapes the three characters Slack reads as codes. Without this, a name
  * like "<!channel>" would notify everyone in the channel.
@@ -118,6 +139,25 @@ export class SlackService {
   /** True when the bot token is set, so Slack calls can be made. */
   get enabled(): boolean {
     return this.botToken !== null;
+  }
+
+  /**
+   * Creates a private channel and returns its ID. The bot that creates it is
+   * a member, so it can post there. Tries each name in order and skips names
+   * that are taken. Throws when Slack refuses, or when every name is taken.
+   */
+  async createPrivateChannel(names: string[]): Promise<string> {
+    for (const name of names) {
+      const answer = await this.call<{ channel?: { id?: string } }>(
+        'conversations.create',
+        { name, is_private: true },
+        ['name_taken'],
+      );
+      if (answer.channel?.id) return answer.channel.id;
+    }
+    throw new Error(
+      `Slack refused conversations.create: every name was taken (${names.join(', ')})`,
+    );
   }
 
   /**
