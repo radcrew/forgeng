@@ -218,6 +218,42 @@ describe('FeedbackService', () => {
       );
     });
 
+    it('passes the student Slack account to the stipend notice', async () => {
+      prisma.submission.findUnique.mockResolvedValue({
+        id: 10,
+        userId: student.id,
+        taskId: 5,
+      });
+      prisma.submission.updateMany.mockResolvedValue({ count: 1 });
+      prisma.feedback.create.mockReturnValue(makeFeedback());
+      prisma.task.findUnique.mockResolvedValue({
+        cohortId: 3,
+        dueDate: new Date('2026-05-30T00:00:00.000Z'),
+      });
+      prisma.task.findMany.mockResolvedValue([{ id: 5 }]);
+      prisma.submission.findMany.mockResolvedValue([{ taskId: 5 }]);
+      prisma.notification.findFirst.mockResolvedValue(null);
+      prisma.user.findUnique.mockResolvedValue({
+        name: 'Stu',
+        email: 'stu@example.com',
+        slackUserId: 'U0STU',
+      });
+
+      await service.create(10, reviewer, {
+        content: 'ok',
+        verdict: 'approved',
+      } as never);
+
+      expect(prisma.user.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          select: { name: true, email: true, slackUserId: true },
+        }),
+      );
+      expect(notifications.notifyPaymentEligible).toHaveBeenCalledWith(
+        expect.objectContaining({ studentSlackUserId: 'U0STU' }),
+      );
+    });
+
     it('counts approved tasks, not submissions, for payment eligibility', async () => {
       prisma.submission.findUnique.mockResolvedValue({
         id: 10,

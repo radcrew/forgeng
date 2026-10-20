@@ -279,6 +279,8 @@ export class NotificationsService {
     studentName: string;
     studentId: number;
     studentEmail: string;
+    /** Null when the student hasn't linked Slack. */
+    studentSlackUserId: string | null;
     /** The month the tasks were due, such as "May 2026". */
     month: string;
   }): Promise<void> {
@@ -291,12 +293,8 @@ export class NotificationsService {
     });
     // Like the stipend email, which has no switch: students always want to
     // know their stipend is coming.
-    const student = await this.prisma.user.findUnique({
-      where: { id: params.studentId },
-      select: { slackUserId: true },
-    });
-    if (student?.slackUserId) {
-      this.slack.postInBackground(student.slackUserId, {
+    if (params.studentSlackUserId) {
+      this.slack.postInBackground(params.studentSlackUserId, {
         text: `You completed all your tasks for ${params.month}. Great work! Your monthly stipend will be sent within 2 business days.`,
         link: {
           label: 'Open dashboard',

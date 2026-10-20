@@ -75,12 +75,13 @@ export class FeedbackService {
 
     const student = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, email: true },
+      select: { name: true, email: true, slackUserId: true },
     });
     await this.notifications.notifyPaymentEligible({
       studentName: student?.name ?? student?.email ?? 'A student',
       studentId: userId,
       studentEmail: student?.email ?? '',
+      studentSlackUserId: student?.slackUserId ?? null,
       month: monthLabel,
     });
   }

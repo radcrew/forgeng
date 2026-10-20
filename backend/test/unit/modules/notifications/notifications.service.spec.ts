@@ -219,6 +219,7 @@ describe('NotificationsService', () => {
         studentName: 'Ada',
         studentId: 2,
         studentEmail: 'ada@example.com',
+        studentSlackUserId: null,
         month: 'May 2026',
       });
 
@@ -307,6 +308,7 @@ describe('NotificationsService', () => {
         studentName: 'Ada',
         studentId: 2,
         studentEmail: 'ada@example.com',
+        studentSlackUserId: null,
         month: 'May 2026',
       });
 
@@ -384,23 +386,38 @@ describe('NotificationsService', () => {
       });
 
       it('tells the student in Slack that the stipend is coming', async () => {
-        prisma.user.findUnique.mockResolvedValue({ slackUserId: 'U0ADA' });
         prisma.user.findMany.mockResolvedValue([]);
 
         await service.notifyPaymentEligible({
           studentName: 'Ada',
           studentId: 2,
           studentEmail: 'ada@example.com',
+          studentSlackUserId: 'U0ADA',
           month: 'May 2026',
         });
 
-        expect(prisma.user.findUnique).toHaveBeenCalledWith(
-          expect.objectContaining({ where: { id: 2 } }),
-        );
+        // The caller already read the student, so no extra read here.
+        expect(prisma.user.findUnique).not.toHaveBeenCalled();
         expect(slack.postInBackground).toHaveBeenCalledWith('U0ADA', {
           text: 'You completed all your tasks for May 2026. Great work! Your monthly stipend will be sent within 2 business days.',
           link: { label: 'Open dashboard', url: 'https://app/student' },
         });
+      });
+
+      it('still notifies the admins and emails a student without Slack', async () => {
+        prisma.user.findMany.mockResolvedValue([{ id: 10 }]);
+
+        await service.notifyPaymentEligible({
+          studentName: 'Ada',
+          studentId: 2,
+          studentEmail: 'ada@example.com',
+          studentSlackUserId: null,
+          month: 'May 2026',
+        });
+
+        expect(slack.postInBackground).not.toHaveBeenCalled();
+        expect(prisma.notification.createMany).toHaveBeenCalledTimes(1);
+        expect(mail.sendInBackground).toHaveBeenCalledTimes(1);
       });
     });
 
