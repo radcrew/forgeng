@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/retry-emails",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-slack-channels",
+      "schedule": "30 6 * * *"
     }
   ]
 }

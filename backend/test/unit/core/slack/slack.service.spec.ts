@@ -177,6 +177,45 @@ describe('SlackService', () => {
     });
   });
 
+  describe('listChannelMembers', () => {
+    it("follows Slack's pages until the list ends", async () => {
+      fetchMock
+        .mockReturnValueOnce(
+          answer(200, {
+            ok: true,
+            members: ['U1', 'U2'],
+            response_metadata: { next_cursor: 'page2' },
+          }),
+        )
+        .mockReturnValueOnce(
+          answer(200, {
+            ok: true,
+            members: ['U3'],
+            response_metadata: { next_cursor: '' },
+          }),
+        );
+
+      await expect(
+        makeService(SLACK).listChannelMembers('CCOHORT'),
+      ).resolves.toEqual(['U1', 'U2', 'U3']);
+
+      const second = JSON.parse(
+        (fetchMock.mock.calls[1] as [string, { body: string }])[1].body,
+      ) as { cursor?: string };
+      expect(second.cursor).toBe('page2');
+    });
+
+    it('throws when Slack refuses, instead of returning a short list', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'channel_not_found' }),
+      );
+
+      await expect(
+        makeService(SLACK).listChannelMembers('CCOHORT'),
+      ).rejects.toThrow('channel_not_found');
+    });
+  });
+
   describe('removeFromChannel', () => {
     it('removes the member from the channel', async () => {
       await makeService(SLACK).removeFromChannel('CCOHORT', 'U0ADA');

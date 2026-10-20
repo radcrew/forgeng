@@ -1,5 +1,3 @@
-import { timingSafeEqual } from 'node:crypto';
-
 import {
   Controller,
   Get,
@@ -9,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
 
+import { isCronRequest } from '../../common/utils/cron-auth';
 import type { AppConfiguration } from '../../config';
 import { Public } from '../auth/public.decorator';
 import { MailService } from './mail.service';
@@ -30,18 +29,15 @@ export class EmailRetryController {
   retryEmails(
     @Headers('authorization') authorization: string | undefined,
   ): Promise<{ retried: number; sent: number }> {
-    const secret = this.config.get('cronSecret', { infer: true });
     // Without a secret, nobody can call it.
-    if (!secret || !matches(authorization, `Bearer ${secret}`)) {
+    if (
+      !isCronRequest(
+        authorization,
+        this.config.get('cronSecret', { infer: true }),
+      )
+    ) {
       throw new UnauthorizedException();
     }
     return this.mail.retryFailed();
   }
-}
-
-/** Compares in constant time, so the answer time doesn't leak the secret. */
-function matches(given: string | undefined, expected: string): boolean {
-  const a = Buffer.from(given ?? '');
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
 }

@@ -13,13 +13,14 @@ const handed = () => {
 
 describe('SlackChannelsService', () => {
   let prisma: {
-    user: { findUnique: jest.Mock };
+    user: { findUnique: jest.Mock; findMany: jest.Mock };
     cohort: { findMany: jest.Mock };
   };
   let slack: {
     enabled: boolean;
     inviteToChannel: jest.Mock;
     removeFromChannel: jest.Mock;
+    listChannelMembers: jest.Mock;
   };
   let logError: jest.SpyInstance;
   let service: SlackChannelsService;
@@ -32,6 +33,7 @@ describe('SlackChannelsService', () => {
     prisma = {
       user: {
         findUnique: jest.fn().mockResolvedValue({ slackUserId: 'U0ADA' }),
+        findMany: jest.fn().mockResolvedValue([]),
       },
       cohort: {
         findMany: jest.fn().mockResolvedValue([
@@ -45,6 +47,7 @@ describe('SlackChannelsService', () => {
       enabled: true,
       inviteToChannel: jest.fn().mockResolvedValue(undefined),
       removeFromChannel: jest.fn().mockResolvedValue(undefined),
+      listChannelMembers: jest.fn().mockResolvedValue([]),
     };
     service = new SlackChannelsService(
       prisma as unknown as PrismaService,
@@ -122,5 +125,103 @@ describe('SlackChannelsService', () => {
       'Failed to sync the Slack channels of user 7',
       expect.stringContaining('db down'),
     );
+  });
+
+  describe('reconcileAll (nightly check)', () => {
+    beforeEach(() => {
+      // Cohort 4's channel should hold Ada and Grace.
+      prisma.cohort.findMany.mockResolvedValue([
+        {
+          id: 4,
+          slackChannelId: 'CSPRING',
+          enrollments: [
+            { user: { slackUserId: 'U0ADA' } },
+            { user: { slackUserId: 'U0GRACE' } },
+          ],
+        },
+      ]);
+      // Linked students: Ada and Grace are enrolled, Linus left the cohort.
+      prisma.user.findMany.mockResolvedValue([
+        { slackUserId: 'U0ADA' },
+        { slackUserId: 'U0GRACE' },
+        { slackUserId: 'U0LINUS' },
+      ]);
+      // In the channel: Ada, Linus, a mentor, the bot. Grace is missing.
+      slack.listChannelMembers.mockResolvedValue([
+        'U0ADA',
+        'U0LINUS',
+        'U0MENTOR',
+        'U0BOT',
+      ]);
+    });
+
+    it('adds enrolled students who are missing from the channel', async () => {
+      const result = await service.reconcileAll();
+
+      expect(slack.inviteToChannel).toHaveBeenCalledTimes(1);
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CSPRING', 'U0GRACE');
+      expect(result).toMatchObject({ channels: 1, added: 1 });
+    });
+
+    it('removes only linked students who left the cohort', async () => {
+      const result = await service.reconcileAll();
+
+      expect(slack.removeFromChannel).toHaveBeenCalledTimes(1);
+      expect(slack.removeFromChannel).toHaveBeenCalledWith(
+        'CSPRING',
+        'U0LINUS',
+      );
+      // Never the mentor or the bot, which Forgeng doesn't count as students.
+      expect(result).toMatchObject({ removed: 1 });
+    });
+
+    it('reads only enrolled students who are linked to Slack', async () => {
+      await service.reconcileAll();
+
+      expect(prisma.cohort.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { slackChannelId: { not: null } },
+        }),
+      );
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { role: 'student', slackUserId: { not: null } },
+        }),
+      );
+    });
+
+    it('keeps checking other channels when one fails', async () => {
+      prisma.cohort.findMany.mockResolvedValue([
+        { id: 3, slackChannelId: 'CBROKEN', enrollments: [] },
+        {
+          id: 4,
+          slackChannelId: 'CSPRING',
+          enrollments: [{ user: { slackUserId: 'U0GRACE' } }],
+        },
+      ]);
+      slack.listChannelMembers
+        .mockRejectedValueOnce(new Error('channel_not_found'))
+        .mockResolvedValueOnce([]);
+
+      const result = await service.reconcileAll();
+
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CSPRING', 'U0GRACE');
+      expect(result.channels).toBe(1);
+      expect(logError).toHaveBeenCalledWith(
+        'Failed to check Slack channel CBROKEN of cohort 3',
+        expect.stringContaining('channel_not_found'),
+      );
+    });
+
+    it('does nothing when Slack is not set up', async () => {
+      slack.enabled = false;
+
+      await expect(service.reconcileAll()).resolves.toEqual({
+        channels: 0,
+        added: 0,
+        removed: 0,
+      });
+      expect(prisma.cohort.findMany).not.toHaveBeenCalled();
+    });
   });
 });

@@ -5,6 +5,14 @@ import { waitUntil } from '@vercel/functions';
 import type { AppConfiguration } from '../../config';
 
 const API_URL = 'https://slack.com/api';
+const MEMBERS_PER_PAGE = 200;
+const MAX_MEMBER_PAGES = 50;
+
+/** The part every Slack Web API answer has. */
+interface SlackAnswer {
+  ok?: boolean;
+  error?: string;
+}
 const SLACK_TIMEOUT_MS = 10_000;
 
 export interface SlackMessage {
@@ -93,6 +101,27 @@ export class SlackService {
     );
   }
 
+  /** Every member of a channel, following Slack's pages. */
+  async listChannelMembers(channelId: string): Promise<string[]> {
+    const members: string[] = [];
+    let cursor = '';
+    for (let page = 0; page < MAX_MEMBER_PAGES; page++) {
+      const answer = await this.call<{
+        members?: string[];
+        response_metadata?: { next_cursor?: string };
+      }>('conversations.members', {
+        channel: channelId,
+        limit: MEMBERS_PER_PAGE,
+        ...(cursor ? { cursor } : {}),
+      });
+      members.push(...(answer.members ?? []));
+      cursor = answer.response_metadata?.next_cursor ?? '';
+      if (!cursor) return members;
+    }
+    // A cut-off list could make the nightly check remove real members.
+    throw new Error(`Slack channel ${channelId} has too many members to read`);
+  }
+
   private async post(
     botToken: string,
     channelId: string,
@@ -133,12 +162,12 @@ export class SlackService {
    * Calls one Slack Web API method. Slack answers 200 even for most errors,
    * with ok: false and an error code. Codes in `okErrors` count as done.
    */
-  private async call(
+  private async call<T extends object = object>(
     method: string,
     payload: Record<string, unknown>,
     okErrors: string[] = [],
     botToken = this.botToken,
-  ): Promise<void> {
+  ): Promise<T & SlackAnswer> {
     if (!botToken) throw new Error('Slack is not set up on this server.');
     const res = await fetch(`${API_URL}/${method}`, {
       method: 'POST',
@@ -149,11 +178,10 @@ export class SlackService {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(SLACK_TIMEOUT_MS),
     });
-    const body = (await res.json().catch(() => ({}))) as {
-      ok?: boolean;
-      error?: string;
-    };
-    if (res.ok && (body.ok || okErrors.includes(body.error ?? ''))) return;
+    const body = (await res.json().catch(() => ({}))) as T & SlackAnswer;
+    if (res.ok && (body.ok || okErrors.includes(body.error ?? ''))) {
+      return body;
+    }
     // For example "not_in_channel": invite the bot to the channel.
     throw new Error(
       `Slack refused ${method}: ${body.error ?? `HTTP ${res.status}`}`,
