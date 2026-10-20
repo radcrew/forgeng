@@ -219,7 +219,7 @@ describe('NotificationsService', () => {
         },
       });
       // Google already emails the calendar invite.
-      expect(mail.send).not.toHaveBeenCalled();
+      expect(mail.sendInBackground).not.toHaveBeenCalled();
     });
   });
 
