@@ -2,7 +2,10 @@ export type NotificationType =
   | "feedback_received"
   | "task_published"
   | "submission_received"
-  | "application_received";
+  | "application_received"
+  | "meeting_scheduled"
+  | "meeting_changed"
+  | "meeting_cancelled";
 
 export interface Notification {
   id: number;

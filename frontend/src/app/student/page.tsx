@@ -8,6 +8,7 @@ import {
   StudentView,
   useStudentDashboard,
 } from "@features/dashboard";
+import { UpcomingMeetingsCard } from "@features/meetings";
 import { MentorBookingCard } from "@features/mentors";
 import { useCurrentUser, useSelectedCohort } from "@contexts";
 import { isProfileComplete } from "@utils/user";
@@ -82,6 +83,7 @@ const Page = () => {
 
       {/* Also before enrollment: a student waiting for a cohort can talk to
           a mentor too. */}
+      <UpcomingMeetingsCard />
       <MentorBookingCard />
     </PageContainer>
   );

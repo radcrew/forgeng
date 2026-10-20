@@ -10,6 +10,7 @@ import { ErrorState } from "@components/shared";
 import { Button } from "@components/ui/button";
 import { useCurrentUser } from "@contexts";
 import { ApiError } from "@lib/api-client";
+import { isSafeHref } from "@utils";
 
 import { cancelMeeting } from "../api";
 import { useGoogleCalendarStatus, useMeetings } from "../hooks";
@@ -120,7 +121,7 @@ export const StudentMeetings = ({
                       {mine ? "You" : (meeting.host.name ?? "Another mentor")}
                     </p>
                   </div>
-                  {meeting.meetUrl && (
+                  {meeting.meetUrl && isSafeHref(meeting.meetUrl) && (
                     <a
                       href={meeting.meetUrl}
                       target="_blank"

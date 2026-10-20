@@ -30,6 +30,10 @@ vi.mock("@features/mentors", () => ({
   MentorBookingCard: () => <div>Book a meeting with a mentor</div>,
 }));
 
+vi.mock("@features/meetings", () => ({
+  UpcomingMeetingsCard: () => <div>Upcoming meetings</div>,
+}));
+
 import Page from "../../src/app/student/page";
 
 const withCohort = {
@@ -73,5 +77,6 @@ describe("student dashboard page", () => {
     render(<Page />);
 
     expect(screen.getByText("Book a meeting with a mentor")).toBeInTheDocument();
+    expect(screen.getByText("Upcoming meetings")).toBeInTheDocument();
   });
 });

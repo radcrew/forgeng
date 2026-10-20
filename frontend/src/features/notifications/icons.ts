@@ -1,5 +1,8 @@
 import {
   Bell,
+  CalendarClock,
+  CalendarPlus,
+  CalendarX,
   ClipboardList,
   Inbox,
   MessageSquare,
@@ -15,6 +18,9 @@ export const NOTIFICATION_ICONS: Record<NotificationType, LucideIcon> = {
   task_published: ClipboardList,
   submission_received: Inbox,
   application_received: UserPlus,
+  meeting_scheduled: CalendarPlus,
+  meeting_changed: CalendarClock,
+  meeting_cancelled: CalendarX,
 };
 
 export const FALLBACK_NOTIFICATION_ICON = Bell;

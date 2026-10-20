@@ -16,3 +16,4 @@ export {
 export { GoogleCalendarCard } from "./components/google-calendar-card";
 export { MeetingDialog } from "./components/meeting-dialog";
 export { StudentMeetings } from "./components/student-meetings";
+export { UpcomingMeetingsCard } from "./components/upcoming-meetings-card";
