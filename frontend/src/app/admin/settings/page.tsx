@@ -16,6 +16,7 @@ import { Label } from "@components/ui/label";
 import { PageContainer, PageHeader } from "@components/shared";
 import { LoadingState } from "@components/common";
 import { useSettings, useUpdateSettings, type PlatformSettings } from "@features/settings";
+import { SlackInviteCard } from "@features/slack";
 import { ApiError } from "@lib/api-client";
 
 type SettingsFormProps = {
@@ -123,13 +124,14 @@ const Page = () => {
     <PageContainer maxWidth="reading" spacing="8">
       <PageHeader
         title="Settings"
-        description="Platform-wide configuration for stipend payouts."
+        description="Platform-wide configuration for stipend payouts and the Slack community."
       />
       {isLoading || !settings ? (
         <LoadingState message="Loading settings…" />
       ) : (
         <SettingsForm settings={settings} onSaved={refetch} />
       )}
+      <SlackInviteCard />
     </PageContainer>
   );
 };
