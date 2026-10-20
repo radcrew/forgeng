@@ -30,7 +30,7 @@ describe('Slack channel check (e2e)', () => {
       .get(url)
       .set('Authorization', `Bearer ${SECRET}`)
       .expect(200)
-      .expect({ channels: 0, added: 0, removed: 0 });
+      .expect({ linked: 0, channels: 0, added: 0, removed: 0 });
   });
 
   it.each([
