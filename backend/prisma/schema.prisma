@@ -104,6 +104,9 @@ model User {
   // Stipend wallets for accounts without an application, same shape as
   // Application.wallets. With an application, they live on it instead.
   wallets              Json?
+  // The user's member ID in the Forgeng Slack workspace (starts with U), set
+  // when they join it. Null until then.
+  slackUserId          String?  @unique @map("slack_user_id") @db.VarChar(32)
   registrationIp       String?  @map("registration_ip")
   registrationCountry  String?  @map("registration_country")
   registrationCity     String?  @map("registration_city")
