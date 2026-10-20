@@ -5,8 +5,31 @@ export const FEEDBACK_BLOCK = 'feedback';
 export const FEEDBACK_INPUT = 'feedback_input';
 /** The same limit as the review form in the app. */
 export const FEEDBACK_MAX = 4000;
-/** How much of the student's note the form shows. Slack allows 3000. */
+/** How much of the student's note the form shows. */
 const NOTE_PREVIEW = 1000;
+/** Slack refuses a form whose section text is longer than this. */
+const SECTION_MAX = 3000;
+const CUT = '… (open Forgeng to read the rest)';
+
+/**
+ * Escapes text for Slack, then shortens it so it keeps at most `maxChars`
+ * of its characters and is at most `maxLength` long once escaped. It counts
+ * after escaping, since escaping makes text longer ("<" becomes "&lt;"), and
+ * never cuts an escaped character in half.
+ */
+function fitEscaped(text: string, maxChars: number, maxLength: number): string {
+  const chars = [...text];
+  const full = escapeSlackText(text);
+  if (chars.length <= maxChars && full.length <= maxLength) return full;
+
+  let out = '';
+  for (const ch of chars.slice(0, maxChars)) {
+    const escaped = escapeSlackText(ch);
+    if (out.length + escaped.length > maxLength - CUT.length) break;
+    out += escaped;
+  }
+  return out + CUT;
+}
 
 /**
  * The form a mentor fills in after clicking Approve. It shows the student's
@@ -21,14 +44,17 @@ export function approveFormView(params: {
   note: string | null;
 }): object {
   const note = params.note?.trim();
+  const repoLabel = '*Repository:* ';
+  const noteLabel = '*Note:*\n';
+  // One section each, so each one stays within Slack's limit.
   const work = [
-    params.repoUrl ? `*Repository:* ${escapeSlackText(params.repoUrl)}` : '',
+    params.repoUrl
+      ? repoLabel +
+        fitEscaped(params.repoUrl, Infinity, SECTION_MAX - repoLabel.length)
+      : '',
     note
-      ? `*Note:*\n${escapeSlackText(
-          note.length > NOTE_PREVIEW
-            ? `${note.slice(0, NOTE_PREVIEW)}… (open Forgeng to read the rest)`
-            : note,
-        )}`
+      ? noteLabel +
+        fitEscaped(note, NOTE_PREVIEW, SECTION_MAX - noteLabel.length)
       : '',
   ].filter(Boolean);
 
@@ -49,14 +75,10 @@ export function approveFormView(params: {
           ),
         },
       },
-      ...(work.length
-        ? [
-            {
-              type: 'section',
-              text: { type: 'mrkdwn', text: work.join('\n\n') },
-            },
-          ]
-        : []),
+      ...work.map((text) => ({
+        type: 'section',
+        text: { type: 'mrkdwn', text },
+      })),
       {
         type: 'input',
         block_id: FEEDBACK_BLOCK,

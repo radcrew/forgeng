@@ -136,6 +136,43 @@ describe('SlackReviewsService', () => {
     expect(form).toContain('open Forgeng to read the rest');
   });
 
+  /** The text of every section in the opened form. */
+  const sectionTexts = () =>
+    (
+      opened() as { blocks: Array<{ type: string; text?: { text: string } }> }
+    ).blocks
+      .filter((b) => b.type === 'section')
+      .map((b) => b.text?.text ?? '');
+
+  it("keeps a note full of escaped characters within Slack's limit", async () => {
+    // Each "&" becomes "&amp;" (5 characters), so 1000 of them would be 5000.
+    prisma.submission.findUnique.mockResolvedValue({
+      ...SUBMISSION,
+      content: '&'.repeat(1500),
+      repoUrl: `https://github.com/ada/cli?${'&x'.repeat(1400)}`,
+    });
+
+    await open();
+
+    for (const text of sectionTexts()) {
+      expect(text.length).toBeLessThanOrEqual(3000);
+    }
+    const note = sectionTexts().find((t) => t.startsWith('*Note:*'));
+    // Cut between escaped characters, never inside one.
+    expect(note).toMatch(/^\*Note:\*\n(&amp;)+… \(open Forgeng/);
+  });
+
+  it('shows a short note whole, without the cut message', async () => {
+    prisma.submission.findUnique.mockResolvedValue({
+      ...SUBMISSION,
+      content: 'Uses <Flag> & more',
+    });
+
+    await open();
+
+    expect(sectionTexts()).toContain('*Note:*\nUses &lt;Flag&gt; &amp; more');
+  });
+
   it('refuses a button from before the student sent new work', async () => {
     prisma.submission.findUnique.mockResolvedValue({
       ...SUBMISSION,
