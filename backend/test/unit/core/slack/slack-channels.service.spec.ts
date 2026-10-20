@@ -283,6 +283,37 @@ describe('SlackChannelsService', () => {
       );
     });
 
+    it('keeps checking the channel when Slack refuses one member', async () => {
+      // A deactivated account can't be invited, every night.
+      prisma.cohort.findMany.mockResolvedValue([
+        {
+          id: 4,
+          slackChannelId: 'CSPRING',
+          enrollments: [
+            { user: { slackUserId: 'U0GONE' } },
+            { user: { slackUserId: 'U0ADA' } },
+            { user: { slackUserId: 'U0GRACE' } },
+          ],
+        },
+      ]);
+      slack.inviteToChannel.mockRejectedValueOnce(new Error('user_disabled'));
+
+      const result = await service.reconcileAll();
+
+      // Grace is still added, and Linus is still removed.
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CSPRING', 'U0GRACE');
+      expect(slack.removeFromChannel).toHaveBeenCalledWith(
+        'CSPRING',
+        'U0LINUS',
+      );
+      // Only the calls that worked are counted.
+      expect(result).toEqual({ channels: 1, added: 1, removed: 1 });
+      expect(logError).toHaveBeenCalledWith(
+        'Failed to add Slack member U0GONE to channel CSPRING',
+        expect.stringContaining('user_disabled'),
+      );
+    });
+
     it('does nothing when Slack is not set up', async () => {
       slack.enabled = false;
 

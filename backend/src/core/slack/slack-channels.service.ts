@@ -102,14 +102,20 @@ export class SlackChannelsService {
     }
   }
 
-  private async tryCall(call: () => Promise<void>, what: string) {
+  /** Runs one Slack call and logs a failure. True when it worked. */
+  private async tryCall(
+    call: () => Promise<void>,
+    what: string,
+  ): Promise<boolean> {
     try {
       await call();
+      return true;
     } catch (err) {
       this.logger.error(
         `Failed to ${what}`,
         err instanceof Error ? err.stack : String(err),
       );
+      return false;
     }
   }
 
@@ -153,31 +159,43 @@ export class SlackChannelsService {
     for (const cohort of cohorts) {
       const channelId = cohort.slackChannelId;
       if (!channelId) continue;
+      let members: Set<string>;
       try {
-        const members = new Set(await this.slack.listChannelMembers(channelId));
-        const enrolled = new Set(
-          cohort.enrollments.map((e) => e.user.slackUserId),
-        );
-        for (const slackUserId of enrolled) {
-          if (!slackUserId || members.has(slackUserId)) continue;
-          await this.slack.inviteToChannel(channelId, slackUserId);
-          result.added++;
-        }
-        for (const slackUserId of members) {
-          if (!linkedStudents.has(slackUserId) || enrolled.has(slackUserId)) {
-            continue;
-          }
-          await this.slack.removeFromChannel(channelId, slackUserId);
-          result.removed++;
-        }
-        result.channels++;
+        members = new Set(await this.slack.listChannelMembers(channelId));
       } catch (err) {
+        // Without the member list, nobody can be added or removed safely.
         // One failed channel must not stop the others.
         this.logger.error(
           `Failed to check Slack channel ${channelId} of cohort ${cohort.id}`,
           err instanceof Error ? err.stack : String(err),
         );
+        continue;
       }
+
+      // Each call on its own: one member Slack refuses, such as a
+      // deactivated account, must not stop the rest of the channel.
+      const enrolled = new Set(
+        cohort.enrollments.map((e) => e.user.slackUserId),
+      );
+      for (const slackUserId of enrolled) {
+        if (!slackUserId || members.has(slackUserId)) continue;
+        const ok = await this.tryCall(
+          () => this.slack.inviteToChannel(channelId, slackUserId),
+          `add Slack member ${slackUserId} to channel ${channelId}`,
+        );
+        if (ok) result.added++;
+      }
+      for (const slackUserId of members) {
+        if (!linkedStudents.has(slackUserId) || enrolled.has(slackUserId)) {
+          continue;
+        }
+        const ok = await this.tryCall(
+          () => this.slack.removeFromChannel(channelId, slackUserId),
+          `remove Slack member ${slackUserId} from channel ${channelId}`,
+        );
+        if (ok) result.removed++;
+      }
+      result.channels++;
     }
     return result;
   }
