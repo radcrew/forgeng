@@ -12,10 +12,15 @@ const STUDENT = { id: 7, role: 'student', name: 'Ada', slackUserId: null };
 
 describe('SlackMembersService', () => {
   let prisma: {
-    user: { findUnique: jest.Mock; update: jest.Mock };
+    user: { findUnique: jest.Mock; findMany: jest.Mock; update: jest.Mock };
     enrollment: { findMany: jest.Mock };
   };
-  let slack: { inviteToChannel: jest.Mock; postInBackground: jest.Mock };
+  let slack: {
+    enabled: boolean;
+    inviteToChannel: jest.Mock;
+    postInBackground: jest.Mock;
+    listWorkspaceMembers: jest.Mock;
+  };
   let service: SlackMembersService;
 
   beforeEach(() => {
@@ -24,6 +29,7 @@ describe('SlackMembersService', () => {
     prisma = {
       user: {
         findUnique: jest.fn().mockResolvedValue(STUDENT),
+        findMany: jest.fn().mockResolvedValue([]),
         update: jest.fn().mockResolvedValue({}),
       },
       enrollment: {
@@ -36,8 +42,10 @@ describe('SlackMembersService', () => {
       },
     };
     slack = {
+      enabled: true,
       inviteToChannel: jest.fn().mockResolvedValue(undefined),
       postInBackground: jest.fn(),
+      listWorkspaceMembers: jest.fn().mockResolvedValue([]),
     };
     service = new SlackMembersService(
       prisma as unknown as PrismaService,
@@ -173,5 +181,75 @@ describe('SlackMembersService', () => {
     await service.handleTeamJoin(member);
 
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('says whether the member was linked now', async () => {
+    await expect(service.handleTeamJoin(MEMBER)).resolves.toBe(true);
+
+    prisma.user.findUnique.mockResolvedValue({
+      ...STUDENT,
+      slackUserId: 'U0ADA',
+    });
+    await expect(service.handleTeamJoin(MEMBER)).resolves.toBe(false);
+  });
+
+  describe('linkExisting', () => {
+    const GRACE = { id: 'U0GRACE', profile: { email: 'grace@example.com' } };
+
+    beforeEach(() => {
+      prisma.user.findMany.mockResolvedValue([{ email: 'ada@example.com' }]);
+      slack.listWorkspaceMembers.mockResolvedValue([MEMBER, GRACE]);
+    });
+
+    it('links only the members whose email belongs to an unlinked user', async () => {
+      await expect(service.linkExisting()).resolves.toBe(1);
+
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { slackUserId: null, role: { in: ['student', 'admin'] } },
+        }),
+      );
+      expect(prisma.user.update).toHaveBeenCalledTimes(1);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 7 },
+        data: { slackUserId: 'U0ADA' },
+      });
+      // Like a new member: added to their cohort channels and welcomed once.
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CSPRING', 'U0ADA');
+      expect(slack.postInBackground).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not ask Slack when everyone is already linked', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+
+      await expect(service.linkExisting()).resolves.toBe(0);
+
+      expect(slack.listWorkspaceMembers).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when Slack is not set up', async () => {
+      slack.enabled = false;
+
+      await expect(service.linkExisting()).resolves.toBe(0);
+
+      expect(prisma.user.findMany).not.toHaveBeenCalled();
+    });
+
+    it('keeps going when one member fails', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { email: 'ada@example.com' },
+        { email: 'grace@example.com' },
+      ]);
+      prisma.user.findUnique
+        .mockRejectedValueOnce(new Error('db down'))
+        .mockResolvedValueOnce({ ...STUDENT, id: 8, name: 'Grace' });
+
+      await expect(service.linkExisting()).resolves.toBe(1);
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 8 },
+        data: { slackUserId: 'U0GRACE' },
+      });
+    });
   });
 });

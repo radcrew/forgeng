@@ -25,15 +25,18 @@ export class SlackMembersService {
     this.frontendUrl = config.get('frontendUrl', { infer: true });
   }
 
-  /** Handles Slack's team_join event. Never throws: it runs after the answer. */
-  async handleTeamJoin(member: SlackMember): Promise<void> {
-    if (!member.id || member.is_bot || member.deleted) return;
+  /**
+   * Handles Slack's team_join event, and members found by `linkExisting`.
+   * True when the member was linked now.
+   */
+  async handleTeamJoin(member: SlackMember): Promise<boolean> {
+    if (!member.id || member.is_bot || member.deleted) return false;
     const email = member.profile?.email?.trim().toLowerCase();
     if (!email) {
       this.logger.warn(
         `Slack member ${member.id} joined without an email. Is the users:read.email scope added?`,
       );
-      return;
+      return false;
     }
 
     // Someone with no Forgeng account, such as a guest, is left alone.
@@ -41,18 +44,52 @@ export class SlackMembersService {
       where: { email },
       select: { id: true, role: true, name: true, slackUserId: true },
     });
-    if (!user) return;
+    if (!user) return false;
     // Only accepted people get the invite link, but anyone can share it.
-    if (user.role !== 'student' && user.role !== 'admin') return;
+    if (user.role !== 'student' && user.role !== 'admin') return false;
 
     // Slack can send the same event twice. A repeat changes nothing, and
     // sends no second welcome.
     const alreadyLinked = user.slackUserId === member.id;
-    if (!alreadyLinked && !(await this.link(user.id, member.id))) return;
+    if (!alreadyLinked && !(await this.link(user.id, member.id))) return false;
 
     if (user.role === 'student')
       await this.addToCohortChannels(user.id, member.id);
     if (!alreadyLinked) this.welcome(member.id, user.name, user.role);
+    return !alreadyLinked;
+  }
+
+  /**
+   * Links people who were in the workspace before they had a Forgeng
+   * account linked, for example members who joined before the app was set
+   * up. Slack sent no team_join for them. Returns how many were linked.
+   */
+  async linkExisting(): Promise<number> {
+    if (!this.slack.enabled) return 0;
+
+    const unlinked = await this.prisma.user.findMany({
+      where: { slackUserId: null, role: { in: ['student', 'admin'] } },
+      select: { email: true },
+    });
+    // Nothing to do, so no need to ask Slack.
+    if (unlinked.length === 0) return 0;
+    const emails = new Set(unlinked.map((u) => u.email.toLowerCase()));
+
+    let linked = 0;
+    for (const member of await this.slack.listWorkspaceMembers()) {
+      const email = member.profile?.email?.trim().toLowerCase();
+      if (!email || !emails.has(email)) continue;
+      try {
+        if (await this.handleTeamJoin(member)) linked++;
+      } catch (err) {
+        // One failed member must not stop the others.
+        this.logger.error(
+          `Failed to link Slack member ${member.id}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    }
+    return linked;
   }
 
   /** Saves the Slack account on the user. False when it can't be linked. */
