@@ -2,6 +2,7 @@ import {
   Controller,
   Headers,
   HttpCode,
+  Logger,
   Post,
   Req,
   UnauthorizedException,
@@ -9,16 +10,18 @@ import {
 import type { RawBodyRequest } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { waitUntil } from '@vercel/functions';
 import type { Request } from 'express';
 
 import type { AppConfiguration } from '../../config';
 import { Public } from '../../core/auth/public.decorator';
+import { SlackMembersService, type SlackMember } from './slack-members.service';
 import { verifySlackSignature } from './slack-signature';
 
 interface SlackEnvelope {
   type?: string;
   challenge?: string;
-  event?: { type?: string };
+  event?: { type?: string; user?: SlackMember };
 }
 
 /**
@@ -29,9 +32,13 @@ interface SlackEnvelope {
 @ApiExcludeController()
 @Controller('slack')
 export class SlackEventsController {
+  private readonly logger = new Logger(SlackEventsController.name);
   private readonly signingSecret: string | null;
 
-  constructor(config: ConfigService<AppConfiguration, true>) {
+  constructor(
+    private readonly members: SlackMembersService,
+    config: ConfigService<AppConfiguration, true>,
+  ) {
     this.signingSecret =
       config.get('slack', { infer: true })?.signingSecret ?? null;
   }
@@ -63,8 +70,21 @@ export class SlackEventsController {
     if (envelope.type === 'url_verification') {
       return { challenge: envelope.challenge ?? '' };
     }
-    // Other events are answered with an empty 200, so Slack doesn't send
-    // them again. They are handled in the next step.
+    // Slack waits only 3 seconds, so the work runs after the answer.
+    // waitUntil keeps a Vercel function alive until it finishes.
+    if (envelope.event?.type === 'team_join' && envelope.event.user) {
+      const member = envelope.event.user;
+      waitUntil(
+        this.members.handleTeamJoin(member).catch((err: unknown) => {
+          this.logger.error(
+            `Failed to handle Slack member ${member.id ?? '(unknown)'}`,
+            err instanceof Error ? err.stack : String(err),
+          );
+        }),
+      );
+    }
+    // Every event is answered with an empty 200, even one Forgeng ignores,
+    // so Slack doesn't send it again.
     return undefined;
   }
 }

@@ -60,6 +60,32 @@ describe('Slack events (e2e)', () => {
     ).expect(200);
   });
 
+  it('answers a new member at once, then looks them up after the answer', async () => {
+    ctx.prisma.user.findUnique.mockResolvedValue(null);
+
+    await post(
+      signed({
+        type: 'event_callback',
+        event: {
+          type: 'team_join',
+          user: { id: 'U0ADA', profile: { email: 'ada@example.com' } },
+        },
+      }),
+    ).expect(200);
+
+    // After the answer, so give the background work a moment.
+    for (
+      let i = 0;
+      i < 20 && !ctx.prisma.user.findUnique.mock.calls.length;
+      i++
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(ctx.prisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { email: 'ada@example.com' } }),
+    );
+  });
+
   it('refuses a request without a signature (401)', () => {
     return request(http())
       .post('/api/slack/events')

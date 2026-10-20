@@ -136,6 +136,46 @@ describe('SlackService', () => {
 
     expect(logError).toHaveBeenCalled();
   });
+
+  describe('inviteToChannel', () => {
+    it('adds the member to the channel', async () => {
+      await makeService(SLACK).inviteToChannel('CCOHORT', 'U0ADA');
+
+      const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+      expect(url).toBe('https://slack.com/api/conversations.invite');
+      expect(JSON.parse(init.body)).toEqual({
+        channel: 'CCOHORT',
+        users: 'U0ADA',
+      });
+    });
+
+    it('counts someone already in the channel as done', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'already_in_channel' }),
+      );
+
+      await expect(
+        makeService(SLACK).inviteToChannel('CCOHORT', 'U0ADA'),
+      ).resolves.toBeUndefined();
+    });
+
+    it('throws other Slack errors, so the caller can log them', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'not_in_channel' }),
+      );
+
+      await expect(
+        makeService(SLACK).inviteToChannel('CCOHORT', 'U0ADA'),
+      ).rejects.toThrow('not_in_channel');
+    });
+
+    it('throws when Slack is not set up', async () => {
+      await expect(
+        makeService(null).inviteToChannel('CCOHORT', 'U0ADA'),
+      ).rejects.toThrow('not set up');
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
 });
 
 describe('escapeSlackText', () => {

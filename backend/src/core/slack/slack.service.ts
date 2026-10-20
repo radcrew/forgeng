@@ -4,7 +4,7 @@ import { waitUntil } from '@vercel/functions';
 
 import type { AppConfiguration } from '../../config';
 
-const POST_MESSAGE_URL = 'https://slack.com/api/chat.postMessage';
+const API_URL = 'https://slack.com/api';
 const SLACK_TIMEOUT_MS = 10_000;
 
 export interface SlackMessage {
@@ -61,19 +61,32 @@ export class SlackService {
     this.postInBackground(this.mentorsChannelId, message);
   }
 
+  /** True when the bot token is set, so Slack calls can be made. */
+  get enabled(): boolean {
+    return this.botToken !== null;
+  }
+
+  /**
+   * Adds a member to a channel. Someone already in it counts as done.
+   * Throws when Slack refuses, so the caller can log which user failed.
+   */
+  async inviteToChannel(channelId: string, slackUserId: string): Promise<void> {
+    await this.call(
+      'conversations.invite',
+      { channel: channelId, users: slackUserId },
+      ['already_in_channel'],
+    );
+  }
+
   private async post(
     botToken: string,
     channelId: string,
     message: SlackMessage,
   ): Promise<void> {
     const text = escapeSlackText(message.text);
-    const res = await fetch(POST_MESSAGE_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${botToken}`,
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-      body: JSON.stringify({
+    await this.call(
+      'chat.postMessage',
+      {
         channel: channelId,
         // Shown in notifications, and where blocks can't be shown.
         text,
@@ -95,19 +108,40 @@ export class SlackService {
             : []),
         ],
         unfurl_links: false,
-      }),
+      },
+      [],
+      botToken,
+    );
+  }
+
+  /**
+   * Calls one Slack Web API method. Slack answers 200 even for most errors,
+   * with ok: false and an error code. Codes in `okErrors` count as done.
+   */
+  private async call(
+    method: string,
+    payload: Record<string, unknown>,
+    okErrors: string[] = [],
+    botToken = this.botToken,
+  ): Promise<void> {
+    if (!botToken) throw new Error('Slack is not set up on this server.');
+    const res = await fetch(`${API_URL}/${method}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${botToken}`,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(SLACK_TIMEOUT_MS),
     });
-    // Slack answers 200 even for most errors, with ok: false.
     const body = (await res.json().catch(() => ({}))) as {
       ok?: boolean;
       error?: string;
     };
-    if (!res.ok || !body.ok) {
-      // For example "not_in_channel": invite the bot to the channel.
-      throw new Error(
-        `Slack refused the post: ${body.error ?? `HTTP ${res.status}`}`,
-      );
-    }
+    if (res.ok && (body.ok || okErrors.includes(body.error ?? ''))) return;
+    // For example "not_in_channel": invite the bot to the channel.
+    throw new Error(
+      `Slack refused ${method}: ${body.error ?? `HTTP ${res.status}`}`,
+    );
   }
 }
