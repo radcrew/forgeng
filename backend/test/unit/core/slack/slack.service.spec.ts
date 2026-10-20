@@ -78,6 +78,23 @@ describe('SlackService', () => {
     });
   });
 
+  it('adds an action button next to the link', async () => {
+    makeService(SLACK).postToMentors({
+      text: 'New submission',
+      link: { label: 'Review', url: 'https://app.example/admin/reviews' },
+      action: { label: 'Approve', actionId: 'approve_submission', value: '9' },
+    });
+    await handed();
+
+    expect(sentBody().blocks[1]).toMatchObject({
+      type: 'actions',
+      elements: [
+        { url: 'https://app.example/admin/reviews' },
+        { action_id: 'approve_submission', value: '9', style: 'primary' },
+      ],
+    });
+  });
+
   it('escapes Slack codes in names and titles', async () => {
     makeService(SLACK).postToMentors({
       text: 'New application from <!channel> & co',

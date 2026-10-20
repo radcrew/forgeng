@@ -187,6 +187,7 @@ describe('NotificationsService', () => {
       prisma.user.findMany.mockResolvedValue([{ id: 10 }, { id: 11 }]);
 
       await service.notifySubmissionReceived({
+        submissionId: 9,
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -200,6 +201,7 @@ describe('NotificationsService', () => {
     it('does nothing when there are no admins', async () => {
       prisma.user.findMany.mockResolvedValue([]);
       await service.notifySubmissionReceived({
+        submissionId: 9,
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -278,6 +280,7 @@ describe('NotificationsService', () => {
       prisma.user.findMany.mockResolvedValue([]);
 
       await service.notifySubmissionReceived({
+        submissionId: 9,
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -285,6 +288,12 @@ describe('NotificationsService', () => {
       expect(slack.postToMentors).toHaveBeenCalledWith({
         text: 'Ada submitted "CLI" for review',
         link: { label: 'Review', url: 'https://app/admin/reviews' },
+        // Opens a feedback form in Slack for this submission.
+        action: {
+          label: 'Approve',
+          actionId: 'approve_submission',
+          value: '9',
+        },
       });
     });
 
@@ -397,6 +406,7 @@ describe('NotificationsService', () => {
 
       await expect(
         service.notifySubmissionReceived({
+          submissionId: 9,
           studentName: 'Ada',
           taskTitle: 'CLI',
         }),

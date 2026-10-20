@@ -20,7 +20,18 @@ export interface SlackMessage {
   text: string;
   /** A button that opens a page in Forgeng. */
   link?: { label: string; url: string };
+  /**
+   * A button that Slack sends back to Forgeng's interactions route when it is
+   * clicked, with this action ID and value.
+   */
+  action?: { label: string; actionId: string; value: string };
 }
+
+/** The action IDs of Forgeng's Slack buttons and forms. */
+export const SLACK_ACTIONS = {
+  /** The Approve button under a new submission. Its value is the id. */
+  APPROVE_SUBMISSION: 'approve_submission',
+} as const;
 
 /**
  * Escapes the three characters Slack reads as codes. Without this, a name
@@ -128,6 +139,28 @@ export class SlackService {
     message: SlackMessage,
   ): Promise<void> {
     const text = escapeSlackText(message.text);
+    const buttons = [
+      ...(message.link
+        ? [
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: message.link.label },
+              url: message.link.url,
+            },
+          ]
+        : []),
+      ...(message.action
+        ? [
+            {
+              type: 'button',
+              style: 'primary',
+              text: { type: 'plain_text', text: message.action.label },
+              action_id: message.action.actionId,
+              value: message.action.value,
+            },
+          ]
+        : []),
+    ];
     await this.call(
       'chat.postMessage',
       {
@@ -136,19 +169,8 @@ export class SlackService {
         text,
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text } },
-          ...(message.link
-            ? [
-                {
-                  type: 'actions',
-                  elements: [
-                    {
-                      type: 'button',
-                      text: { type: 'plain_text', text: message.link.label },
-                      url: message.link.url,
-                    },
-                  ],
-                },
-              ]
+          ...(buttons.length > 0
+            ? [{ type: 'actions', elements: buttons }]
             : []),
         ],
         unfurl_links: false,

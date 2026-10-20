@@ -28,6 +28,7 @@ import { NotificationPreferencesCard } from "@features/notifications/components/
 const ALL_ON: NotificationPreferences = {
   feedbackInApp: true,
   feedbackEmail: true,
+  feedbackSlack: true,
   taskInApp: true,
   taskEmail: true,
 };
@@ -52,9 +53,30 @@ describe("NotificationPreferencesCard", () => {
   it("renders switches reflecting the current preferences", () => {
     render(<NotificationPreferencesCard />);
     const switches = screen.getAllByRole("switch");
-    // 2 groups x (in-app + email) = 4 switches, all on.
-    expect(switches).toHaveLength(4);
+    // 2 groups x (in-app + email) + feedback in Slack = 5 switches, all on.
+    expect(switches).toHaveLength(5);
     switches.forEach((s) => expect(s).toHaveAttribute("aria-checked", "true"));
+  });
+
+  it("saves the feedback Slack switch", async () => {
+    render(<NotificationPreferencesCard />);
+
+    await userEvent.click(
+      screen.getByRole("switch", { name: "Submission feedback Slack messages" }),
+    );
+
+    expect(updatePrefs).toHaveBeenCalledWith({ feedbackSlack: false });
+  });
+
+  it("explains that new tasks are posted in the cohort channel", () => {
+    render(<NotificationPreferencesCard />);
+
+    expect(
+      screen.queryByRole("switch", { name: "New tasks Slack messages" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Posted in your cohort's Slack channel"),
+    ).toBeInTheDocument();
   });
 
   it("persists a toggled-off preference with the flipped value", async () => {

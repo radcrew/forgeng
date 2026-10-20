@@ -5,7 +5,7 @@ import type { Verdict } from '@prisma/client';
 import type { AppConfiguration } from '../../config';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { MailService, type RenderedEmail } from '../../core/mail';
-import { SlackService } from '../../core/slack';
+import { SLACK_ACTIONS, SlackService } from '../../core/slack';
 import {
   toNotificationDto,
   toNotificationPreferenceDto,
@@ -226,15 +226,22 @@ export class NotificationsService {
    * admins have no per-category email preferences in the current model.
    */
   async notifySubmissionReceived(params: {
+    submissionId: number;
     studentName: string;
     taskTitle: string;
   }): Promise<void> {
-    // First: a failed in-app notice must not skip the Slack post.
+    // First: a failed in-app notice must not skip the Slack post. Approve
+    // opens a form in Slack for the feedback; Review opens the app.
     this.slack.postToMentors({
       text: `${params.studentName} submitted "${params.taskTitle}" for review`,
       link: {
         label: 'Review',
         url: this.absoluteUrl(ADMIN_ROUTES.REVIEWS),
+      },
+      action: {
+        label: 'Approve',
+        actionId: SLACK_ACTIONS.APPROVE_SUBMISSION,
+        value: String(params.submissionId),
       },
     });
     await this.notifyAdmins({
