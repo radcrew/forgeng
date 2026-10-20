@@ -15,6 +15,21 @@ interface SlackAnswer {
 }
 const SLACK_TIMEOUT_MS = 10_000;
 
+/**
+ * Slack's methods that only read data don't accept a JSON body, so their
+ * arguments are sent as a form.
+ */
+const READ_METHODS = new Set(['conversations.members', 'users.list']);
+
+/** A workspace member, as Slack's users.list and team_join send it. */
+export interface SlackMember {
+  id?: string;
+  is_bot?: boolean;
+  deleted?: boolean;
+  /** The email needs the users:read.email scope. */
+  profile?: { email?: string };
+}
+
 export interface SlackMessage {
   /** Plain text. It is escaped, so names and titles can't add Slack codes. */
   text: string;
@@ -142,6 +157,28 @@ export class SlackService {
     throw new Error(`Slack channel ${channelId} has too many members to read`);
   }
 
+  /**
+   * Every member of the workspace, following Slack's pages. Bots and
+   * deactivated accounts are included, so callers filter them.
+   */
+  async listWorkspaceMembers(): Promise<SlackMember[]> {
+    const members: SlackMember[] = [];
+    let cursor = '';
+    for (let page = 0; page < MAX_MEMBER_PAGES; page++) {
+      const answer = await this.call<{
+        members?: SlackMember[];
+        response_metadata?: { next_cursor?: string };
+      }>('users.list', {
+        limit: MEMBERS_PER_PAGE,
+        ...(cursor ? { cursor } : {}),
+      });
+      members.push(...(answer.members ?? []));
+      cursor = answer.response_metadata?.next_cursor ?? '';
+      if (!cursor) return members;
+    }
+    throw new Error('The Slack workspace has too many members to read');
+  }
+
   private async post(
     botToken: string,
     channelId: string,
@@ -200,13 +237,20 @@ export class SlackService {
     botToken = this.botToken,
   ): Promise<T & SlackAnswer> {
     if (!botToken) throw new Error('Slack is not set up on this server.');
+    const asForm = READ_METHODS.has(method);
     const res = await fetch(`${API_URL}/${method}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${botToken}`,
-        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Type': asForm
+          ? 'application/x-www-form-urlencoded'
+          : 'application/json; charset=utf-8',
       },
-      body: JSON.stringify(payload),
+      body: asForm
+        ? new URLSearchParams(
+            Object.entries(payload).map(([key, value]) => [key, String(value)]),
+          ).toString()
+        : JSON.stringify(payload),
       signal: AbortSignal.timeout(SLACK_TIMEOUT_MS),
     });
     const body = (await res.json().catch(() => ({}))) as T & SlackAnswer;

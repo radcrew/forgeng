@@ -5,16 +5,7 @@ import { Prisma } from '@prisma/client';
 import { ADMIN_ROUTES, STUDENT_ROUTES } from '../../common/constants/routes';
 import type { AppConfiguration } from '../../config';
 import { PrismaService } from '../../core/database/prisma.service';
-import { SlackService } from '../../core/slack';
-
-/** The member part of Slack's team_join event. */
-export interface SlackMember {
-  id?: string;
-  is_bot?: boolean;
-  deleted?: boolean;
-  /** The email needs the users:read.email scope. */
-  profile?: { email?: string };
-}
+import { SlackService, type SlackMember } from '../../core/slack';
 
 /**
  * Keeps Slack in step with Forgeng for people who join the workspace: links

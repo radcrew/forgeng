@@ -216,10 +216,17 @@ describe('SlackService', () => {
         makeService(SLACK).listChannelMembers('CCOHORT'),
       ).resolves.toEqual(['U1', 'U2', 'U3']);
 
-      const second = JSON.parse(
-        (fetchMock.mock.calls[1] as [string, { body: string }])[1].body,
-      ) as { cursor?: string };
-      expect(second.cursor).toBe('page2');
+      // A read method: Slack ignores a JSON body here, so it is a form.
+      const [, init] = fetchMock.mock.calls[1] as [
+        string,
+        { body: string; headers: Record<string, string> },
+      ];
+      expect(init.headers['Content-Type']).toBe(
+        'application/x-www-form-urlencoded',
+      );
+      const sent = new URLSearchParams(init.body);
+      expect(sent.get('channel')).toBe('CCOHORT');
+      expect(sent.get('cursor')).toBe('page2');
     });
 
     it('throws when Slack refuses, instead of returning a short list', async () => {
@@ -230,6 +237,49 @@ describe('SlackService', () => {
       await expect(
         makeService(SLACK).listChannelMembers('CCOHORT'),
       ).rejects.toThrow('channel_not_found');
+    });
+  });
+
+  describe('listWorkspaceMembers', () => {
+    it("follows Slack's pages and sends a form", async () => {
+      fetchMock
+        .mockReturnValueOnce(
+          answer(200, {
+            ok: true,
+            members: [{ id: 'U1', profile: { email: 'a@example.com' } }],
+            response_metadata: { next_cursor: 'page2' },
+          }),
+        )
+        .mockReturnValueOnce(
+          answer(200, { ok: true, members: [{ id: 'U2', is_bot: true }] }),
+        );
+
+      await expect(makeService(SLACK).listWorkspaceMembers()).resolves.toEqual([
+        { id: 'U1', profile: { email: 'a@example.com' } },
+        { id: 'U2', is_bot: true },
+      ]);
+
+      const [url, init] = fetchMock.mock.calls[1] as [
+        string,
+        { body: string; headers: Record<string, string> },
+      ];
+      expect(url).toBe('https://slack.com/api/users.list');
+      expect(init.headers['Content-Type']).toBe(
+        'application/x-www-form-urlencoded',
+      );
+      const sent = new URLSearchParams(init.body);
+      expect(sent.get('limit')).toBe('200');
+      expect(sent.get('cursor')).toBe('page2');
+    });
+
+    it('throws when Slack refuses, for example without the scope', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'missing_scope' }),
+      );
+
+      await expect(makeService(SLACK).listWorkspaceMembers()).rejects.toThrow(
+        'missing_scope',
+      );
     });
   });
 

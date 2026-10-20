@@ -7,7 +7,8 @@ import type { Request } from 'express';
 
 import type { AppConfiguration } from '../../config';
 import { Public } from '../../core/auth/public.decorator';
-import { SlackMembersService, type SlackMember } from './slack-members.service';
+import type { SlackMember } from '../../core/slack';
+import { SlackMembersService } from './slack-members.service';
 import { assertFromSlack } from './slack-signature';
 
 interface SlackEnvelope {

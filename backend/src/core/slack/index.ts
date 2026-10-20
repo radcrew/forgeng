@@ -4,5 +4,6 @@ export {
   SLACK_ACTIONS,
   SlackService,
   escapeSlackText,
+  type SlackMember,
   type SlackMessage,
 } from './slack.service';
