@@ -42,6 +42,78 @@ export class SlackChannelsService {
   }
 
   /**
+   * The Slack accounts of a cohort's linked students. Read it before the
+   * cohort changes channel or is deleted, then pass it to
+   * `moveInBackground`. Empty when Slack is not set up.
+   */
+  async linkedStudents(cohortId: number): Promise<string[]> {
+    if (!this.slack.enabled) return [];
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: {
+        cohortId,
+        user: { role: 'student', slackUserId: { not: null } },
+      },
+      select: { user: { select: { slackUserId: true } } },
+    });
+    return enrollments
+      .map((e) => e.user.slackUserId)
+      .filter((id): id is string => id !== null);
+  }
+
+  /**
+   * Moves students from a cohort's old channel to its new one, after the
+   * response. A null old channel only adds them, and a null new channel
+   * only removes them, for example when the cohort was deleted.
+   */
+  moveInBackground(
+    slackUserIds: string[],
+    fromChannelId: string | null,
+    toChannelId: string | null,
+  ): void {
+    if (
+      !this.slack.enabled ||
+      slackUserIds.length === 0 ||
+      fromChannelId === toChannelId
+    ) {
+      return;
+    }
+    waitUntil(this.move(slackUserIds, fromChannelId, toChannelId));
+  }
+
+  /** Never throws: each failed call is logged, and the others go on. */
+  private async move(
+    slackUserIds: string[],
+    fromChannelId: string | null,
+    toChannelId: string | null,
+  ): Promise<void> {
+    for (const slackUserId of slackUserIds) {
+      if (fromChannelId) {
+        await this.tryCall(
+          () => this.slack.removeFromChannel(fromChannelId, slackUserId),
+          `remove Slack member ${slackUserId} from channel ${fromChannelId}`,
+        );
+      }
+      if (toChannelId) {
+        await this.tryCall(
+          () => this.slack.inviteToChannel(toChannelId, slackUserId),
+          `add Slack member ${slackUserId} to channel ${toChannelId}`,
+        );
+      }
+    }
+  }
+
+  private async tryCall(call: () => Promise<void>, what: string) {
+    try {
+      await call();
+    } catch (err) {
+      this.logger.error(
+        `Failed to ${what}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+  }
+
+  /**
    * Compares every cohort channel with its enrollments and fixes the
    * differences, which catches a Slack call that failed. Called once a day.
    *

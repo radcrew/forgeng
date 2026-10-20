@@ -127,6 +127,76 @@ describe('SlackChannelsService', () => {
     );
   });
 
+  describe('moving a cohort to another channel', () => {
+    beforeEach(() => {
+      (prisma as unknown as { enrollment: unknown }).enrollment = {
+        findMany: jest
+          .fn()
+          .mockResolvedValue([
+            { user: { slackUserId: 'U0ADA' } },
+            { user: { slackUserId: 'U0GRACE' } },
+          ]),
+      };
+    });
+
+    it("reads the cohort's linked students", async () => {
+      await expect(service.linkedStudents(3)).resolves.toEqual([
+        'U0ADA',
+        'U0GRACE',
+      ]);
+    });
+
+    it('reads nobody when Slack is not set up', async () => {
+      slack.enabled = false;
+
+      await expect(service.linkedStudents(3)).resolves.toEqual([]);
+    });
+
+    it('removes each student from the old channel and adds them to the new one', async () => {
+      service.moveInBackground(['U0ADA', 'U0GRACE'], 'COLD', 'CNEW');
+      await handed();
+
+      expect(slack.removeFromChannel.mock.calls).toEqual([
+        ['COLD', 'U0ADA'],
+        ['COLD', 'U0GRACE'],
+      ]);
+      expect(slack.inviteToChannel.mock.calls).toEqual([
+        ['CNEW', 'U0ADA'],
+        ['CNEW', 'U0GRACE'],
+      ]);
+    });
+
+    it('only removes when there is no new channel', async () => {
+      service.moveInBackground(['U0ADA'], 'COLD', null);
+      await handed();
+
+      expect(slack.removeFromChannel).toHaveBeenCalledWith('COLD', 'U0ADA');
+      expect(slack.inviteToChannel).not.toHaveBeenCalled();
+    });
+
+    it('keeps going when one call fails', async () => {
+      slack.removeFromChannel.mockRejectedValueOnce(
+        new Error('not_in_channel'),
+      );
+
+      service.moveInBackground(['U0ADA', 'U0GRACE'], 'COLD', 'CNEW');
+      await handed();
+
+      expect(slack.inviteToChannel).toHaveBeenCalledTimes(2);
+      expect(slack.removeFromChannel).toHaveBeenCalledTimes(2);
+      expect(logError).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['nobody to move', [], 'COLD', 'CNEW'],
+      ['the same channel', ['U0ADA'], 'COLD', 'COLD'],
+    ])('does nothing for %s', (_, ids, from, to) => {
+      service.moveInBackground(ids, from, to);
+
+      expect(waitUntil).not.toHaveBeenCalled();
+    });
+  });
+
   describe('reconcileAll (nightly check)', () => {
     beforeEach(() => {
       // Cohort 4's channel should hold Ada and Grace.

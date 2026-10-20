@@ -41,7 +41,11 @@ function makeUser(overrides: Partial<User> = {}): User {
 
 describe('CohortsService', () => {
   let service: CohortsService;
-  let slackChannels: { syncInBackground: jest.Mock };
+  let slackChannels: {
+    syncInBackground: jest.Mock;
+    linkedStudents: jest.Mock;
+    moveInBackground: jest.Mock;
+  };
   let prisma: {
     cohort: {
       findMany: jest.Mock;
@@ -85,7 +89,11 @@ describe('CohortsService', () => {
       ),
     };
 
-    slackChannels = { syncInBackground: jest.fn() };
+    slackChannels = {
+      syncInBackground: jest.fn(),
+      linkedStudents: jest.fn().mockResolvedValue(['U0ADA']),
+      moveInBackground: jest.fn(),
+    };
     service = new CohortsService(
       prisma as unknown as PrismaService,
       slackChannels as unknown as SlackChannelsService,
@@ -229,6 +237,47 @@ describe('CohortsService', () => {
       expect(data.slackChannelId).toBe(saved);
     });
 
+    it.each([
+      ['a new channel', 'CNEW', 'CNEW'],
+      ['no channel', null, null],
+    ])(
+      'moves the students when the channel changes to %s',
+      async (_, sent, saved) => {
+        prisma.cohort.findUnique.mockResolvedValue(
+          makeCohort({ slackChannelId: 'COLD' }),
+        );
+        prisma.cohort.update.mockResolvedValue(
+          makeCohort({ slackChannelId: saved }),
+        );
+
+        await service.update(3, { slackChannelId: sent });
+
+        expect(slackChannels.linkedStudents).toHaveBeenCalledWith(3);
+        expect(slackChannels.moveInBackground).toHaveBeenCalledWith(
+          ['U0ADA'],
+          'COLD',
+          saved,
+        );
+      },
+    );
+
+    it.each([
+      ['is left out', undefined],
+      ['stays the same', 'COLD'],
+    ])('moves nobody when the channel %s', async (_, sent) => {
+      prisma.cohort.findUnique.mockResolvedValue(
+        makeCohort({ slackChannelId: 'COLD' }),
+      );
+      prisma.cohort.update.mockResolvedValue(
+        makeCohort({ slackChannelId: 'COLD' }),
+      );
+
+      await service.update(3, { name: 'Renamed', slackChannelId: sent });
+
+      expect(slackChannels.linkedStudents).not.toHaveBeenCalled();
+      expect(slackChannels.moveInBackground).not.toHaveBeenCalled();
+    });
+
     it('rejects an end date before the saved start date', async () => {
       prisma.cohort.findUnique.mockResolvedValue(
         makeCohort({ startDate: new Date('2026-05-01T00:00:00.000Z') }),
@@ -262,6 +311,24 @@ describe('CohortsService', () => {
       await service.remove(3);
 
       expect(prisma.cohort.delete).toHaveBeenCalledWith({ where: { id: 3 } });
+    });
+
+    it("removes the students from the deleted cohort's channel", async () => {
+      prisma.cohort.findUnique.mockResolvedValue(
+        makeCohort({ slackChannelId: 'COLD' }),
+      );
+
+      await service.remove(3);
+
+      // Read before the delete, which also deletes the enrollments.
+      expect(
+        slackChannels.linkedStudents.mock.invocationCallOrder[0],
+      ).toBeLessThan(prisma.cohort.delete.mock.invocationCallOrder[0]);
+      expect(slackChannels.moveInBackground).toHaveBeenCalledWith(
+        ['U0ADA'],
+        'COLD',
+        null,
+      );
     });
   });
 

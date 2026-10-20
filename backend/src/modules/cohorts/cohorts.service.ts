@@ -75,6 +75,14 @@ export class CohortsService {
       }
     }
 
+    // Read before the change, so the students can be moved after it.
+    const channelChanged =
+      dto.slackChannelId !== undefined &&
+      dto.slackChannelId !== exists.slackChannelId;
+    const students = channelChanged
+      ? await this.slackChannels.linkedStudents(id)
+      : [];
+
     const updated = await this.prisma.cohort.update({
       where: { id },
       data: {
@@ -88,13 +96,25 @@ export class CohortsService {
         slackChannelId: dto.slackChannelId,
       },
     });
+    if (channelChanged) {
+      this.slackChannels.moveInBackground(
+        students,
+        exists.slackChannelId,
+        updated.slackChannelId,
+      );
+    }
     return this.serialize(updated);
   }
 
   async remove(id: number): Promise<void> {
     const exists = await this.prisma.cohort.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Cohort not found.');
+    // Read before the delete, which also deletes the enrollments.
+    const students = exists.slackChannelId
+      ? await this.slackChannels.linkedStudents(id)
+      : [];
     await this.prisma.cohort.delete({ where: { id } });
+    this.slackChannels.moveInBackground(students, exists.slackChannelId, null);
   }
 
   async enrollments(cohortId: number): Promise<EnrollmentDto[]> {
