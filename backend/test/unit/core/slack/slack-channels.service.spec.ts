@@ -16,6 +16,7 @@ describe('SlackChannelsService', () => {
   let prisma: {
     user: { findUnique: jest.Mock; findMany: jest.Mock; update: jest.Mock };
     cohort: { findMany: jest.Mock; updateMany: jest.Mock };
+    enrollment: { findMany: jest.Mock };
   };
   let slack: {
     enabled: boolean;
@@ -47,6 +48,7 @@ describe('SlackChannelsService', () => {
         ]),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
+      enrollment: { findMany: jest.fn().mockResolvedValue([]) },
     };
     slack = {
       enabled: true,
@@ -176,6 +178,27 @@ describe('SlackChannelsService', () => {
         where: { id: 7, slackChannelId: null },
         data: { slackChannelId: 'CGOLANG' },
       });
+    });
+
+    it('adds students who were enrolled before the channel was saved', async () => {
+      prisma.enrollment.findMany.mockResolvedValue([
+        { user: { slackUserId: 'U0ADA' } },
+      ]);
+
+      service.createForCohortInBackground({ id: 7, name: 'Golang' }, 9);
+      await handed();
+
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CGOLANG', 'U0ADA');
+    });
+
+    it('adds nobody when the cohort got another channel first', async () => {
+      prisma.cohort.updateMany.mockResolvedValue({ count: 0 });
+      jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+
+      service.createForCohortInBackground({ id: 7, name: 'Golang' }, 9);
+      await handed();
+
+      expect(prisma.enrollment.findMany).not.toHaveBeenCalled();
     });
 
     it('saves nothing when Slack refused the channel', async () => {

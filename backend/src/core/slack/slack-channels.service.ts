@@ -97,6 +97,16 @@ export class SlackChannelsService {
       this.logger.warn(
         `Slack channel ${channelId} was made for cohort ${cohort.id}, but the cohort changed first, so it was not saved`,
       );
+      return;
+    }
+
+    // Students enrolled before the channel was saved were skipped then,
+    // because the cohort had no channel yet. Add them now.
+    for (const slackUserId of await this.linkedStudents(cohort.id)) {
+      await this.tryCall(
+        () => this.slack.inviteToChannel(channelId, slackUserId),
+        `add Slack member ${slackUserId} to channel ${channelId}`,
+      );
     }
   }
 
