@@ -190,6 +190,28 @@ export class GoogleCalendarService {
       );
     }
 
+    // Outside the fetch below, so a token that can't be read isn't reported
+    // as Google not answering. For example, GOOGLE_TOKEN_KEY was changed.
+    // Only a new connection can fix it, so the admin is asked to connect
+    // again.
+    let refreshToken: string;
+    try {
+      refreshToken = decryptSecret(
+        connection.refreshTokenEncrypted,
+        settings.tokenKey,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Failed to read the saved Google Calendar token of user ${hostId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      await this.markBroken(hostId);
+      throw new GoogleCalendarError(
+        'broken',
+        'Forgeng could not read your Google Calendar connection. Connect Google Calendar again.',
+      );
+    }
+
     let res: Response;
     try {
       res = await fetch(TOKEN_URL, {
@@ -198,10 +220,7 @@ export class GoogleCalendarService {
         body: new URLSearchParams({
           client_id: settings.clientId,
           client_secret: settings.clientSecret,
-          refresh_token: decryptSecret(
-            connection.refreshTokenEncrypted,
-            settings.tokenKey,
-          ),
+          refresh_token: refreshToken,
           grant_type: 'refresh_token',
         }),
         signal: AbortSignal.timeout(GOOGLE_TIMEOUT_MS),

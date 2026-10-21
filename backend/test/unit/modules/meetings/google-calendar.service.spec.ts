@@ -214,6 +214,21 @@ describe('GoogleCalendarService', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
+    it('marks the connection broken when the saved token cannot be read', async () => {
+      prisma.googleCalendarConnection.findUnique.mockResolvedValue({
+        // Saved with another key, as after GOOGLE_TOKEN_KEY was changed.
+        refreshTokenEncrypted: encryptSecret('refresh-123', randomBytes(32)),
+        brokenAt: null,
+      });
+
+      await expect(create()).rejects.toMatchObject({ reason: 'broken' });
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(prisma.googleCalendarConnection.updateMany).toHaveBeenCalledWith({
+        where: { userId: 7 },
+        data: { brokenAt: expect.any(Date) as unknown },
+      });
+    });
+
     it('marks the connection broken when Google refuses the refresh token', async () => {
       fetchMock.mockReturnValueOnce(answer(400, { error: 'invalid_grant' }));
 
