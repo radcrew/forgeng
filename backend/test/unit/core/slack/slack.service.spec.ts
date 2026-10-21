@@ -18,6 +18,15 @@ const answer = (status: number, body: unknown) =>
     json: () => Promise.resolve(body),
   } as Response);
 
+/** Slack's answer when a rate limit is reached. */
+const rateLimited = (retryAfter: string) =>
+  Promise.resolve({
+    ok: false,
+    status: 429,
+    headers: new Headers({ 'Retry-After': retryAfter }),
+    json: () => Promise.resolve({ ok: false, error: 'ratelimited' }),
+  } as Response);
+
 const makeService = (
   slack: { botToken: string; mentorsChannelId: string | null } | null,
 ) => new SlackService({ get: () => slack } as never);
@@ -205,15 +214,6 @@ describe('SlackService', () => {
         makeService(SLACK).inviteToChannel('CCOHORT', 'U0ADA'),
       ).rejects.toThrow('not_in_channel');
     });
-
-    /** Slack's answer when a rate limit is reached. */
-    const rateLimited = (retryAfter: string) =>
-      Promise.resolve({
-        ok: false,
-        status: 429,
-        headers: new Headers({ 'Retry-After': retryAfter }),
-        json: () => Promise.resolve({ ok: false, error: 'ratelimited' }),
-      } as Response);
 
     it('waits and tries again when Slack is rate limited', async () => {
       fetchMock
@@ -453,6 +453,15 @@ describe('SlackService', () => {
       await expect(
         makeService(SLACK).openView('trigger-1', { type: 'modal' }),
       ).rejects.toThrow('expired_trigger_id');
+    });
+
+    it('does not wait for a rate limit, since the click expires in 3 seconds', async () => {
+      fetchMock.mockReturnValue(rateLimited('0'));
+
+      await expect(
+        makeService(SLACK).openView('trigger-1', { type: 'modal' }),
+      ).rejects.toThrow('ratelimited');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     });
   });
 

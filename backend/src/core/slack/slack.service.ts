@@ -21,6 +21,11 @@ const SLACK_TIMEOUT_MS = 10_000;
  */
 const RATE_LIMIT_RETRIES = 3;
 const MAX_RETRY_WAIT_MS = 30_000;
+/**
+ * Methods called while Slack waits for Forgeng's answer. Slack waits only 3
+ * seconds, and the click's trigger expires by then, so a retry can't help.
+ */
+const NO_RETRY_METHODS = new Set(['views.open']);
 
 /**
  * Slack's methods that only read data don't accept a JSON body, so their
@@ -371,11 +376,8 @@ export class SlackService {
     let res = await send();
     // Many calls in a row, such as moving a whole cohort, reach Slack's
     // rate limits. Slack then says how many seconds to wait.
-    for (
-      let retry = 0;
-      res.status === 429 && retry < RATE_LIMIT_RETRIES;
-      retry++
-    ) {
+    const retries = NO_RETRY_METHODS.has(method) ? 0 : RATE_LIMIT_RETRIES;
+    for (let retry = 0; res.status === 429 && retry < retries; retry++) {
       const waitMs = Number(res.headers.get('Retry-After') ?? 1) * 1000;
       if (!(waitMs >= 0 && waitMs <= MAX_RETRY_WAIT_MS)) break;
       await new Promise((resolve) => setTimeout(resolve, waitMs));
