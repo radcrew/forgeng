@@ -169,7 +169,16 @@ export class SlackChannelsService {
       });
       const creator = admins.find((a) => a.id === creatorId);
       if (creator && !creator.slackUserId) {
-        creator.slackUserId = await this.linkByEmail(creator);
+        // On its own, so a failed lookup, for example a missing scope,
+        // still lets the admins who are already linked in.
+        try {
+          creator.slackUserId = await this.linkByEmail(creator);
+        } catch (err) {
+          this.logger.error(
+            `Failed to link admin ${creatorId} to Slack by email`,
+            err instanceof Error ? err.stack : String(err),
+          );
+        }
       }
       return admins
         .map((a) => a.slackUserId)

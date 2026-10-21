@@ -306,6 +306,25 @@ describe('SlackChannelsService', () => {
       expect(slack.inviteToChannel).not.toHaveBeenCalled();
     });
 
+    it('still invites the linked admins when the email lookup fails', async () => {
+      prisma.user.findMany.mockResolvedValue(ADMINS);
+      slack.findUserIdByEmail.mockRejectedValue(
+        new Error('Slack refused users.lookupByEmail: missing_scope'),
+      );
+
+      // Admin 11 creates the cohort and isn't linked yet.
+      await expect(
+        service.createForCohort({ id: 7, name: 'Golang' }, 11),
+      ).resolves.toBe('CGOLANG');
+
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CGOLANG', 'U0GRACE');
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CGOLANG', 'U0LINUS');
+      expect(logError).toHaveBeenCalledWith(
+        'Failed to link admin 11 to Slack by email',
+        expect.stringContaining('missing_scope'),
+      );
+    });
+
     it("doesn't link a Slack account that belongs to another user", async () => {
       prisma.user.findMany.mockResolvedValue([
         { id: 9, email: 'grace@example.com', slackUserId: null },
