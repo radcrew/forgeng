@@ -77,6 +77,20 @@ describe('SlackChannelsService', () => {
     expect(slack.removeFromChannel).toHaveBeenCalledWith('COLD', 'U0ADA');
   });
 
+  it('never removes an admin who leaves a cohort', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      slackUserId: 'U0MENTOR',
+      role: 'admin',
+    });
+
+    service.syncInBackground(9, [4, 3]);
+    await handed();
+
+    // The admin stays in both channels, also the one they left.
+    expect(slack.removeFromChannel).not.toHaveBeenCalled();
+    expect(slack.inviteToChannel).toHaveBeenCalledWith('COLD', 'U0MENTOR');
+  });
+
   it('skips empty and repeated cohort ids', async () => {
     service.syncInBackground(7, [4, null, undefined, 4]);
     await handed();

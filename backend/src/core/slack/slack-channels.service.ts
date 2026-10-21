@@ -379,10 +379,13 @@ export class SlackChannelsService {
     // Someone who hasn't joined Slack yet is added when they join.
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { slackUserId: true },
+      select: { slackUserId: true, role: true },
     });
     const slackUserId = user?.slackUserId;
     if (!slackUserId) return;
+    // Cohort channels are private, so an admin stays in every one, even
+    // when they leave a cohort they were enrolled in.
+    const isAdmin = user.role === 'admin';
 
     const cohorts = await this.prisma.cohort.findMany({
       where: { id: { in: cohortIds }, slackChannelId: { not: null } },
@@ -395,14 +398,14 @@ export class SlackChannelsService {
     for (const cohort of cohorts) {
       const channelId = cohort.slackChannelId;
       if (!channelId) continue;
-      const enrolled = cohort.enrollments.length > 0;
+      const add = isAdmin || cohort.enrollments.length > 0;
       try {
-        if (enrolled) await this.slack.inviteToChannel(channelId, slackUserId);
+        if (add) await this.slack.inviteToChannel(channelId, slackUserId);
         else await this.slack.removeFromChannel(channelId, slackUserId);
       } catch (err) {
         // One failed channel must not stop the others.
         this.logger.error(
-          `Failed to ${enrolled ? 'add' : 'remove'} user ${userId} in Slack channel ${channelId}`,
+          `Failed to ${add ? 'add' : 'remove'} user ${userId} in Slack channel ${channelId}`,
           err instanceof Error ? err.stack : String(err),
         );
       }
