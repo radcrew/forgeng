@@ -124,6 +124,16 @@ describe("cohort FormDialog", () => {
     );
   });
 
+  it("leaves the Slack channel out when the field was not changed", async () => {
+    // The page was loaded before the background channel was saved.
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    const [, payload] = updateCohort.mock.calls[0] as [number, object];
+    expect(payload).not.toHaveProperty("slackChannelId");
+  });
+
   it("refuses a channel name instead of a channel ID", async () => {
     render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
 

@@ -70,6 +70,13 @@ export const CohortFormDialog = ({
 
     setIsSaving(true);
     try {
+      // null, like the description, so clearing the field is saved.
+      const channel = slackChannelId.trim() || null;
+      // When editing, only a changed channel is sent. The page may be older
+      // than the channel, for example one made in the background right after
+      // the cohort was created. Sending the old empty field would remove it.
+      const channelChanged =
+        !isEdit || channel !== (cohort.slackChannelId ?? null);
       const payload = {
         name: name.trim(),
         // Send null (not undefined) so clearing the field persists — Prisma
@@ -80,8 +87,7 @@ export const CohortFormDialog = ({
         status,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
-        // null, like the description, so clearing the field is saved.
-        slackChannelId: slackChannelId.trim() || null,
+        ...(channelChanged ? { slackChannelId: channel } : {}),
       };
       if (isEdit) {
         await updateCohort(cohort.id, payload);
