@@ -431,13 +431,27 @@ describe('SlackChannelsService', () => {
           where: { slackChannelId: { not: null } },
         }),
       );
+      // Every role, so someone who is no longer a student is found too.
       expect(prisma.user.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            role: { in: ['student', 'admin'] },
-            slackUserId: { not: null },
-          },
-        }),
+        expect.objectContaining({ where: { slackUserId: { not: null } } }),
+      );
+    });
+
+    it('removes a linked person who is no longer a student', async () => {
+      // Linus became an applicant again, and his removal failed then.
+      prisma.user.findMany.mockResolvedValue([
+        { role: 'student', slackUserId: 'U0ADA' },
+        { role: 'student', slackUserId: 'U0GRACE' },
+        { role: 'applicant', slackUserId: 'U0LINUS' },
+        { role: 'admin', slackUserId: 'U0MENTOR' },
+      ]);
+
+      await service.reconcileAll();
+
+      expect(slack.removeFromChannel).toHaveBeenCalledTimes(1);
+      expect(slack.removeFromChannel).toHaveBeenCalledWith(
+        'CSPRING',
+        'U0LINUS',
       );
     });
 

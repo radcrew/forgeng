@@ -263,9 +263,10 @@ export class SlackChannelsService {
    * Compares every cohort channel with its enrollments and fixes the
    * differences, which catches a Slack call that failed. Called once a day.
    *
-   * It only removes linked Forgeng students who aren't in the cohort. It
-   * never removes admins, the bot, or anyone Forgeng doesn't know, since
-   * they may be in the channel on purpose.
+   * It only removes linked Forgeng users who aren't in the cohort, such as a
+   * student who became an applicant again. It never removes admins, the
+   * bot, or anyone Forgeng doesn't know, since they may be in the channel
+   * on purpose.
    */
   async reconcileAll(): Promise<{
     channels: number;
@@ -286,13 +287,15 @@ export class SlackChannelsService {
         },
       },
     });
+    // Every role, so someone who is no longer a student or an admin is
+    // removed too. Their enrollments are gone, but they stay linked.
     const linked = await this.prisma.user.findMany({
-      where: { role: { in: ['student', 'admin'] }, slackUserId: { not: null } },
+      where: { slackUserId: { not: null } },
       select: { role: true, slackUserId: true },
     });
     // The only people the check may remove from a cohort channel.
-    const linkedStudents = new Set(
-      linked.filter((u) => u.role === 'student').map((u) => u.slackUserId),
+    const removable = new Set(
+      linked.filter((u) => u.role !== 'admin').map((u) => u.slackUserId),
     );
     // Cohort channels are private, so every admin must be in each one to
     // see it. Admins are added, and never removed.
@@ -330,7 +333,7 @@ export class SlackChannelsService {
         if (ok) result.added++;
       }
       for (const slackUserId of members) {
-        if (!linkedStudents.has(slackUserId) || enrolled.has(slackUserId)) {
+        if (!removable.has(slackUserId) || enrolled.has(slackUserId)) {
           continue;
         }
         const ok = await this.tryCall(
