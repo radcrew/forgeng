@@ -62,7 +62,10 @@ describe('UsersService', () => {
     $transaction: jest.Mock;
   };
   let mail: { send: jest.Mock; sendInBackground: jest.Mock };
-  let slackChannels: { syncInBackground: jest.Mock };
+  let slackChannels: {
+    syncInBackground: jest.Mock;
+    syncAllInBackground: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = {
@@ -101,7 +104,10 @@ describe('UsersService', () => {
       get: jest.fn().mockReturnValue('https://app.forgeng.test'),
     };
 
-    slackChannels = { syncInBackground: jest.fn() };
+    slackChannels = {
+      syncInBackground: jest.fn(),
+      syncAllInBackground: jest.fn(),
+    };
 
     service = new UsersService(
       prisma as unknown as PrismaService,
@@ -418,8 +424,19 @@ describe('UsersService', () => {
 
       expect(prisma.enrollment.deleteMany).not.toHaveBeenCalled();
       expect(prisma.application.updateMany).not.toHaveBeenCalled();
-      // No cohort left, so no Slack channel changes.
-      expect(slackChannels.syncInBackground).toHaveBeenCalledWith(1, []);
+      // A new admin belongs in every cohort's Slack channel.
+      expect(slackChannels.syncAllInBackground).toHaveBeenCalledWith(1);
+      expect(slackChannels.syncInBackground).not.toHaveBeenCalled();
+    });
+
+    it('updates every Slack channel when an admin loses the role', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      await service.updateRole(1, { role: 'student' } as never);
+
+      expect(slackChannels.syncAllInBackground).toHaveBeenCalledWith(1);
     });
 
     it('refuses to remove the role of the only admin', async () => {

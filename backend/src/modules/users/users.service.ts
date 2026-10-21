@@ -250,7 +250,13 @@ export class UsersService {
       }
       return user;
     });
-    this.slackChannels.syncInBackground(id, leftCohortIds);
+    // An admin belongs in every cohort channel, so a change to or from admin
+    // touches all of them.
+    if (roleChanged && (exists.role === 'admin' || dto.role === 'admin')) {
+      this.slackChannels.syncAllInBackground(id);
+    } else {
+      this.slackChannels.syncInBackground(id, leftCohortIds);
+    }
     return toUserDto(updated);
   }
 

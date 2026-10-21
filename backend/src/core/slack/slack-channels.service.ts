@@ -46,6 +46,23 @@ export class SlackChannelsService {
   }
 
   /**
+   * Like `syncInBackground`, for every cohort channel. Used when a user
+   * becomes an admin, or stops being one: an admin belongs in every
+   * channel, anyone else only in their own cohorts' channels.
+   */
+  syncAllInBackground(userId: number): void {
+    if (!this.slack.enabled) return;
+    waitUntil(
+      this.sync(userId, 'all').catch((err: unknown) => {
+        this.logger.error(
+          `Failed to sync the Slack channels of user ${userId}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }),
+    );
+  }
+
+  /**
    * Creates the cohort's channel after the response, and saves it on the
    * cohort. So a slow Slack never holds up creating a cohort.
    */
@@ -375,7 +392,10 @@ export class SlackChannelsService {
     }
   }
 
-  private async sync(userId: number, cohortIds: number[]): Promise<void> {
+  private async sync(
+    userId: number,
+    cohortIds: number[] | 'all',
+  ): Promise<void> {
     // Someone who hasn't joined Slack yet is added when they join.
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -388,7 +408,10 @@ export class SlackChannelsService {
     const isAdmin = user.role === 'admin';
 
     const cohorts = await this.prisma.cohort.findMany({
-      where: { id: { in: cohortIds }, slackChannelId: { not: null } },
+      where: {
+        ...(cohortIds === 'all' ? {} : { id: { in: cohortIds } }),
+        slackChannelId: { not: null },
+      },
       select: {
         id: true,
         slackChannelId: true,

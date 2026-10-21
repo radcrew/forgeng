@@ -91,6 +91,23 @@ describe('SlackChannelsService', () => {
     expect(slack.inviteToChannel).toHaveBeenCalledWith('COLD', 'U0MENTOR');
   });
 
+  it('checks every cohort channel after a change to or from admin', async () => {
+    // A former admin, now a student enrolled only in the new cohort.
+    prisma.user.findUnique.mockResolvedValue({
+      slackUserId: 'U0ADA',
+      role: 'student',
+    });
+
+    service.syncAllInBackground(7);
+    await handed();
+
+    expect(prisma.cohort.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { slackChannelId: { not: null } } }),
+    );
+    expect(slack.inviteToChannel).toHaveBeenCalledWith('CNEW', 'U0ADA');
+    expect(slack.removeFromChannel).toHaveBeenCalledWith('COLD', 'U0ADA');
+  });
+
   it('skips empty and repeated cohort ids', async () => {
     service.syncInBackground(7, [4, null, undefined, 4]);
     await handed();
