@@ -104,6 +104,29 @@ export function escapeSlackText(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
+/** Slack refuses a section block whose text is longer than this. */
+const SECTION_MAX = 3000;
+
+/**
+ * Escapes text for Slack and splits it into parts that each fit in one
+ * section block, so a long message, such as returned feedback, isn't
+ * refused. It never cuts an escaped character in half.
+ */
+export function toSlackSections(text: string): string[] {
+  const sections: string[] = [];
+  let current = '';
+  for (const ch of text) {
+    const escaped = escapeSlackText(ch);
+    if (current.length + escaped.length > SECTION_MAX) {
+      sections.push(current);
+      current = '';
+    }
+    current += escaped;
+  }
+  sections.push(current);
+  return sections;
+}
+
 /**
  * Posts app events to the Forgeng Slack workspace. Posts go out after the
  * response, like emails: a slow or failed Slack never holds up or fails a
@@ -291,7 +314,10 @@ export class SlackService {
         // Shown in notifications, and where blocks can't be shown.
         text,
         blocks: [
-          { type: 'section', text: { type: 'mrkdwn', text } },
+          ...toSlackSections(message.text).map((part) => ({
+            type: 'section',
+            text: { type: 'mrkdwn', text: part },
+          })),
           ...(buttons.length > 0
             ? [{ type: 'actions', elements: buttons }]
             : []),

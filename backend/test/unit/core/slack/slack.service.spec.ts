@@ -6,6 +6,7 @@ import {
   SlackService,
   submissionKey,
   toSlackChannelName,
+  toSlackSections,
 } from '@core/slack';
 
 jest.mock('@vercel/functions', () => ({ waitUntil: jest.fn() }));
@@ -110,6 +111,19 @@ describe('SlackService', () => {
     expect(sentBody().text).toBe(
       'New application from &lt;!channel&gt; &amp; co',
     );
+  });
+
+  it('splits a long message into blocks that Slack accepts', async () => {
+    makeService(SLACK).postToMentors({ text: 'a'.repeat(4500) });
+    await handed();
+
+    const { text, blocks } = sentBody() as unknown as {
+      text: string;
+      blocks: Array<{ type: string; text?: { text: string } }>;
+    };
+    const sections = blocks.filter((b) => b.type === 'section');
+    expect(sections.map((s) => s.text?.text.length)).toEqual([3000, 1500]);
+    expect(text).toHaveLength(4500);
   });
 
   it('posts to the mentors channel', async () => {
@@ -431,6 +445,19 @@ describe('escapeSlackText', () => {
     expect(escapeSlackText('a & b <@U123> c')).toBe(
       'a &amp; b &lt;@U123&gt; c',
     );
+  });
+});
+
+describe('toSlackSections', () => {
+  it('keeps a short text in one part', () => {
+    expect(toSlackSections('Hi <b>')).toEqual(['Hi &lt;b&gt;']);
+  });
+
+  it('counts after escaping, and never cuts an escaped character', () => {
+    // 2999 letters, then "&", which is 5 characters once escaped.
+    const parts = toSlackSections(`${'a'.repeat(2999)}&b`);
+
+    expect(parts).toEqual(['a'.repeat(2999), '&amp;b']);
   });
 });
 

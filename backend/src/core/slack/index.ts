@@ -7,6 +7,7 @@ export {
   parseSubmissionKey,
   submissionKey,
   toSlackChannelName,
+  toSlackSections,
   type SlackMember,
   type SlackMessage,
 } from './slack.service';
