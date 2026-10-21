@@ -15,7 +15,7 @@ const handed = () => {
 describe('SlackChannelsService', () => {
   let prisma: {
     user: { findUnique: jest.Mock; findMany: jest.Mock; update: jest.Mock };
-    cohort: { findMany: jest.Mock };
+    cohort: { findMany: jest.Mock; updateMany: jest.Mock };
   };
   let slack: {
     enabled: boolean;
@@ -45,6 +45,7 @@ describe('SlackChannelsService', () => {
           { id: 4, slackChannelId: 'CNEW', enrollments: [{ id: 1 }] },
           { id: 3, slackChannelId: 'COLD', enrollments: [] },
         ]),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
     };
     slack = {
@@ -131,6 +132,49 @@ describe('SlackChannelsService', () => {
       'Failed to sync the Slack channels of user 7',
       expect.stringContaining('db down'),
     );
+  });
+
+  describe('createForCohortInBackground', () => {
+    it('creates the channel after the response, and saves it on the cohort', async () => {
+      service.createForCohortInBackground({ id: 7, name: 'Golang' }, 9);
+      await handed();
+
+      expect(slack.createPrivateChannel).toHaveBeenCalled();
+      // Only while the cohort still has no channel.
+      expect(prisma.cohort.updateMany).toHaveBeenCalledWith({
+        where: { id: 7, slackChannelId: null },
+        data: { slackChannelId: 'CGOLANG' },
+      });
+    });
+
+    it('saves nothing when Slack refused the channel', async () => {
+      slack.createPrivateChannel.mockRejectedValue(new Error('restricted'));
+
+      service.createForCohortInBackground({ id: 7, name: 'Golang' }, 9);
+      await handed();
+
+      expect(prisma.cohort.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('logs a failed save instead of throwing', async () => {
+      prisma.cohort.updateMany.mockRejectedValue(new Error('db down'));
+
+      service.createForCohortInBackground({ id: 7, name: 'Golang' }, 9);
+
+      await expect(handed()).resolves.toBeUndefined();
+      expect(logError).toHaveBeenCalledWith(
+        'Failed to save the Slack channel of cohort 7',
+        expect.stringContaining('db down'),
+      );
+    });
+
+    it('starts nothing when Slack is not set up', () => {
+      slack.enabled = false;
+
+      service.createForCohortInBackground({ id: 7, name: 'Golang' }, 9);
+
+      expect(waitUntil).not.toHaveBeenCalled();
+    });
   });
 
   describe('createForCohort', () => {

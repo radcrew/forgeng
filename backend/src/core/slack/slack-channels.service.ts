@@ -46,6 +46,44 @@ export class SlackChannelsService {
   }
 
   /**
+   * Creates the cohort's channel after the response, and saves it on the
+   * cohort. So a slow Slack never holds up creating a cohort.
+   */
+  createForCohortInBackground(
+    cohort: { id: number; name: string },
+    adminUserId: number,
+  ): void {
+    if (!this.slack.enabled) return;
+    waitUntil(
+      this.createAndSave(cohort, adminUserId).catch((err: unknown) => {
+        this.logger.error(
+          `Failed to save the Slack channel of cohort ${cohort.id}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }),
+    );
+  }
+
+  private async createAndSave(
+    cohort: { id: number; name: string },
+    adminUserId: number,
+  ): Promise<void> {
+    const channelId = await this.createForCohort(cohort, adminUserId);
+    if (!channelId) return;
+    // Only when the cohort still has no channel. In the meantime, an admin
+    // may have set one by hand, or deleted the cohort.
+    const { count } = await this.prisma.cohort.updateMany({
+      where: { id: cohort.id, slackChannelId: null },
+      data: { slackChannelId: channelId },
+    });
+    if (count === 0) {
+      this.logger.warn(
+        `Slack channel ${channelId} was made for cohort ${cohort.id}, but the cohort changed first, so it was not saved`,
+      );
+    }
+  }
+
+  /**
    * Creates a private channel for a new cohort, named after it, and invites
    * the admins. Without that they could not see the private channel.
    * Returns the channel ID, or null

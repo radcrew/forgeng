@@ -50,7 +50,7 @@ describe('CohortsService', () => {
     syncInBackground: jest.Mock;
     linkedStudents: jest.Mock;
     moveInBackground: jest.Mock;
-    createForCohort: jest.Mock;
+    createForCohortInBackground: jest.Mock;
   };
   let prisma: {
     cohort: {
@@ -101,7 +101,7 @@ describe('CohortsService', () => {
       syncInBackground: jest.fn(),
       linkedStudents: jest.fn().mockResolvedValue(['U0ADA']),
       moveInBackground: jest.fn(),
-      createForCohort: jest.fn().mockResolvedValue(null),
+      createForCohortInBackground: jest.fn(),
     };
     service = new CohortsService(
       prisma as unknown as PrismaService,
@@ -175,37 +175,20 @@ describe('CohortsService', () => {
       expect(prisma.cohort.findFirst).not.toHaveBeenCalled();
     });
 
-    it('creates a Slack channel when none is given, and saves it', async () => {
+    it('creates the Slack channel after answering, when none is given', async () => {
       prisma.cohort.create.mockResolvedValue(
         makeCohort({ id: 7, name: 'Golang', slackChannelId: null }),
       );
-      slackChannels.createForCohort.mockResolvedValue('CGOLANG');
-      prisma.cohort.update.mockResolvedValue(
-        makeCohort({ id: 7, name: 'Golang', slackChannelId: 'CGOLANG' }),
-      );
 
       const dto = await create({ name: 'Golang' });
 
-      expect(slackChannels.createForCohort).toHaveBeenCalledWith(
+      expect(slackChannels.createForCohortInBackground).toHaveBeenCalledWith(
         expect.objectContaining({ id: 7, name: 'Golang' }),
         9,
       );
-      expect(prisma.cohort.update).toHaveBeenCalledWith({
-        where: { id: 7 },
-        data: { slackChannelId: 'CGOLANG' },
-      });
-      expect(dto.slackChannelId).toBe('CGOLANG');
-    });
-
-    it('still creates the cohort when no channel could be made', async () => {
-      prisma.cohort.create.mockResolvedValue(
-        makeCohort({ id: 7, slackChannelId: null }),
-      );
-
-      const dto = await create({ name: 'Golang' });
-
+      // The answer doesn't wait for Slack.
       expect(dto.id).toBe(7);
-      expect(prisma.cohort.update).not.toHaveBeenCalled();
+      expect(dto.slackChannelId).toBeNull();
     });
 
     it('uses the given channel, without creating one', async () => {
@@ -215,7 +198,7 @@ describe('CohortsService', () => {
 
       await create({ name: 'Golang', slackChannelId: 'C0123ABCD' });
 
-      expect(slackChannels.createForCohort).not.toHaveBeenCalled();
+      expect(slackChannels.createForCohortInBackground).not.toHaveBeenCalled();
     });
 
     it('defaults status to draft when omitted', async () => {

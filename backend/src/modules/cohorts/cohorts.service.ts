@@ -60,19 +60,12 @@ export class CohortsService {
         slackChannelId: dto.slackChannelId ?? undefined,
       },
     });
-    if (created.slackChannelId) return this.serialize(created);
-
-    // After the cohort is saved, so a Slack problem never blocks it.
-    const channelId = await this.slackChannels.createForCohort(
-      created,
-      admin.id,
-    );
-    if (!channelId) return this.serialize(created);
-    const linked = await this.prisma.cohort.update({
-      where: { id: created.id },
-      data: { slackChannelId: channelId },
-    });
-    return this.serialize(linked);
+    // After the cohort is saved and the admin has the answer, so a Slack
+    // problem never blocks or slows it.
+    if (!created.slackChannelId) {
+      this.slackChannels.createForCohortInBackground(created, admin.id);
+    }
+    return this.serialize(created);
   }
 
   async update(id: number, dto: UpdateCohortDto): Promise<CohortDto> {
