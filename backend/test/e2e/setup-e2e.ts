@@ -10,3 +10,7 @@ process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/test';
 // already set here win over the .env file.
 process.env.SUPABASE_URL = '';
 process.env.SUPABASE_SERVICE_ROLE_KEY = '';
+// The same for a local Google Calendar setup. The suite expects the feature
+// to be off. Google sign-in uses other settings, so it is not affected.
+process.env.GOOGLE_CALENDAR_CALLBACK_URL = '';
+process.env.GOOGLE_TOKEN_KEY = '';
