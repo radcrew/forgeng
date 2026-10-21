@@ -345,6 +345,40 @@ describe('SlackService', () => {
     });
   });
 
+  describe('findUserIdByEmail', () => {
+    it('finds the Slack account and sends a form', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: true, user: { id: 'U0ADA' } }),
+      );
+
+      await expect(
+        makeService(SLACK).findUserIdByEmail('ada@example.com'),
+      ).resolves.toBe('U0ADA');
+
+      const [url, init] = fetchMock.mock.calls[0] as [
+        string,
+        { body: string; headers: Record<string, string> },
+      ];
+      expect(url).toBe('https://slack.com/api/users.lookupByEmail');
+      expect(init.headers['Content-Type']).toBe(
+        'application/x-www-form-urlencoded',
+      );
+      expect(new URLSearchParams(init.body).get('email')).toBe(
+        'ada@example.com',
+      );
+    });
+
+    it('returns null when nobody in Slack uses the email', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'users_not_found' }),
+      );
+
+      await expect(
+        makeService(SLACK).findUserIdByEmail('ada@example.com'),
+      ).resolves.toBeNull();
+    });
+  });
+
   describe('openView', () => {
     it('opens the form for the click that triggered it', async () => {
       await makeService(SLACK).openView('trigger-1', { type: 'modal' });

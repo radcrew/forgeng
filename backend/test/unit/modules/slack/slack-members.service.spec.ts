@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
-import { SlackService } from '@core/slack';
+import { SlackChannelsService, SlackService } from '@core/slack';
 import { SlackMembersService } from '@modules/slack/slack-members.service';
 
 const MEMBER = {
@@ -21,6 +21,7 @@ describe('SlackMembersService', () => {
     postInBackground: jest.Mock;
     listWorkspaceMembers: jest.Mock;
   };
+  let channels: { addAdminToAllChannels: jest.Mock };
   let service: SlackMembersService;
 
   beforeEach(() => {
@@ -47,9 +48,13 @@ describe('SlackMembersService', () => {
       postInBackground: jest.fn(),
       listWorkspaceMembers: jest.fn().mockResolvedValue([]),
     };
+    channels = {
+      addAdminToAllChannels: jest.fn().mockResolvedValue(undefined),
+    };
     service = new SlackMembersService(
       prisma as unknown as PrismaService,
       slack as unknown as SlackService,
+      channels as unknown as SlackChannelsService,
       { get: () => 'https://app.example' } as never,
     );
   });
@@ -107,13 +112,15 @@ describe('SlackMembersService', () => {
     );
   });
 
-  it('links an admin and welcomes them, without cohort channels', async () => {
+  it('links an admin, adds them to every cohort channel, and welcomes them', async () => {
     prisma.user.findUnique.mockResolvedValue({ ...STUDENT, role: 'admin' });
 
     await service.handleTeamJoin(MEMBER);
 
     expect(prisma.user.update).toHaveBeenCalled();
-    expect(slack.inviteToChannel).not.toHaveBeenCalled();
+    // Not only their own cohorts, as for a student: every cohort channel.
+    expect(prisma.enrollment.findMany).not.toHaveBeenCalled();
+    expect(channels.addAdminToAllChannels).toHaveBeenCalledWith('U0ADA');
     expect(slack.postInBackground).toHaveBeenCalledWith(
       'U0ADA',
       expect.objectContaining({

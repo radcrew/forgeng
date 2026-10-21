@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { waitUntil } from '@vercel/functions';
 
 import { PrismaService } from '../database/prisma.service';
@@ -46,8 +47,8 @@ export class SlackChannelsService {
 
   /**
    * Creates a private channel for a new cohort, named after it, and invites
-   * the admin who created the cohort, if their Slack is linked. Without that
-   * they could not see the private channel. Returns the channel ID, or null
+   * the admins. Without that they could not see the private channel.
+   * Returns the channel ID, or null
    * when Slack is not set up or refused. Never throws: a cohort is created
    * with or without its channel.
    */
@@ -81,17 +82,65 @@ export class SlackChannelsService {
       return null;
     }
 
-    const admin = await this.prisma.user
-      .findUnique({ where: { id: adminUserId }, select: { slackUserId: true } })
-      .catch(() => null);
-    if (admin?.slackUserId) {
-      const slackUserId = admin.slackUserId;
+    for (const slackUserId of await this.adminsToInvite(adminUserId)) {
       await this.tryCall(
         () => this.slack.inviteToChannel(channelId, slackUserId),
         `add Slack member ${slackUserId} to channel ${channelId}`,
       );
     }
     return channelId;
+  }
+
+  /**
+   * Every linked admin, so mentors can see every cohort channel. The admin
+   * who created the cohort is linked by email first if they aren't yet, for
+   * example when they were in Slack before the app was set up. Never throws.
+   */
+  private async adminsToInvite(creatorId: number): Promise<string[]> {
+    try {
+      const admins = await this.prisma.user.findMany({
+        where: { role: 'admin' },
+        select: { id: true, email: true, slackUserId: true },
+      });
+      const creator = admins.find((a) => a.id === creatorId);
+      if (creator && !creator.slackUserId) {
+        creator.slackUserId = await this.linkByEmail(creator);
+      }
+      return admins
+        .map((a) => a.slackUserId)
+        .filter((id): id is string => id !== null);
+    } catch (err) {
+      this.logger.error(
+        'Failed to find the admins to add to a new Slack channel',
+        err instanceof Error ? err.stack : String(err),
+      );
+      return [];
+    }
+  }
+
+  /** Finds the user's Slack account by email and saves it. Null if none. */
+  private async linkByEmail(user: {
+    id: number;
+    email: string;
+  }): Promise<string | null> {
+    const slackUserId = await this.slack.findUserIdByEmail(user.email);
+    if (!slackUserId) return null;
+    try {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { slackUserId },
+      });
+    } catch (err) {
+      // The Slack account already belongs to another Forgeng user.
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        return null;
+      }
+      throw err;
+    }
+    return slackUserId;
   }
 
   /**
@@ -199,15 +248,19 @@ export class SlackChannelsService {
         },
       },
     });
+    const linked = await this.prisma.user.findMany({
+      where: { role: { in: ['student', 'admin'] }, slackUserId: { not: null } },
+      select: { role: true, slackUserId: true },
+    });
     // The only people the check may remove from a cohort channel.
     const linkedStudents = new Set(
-      (
-        await this.prisma.user.findMany({
-          where: { role: 'student', slackUserId: { not: null } },
-          select: { slackUserId: true },
-        })
-      ).map((u) => u.slackUserId),
+      linked.filter((u) => u.role === 'student').map((u) => u.slackUserId),
     );
+    // Cohort channels are private, so every admin must be in each one to
+    // see it. Admins are added, and never removed.
+    const linkedAdmins = linked
+      .filter((u) => u.role === 'admin')
+      .map((u) => u.slackUserId);
 
     for (const cohort of cohorts) {
       const channelId = cohort.slackChannelId;
@@ -230,7 +283,7 @@ export class SlackChannelsService {
       const enrolled = new Set(
         cohort.enrollments.map((e) => e.user.slackUserId),
       );
-      for (const slackUserId of enrolled) {
+      for (const slackUserId of new Set([...enrolled, ...linkedAdmins])) {
         if (!slackUserId || members.has(slackUserId)) continue;
         const ok = await this.tryCall(
           () => this.slack.inviteToChannel(channelId, slackUserId),
@@ -251,6 +304,34 @@ export class SlackChannelsService {
       result.channels++;
     }
     return result;
+  }
+
+  /**
+   * Adds an admin to every cohort channel, when they are linked to Slack.
+   * Cohort channels are private, so without this the admin could not see
+   * them. Never throws: each failed channel is logged, and the others go on.
+   */
+  async addAdminToAllChannels(slackUserId: string): Promise<void> {
+    if (!this.slack.enabled) return;
+    const cohorts = await this.prisma.cohort
+      .findMany({
+        where: { slackChannelId: { not: null } },
+        select: { slackChannelId: true },
+      })
+      .catch((err: unknown) => {
+        this.logger.error(
+          `Failed to find the cohort channels for admin ${slackUserId}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+        return [];
+      });
+    for (const { slackChannelId } of cohorts) {
+      if (!slackChannelId) continue;
+      await this.tryCall(
+        () => this.slack.inviteToChannel(slackChannelId, slackUserId),
+        `add Slack member ${slackUserId} to channel ${slackChannelId}`,
+      );
+    }
   }
 
   private async sync(userId: number, cohortIds: number[]): Promise<void> {

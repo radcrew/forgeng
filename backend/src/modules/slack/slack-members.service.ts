@@ -5,12 +5,17 @@ import { Prisma } from '@prisma/client';
 import { ADMIN_ROUTES, STUDENT_ROUTES } from '../../common/constants/routes';
 import type { AppConfiguration } from '../../config';
 import { PrismaService } from '../../core/database/prisma.service';
-import { SlackService, type SlackMember } from '../../core/slack';
+import {
+  SlackChannelsService,
+  SlackService,
+  type SlackMember,
+} from '../../core/slack';
 
 /**
  * Keeps Slack in step with Forgeng for people who join the workspace: links
  * their Slack account to their Forgeng account by email, adds students to
- * their cohort channels, and welcomes them.
+ * their cohort channels and admins to every cohort channel, and welcomes
+ * them.
  */
 @Injectable()
 export class SlackMembersService {
@@ -20,6 +25,7 @@ export class SlackMembersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly slack: SlackService,
+    private readonly channels: SlackChannelsService,
     config: ConfigService<AppConfiguration, true>,
   ) {
     this.frontendUrl = config.get('frontendUrl', { infer: true });
@@ -53,8 +59,13 @@ export class SlackMembersService {
     const alreadyLinked = user.slackUserId === member.id;
     if (!alreadyLinked && !(await this.link(user.id, member.id))) return false;
 
-    if (user.role === 'student')
+    if (user.role === 'student') {
       await this.addToCohortChannels(user.id, member.id);
+    } else {
+      // Cohort channels are private, so an admin must be in each one to
+      // see it.
+      await this.channels.addAdminToAllChannels(member.id);
+    }
     if (!alreadyLinked) this.welcome(member.id, user.name, user.role);
     return !alreadyLinked;
   }

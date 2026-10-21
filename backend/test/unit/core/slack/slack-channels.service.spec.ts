@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { waitUntil } from '@vercel/functions';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '@core/database/prisma.service';
 import { SlackChannelsService, SlackService } from '@core/slack';
 
@@ -13,7 +14,7 @@ const handed = () => {
 
 describe('SlackChannelsService', () => {
   let prisma: {
-    user: { findUnique: jest.Mock; findMany: jest.Mock };
+    user: { findUnique: jest.Mock; findMany: jest.Mock; update: jest.Mock };
     cohort: { findMany: jest.Mock };
   };
   let slack: {
@@ -22,6 +23,7 @@ describe('SlackChannelsService', () => {
     removeFromChannel: jest.Mock;
     listChannelMembers: jest.Mock;
     createPrivateChannel: jest.Mock;
+    findUserIdByEmail: jest.Mock;
   };
   let logError: jest.SpyInstance;
   let service: SlackChannelsService;
@@ -35,6 +37,7 @@ describe('SlackChannelsService', () => {
       user: {
         findUnique: jest.fn().mockResolvedValue({ slackUserId: 'U0ADA' }),
         findMany: jest.fn().mockResolvedValue([]),
+        update: jest.fn().mockResolvedValue({}),
       },
       cohort: {
         findMany: jest.fn().mockResolvedValue([
@@ -50,6 +53,7 @@ describe('SlackChannelsService', () => {
       removeFromChannel: jest.fn().mockResolvedValue(undefined),
       listChannelMembers: jest.fn().mockResolvedValue([]),
       createPrivateChannel: jest.fn().mockResolvedValue('CGOLANG'),
+      findUserIdByEmail: jest.fn().mockResolvedValue(null),
     };
     service = new SlackChannelsService(
       prisma as unknown as PrismaService,
@@ -155,30 +159,86 @@ describe('SlackChannelsService', () => {
       expect(names[1]).toBe(`${'a'.repeat(78)}-7`);
     });
 
-    it('invites the admin who created the cohort, if linked', async () => {
-      prisma.user.findUnique.mockResolvedValue({ slackUserId: 'U0ADMIN' });
+    const ADMINS = [
+      { id: 9, email: 'grace@example.com', slackUserId: 'U0GRACE' },
+      { id: 10, email: 'linus@example.com', slackUserId: 'U0LINUS' },
+      { id: 11, email: 'no-slack@example.com', slackUserId: null },
+    ];
+
+    it('invites every linked admin', async () => {
+      prisma.user.findMany.mockResolvedValue(ADMINS);
 
       await create();
 
-      expect(prisma.user.findUnique).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: 9 } }),
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { role: 'admin' } }),
       );
-      expect(slack.inviteToChannel).toHaveBeenCalledWith('CGOLANG', 'U0ADMIN');
+      expect(slack.inviteToChannel.mock.calls).toEqual([
+        ['CGOLANG', 'U0GRACE'],
+        ['CGOLANG', 'U0LINUS'],
+      ]);
+      expect(slack.findUserIdByEmail).not.toHaveBeenCalled();
     });
 
-    it('invites nobody when the admin has no linked Slack', async () => {
-      prisma.user.findUnique.mockResolvedValue({ slackUserId: null });
+    it('links the creating admin by email when they are not linked yet', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 9, email: 'grace@example.com', slackUserId: null },
+      ]);
+      slack.findUserIdByEmail.mockResolvedValue('U0GRACE');
+
+      await create();
+
+      expect(slack.findUserIdByEmail).toHaveBeenCalledWith('grace@example.com');
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 9 },
+        data: { slackUserId: 'U0GRACE' },
+      });
+      expect(slack.inviteToChannel).toHaveBeenCalledWith('CGOLANG', 'U0GRACE');
+    });
+
+    it('invites nobody new when the creator is not in Slack', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 9, email: 'grace@example.com', slackUserId: null },
+      ]);
+      slack.findUserIdByEmail.mockResolvedValue(null);
+
+      await expect(create()).resolves.toBe('CGOLANG');
+
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(slack.inviteToChannel).not.toHaveBeenCalled();
+    });
+
+    it("doesn't link a Slack account that belongs to another user", async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 9, email: 'grace@example.com', slackUserId: null },
+      ]);
+      slack.findUserIdByEmail.mockResolvedValue('U0TAKEN');
+      prisma.user.update.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('taken', {
+          code: 'P2002',
+          clientVersion: 'test',
+        }),
+      );
 
       await expect(create()).resolves.toBe('CGOLANG');
 
       expect(slack.inviteToChannel).not.toHaveBeenCalled();
     });
 
-    it('still returns the channel when the invite fails', async () => {
-      slack.inviteToChannel.mockRejectedValue(new Error('cant_invite'));
+    it('still returns the channel when an invite or the admin lookup fails', async () => {
+      prisma.user.findMany.mockResolvedValue(ADMINS);
+      slack.inviteToChannel.mockRejectedValueOnce(new Error('cant_invite'));
 
       await expect(create()).resolves.toBe('CGOLANG');
-      expect(logError).toHaveBeenCalled();
+      // The second admin is still invited.
+      expect(slack.inviteToChannel).toHaveBeenCalledTimes(2);
+
+      prisma.user.findMany.mockRejectedValue(new Error('db down'));
+      await expect(create()).resolves.toBe('CGOLANG');
+      expect(logError).toHaveBeenCalledWith(
+        'Failed to find the admins to add to a new Slack channel',
+        expect.stringContaining('db down'),
+      );
     });
 
     it('returns null and logs when Slack refuses', async () => {
@@ -282,11 +342,13 @@ describe('SlackChannelsService', () => {
           ],
         },
       ]);
-      // Linked students: Ada and Grace are enrolled, Linus left the cohort.
+      // Linked: Ada and Grace are enrolled, Linus left the cohort.
       prisma.user.findMany.mockResolvedValue([
-        { slackUserId: 'U0ADA' },
-        { slackUserId: 'U0GRACE' },
-        { slackUserId: 'U0LINUS' },
+        { role: 'student', slackUserId: 'U0ADA' },
+        { role: 'student', slackUserId: 'U0GRACE' },
+        { role: 'student', slackUserId: 'U0LINUS' },
+        // A linked admin, already in the channel.
+        { role: 'admin', slackUserId: 'U0MENTOR' },
       ]);
       // In the channel: Ada, Linus, a mentor, the bot. Grace is missing.
       slack.listChannelMembers.mockResolvedValue([
@@ -327,7 +389,10 @@ describe('SlackChannelsService', () => {
       );
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { role: 'student', slackUserId: { not: null } },
+          where: {
+            role: { in: ['student', 'admin'] },
+            slackUserId: { not: null },
+          },
         }),
       );
     });
@@ -394,6 +459,77 @@ describe('SlackChannelsService', () => {
         added: 0,
         removed: 0,
       });
+      expect(prisma.cohort.findMany).not.toHaveBeenCalled();
+    });
+
+    it('adds a linked admin who is missing, and never removes admins', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { role: 'student', slackUserId: 'U0ADA' },
+        { role: 'student', slackUserId: 'U0GRACE' },
+        { role: 'admin', slackUserId: 'U0MENTOR' },
+        { role: 'admin', slackUserId: 'U0NEWMENTOR' },
+      ]);
+
+      const result = await service.reconcileAll();
+
+      expect(slack.inviteToChannel).toHaveBeenCalledWith(
+        'CSPRING',
+        'U0NEWMENTOR',
+      );
+      // Grace, the missing student, and the missing admin.
+      expect(result.added).toBe(2);
+      expect(slack.removeFromChannel).not.toHaveBeenCalledWith(
+        'CSPRING',
+        'U0MENTOR',
+      );
+    });
+  });
+
+  describe('addAdminToAllChannels', () => {
+    beforeEach(() => {
+      prisma.cohort.findMany.mockResolvedValue([
+        { slackChannelId: 'CSPRING' },
+        { slackChannelId: 'CAUTUMN' },
+      ]);
+    });
+
+    it('adds the admin to every cohort channel', async () => {
+      await service.addAdminToAllChannels('U0MENTOR');
+
+      expect(prisma.cohort.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { slackChannelId: { not: null } } }),
+      );
+      expect(slack.inviteToChannel.mock.calls).toEqual([
+        ['CSPRING', 'U0MENTOR'],
+        ['CAUTUMN', 'U0MENTOR'],
+      ]);
+    });
+
+    it('keeps going when one channel fails', async () => {
+      slack.inviteToChannel.mockRejectedValueOnce(
+        new Error('channel_not_found'),
+      );
+
+      await service.addAdminToAllChannels('U0MENTOR');
+
+      expect(slack.inviteToChannel).toHaveBeenCalledTimes(2);
+      expect(logError).toHaveBeenCalledTimes(1);
+    });
+
+    it('never throws when the cohorts cannot be read', async () => {
+      prisma.cohort.findMany.mockRejectedValue(new Error('db down'));
+
+      await expect(
+        service.addAdminToAllChannels('U0MENTOR'),
+      ).resolves.toBeUndefined();
+      expect(slack.inviteToChannel).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when Slack is not set up', async () => {
+      slack.enabled = false;
+
+      await service.addAdminToAllChannels('U0MENTOR');
+
       expect(prisma.cohort.findMany).not.toHaveBeenCalled();
     });
   });

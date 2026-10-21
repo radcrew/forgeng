@@ -19,7 +19,11 @@ const SLACK_TIMEOUT_MS = 10_000;
  * Slack's methods that only read data don't accept a JSON body, so their
  * arguments are sent as a form.
  */
-const READ_METHODS = new Set(['conversations.members', 'users.list']);
+const READ_METHODS = new Set([
+  'conversations.members',
+  'users.list',
+  'users.lookupByEmail',
+]);
 
 /** A workspace member, as Slack's users.list and team_join send it. */
 export interface SlackMember {
@@ -158,6 +162,19 @@ export class SlackService {
     throw new Error(
       `Slack refused conversations.create: every name was taken (${names.join(', ')})`,
     );
+  }
+
+  /**
+   * The Slack account with this email, or null when nobody in the workspace
+   * uses it. Needs the users:read.email scope.
+   */
+  async findUserIdByEmail(email: string): Promise<string | null> {
+    const answer = await this.call<{ user?: { id?: string } }>(
+      'users.lookupByEmail',
+      { email },
+      ['users_not_found'],
+    );
+    return answer.user?.id ?? null;
   }
 
   /**
