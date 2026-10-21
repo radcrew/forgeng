@@ -270,6 +270,36 @@ describe('MeetingsService', () => {
       );
     });
 
+    it.each(['not_configured', 'not_connected', 'broken'] as const)(
+      'still cancels the meeting when Google answers "%s"',
+      async (reason) => {
+        jest
+          .spyOn(Logger.prototype, 'warn')
+          .mockImplementation(() => undefined);
+        calendar.deleteEvent.mockRejectedValue(
+          new GoogleCalendarError(reason, 'message'),
+        );
+
+        const dto = await service.cancel(HOST, 5);
+
+        expect(dto.status).toBe('cancelled');
+        expect(notifications.notifyMeeting).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'meeting_cancelled' }),
+        );
+      },
+    );
+
+    it('keeps the meeting when Google fails for a moment', async () => {
+      calendar.deleteEvent.mockRejectedValue(
+        new GoogleCalendarError('failed', 'message'),
+      );
+
+      await expect(service.cancel(HOST, 5)).rejects.toBeInstanceOf(
+        BadGatewayException,
+      );
+      expect(prisma.meeting.update).not.toHaveBeenCalled();
+    });
+
     it('does nothing more for a meeting already cancelled', async () => {
       prisma.meeting.findUnique.mockResolvedValue(
         makeMeeting({ status: 'cancelled' }),

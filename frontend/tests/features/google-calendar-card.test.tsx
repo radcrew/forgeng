@@ -60,6 +60,37 @@ describe("GoogleCalendarCard", () => {
     );
   });
 
+  it("checks the sign-in before it opens the connect page", async () => {
+    const assign = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...originalLocation, assign },
+    });
+    try {
+      render(<GoogleCalendarCard />);
+      const link = await screen.findByRole("link", {
+        name: "Connect Google Calendar",
+      });
+      getGoogleCalendarStatus.mockClear();
+
+      await userEvent.click(link);
+
+      // The status call refreshes an expired sign-in first.
+      await waitFor(() =>
+        expect(assign).toHaveBeenCalledWith(
+          "http://api.test/api/integrations/google-calendar/connect",
+        ),
+      );
+      expect(getGoogleCalendarStatus).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
+  });
+
   it("explains when the server has no Google Calendar settings", async () => {
     getGoogleCalendarStatus.mockResolvedValue(status({ configured: false }));
     render(<GoogleCalendarCard />);

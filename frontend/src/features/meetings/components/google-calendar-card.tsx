@@ -1,6 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import {
+  type MouseEvent,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +23,7 @@ import {
 } from "@components/ui/card";
 import { ApiError } from "@lib/api-client";
 
-import { googleCalendarConnectUrl } from "../api";
+import { getGoogleCalendarStatus, googleCalendarConnectUrl } from "../api";
 import { CONNECT_RESULTS, CONNECT_RESULT_PARAM } from "../connect-result";
 import { useDisconnectGoogleCalendar, useGoogleCalendarStatus } from "../hooks";
 
@@ -71,9 +77,32 @@ export const GoogleCalendarCard = () => {
     }
   };
 
+  // The browser opens the connect link itself, so nothing refreshes an
+  // expired sign-in on the way, and the server would answer 401. A normal
+  // API call first refreshes the sign-in when needed.
+  const handleConnect = async (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const href = event.currentTarget.href;
+    try {
+      await getGoogleCalendarStatus();
+      window.location.assign(href);
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to connect Google Calendar.",
+      );
+    }
+  };
+
   const connectButton = (label: string) => (
     <Button asChild>
-      <a href={googleCalendarConnectUrl()}>{label}</a>
+      <a
+        href={googleCalendarConnectUrl()}
+        onClick={(event) => void handleConnect(event)}
+      >
+        {label}
+      </a>
     </Button>
   );
 

@@ -184,8 +184,7 @@ export class MeetingsService {
     if (meeting.status === 'cancelled') return toMeetingDto(meeting);
 
     if (meeting.googleEventId) {
-      const eventId = meeting.googleEventId;
-      await this.google(() => this.calendar.deleteEvent(host.id, eventId));
+      await this.deleteEventIfConnected(host.id, meeting.googleEventId);
     }
     const cancelled = await this.prisma.meeting.update({
       where: { id },
@@ -194,6 +193,31 @@ export class MeetingsService {
     });
     await this.notify(cancelled, 'meeting_cancelled', 'Meeting cancelled');
     return toMeetingDto(cancelled);
+  }
+
+  /**
+   * Cancels the Google event. Without a working connection, for example
+   * after the admin disconnected, Forgeng can't reach the event. The meeting
+   * is then cancelled only here, so the student doesn't keep a meeting that
+   * won't happen. Forgeng still tells them in the app. When Google fails
+   * for a moment, the admin gets the error and can try again.
+   */
+  private async deleteEventIfConnected(
+    hostId: number,
+    eventId: string,
+  ): Promise<void> {
+    await this.google(async () => {
+      try {
+        await this.calendar.deleteEvent(hostId, eventId);
+      } catch (err) {
+        if (!(err instanceof GoogleCalendarError) || err.reason === 'failed') {
+          throw err;
+        }
+        this.logger.warn(
+          `Cancelled meeting event ${eventId} only in Forgeng, because user ${hostId} has no working Google Calendar connection`,
+        );
+      }
+    });
   }
 
   /**
