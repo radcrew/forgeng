@@ -3,6 +3,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Logger,
   Query,
   Req,
   Res,
@@ -34,6 +35,7 @@ const COOKIE_PATH = '/api/integrations/google-calendar';
 @ApiTags('integrations')
 @Controller('integrations/google-calendar')
 export class GoogleCalendarController {
+  private readonly logger = new Logger(GoogleCalendarController.name);
   private readonly frontendUrl: string;
   private readonly secureCookies: boolean;
 
@@ -95,8 +97,17 @@ export class GoogleCalendarController {
       });
       result = 'connected';
     } catch (err) {
-      if (!(err instanceof GoogleCalendarConnectError)) throw err;
-      result = err.reason;
+      if (err instanceof GoogleCalendarConnectError) {
+        result = err.reason;
+      } else {
+        // For example, the database failed. The browser is on this route,
+        // so send the admin back with a message instead of an error page.
+        this.logger.error(
+          'Failed to finish a Google Calendar connection',
+          err instanceof Error ? err.stack : String(err),
+        );
+        result = 'token';
+      }
     }
     res.redirect(`${this.frontendUrl}/admin/meetings?googleCalendar=${result}`);
   }

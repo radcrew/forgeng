@@ -130,7 +130,7 @@ export class GoogleCalendarAuthService {
     // Google's consent page lets the admin untick the calendar box.
     const granted = (tokens.scope ?? '').split(' ');
     if (!granted.includes(CALENDAR_SCOPE)) {
-      await this.revoke(tokens.refresh_token);
+      await this.revokeUnused(userId, tokens.refresh_token);
       throw new GoogleCalendarConnectError('scope');
     }
 
@@ -140,14 +140,7 @@ export class GoogleCalendarAuthService {
     // Upcoming meetings are events in the saved account's calendar. With
     // another account's token, Forgeng could no longer move or cancel them.
     if (await this.switchesAccountWithMeetings(userId, googleEmail)) {
-      try {
-        await this.revoke(tokens.refresh_token);
-      } catch (err) {
-        this.logger.error(
-          `Failed to revoke an unused Google Calendar token of user ${userId}`,
-          err instanceof Error ? err.stack : String(err),
-        );
-      }
+      await this.revokeUnused(userId, tokens.refresh_token);
       throw new GoogleCalendarConnectError('other_account');
     }
 
@@ -262,6 +255,21 @@ export class GoogleCalendarAuthService {
         err instanceof Error ? err.stack : String(err),
       );
       return null;
+    }
+  }
+
+  /**
+   * Gives back a token Forgeng won't keep. Never throws, so the admin still
+   * gets the real reason the connection was refused.
+   */
+  private async revokeUnused(userId: number, token: string): Promise<void> {
+    try {
+      await this.revoke(token);
+    } catch (err) {
+      this.logger.error(
+        `Failed to revoke an unused Google Calendar token of user ${userId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
     }
   }
 

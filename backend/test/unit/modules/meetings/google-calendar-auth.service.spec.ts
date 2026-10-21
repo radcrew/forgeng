@@ -214,6 +214,19 @@ describe('GoogleCalendarAuthService', () => {
       expect(prisma.googleCalendarConnection.upsert).not.toHaveBeenCalled();
     });
 
+    it('still says the box was unticked when giving the token back fails', async () => {
+      const { state, nonce } = started();
+      fetchMock
+        .mockReturnValueOnce(
+          googleAnswer({ ...goodTokens, scope: 'openid email' }),
+        )
+        .mockReturnValueOnce(googleAnswer({}, false));
+
+      await expect(
+        makeService().finishConnect({ code: 'c', state, nonceCookie: nonce }),
+      ).rejects.toMatchObject({ reason: 'scope' });
+    });
+
     describe('when another account was connected before', () => {
       beforeEach(() => {
         prisma.googleCalendarConnection.findUnique.mockResolvedValue({
