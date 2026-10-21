@@ -206,6 +206,46 @@ describe('SlackService', () => {
       ).rejects.toThrow('not_in_channel');
     });
 
+    /** Slack's answer when a rate limit is reached. */
+    const rateLimited = (retryAfter: string) =>
+      Promise.resolve({
+        ok: false,
+        status: 429,
+        headers: new Headers({ 'Retry-After': retryAfter }),
+        json: () => Promise.resolve({ ok: false, error: 'ratelimited' }),
+      } as Response);
+
+    it('waits and tries again when Slack is rate limited', async () => {
+      fetchMock
+        .mockReturnValueOnce(rateLimited('0'))
+        .mockReturnValueOnce(rateLimited('0'))
+        .mockReturnValueOnce(answer(200, { ok: true }));
+
+      await expect(
+        makeService(SLACK).inviteToChannel('CCOHORT', 'U0ADA'),
+      ).resolves.toBeUndefined();
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    it('gives up after a few tries', async () => {
+      fetchMock.mockReturnValue(rateLimited('0'));
+
+      await expect(
+        makeService(SLACK).inviteToChannel('CCOHORT', 'U0ADA'),
+      ).rejects.toThrow('ratelimited');
+      // The first call and 3 more tries.
+      expect(fetchMock).toHaveBeenCalledTimes(4);
+    });
+
+    it('does not wait longer than 30 seconds', async () => {
+      fetchMock.mockReturnValue(rateLimited('120'));
+
+      await expect(
+        makeService(SLACK).inviteToChannel('CCOHORT', 'U0ADA'),
+      ).rejects.toThrow('ratelimited');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it('throws when Slack is not set up', async () => {
       await expect(
         makeService(null).inviteToChannel('CCOHORT', 'U0ADA'),

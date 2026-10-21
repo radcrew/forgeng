@@ -14,6 +14,13 @@ interface SlackAnswer {
   error?: string;
 }
 const SLACK_TIMEOUT_MS = 10_000;
+/**
+ * When Slack answers 429 because of its rate limits, the call is tried again
+ * this many times, after the wait Slack asks for. A longer wait counts as
+ * a refusal.
+ */
+const RATE_LIMIT_RETRIES = 3;
+const MAX_RETRY_WAIT_MS = 30_000;
 
 /**
  * Slack's methods that only read data don't accept a JSON body, so their
@@ -341,21 +348,39 @@ export class SlackService {
   ): Promise<T & SlackAnswer> {
     if (!botToken) throw new Error('Slack is not set up on this server.');
     const asForm = READ_METHODS.has(method);
-    const res = await fetch(`${API_URL}/${method}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${botToken}`,
-        'Content-Type': asForm
-          ? 'application/x-www-form-urlencoded'
-          : 'application/json; charset=utf-8',
-      },
-      body: asForm
-        ? new URLSearchParams(
-            Object.entries(payload).map(([key, value]) => [key, String(value)]),
-          ).toString()
-        : JSON.stringify(payload),
-      signal: AbortSignal.timeout(SLACK_TIMEOUT_MS),
-    });
+    const send = () =>
+      fetch(`${API_URL}/${method}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${botToken}`,
+          'Content-Type': asForm
+            ? 'application/x-www-form-urlencoded'
+            : 'application/json; charset=utf-8',
+        },
+        body: asForm
+          ? new URLSearchParams(
+              Object.entries(payload).map(([key, value]) => [
+                key,
+                String(value),
+              ]),
+            ).toString()
+          : JSON.stringify(payload),
+        signal: AbortSignal.timeout(SLACK_TIMEOUT_MS),
+      });
+
+    let res = await send();
+    // Many calls in a row, such as moving a whole cohort, reach Slack's
+    // rate limits. Slack then says how many seconds to wait.
+    for (
+      let retry = 0;
+      res.status === 429 && retry < RATE_LIMIT_RETRIES;
+      retry++
+    ) {
+      const waitMs = Number(res.headers.get('Retry-After') ?? 1) * 1000;
+      if (!(waitMs >= 0 && waitMs <= MAX_RETRY_WAIT_MS)) break;
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      res = await send();
+    }
     const body = (await res.json().catch(() => ({}))) as T & SlackAnswer;
     if (res.ok && (body.ok || okErrors.includes(body.error ?? ''))) {
       return body;
