@@ -29,7 +29,10 @@ export type ConnectFailure =
   | 'state'
   | 'not_admin'
   | 'scope'
-  | 'token';
+  | 'token'
+  // Another Google account than the saved one, while upcoming meetings are
+  // still in the saved account's calendar.
+  | 'other_account';
 
 export class GoogleCalendarConnectError extends Error {
   constructor(readonly reason: ConnectFailure) {
@@ -134,6 +137,20 @@ export class GoogleCalendarAuthService {
     const googleEmail = emailFromIdToken(tokens.id_token);
     if (!googleEmail) throw new GoogleCalendarConnectError('token');
 
+    // Upcoming meetings are events in the saved account's calendar. With
+    // another account's token, Forgeng could no longer move or cancel them.
+    if (await this.switchesAccountWithMeetings(userId, googleEmail)) {
+      try {
+        await this.revoke(tokens.refresh_token);
+      } catch (err) {
+        this.logger.error(
+          `Failed to revoke an unused Google Calendar token of user ${userId}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+      throw new GoogleCalendarConnectError('other_account');
+    }
+
     const refreshTokenEncrypted = encryptSecret(
       tokens.refresh_token,
       settings.tokenKey,
@@ -177,6 +194,35 @@ export class GoogleCalendarAuthService {
     await this.prisma.googleCalendarConnection.deleteMany({
       where: { userId },
     });
+  }
+
+  /**
+   * True when the admin connects another Google account than the saved one
+   * while they still host upcoming meetings in the saved account's calendar.
+   */
+  private async switchesAccountWithMeetings(
+    userId: number,
+    googleEmail: string,
+  ): Promise<boolean> {
+    const saved = await this.prisma.googleCalendarConnection.findUnique({
+      where: { userId },
+      select: { googleEmail: true },
+    });
+    if (
+      !saved ||
+      saved.googleEmail.toLowerCase() === googleEmail.toLowerCase()
+    ) {
+      return false;
+    }
+    const upcoming = await this.prisma.meeting.count({
+      where: {
+        hostId: userId,
+        status: 'scheduled',
+        googleEventId: { not: null },
+        endsAt: { gte: new Date() },
+      },
+    });
+    return upcoming > 0;
   }
 
   private requireSettings(): GoogleCalendarConfig {

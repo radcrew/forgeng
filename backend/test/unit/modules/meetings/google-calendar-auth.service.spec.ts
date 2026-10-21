@@ -28,6 +28,7 @@ const googleAnswer = (body: unknown, ok = true) =>
 describe('GoogleCalendarAuthService', () => {
   let prisma: {
     user: { findUnique: jest.Mock };
+    meeting: { count: jest.Mock };
     googleCalendarConnection: {
       findUnique: jest.Mock;
       upsert: jest.Mock;
@@ -51,6 +52,7 @@ describe('GoogleCalendarAuthService', () => {
     jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue({ role: 'admin' }) },
+      meeting: { count: jest.fn().mockResolvedValue(0) },
       googleCalendarConnection: {
         findUnique: jest.fn().mockResolvedValue(null),
         upsert: jest.fn().mockResolvedValue({}),
@@ -210,6 +212,61 @@ describe('GoogleCalendarAuthService', () => {
         expect.anything(),
       );
       expect(prisma.googleCalendarConnection.upsert).not.toHaveBeenCalled();
+    });
+
+    describe('when another account was connected before', () => {
+      beforeEach(() => {
+        prisma.googleCalendarConnection.findUnique.mockResolvedValue({
+          googleEmail: 'old@gmail.com',
+        });
+      });
+
+      it('refuses another account while meetings are in the old calendar', async () => {
+        const { state, nonce } = started();
+        prisma.meeting.count.mockResolvedValue(2);
+        fetchMock
+          .mockReturnValueOnce(googleAnswer(goodTokens))
+          .mockReturnValueOnce(googleAnswer({}));
+
+        await expect(
+          makeService().finishConnect({ code: 'c', state, nonceCookie: nonce }),
+        ).rejects.toMatchObject({ reason: 'other_account' });
+        expect(fetchMock).toHaveBeenLastCalledWith(
+          'https://oauth2.googleapis.com/revoke',
+          expect.anything(),
+        );
+        expect(prisma.googleCalendarConnection.upsert).not.toHaveBeenCalled();
+      });
+
+      it('allows another account when no meetings are left', async () => {
+        const { state, nonce } = started();
+        fetchMock.mockReturnValue(googleAnswer(goodTokens));
+
+        await makeService().finishConnect({
+          code: 'c',
+          state,
+          nonceCookie: nonce,
+        });
+
+        expect(prisma.googleCalendarConnection.upsert).toHaveBeenCalled();
+      });
+
+      it('allows the same account again, for example after it broke', async () => {
+        const { state, nonce } = started();
+        prisma.googleCalendarConnection.findUnique.mockResolvedValue({
+          googleEmail: 'Mentor@gmail.com',
+        });
+        prisma.meeting.count.mockResolvedValue(2);
+        fetchMock.mockReturnValue(googleAnswer(goodTokens));
+
+        await makeService().finishConnect({
+          code: 'c',
+          state,
+          nonceCookie: nonce,
+        });
+
+        expect(prisma.googleCalendarConnection.upsert).toHaveBeenCalled();
+      });
     });
 
     it('refuses when the server has no Google Calendar settings', async () => {

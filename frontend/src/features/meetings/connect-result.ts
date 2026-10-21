@@ -27,6 +27,11 @@ export const CONNECT_RESULTS: Record<
     ok: false,
     message: "Google didn't finish the connection. Please try again.",
   },
+  other_account: {
+    ok: false,
+    message:
+      "Your upcoming meetings are in the calendar of the Google account you connected before. Connect that account, or cancel those meetings first.",
+  },
   not_admin: {
     ok: false,
     message: "Only admins can connect Google Calendar.",
