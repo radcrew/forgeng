@@ -147,9 +147,12 @@ export class MeetingsService {
       throw new ConflictException('This meeting was cancelled.');
     }
 
-    const startsAt = dto.startsAt
-      ? assertFuture(dto.startsAt)
-      : meeting.startsAt;
+    // Only a new start time must be in the future. So a meeting that has
+    // started can still be made longer, or get a new note.
+    const startsAt =
+      dto.startsAt && dto.startsAt.getTime() !== meeting.startsAt.getTime()
+        ? assertFuture(dto.startsAt)
+        : meeting.startsAt;
     const durationMs =
       dto.durationMinutes !== undefined
         ? dto.durationMinutes * MINUTE_MS

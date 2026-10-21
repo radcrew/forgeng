@@ -227,6 +227,30 @@ describe("StudentMeetings", () => {
     );
   });
 
+  it("saves a meeting that has started when its start time is kept", async () => {
+    // Started 10 minutes ago, on a whole minute, as the form keeps minutes.
+    const startsAt = new Date(Date.now() - 10 * 60 * 1000);
+    startsAt.setSeconds(0, 0);
+    const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000);
+    listMeetings.mockResolvedValue([
+      meeting({
+        startsAt: startsAt.toISOString(),
+        endsAt: endsAt.toISOString(),
+      }),
+    ]);
+    renderSection();
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Reschedule" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(rescheduleMeeting).toHaveBeenCalled());
+    expect(
+      screen.queryByText("Pick a time in the future."),
+    ).not.toBeInTheDocument();
+  });
+
   it("cancels a meeting only after confirming", async () => {
     listMeetings.mockResolvedValue([meeting()]);
     renderSection();

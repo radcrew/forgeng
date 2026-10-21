@@ -84,7 +84,11 @@ export const MeetingDialog = ({
       setError("Pick a date and a start time.");
       return;
     }
-    if (startsAt.getTime() <= Date.now()) {
+    // Only a new start time must be in the future. So a meeting that has
+    // started can still be made longer, or get a new note.
+    const startChanged =
+      !meeting || startsAt.getTime() !== new Date(meeting.startsAt).getTime();
+    if (startChanged && startsAt.getTime() <= Date.now()) {
       setError("Pick a time in the future.");
       return;
     }

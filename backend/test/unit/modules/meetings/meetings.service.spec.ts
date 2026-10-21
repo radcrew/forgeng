@@ -216,6 +216,39 @@ describe('MeetingsService', () => {
       );
     });
 
+    it('changes a meeting that has started when its start time is kept', async () => {
+      const startsAt = new Date(Date.now() - 10 * 60 * 1000);
+      prisma.meeting.findUnique.mockResolvedValue(
+        makeMeeting({
+          startsAt,
+          endsAt: new Date(startsAt.getTime() + 60 * 60 * 1000),
+        }),
+      );
+
+      await service.reschedule(HOST, 5, {
+        startsAt: new Date(startsAt),
+        durationMinutes: 90,
+      });
+
+      expect(prisma.meeting.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            startsAt,
+            endsAt: new Date(startsAt.getTime() + 90 * 60 * 1000),
+          }) as unknown,
+        }),
+      );
+    });
+
+    it('refuses to move a meeting to a time in the past', async () => {
+      await expect(
+        service.reschedule(HOST, 5, {
+          startsAt: new Date(Date.now() - 1000),
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(calendar.updateEvent).not.toHaveBeenCalled();
+    });
+
     it('removes the note when it is cleared', async () => {
       prisma.meeting.findUnique.mockResolvedValue(
         makeMeeting({ note: 'Old note' }),
