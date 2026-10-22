@@ -48,7 +48,7 @@ export class CohortsService {
       dto.startDate ? new Date(dto.startDate) : null,
       dto.endDate ? new Date(dto.endDate) : null,
     );
-    await this.assertSlackChannelFree(dto.slackChannelId);
+    await this.assertSlackChannelUsable(dto.slackChannelId);
     const created = await this.prisma.cohort.create({
       data: {
         name: dto.name,
@@ -92,7 +92,7 @@ export class CohortsService {
       dto.slackChannelId !== undefined &&
       dto.slackChannelId !== exists.slackChannelId;
     if (channelChanged)
-      await this.assertSlackChannelFree(dto.slackChannelId, id);
+      await this.assertSlackChannelUsable(dto.slackChannelId, id);
     const students = channelChanged
       ? await this.slackChannels.linkedStudents(id)
       : [];
@@ -172,10 +172,11 @@ export class CohortsService {
   }
 
   /**
-   * Gives a clear message when another cohort already uses the channel. The
-   * unique index also refuses it, for two saves at the same moment.
+   * Gives a clear message when another cohort already uses the channel, or
+   * when Slack can't use it. The unique index also refuses a shared
+   * channel, for two saves at the same moment.
    */
-  private async assertSlackChannelFree(
+  private async assertSlackChannelUsable(
     channelId: string | null | undefined,
     cohortId?: number,
   ): Promise<void> {
@@ -192,6 +193,9 @@ export class CohortsService {
         `The cohort "${other.name}" already uses this Slack channel. Each cohort needs its own channel.`,
       );
     }
+    // For example a mistyped ID, or a channel the app wasn't invited to.
+    const problem = await this.slackChannels.channelProblem(channelId);
+    if (problem) throw new BadRequestException(problem);
   }
 
   private assertDateOrder(start: Date | null, end: Date | null): void {

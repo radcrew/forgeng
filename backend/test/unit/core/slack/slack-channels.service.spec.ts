@@ -25,6 +25,7 @@ describe('SlackChannelsService', () => {
     listChannelMembers: jest.Mock;
     createPrivateChannel: jest.Mock;
     findUserIdByEmail: jest.Mock;
+    findChannel: jest.Mock;
   };
   let logError: jest.SpyInstance;
   let service: SlackChannelsService;
@@ -57,6 +58,7 @@ describe('SlackChannelsService', () => {
       listChannelMembers: jest.fn().mockResolvedValue([]),
       createPrivateChannel: jest.fn().mockResolvedValue('CGOLANG'),
       findUserIdByEmail: jest.fn().mockResolvedValue(null),
+      findChannel: jest.fn().mockResolvedValue({ isMember: true }),
     };
     service = new SlackChannelsService(
       prisma as unknown as PrismaService,
@@ -165,6 +167,44 @@ describe('SlackChannelsService', () => {
       'Failed to sync the Slack channels of user 7',
       expect.stringContaining('db down'),
     );
+  });
+
+  describe('channelProblem', () => {
+    it('accepts a channel the app is in', async () => {
+      slack.findChannel.mockResolvedValue({ isMember: true });
+
+      await expect(service.channelProblem('C0123')).resolves.toBeNull();
+    });
+
+    it("explains a channel Slack can't find", async () => {
+      slack.findChannel.mockResolvedValue(null);
+
+      await expect(service.channelProblem('C0TYPO')).resolves.toMatch(
+        /can't find this channel/,
+      );
+    });
+
+    it("asks to invite the app to a channel it isn't in", async () => {
+      slack.findChannel.mockResolvedValue({ isMember: false });
+
+      await expect(service.channelProblem('C0123')).resolves.toMatch(
+        /Invite the Forgeng app/,
+      );
+    });
+
+    it("doesn't block the save when Slack doesn't answer", async () => {
+      jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+      slack.findChannel.mockRejectedValue(new Error('timeout'));
+
+      await expect(service.channelProblem('C0123')).resolves.toBeNull();
+    });
+
+    it('checks nothing when Slack is not set up', async () => {
+      slack.enabled = false;
+
+      await expect(service.channelProblem('C0123')).resolves.toBeNull();
+      expect(slack.findChannel).not.toHaveBeenCalled();
+    });
   });
 
   describe('createForCohortInBackground', () => {

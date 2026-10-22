@@ -51,6 +51,7 @@ describe('CohortsService', () => {
     linkedStudents: jest.Mock;
     moveInBackground: jest.Mock;
     createForCohortInBackground: jest.Mock;
+    channelProblem: jest.Mock;
   };
   let prisma: {
     cohort: {
@@ -102,6 +103,7 @@ describe('CohortsService', () => {
       linkedStudents: jest.fn().mockResolvedValue(['U0ADA']),
       moveInBackground: jest.fn(),
       createForCohortInBackground: jest.fn(),
+      channelProblem: jest.fn().mockResolvedValue(null),
     };
     service = new CohortsService(
       prisma as unknown as PrismaService,
@@ -164,6 +166,19 @@ describe('CohortsService', () => {
       expect(prisma.cohort.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({ where: { slackChannelId: 'C0123ABCD' } }),
       );
+      expect(prisma.cohort.create).not.toHaveBeenCalled();
+    });
+
+    it("refuses a channel Slack can't use, with Slack's reason", async () => {
+      slackChannels.channelProblem.mockResolvedValue(
+        "Slack can't find this channel.",
+      );
+
+      const result = create({ name: 'Golang', slackChannelId: 'C0TYPO' });
+
+      await expect(result).rejects.toBeInstanceOf(BadRequestException);
+      await expect(result).rejects.toThrow("Slack can't find this channel.");
+      expect(slackChannels.channelProblem).toHaveBeenCalledWith('C0TYPO');
       expect(prisma.cohort.create).not.toHaveBeenCalled();
     });
 
@@ -357,6 +372,21 @@ describe('CohortsService', () => {
           where: { slackChannelId: 'CTAKEN', id: { not: 3 } },
         }),
       );
+      expect(prisma.cohort.update).not.toHaveBeenCalled();
+      expect(slackChannels.moveInBackground).not.toHaveBeenCalled();
+    });
+
+    it("refuses a new channel the app wasn't invited to", async () => {
+      prisma.cohort.findUnique.mockResolvedValue(
+        makeCohort({ slackChannelId: 'COLD' }),
+      );
+      slackChannels.channelProblem.mockResolvedValue(
+        'Invite the Forgeng app to this Slack channel first.',
+      );
+
+      await expect(
+        service.update(3, { slackChannelId: 'CNEW' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(prisma.cohort.update).not.toHaveBeenCalled();
       expect(slackChannels.moveInBackground).not.toHaveBeenCalled();
     });

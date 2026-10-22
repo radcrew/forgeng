@@ -32,6 +32,7 @@ const NO_RETRY_METHODS = new Set(['views.open']);
  * arguments are sent as a form.
  */
 const READ_METHODS = new Set([
+  'conversations.info',
   'conversations.members',
   'users.list',
   'users.lookupByEmail',
@@ -210,6 +211,22 @@ export class SlackService {
       ['users_not_found'],
     );
     return answer.user?.id ?? null;
+  }
+
+  /**
+   * Whether the app is in the channel, or null when Slack doesn't know the
+   * channel. A private channel is only visible to the app once it is
+   * invited. Needs the channels:read and groups:read scopes.
+   */
+  async findChannel(channelId: string): Promise<{ isMember: boolean } | null> {
+    const answer = await this.call<{ channel?: { is_member?: boolean } }>(
+      'conversations.info',
+      { channel: channelId },
+      ['channel_not_found'],
+    );
+    return answer.channel
+      ? { isMember: answer.channel.is_member === true }
+      : null;
   }
 
   /**

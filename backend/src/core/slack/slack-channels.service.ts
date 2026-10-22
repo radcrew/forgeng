@@ -46,6 +46,31 @@ export class SlackChannelsService {
   }
 
   /**
+   * Why a pasted channel can't be used for a cohort, or null when it can.
+   * Also null when Slack is not set up or doesn't answer, so a Slack problem
+   * never blocks saving a cohort.
+   */
+  async channelProblem(channelId: string): Promise<string | null> {
+    if (!this.slack.enabled) return null;
+    let channel: { isMember: boolean } | null;
+    try {
+      channel = await this.slack.findChannel(channelId);
+    } catch (err) {
+      this.logger.warn(
+        `Could not check Slack channel ${channelId}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return null;
+    }
+    if (!channel) {
+      return "Slack can't find this channel. Check the ID. For a private channel, invite the Forgeng app to it first.";
+    }
+    if (!channel.isMember) {
+      return 'Invite the Forgeng app to this Slack channel first, so it can post there and add students.';
+    }
+    return null;
+  }
+
+  /**
    * Like `syncInBackground`, for every cohort channel. Used when a user
    * becomes an admin, or stops being one: an admin belongs in every
    * channel, anyone else only in their own cohorts' channels.

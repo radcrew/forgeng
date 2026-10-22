@@ -433,6 +433,37 @@ describe('SlackService', () => {
     });
   });
 
+  describe('findChannel', () => {
+    it('says whether the app is in the channel, and sends a form', async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: true, channel: { id: 'C0123', is_member: false } }),
+      );
+
+      await expect(makeService(SLACK).findChannel('C0123')).resolves.toEqual({
+        isMember: false,
+      });
+      const [url, init] = fetchMock.mock.calls[0] as [
+        string,
+        { body: string; headers: Record<string, string> },
+      ];
+      expect(url).toBe('https://slack.com/api/conversations.info');
+      expect(init.headers['Content-Type']).toBe(
+        'application/x-www-form-urlencoded',
+      );
+      expect(init.body).toBe('channel=C0123');
+    });
+
+    it("returns null for a channel Slack doesn't know", async () => {
+      fetchMock.mockReturnValue(
+        answer(200, { ok: false, error: 'channel_not_found' }),
+      );
+
+      await expect(
+        makeService(SLACK).findChannel('C0TYPO'),
+      ).resolves.toBeNull();
+    });
+  });
+
   describe('openView', () => {
     it('opens the form for the click that triggered it', async () => {
       await makeService(SLACK).openView('trigger-1', { type: 'modal' });
