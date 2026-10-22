@@ -16,6 +16,7 @@ import { SubmissionsModule } from './modules/submissions/submissions.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { SlackEventsModule } from './modules/slack/slack-events.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     DashboardModule,
     NotificationsModule,
     SettingsModule,
+    SlackEventsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

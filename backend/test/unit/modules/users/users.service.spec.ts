@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Payment, User } from '@prisma/client';
 import { MailService } from '@core/mail';
+import { SlackChannelsService } from '@core/slack';
 import { PrismaService } from '@core/database/prisma.service';
 import { UsersService } from '@modules/users/users.service';
 
@@ -61,6 +62,10 @@ describe('UsersService', () => {
     $transaction: jest.Mock;
   };
   let mail: { send: jest.Mock; sendInBackground: jest.Mock };
+  let slackChannels: {
+    syncInBackground: jest.Mock;
+    syncAllInBackground: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = {
@@ -99,10 +104,16 @@ describe('UsersService', () => {
       get: jest.fn().mockReturnValue('https://app.forgeng.test'),
     };
 
+    slackChannels = {
+      syncInBackground: jest.fn(),
+      syncAllInBackground: jest.fn(),
+    };
+
     service = new UsersService(
       prisma as unknown as PrismaService,
       mail as unknown as MailService,
       config as unknown as ConfigService,
+      slackChannels as unknown as SlackChannelsService,
     );
   });
 
@@ -362,12 +373,18 @@ describe('UsersService', () => {
     it('takes a student moved back to applicant out of their cohorts', async () => {
       prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'student' }));
       prisma.user.update.mockResolvedValue(makeUser({ role: 'applicant' }));
+      prisma.enrollment.findMany.mockResolvedValue([
+        { cohortId: 3 },
+        { cohortId: 4 },
+      ]);
 
       await service.updateRole(1, { role: 'applicant' } as never);
 
       expect(prisma.enrollment.deleteMany).toHaveBeenCalledWith({
         where: { userId: 1 },
       });
+      // Out of those cohorts' Slack channels too.
+      expect(slackChannels.syncInBackground).toHaveBeenCalledWith(1, [3, 4]);
     });
 
     it('sets an accepted application back to pending for a new applicant', async () => {
@@ -407,6 +424,19 @@ describe('UsersService', () => {
 
       expect(prisma.enrollment.deleteMany).not.toHaveBeenCalled();
       expect(prisma.application.updateMany).not.toHaveBeenCalled();
+      // A new admin belongs in every cohort's Slack channel.
+      expect(slackChannels.syncAllInBackground).toHaveBeenCalledWith(1);
+      expect(slackChannels.syncInBackground).not.toHaveBeenCalled();
+    });
+
+    it('updates every Slack channel when an admin loses the role', async () => {
+      prisma.user.findUnique.mockResolvedValue(makeUser({ role: 'admin' }));
+      prisma.$queryRaw.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      prisma.user.update.mockResolvedValue(makeUser({ role: 'student' }));
+
+      await service.updateRole(1, { role: 'student' } as never);
+
+      expect(slackChannels.syncAllInBackground).toHaveBeenCalledWith(1);
     });
 
     it('refuses to remove the role of the only admin', async () => {

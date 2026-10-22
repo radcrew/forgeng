@@ -33,10 +33,11 @@ describe('CohortsController', () => {
     expect(service.list).toHaveBeenCalledTimes(1);
   });
 
-  it('delegates create with the dto', async () => {
+  it('delegates create with the dto and the admin', async () => {
     const dto = { name: 'Spring', capacity: 30 } as never;
-    await controller.create(dto);
-    expect(service.create).toHaveBeenCalledWith(dto);
+    const admin = { id: 9, role: 'admin' } as never;
+    await controller.create(dto, admin);
+    expect(service.create).toHaveBeenCalledWith(dto, admin);
   });
 
   it('delegates findOne with the id', async () => {

@@ -9,6 +9,8 @@ export interface CohortInput {
   status?: CohortStatus;
   startDate?: string;
   endDate?: string;
+  /** null removes the channel. */
+  slackChannelId?: string | null;
 }
 
 export const listCohorts = async (): Promise<Cohort[]> =>

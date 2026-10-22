@@ -266,7 +266,10 @@ describe('SubmissionsService', () => {
       const dto = await service.create({ taskId: 5, content: 'x' }, student);
 
       expect(dto.id).toBe(10);
-      expect(notifications.notifySubmissionReceived).toHaveBeenCalledTimes(1);
+      // With the id, so the Approve button in Slack knows which one.
+      expect(notifications.notifySubmissionReceived).toHaveBeenCalledWith(
+        expect.objectContaining({ submissionId: 10 }),
+      );
     });
 
     it('gives a first send the same created and last-submitted time', async () => {
@@ -408,7 +411,9 @@ describe('SubmissionsService', () => {
       )[0].data;
       expect(data.status).toBe('submitted');
       expect(data.lastSubmittedAt).toBeInstanceOf(Date);
-      expect(notifications.notifySubmissionReceived).toHaveBeenCalledTimes(1);
+      expect(notifications.notifySubmissionReceived).toHaveBeenCalledWith(
+        expect.objectContaining({ submissionId: 10 }),
+      );
     });
   });
 });

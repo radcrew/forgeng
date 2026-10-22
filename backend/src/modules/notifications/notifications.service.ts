@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Verdict } from '@prisma/client';
 
 import type { AppConfiguration } from '../../config';
 import type { AuthUser } from '../../core/auth/auth.types';
 import { MailService, type RenderedEmail } from '../../core/mail';
+import { SLACK_ACTIONS, SlackService, submissionKey } from '../../core/slack';
 import {
   toNotificationDto,
   toNotificationPreferenceDto,
@@ -23,10 +24,13 @@ import {
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly config: ConfigService<AppConfiguration, true>,
+    private readonly slack: SlackService,
   ) {}
 
   async list(
@@ -123,10 +127,21 @@ export class NotificationsService {
       this.prisma.notificationPreference.findUnique({ where: { userId } }),
       this.prisma.user.findUnique({
         where: { id: userId },
-        select: { email: true },
+        select: { email: true, slackUserId: true },
       }),
     ]);
     const prefs = toNotificationPreferenceDto(prefRow);
+
+    // First: a failed in-app notice must not skip the Slack message. Only
+    // for a student who has joined the Forgeng Slack.
+    if (prefs.feedbackSlack && user?.slackUserId) {
+      this.slack.postInBackground(user.slackUserId, {
+        text: approved
+          ? 'A reviewer approved your submission. Great work!'
+          : 'A reviewer asked for changes on your submission. Open it to read the feedback.',
+        link: { label: 'Open submissions', url: this.absoluteUrl(link) },
+      });
+    }
 
     if (prefs.feedbackInApp) {
       await this.prisma.notification.create({
@@ -152,12 +167,46 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Posts a new task to its cohort's Slack channel. Never throws: a failed
+   * lookup must not skip the students' in-app notices and emails.
+   */
+  private async postTaskToSlack(
+    cohortId: number,
+    title: string,
+    link: string,
+  ): Promise<void> {
+    // Without Slack there is nothing to post, so no lookup either.
+    if (!this.slack.enabled) return;
+    try {
+      const cohort = await this.prisma.cohort.findUnique({
+        where: { id: cohortId },
+        select: { slackChannelId: true },
+      });
+      this.slack.postInBackground(cohort?.slackChannelId ?? null, {
+        text: `New task: ${title}`,
+        link: { label: 'Open task', url: this.absoluteUrl(link) },
+      });
+    } catch (err) {
+      this.logger.error(
+        `Failed to post the new task to the Slack channel of cohort ${cohortId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+  }
+
   /** Notify every enrolled student in a cohort that a new task is published. */
   async notifyTaskPublished(task: {
     id: number;
     cohortId: number;
     title: string;
   }): Promise<void> {
+    const link = STUDENT_ROUTES.TASK(task.id);
+
+    // To the cohort's channel, even before anyone is enrolled: students who
+    // join later still see it there.
+    await this.postTaskToSlack(task.cohortId, task.title, link);
+
     const enrollments = await this.prisma.enrollment.findMany({
       where: { cohortId: task.cohortId },
       select: { userId: true, user: { select: { email: true } } },
@@ -171,8 +220,6 @@ export class NotificationsService {
     const prefByUser = new Map(prefRows.map((p) => [p.userId, p]));
     const prefsFor = (userId: number) =>
       toNotificationPreferenceDto(prefByUser.get(userId) ?? null);
-
-    const link = STUDENT_ROUTES.TASK(task.id);
 
     const inAppUserIds = userIds.filter((id) => prefsFor(id).taskInApp);
     if (inAppUserIds.length > 0) {
@@ -202,9 +249,26 @@ export class NotificationsService {
    * admins have no per-category email preferences in the current model.
    */
   async notifySubmissionReceived(params: {
+    submissionId: number;
+    /** When the student sent this version, so old Approve buttons can be told apart. */
+    submittedAt: Date;
     studentName: string;
     taskTitle: string;
   }): Promise<void> {
+    // First: a failed in-app notice must not skip the Slack post. Approve
+    // opens a form in Slack for the feedback; Review opens the app.
+    this.slack.postToMentors({
+      text: `${params.studentName} submitted "${params.taskTitle}" for review`,
+      link: {
+        label: 'Review',
+        url: this.absoluteUrl(ADMIN_ROUTES.REVIEWS),
+      },
+      action: {
+        label: 'Approve',
+        actionId: SLACK_ACTIONS.APPROVE_SUBMISSION,
+        value: submissionKey(params.submissionId, params.submittedAt),
+      },
+    });
     await this.notifyAdmins({
       type: 'submission_received',
       title: 'New submission to review',
@@ -217,6 +281,13 @@ export class NotificationsService {
   async notifyApplicationReceived(params: {
     applicantName: string;
   }): Promise<void> {
+    this.slack.postToMentors({
+      text: `New application from ${params.applicantName}`,
+      link: {
+        label: 'Open applications',
+        url: this.absoluteUrl(ADMIN_ROUTES.APPLICATIONS),
+      },
+    });
     await this.notifyAdmins({
       type: 'application_received',
       title: 'New application received',
@@ -231,9 +302,29 @@ export class NotificationsService {
     studentName: string;
     studentId: number;
     studentEmail: string;
+    /** Null when the student hasn't linked Slack. */
+    studentSlackUserId: string | null;
     /** The month the tasks were due, such as "May 2026". */
     month: string;
   }): Promise<void> {
+    this.slack.postToMentors({
+      text: `${params.studentName} completed all tasks due in ${params.month} and is eligible for the stipend`,
+      link: {
+        label: 'Open student',
+        url: this.absoluteUrl(ADMIN_ROUTES.USER(params.studentId)),
+      },
+    });
+    // Like the stipend email, which has no switch: students always want to
+    // know their stipend is coming.
+    if (params.studentSlackUserId) {
+      this.slack.postInBackground(params.studentSlackUserId, {
+        text: `You completed all your tasks for ${params.month}. Great work! Your monthly stipend will be sent within 2 business days.`,
+        link: {
+          label: 'Open dashboard',
+          url: this.absoluteUrl(STUDENT_ROUTES.DASHBOARD),
+        },
+      });
+    }
     await this.notifyAdmins({
       type: 'payment_eligible',
       title: 'Student eligible for monthly payment',

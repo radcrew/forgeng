@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Plug,
   Settings,
   User,
   Users,
@@ -59,6 +60,7 @@ const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { title: "Tasks", href: "/admin/tasks", icon: CheckSquare },
     { title: "Notifications", href: "/admin/notifications", icon: Bell },
     { title: "Users", href: "/admin/users", icon: Users },
+    { title: "Integrations", href: "/admin/integrations", icon: Plug },
     { title: "Settings", href: "/admin/settings", icon: Settings },
   ],
 };

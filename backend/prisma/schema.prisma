@@ -104,6 +104,9 @@ model User {
   // Stipend wallets for accounts without an application, same shape as
   // Application.wallets. With an application, they live on it instead.
   wallets              Json?
+  // The user's member ID in the Forgeng Slack workspace (starts with U), set
+  // when they join it. Null until then.
+  slackUserId          String?  @unique @map("slack_user_id") @db.VarChar(32)
   registrationIp       String?  @map("registration_ip")
   registrationCountry  String?  @map("registration_country")
   registrationCity     String?  @map("registration_city")
@@ -215,6 +218,11 @@ model Cohort {
   capacity    Int          @default(20)
   startDate   DateTime?    @map("start_date") @db.Timestamptz
   endDate     DateTime?    @map("end_date") @db.Timestamptz
+  // The cohort's Slack channel ID (starts with C), where new tasks are
+  // posted. Null: nothing is posted for this cohort.
+  // Unique, so two cohorts never share a channel: the channel checks
+  // treat a channel as one cohort. Nulls don't count as duplicates.
+  slackChannelId String?   @unique @map("slack_channel_id") @db.VarChar(32)
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -352,6 +360,9 @@ model PlatformSetting {
   stipendMonth1   Decimal  @default(30)   @map("stipend_month_1") @db.Decimal(12, 2)
   stipendMonth2   Decimal  @default(50)   @map("stipend_month_2") @db.Decimal(12, 2)
   stipendMonth3   Decimal  @default(100)  @map("stipend_month_3") @db.Decimal(12, 2)
+  // The invite link to the Forgeng Slack workspace, shown to students only.
+  // Null until an admin adds one.
+  slackInviteUrl  String?  @map("slack_invite_url") @db.VarChar(500)
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("platform_settings")
@@ -363,6 +374,9 @@ model NotificationPreference {
   userId        Int      @id @map("user_id")
   feedbackInApp Boolean  @default(true) @map("feedback_in_app")
   feedbackEmail Boolean  @default(true) @map("feedback_email")
+  // A Slack direct message, once the student has joined the Forgeng Slack.
+  // New tasks need no such switch: they are posted in the cohort channel.
+  feedbackSlack Boolean  @default(true) @map("feedback_slack")
   taskInApp     Boolean  @default(true) @map("task_in_app")
   taskEmail     Boolean  @default(true) @map("task_email")
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz

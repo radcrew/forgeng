@@ -11,6 +11,8 @@ import {
   MinLength,
 } from 'class-validator';
 
+import { SlackChannelId } from './slack-channel';
+
 export class UpdateCohortDto {
   @IsOptional()
   @Transform(({ value }: { value: unknown }) =>
@@ -42,4 +44,7 @@ export class UpdateCohortDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @SlackChannelId()
+  slackChannelId?: string | null;
 }

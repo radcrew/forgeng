@@ -128,7 +128,7 @@ export class SubmissionsService {
         lastSubmittedAt: now,
       },
     });
-    await this.notifyAdminsOfSubmission(user, task.title);
+    await this.notifyAdminsOfSubmission(user, task.title, created);
     return this.serialize(created, task, user);
   }
 
@@ -172,7 +172,11 @@ export class SubmissionsService {
       },
     });
     // A resubmission re-enters the review queue, so admins should hear about it.
-    await this.notifyAdminsOfSubmission(user, sub.task?.title ?? 'a task');
+    await this.notifyAdminsOfSubmission(
+      user,
+      sub.task?.title ?? 'a task',
+      updated,
+    );
     return this.serialize(updated, sub.task, sub.user);
   }
 
@@ -190,9 +194,12 @@ export class SubmissionsService {
   private async notifyAdminsOfSubmission(
     student: AuthUser,
     taskTitle: string,
+    submission: Pick<Submission, 'id' | 'lastSubmittedAt'>,
   ): Promise<void> {
     try {
       await this.notifications.notifySubmissionReceived({
+        submissionId: submission.id,
+        submittedAt: submission.lastSubmittedAt,
         studentName: student.name ?? student.email,
         taskTitle,
       });

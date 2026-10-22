@@ -24,6 +24,9 @@ interface PrefGroup {
   description: string;
   inApp: PrefKey;
   email: PrefKey;
+  /** Null: there is no Slack switch, see `slackNote`. */
+  slack: PrefKey | null;
+  slackNote?: string;
 }
 
 const GROUPS: PrefGroup[] = [
@@ -32,14 +35,20 @@ const GROUPS: PrefGroup[] = [
     description: "When a reviewer responds to your work.",
     inApp: "feedbackInApp",
     email: "feedbackEmail",
+    slack: "feedbackSlack",
   },
   {
     title: "New tasks",
     description: "When a new task is published in your cohort.",
     inApp: "taskInApp",
     email: "taskEmail",
+    // Always posted in the cohort's channel, so a message would repeat it.
+    slack: null,
+    slackNote: "Posted in your cohort's Slack channel",
   },
 ];
+
+const COLUMNS = "grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-6";
 
 export function NotificationPreferencesCard() {
   const { data, isLoading, error } = useNotificationPreferences();
@@ -69,7 +78,8 @@ export function NotificationPreferencesCard() {
       <CardHeader>
         <CardTitle className="text-base">Preferences</CardTitle>
         <CardDescription>
-          Choose how you want to hear about each kind of update.
+          Choose how you want to hear about each kind of update. Slack
+          messages start once you join the Forgeng Slack from your dashboard.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -81,16 +91,19 @@ export function NotificationPreferencesCard() {
           </p>
         ) : (
           <div className="divide-y">
-            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-6 pb-2 text-xs font-medium text-muted-foreground">
+            <div
+              className={cn(
+                COLUMNS,
+                "pb-2 text-xs font-medium text-muted-foreground",
+              )}
+            >
               <span />
               <span className="w-12 text-center">In-app</span>
               <span className="w-12 text-center">Email</span>
+              <span className="w-12 text-center">Slack</span>
             </div>
             {GROUPS.map((group) => (
-              <div
-                key={group.title}
-                className="grid grid-cols-[1fr_auto_auto] items-center gap-x-6 py-3"
-              >
+              <div key={group.title} className={cn(COLUMNS, "py-3")}>
                 <div className="min-w-0">
                   <p className="text-sm font-medium">{group.title}</p>
                   <p className="text-xs text-muted-foreground">
@@ -112,6 +125,26 @@ export function NotificationPreferencesCard() {
                     onChange={(v) => void handleToggle(group.email, v)}
                     label={`${group.title} email notifications`}
                   />
+                </div>
+                <div className="flex w-12 justify-center">
+                  {group.slack ? (
+                    <Toggle
+                      checked={prefs[group.slack]}
+                      disabled={savingKey === group.slack}
+                      onChange={(v) =>
+                        group.slack && void handleToggle(group.slack, v)
+                      }
+                      label={`${group.title} Slack messages`}
+                    />
+                  ) : (
+                    <span
+                      className="text-xs text-muted-foreground"
+                      title={group.slackNote}
+                      aria-label={group.slackNote}
+                    >
+                      Channel
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

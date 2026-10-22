@@ -185,6 +185,8 @@ export interface CohortDto {
   enrolledCount: number;
   startDate: string | null;
   endDate: string | null;
+  /** Where new tasks are posted in Slack. */
+  slackChannelId: string | null;
   createdAt: string;
 }
 
@@ -198,6 +200,8 @@ export function toCohortDto(cohort: Cohort, enrolledCount: number): CohortDto {
     enrolledCount,
     startDate: cohort.startDate?.toISOString() ?? null,
     endDate: cohort.endDate?.toISOString() ?? null,
+    // `?? null` also covers a cohort row loaded without this column.
+    slackChannelId: cohort.slackChannelId ?? null,
     createdAt: cohort.createdAt.toISOString(),
   };
 }
@@ -332,6 +336,7 @@ export function toNotificationDto(notification: Notification): NotificationDto {
 export interface NotificationPreferenceDto {
   feedbackInApp: boolean;
   feedbackEmail: boolean;
+  feedbackSlack: boolean;
   taskInApp: boolean;
   taskEmail: boolean;
 }
@@ -343,6 +348,7 @@ export function toNotificationPreferenceDto(
   return {
     feedbackInApp: pref?.feedbackInApp ?? true,
     feedbackEmail: pref?.feedbackEmail ?? true,
+    feedbackSlack: pref?.feedbackSlack ?? true,
     taskInApp: pref?.taskInApp ?? true,
     taskEmail: pref?.taskEmail ?? true,
   };

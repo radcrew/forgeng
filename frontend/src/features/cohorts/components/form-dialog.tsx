@@ -47,19 +47,45 @@ export const CohortFormDialog = ({
     cohort?.startDate?.slice(0, 10) ?? "",
   );
   const [endDate, setEndDate] = useState(cohort?.endDate?.slice(0, 10) ?? "");
+  const [slackChannelId, setSlackChannelId] = useState(
+    cohort?.slackChannelId ?? "",
+  );
   const [errors, setErrors] = useState<CohortErrors>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
-  const handleSave = async () => {
+  /** `clearConfirmed`: the admin agreed to remove the Slack channel. */
+  const handleSave = async (clearConfirmed = false) => {
     const found = validateCohort(
-      { name, description: description ?? "", capacity, startDate, endDate },
+      {
+        name,
+        description: description ?? "",
+        capacity,
+        startDate,
+        endDate,
+        slackChannelId,
+      },
       cohort?.enrolledCount ?? 0,
     );
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
+    // null, like the description, so clearing the field is saved.
+    const channel = slackChannelId.trim() || null;
+    // Removing the channel takes the students out of it, so ask first.
+    // Another channel only moves them.
+    if (isEdit && cohort.slackChannelId && !channel && !clearConfirmed) {
+      setConfirmClear(true);
+      return;
+    }
+
     setIsSaving(true);
     try {
+      // When editing, only a changed channel is sent. The page may be older
+      // than the channel, for example one made in the background right after
+      // the cohort was created. Sending the old empty field would remove it.
+      const channelChanged =
+        !isEdit || channel !== (cohort.slackChannelId ?? null);
       const payload = {
         name: name.trim(),
         // Send null (not undefined) so clearing the field persists — Prisma
@@ -70,6 +96,7 @@ export const CohortFormDialog = ({
         status,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
+        ...(channelChanged ? { slackChannelId: channel } : {}),
       };
       if (isEdit) {
         await updateCohort(cohort.id, payload);
@@ -96,7 +123,7 @@ export const CohortFormDialog = ({
       onOpenChange={onOpenChange}
       title={isEdit ? "Edit Cohort" : "Create Cohort"}
       actions={{
-        onSubmit: handleSave,
+        onSubmit: () => void handleSave(),
         submitLabel: isEdit ? "Save Changes" : "Create",
         isLoading: isSaving,
         submitDisabled: !name.trim(),
@@ -190,7 +217,49 @@ export const CohortFormDialog = ({
             />
           </FormField>
         </FormGrid>
+        <FormField
+          label="Slack channel ID (optional)"
+          htmlFor="cohort-slack-channel"
+          error={errors.slackChannelId}
+        >
+          <Input
+            id="cohort-slack-channel"
+            value={slackChannelId}
+            aria-invalid={!!errors.slackChannelId}
+            onChange={(e) => {
+              setSlackChannelId(e.target.value);
+              setErrors({});
+            }}
+            placeholder="e.g. C0123ABCD"
+          />
+          <p className="text-xs text-muted-foreground">
+            {isEdit
+              ? "New tasks are posted to this channel. In Slack, open the channel details: the ID is at the bottom. Invite the Forgeng app to the channel too."
+              : "Leave it empty to create a private Slack channel for this cohort automatically. To use a channel you already have, paste its ID: in Slack, open the channel details, and the ID is at the bottom."}
+          </p>
+        </FormField>
       </FormBody>
+
+      <FormDialog
+        open={confirmClear}
+        onOpenChange={setConfirmClear}
+        title="Remove the Slack channel?"
+        size="sm"
+        actions={{
+          onSubmit: () => {
+            setConfirmClear(false);
+            void handleSave(true);
+          },
+          submitLabel: "Remove channel",
+          submitVariant: "destructive",
+        }}
+      >
+        <p className="text-sm text-muted-foreground">
+          Forgeng will take this cohort&apos;s students out of the Slack
+          channel, and new tasks will no longer be posted there. The channel
+          itself stays in Slack.
+        </p>
+      </FormDialog>
     </FormDialog>
   );
 };

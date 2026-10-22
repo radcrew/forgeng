@@ -1,11 +1,15 @@
 export const COHORT_NAME_MAX = 120;
 export const COHORT_DESCRIPTION_MAX = 2000;
 
+/** A Slack channel ID, the same rule the server checks. */
+export const SLACK_CHANNEL_ID_RE = /^[CG][A-Z0-9]{6,20}$/;
+
 export type CohortErrors = {
   name?: string;
   description?: string;
   capacity?: string;
   endDate?: string;
+  slackChannelId?: string;
 };
 
 /** Checks the cohort form. Returns an empty object when it is valid. */
@@ -16,6 +20,7 @@ export const validateCohort = (
     capacity: string;
     startDate: string;
     endDate: string;
+    slackChannelId?: string;
   },
   enrolledCount = 0,
 ): CohortErrors => {
@@ -42,6 +47,12 @@ export const validateCohort = (
   // Dates are "YYYY-MM-DD", so comparing them as text gives the right order.
   if (values.startDate && values.endDate && values.endDate < values.startDate) {
     errors.endDate = "The end date must be on or after the start date.";
+  }
+
+  const channel = values.slackChannelId?.trim();
+  if (channel && !SLACK_CHANNEL_ID_RE.test(channel)) {
+    errors.slackChannelId =
+      "Use the channel ID, for example C0123ABCD, not the channel name.";
   }
 
   return errors;

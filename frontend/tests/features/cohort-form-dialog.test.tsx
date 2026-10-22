@@ -89,6 +89,141 @@ describe("cohort FormDialog", () => {
     );
   });
 
+  it("saves a trimmed Slack channel ID", async () => {
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+
+    await userEvent.type(
+      screen.getByLabelText("Slack channel ID (optional)"),
+      " C0123ABCD ",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(updateCohort).toHaveBeenCalledWith(
+      3,
+      expect.objectContaining({ slackChannelId: "C0123ABCD" }),
+    );
+  });
+
+  it("removes the Slack channel when the field is cleared", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({ slackChannelId: "C0123ABCD" })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    const field = screen.getByLabelText("Slack channel ID (optional)");
+    expect(field).toHaveValue("C0123ABCD");
+    await userEvent.clear(field);
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    // It asks first, because the students are taken out of the channel.
+    expect(updateCohort).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText("Remove the Slack channel?"),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Remove channel" }),
+    );
+
+    await waitFor(() =>
+      expect(updateCohort).toHaveBeenCalledWith(
+        3,
+        expect.objectContaining({ slackChannelId: null }),
+      ),
+    );
+  });
+
+  it("keeps the Slack channel when removing it is cancelled", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({ slackChannelId: "C0123ABCD" })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    await userEvent.clear(screen.getByLabelText("Slack channel ID (optional)"));
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+    const confirm = await screen.findByRole("dialog", {
+      name: "Remove the Slack channel?",
+    });
+    await userEvent.click(
+      Array.from(confirm.querySelectorAll("button")).find(
+        (b) => b.textContent === "Cancel",
+      )!,
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByText("Remove the Slack channel?"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(updateCohort).not.toHaveBeenCalled();
+  });
+
+  it("moves to another channel without asking", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({ slackChannelId: "C0123ABCD" })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    const field = screen.getByLabelText("Slack channel ID (optional)");
+    await userEvent.clear(field);
+    await userEvent.type(field, "C0999WXYZ");
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(updateCohort).toHaveBeenCalledWith(
+      3,
+      expect.objectContaining({ slackChannelId: "C0999WXYZ" }),
+    );
+  });
+
+  it("leaves the Slack channel out when the field was not changed", async () => {
+    // The page was loaded before the background channel was saved.
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    const [, payload] = updateCohort.mock.calls[0] as [number, object];
+    expect(payload).not.toHaveProperty("slackChannelId");
+  });
+
+  it("refuses a channel name instead of a channel ID", async () => {
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+
+    await userEvent.type(
+      screen.getByLabelText("Slack channel ID (optional)"),
+      "#spring-cohort",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(
+      screen.getByText(/Use the channel ID, for example C0123ABCD/),
+    ).toBeInTheDocument();
+    expect(updateCohort).not.toHaveBeenCalled();
+  });
+
+  it("explains that an empty channel ID creates a channel, only when creating", () => {
+    const { unmount } = render(<FormDialog open onOpenChange={vi.fn()} />);
+    expect(
+      screen.getByText(/Leave it empty to create a private Slack channel/),
+    ).toBeInTheDocument();
+    unmount();
+
+    render(<FormDialog cohort={makeCohort()} open onOpenChange={vi.fn()} />);
+    expect(
+      screen.queryByText(/Leave it empty to create a private Slack channel/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/New tasks are posted to this channel/),
+    ).toBeInTheDocument();
+  });
+
   it("keeps create disabled for a name that is only spaces", async () => {
     render(<FormDialog open onOpenChange={vi.fn()} />);
 

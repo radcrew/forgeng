@@ -1,10 +1,13 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import type { Cohort } from '@prisma/client';
+import type { AuthUser } from '../../core/auth/auth.types';
 import { PrismaService } from '../../core/database/prisma.service';
+import { SlackChannelsService } from '../../core/slack';
 import {
   toCohortDto,
   toEnrollmentDto,
@@ -18,7 +21,10 @@ import { UpdateCohortDto } from './dto/update-cohort.dto';
 
 @Injectable()
 export class CohortsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly slackChannels: SlackChannelsService,
+  ) {}
 
   async list(): Promise<CohortDto[]> {
     const cohorts = await this.prisma.cohort.findMany({
@@ -33,11 +39,16 @@ export class CohortsService {
     return this.serialize(cohort);
   }
 
-  async create(dto: CreateCohortDto): Promise<CohortDto> {
+  /**
+   * Creates a cohort. Without a Slack channel ID, it also creates a private
+   * Slack channel for the cohort, when Slack is set up.
+   */
+  async create(dto: CreateCohortDto, admin: AuthUser): Promise<CohortDto> {
     this.assertDateOrder(
       dto.startDate ? new Date(dto.startDate) : null,
       dto.endDate ? new Date(dto.endDate) : null,
     );
+    await this.assertSlackChannelUsable(dto.slackChannelId);
     const created = await this.prisma.cohort.create({
       data: {
         name: dto.name,
@@ -46,8 +57,14 @@ export class CohortsService {
         status: dto.status ?? 'draft',
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        slackChannelId: dto.slackChannelId ?? undefined,
       },
     });
+    // After the cohort is saved and the admin has the answer, so a Slack
+    // problem never blocks or slows it.
+    if (!created.slackChannelId) {
+      this.slackChannels.createForCohortInBackground(created, admin.id);
+    }
     return this.serialize(created);
   }
 
@@ -70,6 +87,16 @@ export class CohortsService {
       }
     }
 
+    // Read before the change, so the students can be moved after it.
+    const channelChanged =
+      dto.slackChannelId !== undefined &&
+      dto.slackChannelId !== exists.slackChannelId;
+    if (channelChanged)
+      await this.assertSlackChannelUsable(dto.slackChannelId, id);
+    const students = channelChanged
+      ? await this.slackChannels.linkedStudents(id)
+      : [];
+
     const updated = await this.prisma.cohort.update({
       where: { id },
       data: {
@@ -79,15 +106,29 @@ export class CohortsService {
         status: dto.status,
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        // Left out keeps the channel, null removes it.
+        slackChannelId: dto.slackChannelId,
       },
     });
+    if (channelChanged) {
+      this.slackChannels.moveInBackground(
+        students,
+        exists.slackChannelId,
+        updated.slackChannelId,
+      );
+    }
     return this.serialize(updated);
   }
 
   async remove(id: number): Promise<void> {
     const exists = await this.prisma.cohort.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Cohort not found.');
+    // Read before the delete, which also deletes the enrollments.
+    const students = exists.slackChannelId
+      ? await this.slackChannels.linkedStudents(id)
+      : [];
     await this.prisma.cohort.delete({ where: { id } });
+    this.slackChannels.moveInBackground(students, exists.slackChannelId, null);
   }
 
   async enrollments(cohortId: number): Promise<EnrollmentDto[]> {
@@ -107,6 +148,7 @@ export class CohortsService {
         include: { user: true },
       });
     });
+    this.slackChannels.syncInBackground(dto.userId, [cohortId]);
     return toEnrollmentDto(enrollment, enrollment.user);
   }
 
@@ -126,6 +168,34 @@ export class CohortsService {
     if (removed.count === 0) {
       throw new NotFoundException('This student is not in the cohort.');
     }
+    this.slackChannels.syncInBackground(userId, [cohortId]);
+  }
+
+  /**
+   * Gives a clear message when another cohort already uses the channel, or
+   * when Slack can't use it. The unique index also refuses a shared
+   * channel, for two saves at the same moment.
+   */
+  private async assertSlackChannelUsable(
+    channelId: string | null | undefined,
+    cohortId?: number,
+  ): Promise<void> {
+    if (!channelId) return;
+    const other = await this.prisma.cohort.findFirst({
+      where: {
+        slackChannelId: channelId,
+        ...(cohortId ? { id: { not: cohortId } } : {}),
+      },
+      select: { name: true },
+    });
+    if (other) {
+      throw new ConflictException(
+        `The cohort "${other.name}" already uses this Slack channel. Each cohort needs its own channel.`,
+      );
+    }
+    // For example a mistyped ID, or a channel the app wasn't invited to.
+    const problem = await this.slackChannels.channelProblem(channelId);
+    if (problem) throw new BadRequestException(problem);
   }
 
   private assertDateOrder(start: Date | null, end: Date | null): void {

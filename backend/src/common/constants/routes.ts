@@ -8,6 +8,7 @@ export const STUDENT_ROUTES = {
 } as const;
 
 export const ADMIN_ROUTES = {
+  DASHBOARD: '/admin',
   REVIEWS: '/admin/reviews',
   APPLICATIONS: '/admin/applications',
   USER: (id: number) => `/admin/users/${id}`,

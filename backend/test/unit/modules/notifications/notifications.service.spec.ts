@@ -1,6 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '@core/mail';
+import { SlackService } from '@core/slack';
 import { PrismaService } from '@core/database/prisma.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import type { AuthUser } from '@core/auth/auth.types';
@@ -28,8 +29,14 @@ describe('NotificationsService', () => {
     };
     user: { findUnique: jest.Mock; findMany: jest.Mock };
     enrollment: { findMany: jest.Mock };
+    cohort: { findUnique: jest.Mock };
   };
   let mail: { sendInBackground: jest.Mock };
+  let slack: {
+    enabled: boolean;
+    postInBackground: jest.Mock;
+    postToMentors: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = {
@@ -51,16 +58,24 @@ describe('NotificationsService', () => {
       },
       user: { findUnique: jest.fn(), findMany: jest.fn() },
       enrollment: { findMany: jest.fn() },
+      cohort: { findUnique: jest.fn().mockResolvedValue(null) },
     };
-    // The mail service sends in the background, so a slow or failed email
-    // never holds up or fails the notice. Its own tests cover that.
+    // The mail and Slack services send in the background, so a slow or
+    // failed send never holds up or fails the notice. Their own tests cover
+    // that.
     mail = { sendInBackground: jest.fn() };
+    slack = {
+      enabled: true,
+      postInBackground: jest.fn(),
+      postToMentors: jest.fn(),
+    };
     const config = { get: jest.fn().mockReturnValue('https://app') };
 
     service = new NotificationsService(
       prisma as unknown as PrismaService,
       mail as unknown as MailService,
       config as unknown as ConfigService,
+      slack as unknown as SlackService,
     );
   });
 
@@ -180,6 +195,8 @@ describe('NotificationsService', () => {
       prisma.user.findMany.mockResolvedValue([{ id: 10 }, { id: 11 }]);
 
       await service.notifySubmissionReceived({
+        submissionId: 9,
+        submittedAt: new Date(1000),
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -193,6 +210,8 @@ describe('NotificationsService', () => {
     it('does nothing when there are no admins', async () => {
       prisma.user.findMany.mockResolvedValue([]);
       await service.notifySubmissionReceived({
+        submissionId: 9,
+        submittedAt: new Date(1000),
         studentName: 'Ada',
         taskTitle: 'CLI',
       });
@@ -208,6 +227,7 @@ describe('NotificationsService', () => {
         studentName: 'Ada',
         studentId: 2,
         studentEmail: 'ada@example.com',
+        studentSlackUserId: null,
         month: 'May 2026',
       });
 
@@ -221,6 +241,234 @@ describe('NotificationsService', () => {
       expect(mail.sendInBackground).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'ada@example.com' }),
       );
+    });
+  });
+
+  describe('Slack posts', () => {
+    it("posts a new task to the cohort's channel, with a link", async () => {
+      prisma.cohort.findUnique.mockResolvedValue({
+        slackChannelId: 'C0123ABCD',
+      });
+      prisma.enrollment.findMany.mockResolvedValue([]);
+
+      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
+
+      // Even with nobody enrolled yet.
+      expect(slack.postInBackground).toHaveBeenCalledWith('C0123ABCD', {
+        text: 'New task: CLI',
+        link: { label: 'Open task', url: 'https://app/student/tasks/5' },
+      });
+    });
+
+    it('hands no channel over for a cohort without one', async () => {
+      prisma.cohort.findUnique.mockResolvedValue({ slackChannelId: null });
+      prisma.enrollment.findMany.mockResolvedValue([]);
+
+      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
+
+      // The Slack service posts nothing without a channel.
+      expect(slack.postInBackground).toHaveBeenCalledWith(
+        null,
+        expect.anything(),
+      );
+    });
+
+    it('still tells the students when the channel lookup fails', async () => {
+      const logError = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+      prisma.cohort.findUnique.mockRejectedValue(new Error('db down'));
+      prisma.enrollment.findMany.mockResolvedValue([
+        { userId: 1, user: { email: 'ada@example.com' } },
+      ]);
+
+      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
+
+      expect(slack.postInBackground).not.toHaveBeenCalled();
+      expect(prisma.notification.createMany).toHaveBeenCalledTimes(1);
+      expect(logError).toHaveBeenCalled();
+      logError.mockRestore();
+    });
+
+    it('does not look up the channel when Slack is not set up', async () => {
+      slack.enabled = false;
+      prisma.enrollment.findMany.mockResolvedValue([]);
+
+      await service.notifyTaskPublished({ id: 5, cohortId: 3, title: 'CLI' });
+
+      expect(prisma.cohort.findUnique).not.toHaveBeenCalled();
+      expect(slack.postInBackground).not.toHaveBeenCalled();
+    });
+
+    it('tells the mentors about a new application', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+
+      await service.notifyApplicationReceived({ applicantName: 'Ada' });
+
+      expect(slack.postToMentors).toHaveBeenCalledWith({
+        text: 'New application from Ada',
+        link: {
+          label: 'Open applications',
+          url: 'https://app/admin/applications',
+        },
+      });
+    });
+
+    it('tells the mentors about a new submission', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+
+      await service.notifySubmissionReceived({
+        submissionId: 9,
+        submittedAt: new Date(1000),
+        studentName: 'Ada',
+        taskTitle: 'CLI',
+      });
+
+      expect(slack.postToMentors).toHaveBeenCalledWith({
+        text: 'Ada submitted "CLI" for review',
+        link: { label: 'Review', url: 'https://app/admin/reviews' },
+        // Opens a feedback form in Slack for this submission.
+        action: {
+          label: 'Approve',
+          actionId: 'approve_submission',
+          value: '9@1000',
+        },
+      });
+    });
+
+    it('tells the mentors a student is eligible for the stipend', async () => {
+      prisma.user.findMany.mockResolvedValue([]);
+
+      await service.notifyPaymentEligible({
+        studentName: 'Ada',
+        studentId: 2,
+        studentEmail: 'ada@example.com',
+        studentSlackUserId: null,
+        month: 'May 2026',
+      });
+
+      expect(slack.postToMentors).toHaveBeenCalledWith({
+        text: 'Ada completed all tasks due in May 2026 and is eligible for the stipend',
+        link: { label: 'Open student', url: 'https://app/admin/users/2' },
+      });
+    });
+
+    describe('direct messages to the student', () => {
+      const feedback = (verdict: 'approved' | 'needs_work' = 'approved') =>
+        service.notifyFeedbackReceived({ userId: 2, submissionId: 5, verdict });
+
+      beforeEach(() => {
+        prisma.notificationPreference.findUnique.mockResolvedValue(null);
+        prisma.user.findUnique.mockResolvedValue({
+          email: 'ada@example.com',
+          slackUserId: 'U0ADA',
+        });
+      });
+
+      it('sends an approved review to the student in Slack', async () => {
+        await feedback('approved');
+
+        expect(slack.postInBackground).toHaveBeenCalledWith('U0ADA', {
+          text: 'A reviewer approved your submission. Great work!',
+          link: {
+            label: 'Open submissions',
+            url: 'https://app/student/submissions',
+          },
+        });
+      });
+
+      it('says when changes were asked for', async () => {
+        await feedback('needs_work');
+
+        expect(slack.postInBackground).toHaveBeenCalledWith(
+          'U0ADA',
+          expect.objectContaining({
+            text: expect.stringContaining('asked for changes') as unknown,
+          }),
+        );
+      });
+
+      it('sends nothing when the student turned Slack messages off', async () => {
+        prisma.notificationPreference.findUnique.mockResolvedValue({
+          feedbackInApp: true,
+          feedbackEmail: true,
+          feedbackSlack: false,
+          taskInApp: true,
+          taskEmail: true,
+        });
+
+        await feedback();
+
+        expect(slack.postInBackground).not.toHaveBeenCalled();
+      });
+
+      it("sends nothing to a student who hasn't joined Slack", async () => {
+        prisma.user.findUnique.mockResolvedValue({
+          email: 'ada@example.com',
+          slackUserId: null,
+        });
+
+        await feedback();
+
+        expect(slack.postInBackground).not.toHaveBeenCalled();
+      });
+
+      it('still sends the Slack message when the in-app notice fails', async () => {
+        prisma.notification.create.mockRejectedValue(new Error('db down'));
+
+        await expect(feedback()).rejects.toThrow('db down');
+        expect(slack.postInBackground).toHaveBeenCalledTimes(1);
+      });
+
+      it('tells the student in Slack that the stipend is coming', async () => {
+        prisma.user.findMany.mockResolvedValue([]);
+
+        await service.notifyPaymentEligible({
+          studentName: 'Ada',
+          studentId: 2,
+          studentEmail: 'ada@example.com',
+          studentSlackUserId: 'U0ADA',
+          month: 'May 2026',
+        });
+
+        // The caller already read the student, so no extra read here.
+        expect(prisma.user.findUnique).not.toHaveBeenCalled();
+        expect(slack.postInBackground).toHaveBeenCalledWith('U0ADA', {
+          text: 'You completed all your tasks for May 2026. Great work! Your monthly stipend will be sent within 2 business days.',
+          link: { label: 'Open dashboard', url: 'https://app/student' },
+        });
+      });
+
+      it('still notifies the admins and emails a student without Slack', async () => {
+        prisma.user.findMany.mockResolvedValue([{ id: 10 }]);
+
+        await service.notifyPaymentEligible({
+          studentName: 'Ada',
+          studentId: 2,
+          studentEmail: 'ada@example.com',
+          studentSlackUserId: null,
+          month: 'May 2026',
+        });
+
+        expect(slack.postInBackground).not.toHaveBeenCalled();
+        expect(prisma.notification.createMany).toHaveBeenCalledTimes(1);
+        expect(mail.sendInBackground).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('still posts to Slack when the in-app notice fails', async () => {
+      prisma.user.findMany.mockRejectedValue(new Error('db down'));
+
+      await expect(
+        service.notifySubmissionReceived({
+          submissionId: 9,
+          submittedAt: new Date(1000),
+          studentName: 'Ada',
+          taskTitle: 'CLI',
+        }),
+      ).rejects.toThrow('db down');
+
+      expect(slack.postToMentors).toHaveBeenCalledTimes(1);
     });
   });
 });

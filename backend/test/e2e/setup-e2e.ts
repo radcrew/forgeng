@@ -10,3 +10,8 @@ process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/test';
 // already set here win over the .env file.
 process.env.SUPABASE_URL = '';
 process.env.SUPABASE_SERVICE_ROLE_KEY = '';
+// The same for Slack: never post to a real workspace. A test that needs
+// Slack sets its own fake values.
+process.env.SLACK_BOT_TOKEN = '';
+process.env.SLACK_SIGNING_SECRET = '';
+process.env.SLACK_MENTORS_CHANNEL_ID = '';

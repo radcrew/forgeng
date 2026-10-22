@@ -18,6 +18,8 @@ export interface Notification {
 export interface NotificationPreferences {
   feedbackInApp: boolean;
   feedbackEmail: boolean;
+  /** A Slack direct message, once the student has joined the Forgeng Slack. */
+  feedbackSlack: boolean;
   taskInApp: boolean;
   taskEmail: boolean;
 }

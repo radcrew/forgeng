@@ -119,7 +119,8 @@ export async function createE2EApp(): Promise<E2EContext> {
     .useValue(publicReflector)
     .compile();
 
-  const app = moduleRef.createNestApplication();
+  // Like main.ts, so the Slack events route can check the raw body.
+  const app = moduleRef.createNestApplication({ rawBody: true });
   // Authenticate by attaching the configurable user before the guard chain.
   app.use((req: AuthenticatedRequest, _res: unknown, next: () => void) => {
     if (currentUser) req.user = currentUser;

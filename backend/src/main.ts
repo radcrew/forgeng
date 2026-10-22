@@ -12,7 +12,11 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
 import type { AppConfiguration } from './config';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // rawBody: Slack signs the exact bytes it sends, so its events route must
+  // check the body before JSON parsing changes it.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
   applyAppMiddleware(app);
 
   const config = app.get(ConfigService<AppConfiguration, true>);

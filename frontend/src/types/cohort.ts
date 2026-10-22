@@ -10,6 +10,8 @@ export interface Cohort {
   status: CohortStatus;
   startDate: string | null;
   endDate: string | null;
+  /** Where new tasks are posted in Slack. */
+  slackChannelId: string | null;
   enrolledCount: number;
 }
 

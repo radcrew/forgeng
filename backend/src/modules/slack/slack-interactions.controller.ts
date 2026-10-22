@@ -1,0 +1,117 @@
+import { Controller, HttpCode, Logger, Post, Req } from '@nestjs/common';
+import type { RawBodyRequest } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ApiExcludeController } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
+import type { Request } from 'express';
+
+import type { AppConfiguration } from '../../config';
+import { Public } from '../../core/auth/public.decorator';
+import { SLACK_ACTIONS } from '../../core/slack';
+import { SlackReviewsService, type FormAnswer } from './slack-reviews.service';
+import { assertFromSlack } from './slack-signature';
+
+/** The parts of Slack's interaction payload that Forgeng reads. */
+interface SlackInteraction {
+  type?: string;
+  trigger_id?: string;
+  user?: { id?: string };
+  actions?: Array<{ action_id?: string; value?: string }>;
+  /** Sent with a form submit. */
+  view?: {
+    callback_id?: string;
+    private_metadata?: string;
+    state?: {
+      values?: Record<string, Record<string, { value?: string | null }>>;
+    };
+  };
+}
+
+/**
+ * Slack sends button clicks and form submits here. Set the app's
+ * Interactivity "Request URL" to `<backend>/api/slack/interactions`.
+ * Slack posts a form field named `payload` with JSON inside.
+ */
+@ApiExcludeController()
+// Slack calls from a few addresses, so the per-address limit would refuse
+// its traffic when many people join or click at once. Every call must be
+// signed by Slack, and unsigned calls are refused cheaply.
+@SkipThrottle()
+@Controller('slack')
+export class SlackInteractionsController {
+  private readonly logger = new Logger(SlackInteractionsController.name);
+  private readonly signingSecret: string | null;
+
+  constructor(
+    private readonly reviews: SlackReviewsService,
+    config: ConfigService<AppConfiguration, true>,
+  ) {
+    this.signingSecret =
+      config.get('slack', { infer: true })?.signingSecret ?? null;
+  }
+
+  // Public: Slack calls it without a Forgeng login. The signature proves the
+  // call comes from Slack.
+  @Public()
+  @Post('interactions')
+  @HttpCode(200)
+  async receive(@Req() req: RawBodyRequest<Request>): Promise<FormAnswer> {
+    assertFromSlack(req, this.signingSecret);
+
+    const interaction = parsePayload(req.body);
+
+    // The approve form was submitted. Slack waits for this answer to close
+    // the form or show its errors, so it isn't sent in the background.
+    if (
+      interaction?.type === 'view_submission' &&
+      interaction.view?.callback_id === SLACK_ACTIONS.APPROVE_SUBMISSION &&
+      interaction.user?.id
+    ) {
+      return this.reviews.approveFromForm({
+        slackUserId: interaction.user.id,
+        submissionKey: interaction.view.private_metadata ?? '',
+        values: interaction.view.state?.values ?? {},
+      });
+    }
+
+    const action = interaction?.actions?.[0];
+    if (
+      interaction?.type === 'block_actions' &&
+      action?.action_id === SLACK_ACTIONS.APPROVE_SUBMISSION &&
+      interaction.trigger_id &&
+      interaction.user?.id &&
+      action.value
+    ) {
+      // Not in the background: Slack's trigger id expires 3 seconds after
+      // the click, so the form must open before this answers.
+      try {
+        await this.reviews.openApproveForm({
+          triggerId: interaction.trigger_id,
+          slackUserId: interaction.user.id,
+          submissionKey: action.value,
+        });
+      } catch (err) {
+        // The mentor can still review in the app with the Review button.
+        this.logger.error(
+          'Failed to open the approve form in Slack',
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    }
+    // An empty 200 for everything else, so Slack shows no error.
+    return undefined;
+  }
+}
+
+function parsePayload(body: unknown): SlackInteraction | null {
+  const raw =
+    body && typeof body === 'object'
+      ? (body as Record<string, unknown>).payload
+      : undefined;
+  if (typeof raw !== 'string') return null;
+  try {
+    return JSON.parse(raw) as SlackInteraction;
+  } catch {
+    return null;
+  }
+}

@@ -15,6 +15,7 @@ import {
   type UserDto,
 } from '../../common/mappers';
 import { MailService } from '../../core/mail';
+import { SlackChannelsService } from '../../core/slack';
 import { PrismaService } from '../../core/database/prisma.service';
 import {
   paymentReleasedEmail,
@@ -87,6 +88,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly config: ConfigService<AppConfiguration, true>,
+    private readonly slackChannels: SlackChannelsService,
   ) {
     this.frontendUrl = this.config.get('frontendUrl', { infer: true });
   }
@@ -191,6 +193,7 @@ export class UsersService {
     if (!exists) throw new NotFoundException('User not found.');
 
     const roleChanged = dto.role !== exists.role;
+    let leftCohortIds: number[] = [];
     const updated = await this.prisma.$transaction(async (tx) => {
       // The site always needs an admin: without one, nobody can manage it or
       // give the role back. Locking the admin rows makes a second role change
@@ -223,6 +226,13 @@ export class UsersService {
       // application goes back to pending: kept as accepted, it told them to
       // open a student portal they can no longer enter. A rejected one stays.
       if (roleChanged && dto.role === 'applicant') {
+        // Kept, so the user can be taken out of those Slack channels too.
+        leftCohortIds = (
+          await tx.enrollment.findMany({
+            where: { userId: id },
+            select: { cohortId: true },
+          })
+        ).map((e) => e.cohortId);
         await tx.enrollment.deleteMany({ where: { userId: id } });
         await tx.application.updateMany({
           where: { userId: id, status: 'accepted' },
@@ -240,6 +250,13 @@ export class UsersService {
       }
       return user;
     });
+    // An admin belongs in every cohort channel, so a change to or from admin
+    // touches all of them.
+    if (roleChanged && (exists.role === 'admin' || dto.role === 'admin')) {
+      this.slackChannels.syncAllInBackground(id);
+    } else {
+      this.slackChannels.syncInBackground(id, leftCohortIds);
+    }
     return toUserDto(updated);
   }
 
