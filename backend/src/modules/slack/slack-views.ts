@@ -3,8 +3,11 @@ import { escapeSlackText, SLACK_ACTIONS } from '../../core/slack';
 /** The feedback field in the approve form, as Slack names it in answers. */
 export const FEEDBACK_BLOCK = 'feedback';
 export const FEEDBACK_INPUT = 'feedback_input';
-/** The same limit as the review form in the app. */
-export const FEEDBACK_MAX = 4000;
+/**
+ * Slack's largest limit for a text field. The review form in the app allows
+ * 4000, but Slack refuses to open a form whose field asks for more.
+ */
+export const FEEDBACK_MAX = 3000;
 /** How much of the student's note the form shows. */
 const NOTE_PREVIEW = 1000;
 /** Slack refuses a form whose section text is longer than this. */

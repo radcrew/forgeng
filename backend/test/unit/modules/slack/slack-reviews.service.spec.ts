@@ -250,10 +250,10 @@ describe('SlackReviewsService', () => {
       },
     );
 
-    it('refuses feedback over 4000 characters', async () => {
-      const answer = await submit('a'.repeat(4001));
+    it('refuses feedback over 3000 characters', async () => {
+      const answer = await submit('a'.repeat(3001));
 
-      expect(errorOf(answer)).toMatch(/under 4000 characters/);
+      expect(errorOf(answer)).toMatch(/under 3000 characters/);
       expect(waitUntil).not.toHaveBeenCalled();
     });
 
