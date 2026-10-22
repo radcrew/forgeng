@@ -118,9 +118,68 @@ describe("cohort FormDialog", () => {
     await userEvent.clear(field);
     await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
+    // It asks first, because the students are taken out of the channel.
+    expect(updateCohort).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText("Remove the Slack channel?"),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Remove channel" }),
+    );
+
+    await waitFor(() =>
+      expect(updateCohort).toHaveBeenCalledWith(
+        3,
+        expect.objectContaining({ slackChannelId: null }),
+      ),
+    );
+  });
+
+  it("keeps the Slack channel when removing it is cancelled", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({ slackChannelId: "C0123ABCD" })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    await userEvent.clear(screen.getByLabelText("Slack channel ID (optional)"));
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+    const confirm = await screen.findByRole("dialog", {
+      name: "Remove the Slack channel?",
+    });
+    await userEvent.click(
+      Array.from(confirm.querySelectorAll("button")).find(
+        (b) => b.textContent === "Cancel",
+      )!,
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByText("Remove the Slack channel?"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(updateCohort).not.toHaveBeenCalled();
+  });
+
+  it("moves to another channel without asking", async () => {
+    render(
+      <FormDialog
+        cohort={makeCohort({ slackChannelId: "C0123ABCD" })}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    const field = screen.getByLabelText("Slack channel ID (optional)");
+    await userEvent.clear(field);
+    await userEvent.type(field, "C0999WXYZ");
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
     expect(updateCohort).toHaveBeenCalledWith(
       3,
-      expect.objectContaining({ slackChannelId: null }),
+      expect.objectContaining({ slackChannelId: "C0999WXYZ" }),
     );
   });
 
