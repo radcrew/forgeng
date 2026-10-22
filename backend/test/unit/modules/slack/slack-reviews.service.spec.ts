@@ -219,10 +219,13 @@ describe('SlackReviewsService', () => {
       await expect(submit()).resolves.toBeUndefined();
       await saved();
 
-      expect(feedback.create).toHaveBeenCalledWith(9, MENTOR, {
-        content: 'Great work on the CLI!',
-        verdict: 'approved',
-      });
+      // Only for the version of the work the mentor saw.
+      expect(feedback.create).toHaveBeenCalledWith(
+        9,
+        MENTOR,
+        { content: 'Great work on the CLI!', verdict: 'approved' },
+        new Date(1000),
+      );
       expect(slack.postInBackground).not.toHaveBeenCalled();
     });
 
@@ -288,7 +291,7 @@ describe('SlackReviewsService', () => {
       [
         'another mentor was faster',
         new ConflictException(),
-        'Another mentor reviewed this submission first.',
+        'Another mentor reviewed this submission first, or the student sent new work.',
       ],
       [
         'the submission was deleted',

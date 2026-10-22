@@ -92,7 +92,15 @@ export class SlackReviewsService {
       );
     }
 
-    waitUntil(this.saveApproval(sent.id, mentor, params.slackUserId, content));
+    waitUntil(
+      this.saveApproval(
+        sent.id,
+        submission.lastSubmittedAt,
+        mentor,
+        params.slackUserId,
+        content,
+      ),
+    );
     return undefined;
   }
 
@@ -103,21 +111,28 @@ export class SlackReviewsService {
    */
   private async saveApproval(
     submissionId: number,
+    submittedAt: Date,
     mentor: Parameters<FeedbackService['create']>[1],
     slackUserId: string,
     content: string,
   ): Promise<void> {
     try {
-      await this.feedback.create(submissionId, mentor, {
-        content,
-        verdict: 'approved',
-      });
+      // Only for the version of the work the mentor saw. The student may
+      // have sent new work since the form was checked.
+      await this.feedback.create(
+        submissionId,
+        mentor,
+        { content, verdict: 'approved' },
+        submittedAt,
+      );
       return;
     } catch (err) {
       let problem: string;
       if (err instanceof ConflictException) {
-        // Another mentor approved it in the same moment.
-        problem = 'Another mentor reviewed this submission first.';
+        // In the same moment, another mentor reviewed it, or the student
+        // sent new work.
+        problem =
+          'Another mentor reviewed this submission first, or the student sent new work.';
       } else if (err instanceof NotFoundException) {
         problem = 'This submission no longer exists.';
       } else {

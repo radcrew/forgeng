@@ -305,6 +305,32 @@ describe('FeedbackService', () => {
       expect(notifications.notifyFeedbackReceived).not.toHaveBeenCalled();
     });
 
+    it('reviews only the given version of the work', async () => {
+      prisma.submission.findUnique.mockResolvedValue({
+        id: 10,
+        userId: student.id,
+        taskId: 5,
+      });
+      // The student sent new work, so this version no longer matches.
+      prisma.submission.updateMany.mockResolvedValue({ count: 0 });
+      const submittedAt = new Date(1000);
+
+      await expect(
+        service.create(
+          10,
+          reviewer,
+          { content: 'ok', verdict: 'approved' } as never,
+          submittedAt,
+        ),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(prisma.submission.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 10, status: 'submitted', lastSubmittedAt: submittedAt },
+        }),
+      );
+      expect(prisma.feedback.create).not.toHaveBeenCalled();
+    });
+
     it('returns the saved review when the messages fail', async () => {
       prisma.submission.findUnique.mockResolvedValue({
         id: 10,

@@ -106,10 +106,16 @@ export class FeedbackService {
     return items.map((f) => toFeedbackDto(f, f.reviewer));
   }
 
+  /**
+   * With `submittedAt`, the review is saved only for that version of the
+   * work. Slack uses it: its review is saved later, and the student may
+   * have sent new work in the meantime.
+   */
   async create(
     submissionId: number,
     reviewer: AuthUser,
     dto: CreateFeedbackDto,
+    submittedAt?: Date,
   ): Promise<FeedbackDto> {
     const submission = await this.prisma.submission.findUnique({
       where: { id: submissionId },
@@ -121,7 +127,11 @@ export class FeedbackService {
       // status check and the update are one statement, so when two admins
       // review at the same time, only the first one wins.
       const { count } = await tx.submission.updateMany({
-        where: { id: submissionId, status: 'submitted' },
+        where: {
+          id: submissionId,
+          status: 'submitted',
+          ...(submittedAt ? { lastSubmittedAt: submittedAt } : {}),
+        },
         data: {
           status: dto.verdict === 'approved' ? 'approved' : 'needs_work',
         },
