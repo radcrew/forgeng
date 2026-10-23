@@ -152,6 +152,19 @@ describe('SlackService', () => {
     expect(waitUntil).not.toHaveBeenCalled();
   });
 
+  it('knows the mentors channel', () => {
+    const service = makeService(SLACK);
+
+    expect(service.isMentorsChannel('CMENTORS')).toBe(true);
+    expect(service.isMentorsChannel('CCOHORT')).toBe(false);
+  });
+
+  it('knows no mentors channel when none is set', () => {
+    const service = makeService({ ...SLACK, mentorsChannelId: null });
+
+    expect(service.isMentorsChannel('CMENTORS')).toBe(false);
+  });
+
   it('posts nothing to mentors without a mentors channel', () => {
     makeService({ ...SLACK, mentorsChannelId: null }).postToMentors({
       text: 'x',

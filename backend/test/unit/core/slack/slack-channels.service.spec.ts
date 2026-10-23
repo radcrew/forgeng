@@ -26,6 +26,7 @@ describe('SlackChannelsService', () => {
     createPrivateChannel: jest.Mock;
     findUserIdByEmail: jest.Mock;
     findChannel: jest.Mock;
+    isMentorsChannel: jest.Mock;
   };
   let logError: jest.SpyInstance;
   let service: SlackChannelsService;
@@ -59,6 +60,7 @@ describe('SlackChannelsService', () => {
       createPrivateChannel: jest.fn().mockResolvedValue('CGOLANG'),
       findUserIdByEmail: jest.fn().mockResolvedValue(null),
       findChannel: jest.fn().mockResolvedValue({ isMember: true }),
+      isMentorsChannel: jest.fn().mockReturnValue(false),
     };
     service = new SlackChannelsService(
       prisma as unknown as PrismaService,
@@ -197,6 +199,26 @@ describe('SlackChannelsService', () => {
       slack.findChannel.mockRejectedValue(new Error('timeout'));
 
       await expect(service.channelProblem('C0123')).resolves.toBeNull();
+    });
+
+    it("refuses the mentors' channel without asking Slack", async () => {
+      slack.isMentorsChannel.mockImplementation(
+        (id: string) => id === 'CMENTORS',
+      );
+
+      await expect(service.channelProblem('CMENTORS')).resolves.toMatch(
+        /mentors' channel/,
+      );
+      expect(slack.findChannel).not.toHaveBeenCalled();
+    });
+
+    it("refuses the mentors' channel even when Slack is not set up", async () => {
+      slack.enabled = false;
+      slack.isMentorsChannel.mockReturnValue(true);
+
+      await expect(service.channelProblem('CMENTORS')).resolves.toMatch(
+        /mentors' channel/,
+      );
     });
 
     it('checks nothing when Slack is not set up', async () => {

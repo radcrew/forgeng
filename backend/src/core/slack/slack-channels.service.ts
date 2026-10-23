@@ -51,6 +51,10 @@ export class SlackChannelsService {
    * never blocks saving a cohort.
    */
   async channelProblem(channelId: string): Promise<string | null> {
+    // Its students would be invited there and could read applicant data.
+    if (this.slack.isMentorsChannel(channelId)) {
+      return "This is the mentors' channel. Students would be added to it and could read applicant data. Pick another channel.";
+    }
     if (!this.slack.enabled) return null;
     let channel: { isMember: boolean } | null;
     try {
