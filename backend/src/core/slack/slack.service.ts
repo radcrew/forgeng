@@ -176,6 +176,13 @@ export class SlackService {
     this.postInBackground(this.mentorsChannelId, message);
   }
 
+  /** True when the channel is the private mentors' channel. */
+  isMentorsChannel(channelId: string): boolean {
+    return (
+      this.mentorsChannelId !== null && channelId === this.mentorsChannelId
+    );
+  }
+
   /** True when the bot token is set, so Slack calls can be made. */
   get enabled(): boolean {
     return this.botToken !== null;
